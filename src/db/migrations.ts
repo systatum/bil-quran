@@ -19,6 +19,8 @@ export async function applyMigrations() {
     // check which migrations have been applied
     await createRecordKeepingTable(client)
     let applied = await listAppliedMigrations(client)
+    console.debug("Applied migrations thus far", applied)
+
     let migrations = await getMigrationFiles()
     let executedMigrations = 0
     for (const m of migrations) {
@@ -32,8 +34,6 @@ export async function applyMigrations() {
       })
       executedMigrations++
     }
-
-    console.log("Applied", applied)
   } catch (e) {
     console.error("Failed applying migrations", e)
   }
@@ -72,10 +72,15 @@ async function listAppliedMigrations(client: PGlite): Promise<Set<string>> {
  * Find and retrieve all SQL migrations to be applied
  */
 async function getMigrationFiles(): Promise<MigrationFile[]> {
-  const base = `${window.location.origin}${process.env.PUBLIC_URL}/table_migrations`
-  const journal: Journal = await fetch(`${base}/meta/journal.json`).then((r) =>
-    r.json(),
-  )
+  const isDev = process.env.NODE_ENV === "development" || !!process.env
+  const base = isDev
+    ? `${window.location.origin}${process.env.PUBLIC_URL}/table_migrations`
+    : `${window.location.origin}${process.env.PUBLIC_URL}/table_migrations`
+  console.debug("Route base", base, process.env)
+
+  const journalPath = `${base}/meta/${isDev ? "_journal.json" : "journal.json"}`
+  const journal: Journal = await fetch(journalPath).then((r) => r.json())
+  console.debug("Migration journal:", journal)
   return Promise.all(
     journal.entries.map(({ tag }) =>
       fetch(`${base}/${tag}.sql`).then(async (r) => ({
