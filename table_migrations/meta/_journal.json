@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1778393359934,
+      "tag": "0000_create_word_by_word_translations_table",
+      "breakpoints": true
+    }
+  ]
+}
