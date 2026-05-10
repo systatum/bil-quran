@@ -1,0 +1,73 @@
+{
+  "id": "b6bdd91b-ba0a-4aed-a604-bdbb6d964a99",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.word_by_word_translations": {
+      "name": "word_by_word_translations",
+      "schema": "",
+      "columns": {
+        "locale": {
+          "name": "locale",
+          "type": "varchar(6)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "surat": {
+          "name": "surat",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ayat": {
+          "name": "ayat",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "word": {
+          "name": "word",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "meaning": {
+          "name": "meaning",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "unique_word_by_word_translation": {
+          "name": "unique_word_by_word_translation",
+          "nullsNotDistinct": false,
+          "columns": [
+            "locale",
+            "surat",
+            "ayat",
+            "word"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
