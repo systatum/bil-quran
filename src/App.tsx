@@ -3,7 +3,7 @@ import { seedData } from "@db/seeders"
 import { useEffect, useRef, useState } from "react"
 import "./App.css"
 import logo from "./logo.svg"
-import ReadyApp from "./ReadyApp"
+import UIIndex from "./ui"
 
 function App() {
   const boostrappedRef = useRef(false)
@@ -37,7 +37,7 @@ function App() {
   }, [])
 
   if (isReady) {
-    return <ReadyApp />
+    return <UIIndex />
   } else {
     return (
       <div className="App">
