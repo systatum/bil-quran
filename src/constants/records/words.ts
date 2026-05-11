@@ -23,3 +23,18 @@ export interface WordRecord {
    */
   partNumber: number
 }
+
+export interface WordWithLexemeRecord {
+  chapterId: number
+  verse: number
+  order: number
+
+  partNumber: number
+
+  lexemeId: number
+  renderingId: number
+
+  token: string
+  root: string
+  enReading: string
+}
