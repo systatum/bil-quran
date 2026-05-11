@@ -15,6 +15,13 @@
       "when": 1778450608169,
       "tag": "0001_create_quran_chapters_verses_words_table",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1778492267876,
+      "tag": "0002_enrich_chapter_and_word_with_reveal_loc_and_part_number",
+      "breakpoints": true
     }
   ]
 }

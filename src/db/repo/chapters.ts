@@ -1,6 +1,6 @@
 import { ChapterRecord } from "@constants/records/chapters"
 import { Repository } from "./repository"
-import { surats as schema } from "./tables"
+import { chapters as schema } from "./tables"
 
 class ChapterRepo extends Repository<typeof schema, ChapterRecord> {
   constructor() {

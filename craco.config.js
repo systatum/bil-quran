@@ -14,6 +14,7 @@ module.exports = {
     alias: {
       "@db": path.resolve(__dirname, "src/db"),
       "@constants": path.resolve(__dirname, "src/constants"),
+      "@services": path.resolve(__dirname, "src/services"),
     },
   },
 }

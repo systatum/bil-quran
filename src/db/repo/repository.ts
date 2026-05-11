@@ -1,15 +1,15 @@
-import { asc, desc, eq, type SQL } from "drizzle-orm"
-import {
-  type AnyPgColumn,
-  type AnyPgTable,
-  type PgTableWithColumns,
-} from "drizzle-orm/pg-core"
 import {
   newErrIPCResponse,
   newIPCResponse,
   type IPCResponse,
 } from "@constants/IPC"
 import { DbConn, withDb } from "@db/driver"
+import { asc, count, desc, eq, type SQL } from "drizzle-orm"
+import {
+  type AnyPgColumn,
+  type AnyPgTable,
+  type PgTableWithColumns,
+} from "drizzle-orm/pg-core"
 
 type SelectOf<T extends AnyPgTable> = T["$inferSelect"]
 type InsertOf<T extends PgTableWithColumns<any>> = T["$inferInsert"]
@@ -140,6 +140,18 @@ export abstract class Repository<
 
   async delete(id: any) {
     return this.deleteBy(this.schema["id"], id)
+  }
+
+  async count(): Promise<IPCResponse<number>> {
+    try {
+      return await withDb(async (db: DbConn) => {
+        const rows = await db.select({ count: count() }).from(this.schema as AnyPgTable)
+        return newIPCResponse({ data: rows[0]?.count ?? 0 })
+      })
+    } catch (e) {
+      console.error("Counting record failed", e)
+      return newErrIPCResponse(e)
+    }
   }
 }
 

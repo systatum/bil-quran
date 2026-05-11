@@ -1,15 +1,21 @@
+import { ChapterPartDivision } from "@constants/records/chapters"
 import {
-  pgTable,
-  varchar,
-  integer,
   bigint,
+  boolean,
+  integer,
+  jsonb,
+  pgTable,
   timestamp,
   unique,
+  varchar,
 } from "drizzle-orm/pg-core"
+
 
 export const chapters = pgTable("chapters", {
   // starts from 1, the number of the surat
   id: bigint({ mode: "number" }).primaryKey(),
+  isMeccan: boolean().notNull(),
+  partDivisions: jsonb().$type<ChapterPartDivision[]>().notNull(),
   // name transliterated from the original arabic
   ar: varchar({ length: 20 }).notNull(),
   // name transliterated in English
@@ -29,10 +35,10 @@ export const renderings = pgTable("renderings", {
 })
 
 // a word that makes up a verse
-export const word = pgTable(
+export const words = pgTable(
   "words",
   {
-    chapterId: bigint({ mode: "number " })
+    chapterId: bigint({ mode: "number" })
       .notNull()
       .references(() => chapters.id, { onDelete: "cascade" }),
     renderingId: bigint({ mode: "number" })
@@ -40,14 +46,15 @@ export const word = pgTable(
       .references(() => renderings.id, { onDelete: "cascade" }),
     verse: integer().notNull(),
     word: varchar({ length: 13 }),
+    partNumber: integer().notNull(),
   },
-  (table) => ({
-    suratUniqueWordRendering: unique("surat_unique_word_rendering").on(
+  (table) => [
+    unique("surat_unique_word_rendering").on(
       table.chapterId,
       table.renderingId,
       table.verse,
     ),
-  }),
+  ],
 )
 
 export const wbwTranslations = pgTable(
@@ -59,12 +66,12 @@ export const wbwTranslations = pgTable(
     word: integer().notNull(),
     meaning: varchar({ length: 255 }).notNull(),
   },
-  (table) => ({
-    suratAyatWordUnique: unique("unique_word_by_word_translation").on(
+  (table) => [
+    unique("unique_word_by_word_translation").on(
       table.locale,
       table.chapter,
       table.ayat,
       table.word,
     ),
-  }),
+  ],
 )

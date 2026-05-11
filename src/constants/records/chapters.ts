@@ -4,6 +4,11 @@ export interface ChapterRecord {
    */
   id: number
   /**
+   * Indicates whether the chapter is primarily revealed
+   * in Meccan or while the prophet already in Madinah.
+   */
+  isMeccan: boolean
+  /**
    * The original arabic name of the quran
    */
   ar: string
@@ -15,4 +20,15 @@ export interface ChapterRecord {
    * The proper translation of the chapter's name
    */
   enMeaning: string
+}
+
+/**
+ * Indicates the universal compartmentalization of a given
+ * chapter into 1/30-th part: which part, and from which
+ * verse to what verse
+ */
+export interface ChapterPartDivision {
+  part: number
+  start: number
+  end: number
 }
