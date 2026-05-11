@@ -4,6 +4,7 @@ import {
   type IPCResponse,
 } from "@constants/IPC"
 import { DbConn, withDb } from "@db/driver"
+import { unpackIPC } from "@services/Converter"
 import { asc, count, desc, eq, type SQL } from "drizzle-orm"
 import {
   type AnyPgColumn,
@@ -55,29 +56,52 @@ export abstract class Repository<
     }
   }
 
-  async create(data: Partial<R>): Promise<IPCResponse<R>> {
+  async createBulk(data: Partial<R>[]): Promise<IPCResponse<R[]>> {
     try {
-      const rec = await withDb(async (db: DbConn) => {
+      const records = await withDb(async (db: DbConn) => {
         const now = new Date()
-        const insertData = {
-          ...data,
-        } satisfies InsertOf<T>
 
-        if (this.schema["createdAt"]) (insertData as any)["createdAt"] = now
-        if (this.schema["updatedAt"]) (insertData as any)["updatedAt"] = now
+        const insertData = data.map((item) => {
+          const row = {
+            ...item,
+          } satisfies InsertOf<T>
 
-        const rows = await db
-          .insert(this.schema)
-          .values(insertData as InsertOf<T>)
-          .returning()
+          if (this.schema["createdAt"]) {
+            ;(row as any)["createdAt"] = now
+          }
 
-        return rows[0] as R
+          if (this.schema["updatedAt"]) {
+            ;(row as any)["updatedAt"] = now
+          }
+
+          return row as InsertOf<T>
+        })
+
+        const rows = await db.insert(this.schema).values(insertData).returning()
+
+        return rows as unknown as R[]
       })
-      return newIPCResponse({ data: rec })
+
+      return newIPCResponse({
+        data: records,
+      })
     } catch (e) {
-      console.error("Record creation failed", e)
+      console.error("Bulk record creation failed", e)
+
       return newErrIPCResponse(e)
     }
+  }
+
+  async create(data: Partial<R>): Promise<IPCResponse<R>> {
+    const result = await this.createBulk([data])
+    if (!result.succeed) {
+      return newErrIPCResponse<R>(result.errors)
+    }
+
+    const [record] = unpackIPC(result)
+    return newIPCResponse({
+      data: record,
+    })
   }
 
   async updateBy<C extends AnyPgColumn>(
@@ -145,7 +169,9 @@ export abstract class Repository<
   async count(): Promise<IPCResponse<number>> {
     try {
       return await withDb(async (db: DbConn) => {
-        const rows = await db.select({ count: count() }).from(this.schema as AnyPgTable)
+        const rows = await db
+          .select({ count: count() })
+          .from(this.schema as AnyPgTable)
         return newIPCResponse({ data: rows[0]?.count ?? 0 })
       })
     } catch (e) {

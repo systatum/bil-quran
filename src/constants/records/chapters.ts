@@ -8,6 +8,7 @@ export interface ChapterRecord {
    * in Meccan or while the prophet already in Madinah.
    */
   isMeccan: boolean
+  partDivisions: ChapterPartDivision[]
   /**
    * The original arabic name of the quran
    */

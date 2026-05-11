@@ -10,7 +10,6 @@ import {
   varchar,
 } from "drizzle-orm/pg-core"
 
-
 export const chapters = pgTable("chapters", {
   // starts from 1, the number of the surat
   id: bigint({ mode: "number" }).primaryKey(),
@@ -34,6 +33,13 @@ export const renderings = pgTable("renderings", {
   updatedAt: timestamp().notNull(),
 })
 
+export const lexemes = pgTable("lexemes", {
+  id: bigint({ mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
+  token: varchar({ length: 25 }).notNull(),
+  root: varchar({ length: 15 }).notNull(),
+  enReading: varchar({ length: 50 }).notNull(),
+})
+
 // a word that makes up a verse
 export const words = pgTable(
   "words",
@@ -44,15 +50,20 @@ export const words = pgTable(
     renderingId: bigint({ mode: "number" })
       .notNull()
       .references(() => renderings.id, { onDelete: "cascade" }),
+    lexemeId: bigint({ mode: "number" })
+      .notNull()
+      .references(() => lexemes.id, { onDelete: "cascade" }),
     verse: integer().notNull(),
-    word: varchar({ length: 13 }),
+    order: integer().notNull(),
     partNumber: integer().notNull(),
   },
   (table) => [
     unique("surat_unique_word_rendering").on(
       table.chapterId,
       table.renderingId,
+      table.lexemeId,
       table.verse,
+      table.order,
     ),
   ],
 )

@@ -1,9 +1,9 @@
-import { and, eq } from "drizzle-orm"
+import { type IPCResponse } from "@constants/IPC"
 import { WbwTranslationRecord } from "@constants/records/wbwTranslations"
+import { and, eq } from "drizzle-orm"
+import { withDb } from "../driver"
 import { conditional, Repository } from "./repository"
 import { wbwTranslations as schema } from "./tables"
-import { withDb } from "../driver"
-import { type IPCResponse } from "@constants/IPC"
 
 class WbwTranslationRepo extends Repository<
   typeof schema,
@@ -14,15 +14,15 @@ class WbwTranslationRepo extends Repository<
   }
 
   async findAllBy({
-    surat,
+    chapter,
   }: {
-    surat: number
+    chapter: number
   }): Promise<IPCResponse<WbwTranslationRecord[]>> {
     return withDb(
       async (db) =>
         await this.findBy(
           db,
-          and(...conditional(surat, eq(schema.surat, surat ?? -1))),
+          and(...conditional(chapter, eq(schema.chapter, chapter ?? -1))),
         ),
     )
   }

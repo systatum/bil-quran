@@ -1,28 +1,9 @@
-import { Asset } from "@constants/assets"
-import { ChapterRecord } from "@constants/records/chapters"
 import { applyMigrations } from "@db/migrations"
-import { repo } from "@db/repo/index"
+import { seedData } from "@db/seeders"
 import { useEffect, useRef, useState } from "react"
 import "./App.css"
 import logo from "./logo.svg"
-import { unpackIPC } from "./services/Converter"
 
-async function seedChapters() {
-  const numberOfRecords = unpackIPC( await repo.chapters.count())
-  console.debug("Number of registered chapters:", numberOfRecords)
-  if (numberOfRecords > 0) return
-
-  const chaptersMetadata: ChapterRecord[] = await (await fetch(Asset.chaptersMetadata)).json()
-  for (const chapter of Object.entries(chaptersMetadata)) {
-    const [number, detail] = chapter
-    const createdChapter = await repo.chapters.create({ ...detail, id: parseInt(number) })
-  }
-}
-
-// seed the app with minimal data so that it can work
-async function seedData() {
-  await seedChapters()
-}
 
 function App() {
   const boostrappedRef = useRef(false)

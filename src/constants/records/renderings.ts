@@ -10,3 +10,8 @@ export interface RenderingRecord {
   createdAt: Date
   updatedAt: Date
 }
+
+export const Rendering = {
+  Standard: "standard",
+}
+export type Rendering = (typeof Rendering)[keyof typeof Rendering]

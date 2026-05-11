@@ -1,3 +1,5 @@
+import { Rendering } from "./records/renderings"
+
 export const Locale = {
   English: "en-US",
 }
@@ -11,25 +13,20 @@ export interface Translation {
   wordByWord: Record<Locale, WordByWordTranslationAsset>
 }
 
-export const Rendering = {
-  Imlaei: "imlaei",
-}
-export type Rendering = (typeof Rendering)[keyof typeof Rendering]
-
 export interface Asset {
   /**
    * Metadata for each of the Quranic chapters
    */
   chaptersMetadata: string
 
-  verses: Record<Rendering, string>
+  renderings: Record<Rendering, string>
   translations: Translation
 }
 const basePath = `${window.location.origin}${process.env.PUBLIC_URL}`
 export const Asset: Asset = {
   chaptersMetadata: `${basePath}/quran/chapters.json`,
-  verses: {
-    [Rendering.Imlaei]: `${basePath}/`,
+  renderings: {
+    [Rendering.Standard]: `${basePath}/quran/verses/standard.json`,
   },
   translations: {
     wordByWord: {
