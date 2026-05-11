@@ -55,19 +55,20 @@ const blockStyle: CSSProperties = {
   left: 0,
   width: "100%",
   boxSizing: "border-box",
-  background: "white",
+  background: "#1f1f1f",
+  color: "rgb(122 122 122)",
 }
 
 // Style for the usual row
-const rowStyle: CSSProperties = {
-  direction: "rtl",
-  textAlign: "right",
-  fontSize: "42px",
-  lineHeight: 2.6,
-  fontFamily: `"Amiri", serif`,
-  borderBottom: "1px solid #ececec",
-  minHeight: "96px",
-}
+const VerseRow = styled.div`
+  direction: rtl;
+  text-align: right;
+  font-size: 42px;
+  line-height: 2.6;
+  font-family: "Amiri", serif;
+  border-bottom: 1px solid #343434;
+  min-height: 96px;
+`
 
 const verseMarkerStyle: CSSProperties = {
   fontSize: "24px",
@@ -76,16 +77,17 @@ const verseMarkerStyle: CSSProperties = {
 }
 
 // Render chapter header (name of chapter) differently
-const chapterHeaderStyle: CSSProperties = {
-  direction: "rtl",
-  textAlign: "center",
-  fontSize: "54px",
-  marginTop: "32px",
-  marginBottom: "12px",
-  paddingBottom: "18px",
-  borderBottom: "2px solid #e5e5e5",
-  fontFamily: `"Amiri", serif`,
-}
+const ChapterHeader = styled.div`
+  direction: rtl;
+  text-align: center;
+  font-size: 54px;
+  margin-top: 32px;
+  margin-bottom: 12px;
+  padding-bottom: 18px;
+  border-bottom: 2px solid #343434;
+  font-family: "Amiri", serif;
+  margin-right: -20px; // negates the parent
+`
 
 function createTextMeasurer() {
   const canvas = document.createElement("canvas")
@@ -181,19 +183,21 @@ function QuranBlock({ block, item, measureElement }: QuranBlockProps) {
       }}
     >
       {block.rows.map((row, rowIndex) => (
-        <div key={rowIndex} style={rowStyle}>
-          {row.tokens.map((token) => (
-            <span key={token.key}>
-              {token.isChapterStart && (
-                <div style={chapterHeaderStyle}>{token.chapterName}</div>
-              )}
-              {token.token}{" "}
-              {token.isVerseEnd && (
-                <span style={verseMarkerStyle}>({token.verse}) </span>
-              )}
-            </span>
-          ))}
-        </div>
+        <VerseRow key={rowIndex}>
+          <div style={{ marginRight: "20px" }}>
+            {row.tokens.map((token) => (
+              <span key={token.key}>
+                {token.isChapterStart && (
+                  <ChapterHeader>{token.chapterName}</ChapterHeader>
+                )}
+                {token.token}&nbsp;
+                {token.isVerseEnd && (
+                  <span style={verseMarkerStyle}>({token.verse}) </span>
+                )}
+              </span>
+            ))}
+          </div>
+        </VerseRow>
       ))}
     </div>
   )
@@ -363,4 +367,5 @@ const FullPaper = styled.div<{ height: number }>`
   height: ${(p) => p.height}px;
   width: 100%;
   position: relative;
+  background: rgb(31, 31, 31);
 `
