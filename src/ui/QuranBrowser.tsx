@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 
+import { ChapterRecord } from "@constants/records/chapters"
 import { repo } from "@db/repo"
 import { unpackIPC } from "@services/Converter"
 import { useVirtualizer } from "@tanstack/react-virtual"
@@ -25,12 +26,17 @@ interface VerseRow {
   words: WordCell[]
 }
 
+type RenderRow =
+  | { type: "chapter"; chapterId: number; name: string }
+  | { type: "verse"; verse: VerseRow }
+
 /**
  * Stable scroll container required by react-virtual.
  * It defines the coordinate system for all offset calculations.
  */
 export default function QuranBrowser() {
   const [words, setWords] = useState<WordCell[]>([])
+  const [chapters, setChapters] = useState<Record<number, ChapterRecord>>({})
   const parentRef = useRef<HTMLDivElement>(null)
 
   // some flags about the rendering
@@ -45,6 +51,16 @@ export default function QuranBrowser() {
 
   useEffect(() => {
     async function load() {
+      // load chapters
+      const rawChapters = unpackIPC(await repo.chapters.findAllBy({}))
+      setChapters(
+        rawChapters.reduce<Record<number, ChapterRecord>>((acc, ch) => {
+          acc[ch.id] = ch
+          return acc
+        }, {}),
+      )
+
+      // load word-by-word translations and associate to its relevant word in a verse
       const wbwTranslations = unpackIPC(
         await repo.wbwTranslations.compile("en-US"),
       )
@@ -54,7 +70,6 @@ export default function QuranBrowser() {
         meaning: wbwTranslations[w.chapterId][w.verse][w.order],
       }))
 
-      console.log("whole trans", translatedWords)
       setWords(translatedWords)
     }
 
@@ -89,14 +104,37 @@ export default function QuranBrowser() {
     return Array.from(grouped.values())
   }, [words])
 
+  const renderRows = useMemo<RenderRow[]>(() => {
+    // the chapters data must be ready first
+    if (chapters == null || Object.keys(chapters).length == 0) return []
+
+    const rows: RenderRow[] = []
+    let lastChapterId: number | null = null
+    for (const verse of verses) {
+      if (verse.chapterId !== lastChapterId) {
+        rows.push({
+          type: "chapter",
+          chapterId: verse.chapterId,
+          name: chapters[verse.chapterId].ar,
+        })
+
+        lastChapterId = verse.chapterId
+      }
+
+      rows.push({ type: "verse", verse })
+    }
+
+    return rows
+  }, [verses, chapters])
+
   /**
    * Virtualizer uses real measured height when available.
    * Fallback estimate is only used before first render.
    */
   const virtualizer = useVirtualizer({
-    count: verses.length,
+    count: renderRows.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: (index) => sizeMap.current.get(index) ?? 140,
+    estimateSize: (i) => sizeMap.current.get(i) ?? 140,
     overscan: 8,
   })
 
@@ -118,20 +156,31 @@ export default function QuranBrowser() {
         }}
       >
         {items.map((item) => {
-          const verse = verses[item.index]
+          const row = renderRows[item.index]
+
+          if (row.type === "chapter") {
+            return (
+              <ChapterHeaderRow
+                key={`ch-${row.chapterId}`}
+                index={item.index}
+                name={row.name}
+                style={{ transform: `translateY(${item.start}px)` }}
+                sizeMap={sizeMap}
+                virtualizer={virtualizer}
+              />
+            )
+          }
 
           return (
             <VerseRow
-              key={verse.id}
+              key={row.verse.id}
               index={item.index}
-              verse={verse}
-              showTransliteration={showTransliteration}
-              showMeaning={showMeaning}
-              style={{
-                transform: `translateY(${item.start}px)`,
-              }}
+              verse={row.verse}
+              style={{ transform: `translateY(${item.start}px)` }}
               sizeMap={sizeMap}
               virtualizer={virtualizer}
+              showMeaning={showMeaning}
+              showTransliteration={showTransliteration}
             />
           )
         })}
@@ -268,3 +317,54 @@ const Meaning = styled.span`
   max-width: 120px;
   line-height: 16px;
 `
+
+const ChapterHeaderContainer = styled.div`
+  text-align: center;
+  font-size: 48px;
+  font-family: "Amiri", serif;
+  padding: 32px 24px;
+  border-bottom: 1px solid #eee;
+  background: white;
+`
+
+function ChapterHeaderRow({
+  index,
+  name,
+  style,
+  sizeMap,
+  virtualizer,
+}: {
+  index: number
+  name: string
+  style: React.CSSProperties
+  sizeMap: React.RefObject<Map<number, number>>
+  virtualizer: any
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!ref.current) return
+
+    const h = ref.current.getBoundingClientRect().height
+
+    if (sizeMap.current.get(index) !== h) {
+      sizeMap.current.set(index, h)
+      virtualizer.measure()
+    }
+  }, [index, name])
+
+  return (
+    <div
+      ref={ref}
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        transform: style.transform,
+      }}
+    >
+      <ChapterHeaderContainer>{name}</ChapterHeaderContainer>
+    </div>
+  )
+}

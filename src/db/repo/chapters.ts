@@ -10,7 +10,11 @@ class ChapterRepo extends Repository<typeof schema, ChapterRecord> {
     super(schema)
   }
 
-  findAllBy({ id }: { id: number }): Promise<IPCResponse<ChapterRecord[]>> {
+  findAllBy({
+    id = undefined,
+  }: {
+    id?: number
+  }): Promise<IPCResponse<ChapterRecord[]>> {
     return withDb(
       async (db) =>
         await this.findBy(db, and(...conditional(id, eq(schema.id, id ?? -1)))),
