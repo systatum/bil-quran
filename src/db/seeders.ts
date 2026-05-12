@@ -2,8 +2,12 @@ import { Asset } from "@constants/assets"
 import { ChapterRecord } from "@constants/records/chapters"
 import { LexemeRecord } from "@constants/records/lexemes"
 import { Rendering } from "@constants/records/renderings"
+import { WbwTranslationRecord } from "@constants/records/wbwTranslations"
+import { WordRecord } from "@constants/records/words"
 import { repo } from "@db/repo/index"
 import { unpackIPC } from "@services/Converter"
+import { inArray } from "drizzle-orm"
+import { withDb } from "./driver"
 
 // seed the app with minimal data so that it can work
 export async function seedData() {
@@ -29,9 +33,6 @@ async function seedChapters() {
 }
 
 async function seedVerses() {
-  /**
-   * Represents a word in a verse
-   */
   interface VerseWord {
     id: string
     word: string
@@ -39,90 +40,153 @@ async function seedVerses() {
     root: string
   }
 
+  const BATCH_SIZE = 1000
   const name = Rendering.Standard
-  let renderings = unpackIPC(await repo.renderings.findAllBy({ name }))
-  if (renderings.length === 1) return
 
-  // create rendering and seed all the verses, creating lexeme along the way
+  // if there's already a standard rendering, no need to add verses
+  const existing = unpackIPC(await repo.renderings.findAllBy({ name }))
+  if (existing.length === 1) return
+
   const rendering = unpackIPC(await repo.renderings.create({ name }))
+
   const verseWords: VerseWord[] = await (
     await fetch(Asset.renderings[rendering.name])
   ).json()
-  const lexemes: Record<string, LexemeRecord> = {}
 
-  console.debug("Seeding verses")
-  let lastChapter = 0
-  let lastVerse = 0
-  let wordOrder = 1
-  for (const verseWordRecord of verseWords) {
-    let lexeme = lexemes[verseWordRecord.word]
-    if (lexeme == null) {
-      lexeme = unpackIPC(
-        await repo.lexemes.findAllBy({ token: verseWordRecord.word }),
-      )[0]
-      if (lexeme == null) {
-        lexeme = unpackIPC(
-          await repo.lexemes.create({
-            root: verseWordRecord.root,
-            enReading: verseWordRecord.trans,
-            token: verseWordRecord.word,
-          }),
-        )
+  // ------------------------------------------------------------
+  // PASS 1
+  // collect unique lexemes
+  // ------------------------------------------------------------
+
+  const uniqueLexemes: Record<string, Omit<LexemeRecord, "id">> = {}
+
+  for (const v of verseWords)
+    if (uniqueLexemes[v.word] == null)
+      uniqueLexemes[v.word] = {
+        token: v.word,
+        root: v.root,
+        enReading: v.trans,
       }
 
-      // cache lexeme occurrence
-      lexemes[lexeme.token] = lexeme
-    }
+  const tokens = Object.keys(uniqueLexemes)
 
-    const [chapterNumber, verseNumber] = verseWordRecord.id
-      .split(":")
-      .map((x) => parseInt(x))
-    if (chapterNumber > lastChapter) {
-      console.debug("Processing chapter: ", chapterNumber)
-      wordOrder = 1
-      lastVerse = 0
-      lastChapter = chapterNumber
-    }
-    if (verseNumber > lastVerse) {
-      wordOrder = 1
-      lastVerse = verseNumber
-    }
-    unpackIPC(
-      await repo.words.create({
-        chapterId: chapterNumber,
-        verse: verseNumber,
-        lexemeId: lexeme.id,
-        order: wordOrder,
-        renderingId: rendering.id,
-        partNumber: 0, // TODO: set part number correctly
-      }),
-    )
-    wordOrder++
+  // ------------------------------------------------------------
+  // bulk SELECT existing lexemes
+  // ------------------------------------------------------------
+
+  const existingLexemes = await withDb(async (db) => {
+    return await db
+      .select()
+      .from(repo.lexemes.schema)
+      .where(inArray(repo.lexemes.schema.token, tokens))
+  })
+
+  // do not create any existing lexeme
+  const lexemeCache: Record<string, LexemeRecord> = {}
+  for (const lex of existingLexemes) {
+    lexemeCache[lex.token] = lex as LexemeRecord
   }
+
+  // push missing lexeme, before doing batch creation
+  const missing: {
+    token: string
+    root: string
+    enReading: string
+  }[] = []
+
+  for (const [token, lexeme] of Object.entries(uniqueLexemes))
+    if (lexemeCache[token] == null) missing.push(lexeme)
+
+  for (let i = 0; i < missing.length; i += BATCH_SIZE) {
+    const batch = missing.slice(i, i + BATCH_SIZE)
+    const created = unpackIPC(await repo.lexemes.createBulk(batch))
+    for (const lex of created) lexemeCache[lex.token] = lex
+  }
+
+  // ------------------------------------------------------------
+  // PASS 2
+  // words insertion, streamed
+  // ------------------------------------------------------------
+
+  const orderMap = new Map<string, number>()
+  let wordBatch: Partial<WordRecord>[] = []
+
+  async function flushWords() {
+    if (wordBatch.length === 0) return
+    unpackIPC(await repo.words.createBulk(wordBatch))
+    wordBatch = []
+  }
+
+  for (const v of verseWords) {
+    const verseKey = v.id
+    const [chapterId, verse] = verseKey.split(":")
+    const order = (orderMap.get(verseKey) ?? 0) + 1
+    orderMap.set(verseKey, order)
+
+    const lexeme = lexemeCache[v.word]
+
+    wordBatch.push({
+      chapterId: parseInt(chapterId),
+      verse: parseInt(verse),
+      lexemeId: lexeme.id,
+      order,
+      renderingId: rendering.id,
+      partNumber: 0,
+    })
+
+    if (wordBatch.length >= BATCH_SIZE) await flushWords()
+  }
+
+  await flushWords()
 }
 
 async function seedWbwTranslations() {
   const defaultLocale = "en-US"
-  let locales = unpackIPC(
-    await repo.wbwTranslations.findAllBy({ locale: defaultLocale }),
+
+  const locales = unpackIPC(
+    await repo.wbwTranslations.findAllBy({
+      locale: defaultLocale,
+    }),
   )
+
   if (locales.length > 0) return
 
   console.debug("Seeding word-by-word translations")
+
   const translations: Record<string, string> = await (
     await fetch(Asset.translations.wordByWord[defaultLocale].path)
   ).json()
-  for (const [loc, meaning] of Object.entries(translations)) {
-    if (meaning.match(/^\((\d+)\)$/)) continue
-    const [chapter, verse, word] = loc.split(":")
-    unpackIPC(
-      await repo.wbwTranslations.create({
-        locale: defaultLocale,
-        chapter: parseInt(chapter),
-        ayat: parseInt(verse),
-        word: parseInt(word),
-        meaning: meaning,
-      }),
-    )
+
+  const BATCH_SIZE = 1200
+
+  let batch: Partial<WbwTranslationRecord>[] = []
+
+  async function flushBatch() {
+    if (batch.length === 0) return
+    unpackIPC(await repo.wbwTranslations.createBulk(batch))
+    batch = []
   }
+
+  for (const [loc, meaning] of Object.entries(translations)) {
+    // skip verse markers like "(1)"
+    if (
+      meaning.length >= 2 &&
+      meaning[0] == "(" &&
+      meaning[meaning.length - 1] == ")"
+    )
+      continue
+
+    const [chapter, verse, word] = loc.split(":")
+    batch.push({
+      locale: defaultLocale,
+      chapter: parseInt(chapter),
+      ayat: parseInt(verse),
+      word: parseInt(word),
+      meaning,
+    })
+
+    if (batch.length >= BATCH_SIZE) await flushBatch()
+  }
+
+  await flushBatch()
 }
