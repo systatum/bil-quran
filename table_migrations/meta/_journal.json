@@ -8,6 +8,27 @@
       "when": 1778393359934,
       "tag": "0000_create_word_by_word_translations_table",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1778450608169,
+      "tag": "0001_create_quran_chapters_verses_words_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1778492267876,
+      "tag": "0002_enrich_chapter_and_word_with_reveal_loc_and_part_number",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1778502789021,
+      "tag": "0003_create_lexemes_table",
+      "breakpoints": true
     }
   ]
 }

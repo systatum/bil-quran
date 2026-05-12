@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/bil-quran/static/css/main.86e87cf1.css",
-    "main.js": "/bil-quran/static/js/main.138f23c5.js",
+    "main.css": "/bil-quran/static/css/main.42851b30.css",
+    "main.js": "/bil-quran/static/js/main.952c161e.js",
     "static/js/520.ba14a5cf.chunk.js": "/bil-quran/static/js/520.ba14a5cf.chunk.js",
     "static/js/202.aaed6d87.chunk.js": "/bil-quran/static/js/202.aaed6d87.chunk.js",
     "static/js/173.0c9bf874.chunk.js": "/bil-quran/static/js/173.0c9bf874.chunk.js",
@@ -17,14 +17,14 @@
     "static/media/initdb.wasm": "/bil-quran/static/media/initdb.ca63d8f875f080d325de.wasm",
     "static/media/logo.svg": "/bil-quran/static/media/logo.6ce24c58023cc2f8fd88fe9d219db6c6.svg",
     "index.html": "/bil-quran/index.html",
-    "main.86e87cf1.css.map": "/bil-quran/static/css/main.86e87cf1.css.map",
-    "main.138f23c5.js.map": "/bil-quran/static/js/main.138f23c5.js.map",
+    "main.42851b30.css.map": "/bil-quran/static/css/main.42851b30.css.map",
+    "main.952c161e.js.map": "/bil-quran/static/js/main.952c161e.js.map",
     "735.34dcd8c5.chunk.js.map": "/bil-quran/static/js/735.34dcd8c5.chunk.js.map",
     "826.a0396596.chunk.js.map": "/bil-quran/static/js/826.a0396596.chunk.js.map",
     "199.58f52c3b.chunk.js.map": "/bil-quran/static/js/199.58f52c3b.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.86e87cf1.css",
-    "static/js/main.138f23c5.js"
+    "static/css/main.42851b30.css",
+    "static/js/main.952c161e.js"
   ]
 }
