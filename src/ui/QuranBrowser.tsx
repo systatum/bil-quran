@@ -167,10 +167,6 @@ function VerseRow({
 }) {
   const ref = useRef<HTMLDivElement>(null)
 
-  /**
-   * After render, measure real height.
-   * This removes all clipping and overflow issues.
-   */
   useEffect(() => {
     if (!ref.current) return
 
@@ -197,78 +193,78 @@ function VerseRow({
         background: "white",
       }}
     >
-      <div
-        style={{
-          direction: "rtl",
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "flex-start",
-          textAlign: "right",
-          fontSize: "42px",
-          lineHeight: 2.4,
-          fontFamily: `"Amiri", serif`,
-          whiteSpace: "normal",
-        }}
-      >
-        {/* Verse marker aligned to full row height */}
+      <VerseRowContainer>
         <VerseMarker>({verse.number})</VerseMarker>
 
-        {verse.words.map((word) => (
-          <span
-            key={`${word.chapterId}-${word.verse}-${word.order}`}
-            style={{
-              display: "inline-flex",
-              flexDirection: "column",
-              alignItems: "center",
-              margin: "0 6px",
-              verticalAlign: "top",
-            }}
-          >
-            <span style={{ fontSize: "42px", lineHeight: 1.6 }}>
-              {word.token}
-            </span>
+        <VerseText>
+          {verse.words.map((word) => (
+            <Word key={`${word.chapterId}-${word.verse}-${word.order}`}>
+              <Arabic>{word.token}</Arabic>
 
-            {showTransliteration && (
-              <span
-                style={{
-                  fontSize: "14px",
-                  color: "#666",
-                  marginTop: "4px",
-                  direction: "ltr",
-                  textAlign: "center",
-                }}
-              >
-                {word.enReading}
-              </span>
-            )}
+              {showTransliteration && (
+                <Transliteration>{word.enReading}</Transliteration>
+              )}
 
-            {showMeaning && (
-              <span
-                style={{
-                  fontSize: "14px",
-                  color: "#888",
-                  marginTop: "2px",
-                  direction: "ltr",
-                  textAlign: "center",
-                  maxWidth: "120px",
-                  lineHeight: "16px",
-                }}
-              >
-                {word.meaning}
-              </span>
-            )}
-          </span>
-        ))}
-      </div>
+              {showMeaning && <Meaning>{word.meaning}</Meaning>}
+            </Word>
+          ))}
+        </VerseText>
+      </VerseRowContainer>
     </div>
   )
 }
 
-const VerseMarker = styled.span`
+const VerseRowContainer = styled.div`
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  direction: rtl;
+  align-items: start;
+`
+
+const VerseMarker = styled.div`
   font-size: 22px;
   color: #666;
-  margin-left: 12px;
-  align-self: center;
+  text-align: right;
+  padding-top: 6px;
   white-space: nowrap;
-  margin-bottom: 20px;
+  margin-top: 15px;
+`
+
+const VerseText = styled.div`
+  text-align: right;
+  font-size: 42px;
+  line-height: 2.4;
+  font-family: "Amiri", serif;
+  white-space: normal;
+`
+
+const Word = styled.span`
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 6px;
+  vertical-align: top;
+`
+
+const Arabic = styled.span`
+  font-size: 42px;
+  line-height: 1.6;
+`
+
+const Transliteration = styled.span`
+  font-size: 14px;
+  color: #666;
+  margin-top: 4px;
+  direction: ltr;
+  text-align: center;
+`
+
+const Meaning = styled.span`
+  font-size: 14px;
+  color: #888;
+  margin-top: 2px;
+  direction: ltr;
+  text-align: center;
+  max-width: 120px;
+  line-height: 16px;
 `
