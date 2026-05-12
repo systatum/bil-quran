@@ -53,7 +53,7 @@ async function seedVerses() {
   console.debug("Seeding verses")
   let lastChapter = 0
   let lastVerse = 0
-  let wordOrder = 0
+  let wordOrder = 1
   for (const verseWordRecord of verseWords) {
     let lexeme = lexemes[verseWordRecord.word]
     if (lexeme == null) {
@@ -79,11 +79,12 @@ async function seedVerses() {
       .map((x) => parseInt(x))
     if (chapterNumber > lastChapter) {
       console.debug("Processing chapter: ", chapterNumber)
-      wordOrder = 0
+      wordOrder = 1
+      lastVerse = 0
       lastChapter = chapterNumber
     }
     if (verseNumber > lastVerse) {
-      wordOrder = 0
+      wordOrder = 1
       lastVerse = verseNumber
     }
     unpackIPC(
@@ -112,6 +113,7 @@ async function seedWbwTranslations() {
     await fetch(Asset.translations.wordByWord[defaultLocale].path)
   ).json()
   for (const [loc, meaning] of Object.entries(translations)) {
+    if (meaning.match(/^\((\d+)\)$/)) continue
     const [chapter, verse, word] = loc.split(":")
     unpackIPC(
       await repo.wbwTranslations.create({

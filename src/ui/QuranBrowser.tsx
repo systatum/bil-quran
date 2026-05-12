@@ -3,8 +3,9 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { repo } from "@db/repo"
 import { unpackIPC } from "@services/Converter"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import styled from "styled-components"
 
-interface WordRow {
+interface WordCell {
   renderingId: number
   chapterId: number
   lexemeId: number
@@ -20,8 +21,8 @@ interface WordRow {
 interface VerseRow {
   id: string
   chapterId: number
-  verse: number
-  words: WordRow[]
+  number: number
+  words: WordCell[]
 }
 
 /**
@@ -29,8 +30,12 @@ interface VerseRow {
  * It defines the coordinate system for all offset calculations.
  */
 export default function QuranBrowser() {
-  const [words, setWords] = useState<WordRow[]>([])
+  const [words, setWords] = useState<WordCell[]>([])
   const parentRef = useRef<HTMLDivElement>(null)
+
+  // some flags about the rendering
+  const [showTransliteration, setShowTransliteration] = useState(false)
+  const [showMeaning, setShowMeaning] = useState(true)
 
   /**
    * Stores real measured heights per verse index.
@@ -46,9 +51,10 @@ export default function QuranBrowser() {
       const words = unpackIPC(await repo.words.findAllBy())
       const translatedWords = words.map((w) => ({
         ...w,
-        meaning: wbwTranslations[w.chapterId][w.verse][w.order + 1],
+        meaning: wbwTranslations[w.chapterId][w.verse][w.order],
       }))
 
+      console.log("whole trans", translatedWords)
       setWords(translatedWords)
     }
 
@@ -70,7 +76,7 @@ export default function QuranBrowser() {
         verse = {
           id: key,
           chapterId: word.chapterId,
-          verse: word.verse,
+          number: word.verse,
           words: [],
         }
 
@@ -119,6 +125,8 @@ export default function QuranBrowser() {
               key={verse.id}
               index={item.index}
               verse={verse}
+              showTransliteration={showTransliteration}
+              showMeaning={showMeaning}
               style={{
                 transform: `translateY(${item.start}px)`,
               }}
@@ -146,12 +154,16 @@ function VerseRow({
   style,
   sizeMap,
   virtualizer,
+  showTransliteration = false,
+  showMeaning = true,
 }: {
   verse: VerseRow
   index: number
   style: React.CSSProperties
   sizeMap: React.RefObject<Map<number, number>>
   virtualizer: any
+  showTransliteration?: boolean
+  showMeaning?: boolean
 }) {
   const ref = useRef<HTMLDivElement>(null)
 
@@ -188,6 +200,9 @@ function VerseRow({
       <div
         style={{
           direction: "rtl",
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "flex-start",
           textAlign: "right",
           fontSize: "42px",
           lineHeight: 2.4,
@@ -195,61 +210,65 @@ function VerseRow({
           whiteSpace: "normal",
         }}
       >
-        {verse.words.map((word, i) => {
-          const isLast = i === verse.words.length - 1
+        {/* Verse marker aligned to full row height */}
+        <VerseMarker>({verse.number})</VerseMarker>
 
-          return (
-            <span
-              key={`${word.chapterId}-${word.verse}-${word.order}`}
-              style={{
-                display: "inline-flex",
-                flexDirection: "column",
-                alignItems: "center",
-                margin: "0 6px",
-                verticalAlign: "top",
-              }}
-            >
-              {/* Arabic token */}
-              <span
-                style={{
-                  fontSize: "42px",
-                  lineHeight: 1.6,
-                }}
-              >
-                {word.token}
-              </span>
+        {verse.words.map((word) => (
+          <span
+            key={`${word.chapterId}-${word.verse}-${word.order}`}
+            style={{
+              display: "inline-flex",
+              flexDirection: "column",
+              alignItems: "center",
+              margin: "0 6px",
+              verticalAlign: "top",
+            }}
+          >
+            <span style={{ fontSize: "42px", lineHeight: 1.6 }}>
+              {word.token}
+            </span>
 
-              {/* meaning */}
+            {showTransliteration && (
               <span
                 style={{
                   fontSize: "14px",
-                  color: "#777",
-                  lineHeight: 1.2,
-                  marginTop: "6px",
+                  color: "#666",
+                  marginTop: "4px",
+                  direction: "ltr",
+                  textAlign: "center",
+                }}
+              >
+                {word.enReading}
+              </span>
+            )}
+
+            {showMeaning && (
+              <span
+                style={{
+                  fontSize: "14px",
+                  color: "#888",
+                  marginTop: "2px",
                   direction: "ltr",
                   textAlign: "center",
                   maxWidth: "120px",
+                  lineHeight: "16px",
                 }}
               >
                 {word.meaning}
               </span>
-
-              {/* verse marker */}
-              {isLast && (
-                <span
-                  style={{
-                    fontSize: "22px",
-                    color: "#666",
-                    marginTop: "6px",
-                  }}
-                >
-                  ({verse.verse})
-                </span>
-              )}
-            </span>
-          )
-        })}
+            )}
+          </span>
+        ))}
       </div>
     </div>
   )
 }
+
+const VerseMarker = styled.span`
+  font-size: 22px;
+  color: #666;
+  margin-left: 12px;
+  align-self: center;
+  white-space: nowrap;
+  margin-bottom: 20px;
+`
