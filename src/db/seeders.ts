@@ -9,6 +9,7 @@ import { unpackIPC } from "@services/Converter"
 export async function seedData() {
   await seedChapters()
   await seedVerses()
+  await seedWbwTranslations()
   console.debug("Return from seeding: done")
 }
 
@@ -85,14 +86,41 @@ async function seedVerses() {
       wordOrder = 0
       lastVerse = verseNumber
     }
-    await repo.words.create({
-      chapterId: chapterNumber,
-      verse: verseNumber,
-      lexemeId: lexeme.id,
-      order: wordOrder,
-      renderingId: rendering.id,
-      partNumber: 0, // TODO: set part number correctly
-    })
+    unpackIPC(
+      await repo.words.create({
+        chapterId: chapterNumber,
+        verse: verseNumber,
+        lexemeId: lexeme.id,
+        order: wordOrder,
+        renderingId: rendering.id,
+        partNumber: 0, // TODO: set part number correctly
+      }),
+    )
     wordOrder++
+  }
+}
+
+async function seedWbwTranslations() {
+  const defaultLocale = "en-US"
+  let locales = unpackIPC(
+    await repo.wbwTranslations.findAllBy({ locale: defaultLocale }),
+  )
+  if (locales.length > 0) return
+
+  console.debug("Seeding word-by-word translations")
+  const translations: Record<string, string> = await (
+    await fetch(Asset.translations.wordByWord[defaultLocale].path)
+  ).json()
+  for (const [loc, meaning] of Object.entries(translations)) {
+    const [chapter, verse, word] = loc.split(":")
+    unpackIPC(
+      await repo.wbwTranslations.create({
+        locale: defaultLocale,
+        chapter: parseInt(chapter),
+        ayat: parseInt(verse),
+        word: parseInt(word),
+        meaning: meaning,
+      }),
+    )
   }
 }

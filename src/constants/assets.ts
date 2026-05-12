@@ -31,7 +31,7 @@ export const Asset: Asset = {
   translations: {
     wordByWord: {
       [Locale.English]: {
-        path: "https://assets.bil-quran.com/translations/wbw/en-US.json",
+        path: `${basePath}/quran/wbw_translations/en-US.json`,
       },
     },
   },

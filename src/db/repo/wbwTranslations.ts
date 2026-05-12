@@ -14,15 +14,20 @@ class WbwTranslationRepo extends Repository<
   }
 
   async findAllBy({
-    chapter,
+    chapter = undefined,
+    locale = undefined,
   }: {
-    chapter: number
+    chapter?: number
+    locale?: string
   }): Promise<IPCResponse<WbwTranslationRecord[]>> {
     return withDb(
       async (db) =>
         await this.findBy(
           db,
-          and(...conditional(chapter, eq(schema.chapter, chapter ?? -1))),
+          and(
+            ...conditional(chapter, eq(schema.chapter, chapter ?? -1)),
+            ...conditional(locale, eq(schema.locale, locale ?? "")),
+          ),
         ),
     )
   }
