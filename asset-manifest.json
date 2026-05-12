@@ -1,30 +1,30 @@
 {
   "files": {
-    "main.css": "/bil-quran/static/css/main.42851b30.css",
-    "main.js": "/bil-quran/static/js/main.952c161e.js",
-    "static/js/520.ba14a5cf.chunk.js": "/bil-quran/static/js/520.ba14a5cf.chunk.js",
-    "static/js/202.aaed6d87.chunk.js": "/bil-quran/static/js/202.aaed6d87.chunk.js",
-    "static/js/173.0c9bf874.chunk.js": "/bil-quran/static/js/173.0c9bf874.chunk.js",
-    "static/js/322.64cf8f64.chunk.js": "/bil-quran/static/js/322.64cf8f64.chunk.js",
-    "static/js/735.34dcd8c5.chunk.js": "/bil-quran/static/js/735.34dcd8c5.chunk.js",
-    "static/js/826.a0396596.chunk.js": "/bil-quran/static/js/826.a0396596.chunk.js",
-    "static/js/353.1068f395.chunk.js": "/bil-quran/static/js/353.1068f395.chunk.js",
-    "static/js/537.4e60af40.chunk.js": "/bil-quran/static/js/537.4e60af40.chunk.js",
-    "static/js/577.52f92736.chunk.js": "/bil-quran/static/js/577.52f92736.chunk.js",
-    "static/js/199.58f52c3b.chunk.js": "/bil-quran/static/js/199.58f52c3b.chunk.js",
-    "static/media/pglite.wasm": "/bil-quran/static/media/pglite.52f51a014cd134884577.wasm",
-    "static/media/pglite.data": "/bil-quran/static/media/pglite.30babe523dfac1eac64a.data",
-    "static/media/initdb.wasm": "/bil-quran/static/media/initdb.ca63d8f875f080d325de.wasm",
-    "static/media/logo.svg": "/bil-quran/static/media/logo.6ce24c58023cc2f8fd88fe9d219db6c6.svg",
-    "index.html": "/bil-quran/index.html",
-    "main.42851b30.css.map": "/bil-quran/static/css/main.42851b30.css.map",
-    "main.952c161e.js.map": "/bil-quran/static/js/main.952c161e.js.map",
-    "735.34dcd8c5.chunk.js.map": "/bil-quran/static/js/735.34dcd8c5.chunk.js.map",
-    "826.a0396596.chunk.js.map": "/bil-quran/static/js/826.a0396596.chunk.js.map",
-    "199.58f52c3b.chunk.js.map": "/bil-quran/static/js/199.58f52c3b.chunk.js.map"
+    "main.css": "./static/css/main.42851b30.css",
+    "main.js": "./static/js/main.d8e7130d.js",
+    "static/js/520.ba14a5cf.chunk.js": "./static/js/520.ba14a5cf.chunk.js",
+    "static/js/202.aaed6d87.chunk.js": "./static/js/202.aaed6d87.chunk.js",
+    "static/js/173.0c9bf874.chunk.js": "./static/js/173.0c9bf874.chunk.js",
+    "static/js/322.64cf8f64.chunk.js": "./static/js/322.64cf8f64.chunk.js",
+    "static/js/735.34dcd8c5.chunk.js": "./static/js/735.34dcd8c5.chunk.js",
+    "static/js/826.a0396596.chunk.js": "./static/js/826.a0396596.chunk.js",
+    "static/js/353.1068f395.chunk.js": "./static/js/353.1068f395.chunk.js",
+    "static/js/537.4e60af40.chunk.js": "./static/js/537.4e60af40.chunk.js",
+    "static/js/577.52f92736.chunk.js": "./static/js/577.52f92736.chunk.js",
+    "static/js/199.58f52c3b.chunk.js": "./static/js/199.58f52c3b.chunk.js",
+    "static/media/pglite.wasm": "./static/media/pglite.52f51a014cd134884577.wasm",
+    "static/media/pglite.data": "./static/media/pglite.30babe523dfac1eac64a.data",
+    "static/media/initdb.wasm": "./static/media/initdb.ca63d8f875f080d325de.wasm",
+    "static/media/logo.svg": "./static/media/logo.6ce24c58023cc2f8fd88fe9d219db6c6.svg",
+    "index.html": "./index.html",
+    "main.42851b30.css.map": "./static/css/main.42851b30.css.map",
+    "main.d8e7130d.js.map": "./static/js/main.d8e7130d.js.map",
+    "735.34dcd8c5.chunk.js.map": "./static/js/735.34dcd8c5.chunk.js.map",
+    "826.a0396596.chunk.js.map": "./static/js/826.a0396596.chunk.js.map",
+    "199.58f52c3b.chunk.js.map": "./static/js/199.58f52c3b.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.42851b30.css",
-    "static/js/main.952c161e.js"
+    "static/js/main.d8e7130d.js"
   ]
 }
