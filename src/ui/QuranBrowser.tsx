@@ -1,13 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 
 import { repo } from "@db/repo"
+import { unpackIPC } from "@services/Converter"
 import { useVirtualizer } from "@tanstack/react-virtual"
 
 interface WordRow {
+  renderingId: number
   chapterId: number
-  verse: number
+  lexemeId: number
+  enReading: string
   order: number
+  partNumber: number
+  verse: number
+  root: string
   token: string
+  meaning: string
 }
 
 interface VerseRow {
@@ -33,14 +40,16 @@ export default function QuranBrowser() {
 
   useEffect(() => {
     async function load() {
-      const result = await repo.words.findAllBy()
+      const wbwTranslations = unpackIPC(
+        await repo.wbwTranslations.compile("en-US"),
+      )
+      const words = unpackIPC(await repo.words.findAllBy())
+      const translatedWords = words.map((w) => ({
+        ...w,
+        meaning: wbwTranslations[w.chapterId][w.verse][w.order + 1],
+      }))
 
-      if (!result.succeed) {
-        console.error(result.errors)
-        return
-      }
-
-      setWords(result.data ?? [])
+      setWords(translatedWords)
     }
 
     load().catch(console.error)
@@ -55,7 +64,6 @@ export default function QuranBrowser() {
 
     for (const word of words) {
       const key = `${word.chapterId}:${word.verse}`
-
       let verse = grouped.get(key)
 
       if (!verse) {
@@ -191,10 +199,50 @@ function VerseRow({
           const isLast = i === verse.words.length - 1
 
           return (
-            <span key={`${word.chapterId}-${word.verse}-${word.order}`}>
-              {word.token}{" "}
+            <span
+              key={`${word.chapterId}-${word.verse}-${word.order}`}
+              style={{
+                display: "inline-flex",
+                flexDirection: "column",
+                alignItems: "center",
+                margin: "0 6px",
+                verticalAlign: "top",
+              }}
+            >
+              {/* Arabic token */}
+              <span
+                style={{
+                  fontSize: "42px",
+                  lineHeight: 1.6,
+                }}
+              >
+                {word.token}
+              </span>
+
+              {/* meaning */}
+              <span
+                style={{
+                  fontSize: "14px",
+                  color: "#777",
+                  lineHeight: 1.2,
+                  marginTop: "6px",
+                  direction: "ltr",
+                  textAlign: "center",
+                  maxWidth: "120px",
+                }}
+              >
+                {word.meaning}
+              </span>
+
+              {/* verse marker */}
               {isLast && (
-                <span style={{ fontSize: "24px", color: "#666" }}>
+                <span
+                  style={{
+                    fontSize: "22px",
+                    color: "#666",
+                    marginTop: "6px",
+                  }}
+                >
                   ({verse.verse})
                 </span>
               )}

@@ -5,3 +5,8 @@ export interface WbwTranslationRecord {
   word: number
   meaning: string
 }
+
+export type WordByWordTranslation = Record<
+  number,
+  Record<number, Record<number, string>>
+>
