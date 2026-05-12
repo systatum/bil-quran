@@ -243,7 +243,7 @@ function VerseRow({
       }}
     >
       <VerseRowContainer>
-        <VerseMarker>({verse.number})</VerseMarker>
+        <VerseMarker>{verse.number}</VerseMarker>
 
         <VerseText>
           {verse.words.map((word) => (
@@ -271,12 +271,34 @@ const VerseRowContainer = styled.div`
 `
 
 const VerseMarker = styled.div`
-  font-size: 22px;
-  color: #666;
-  text-align: right;
-  padding-top: 6px;
-  white-space: nowrap;
+  width: 42px;
+  height: 42px;
   margin-top: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #5a5a5a;
+  border-radius: 50%;
+  border: 1.5px solid #bdbdbd;
+  position: relative;
+  background: radial-gradient(circle, #ffffff 40%, #f6f6f6 100%);
+
+  box-shadow:
+    inset 0 0 0 2px #e7e7e7,
+    0 1px 2px rgba(0, 0, 0, 0.08);
+
+  flex-shrink: 0;
+
+  /* subtle ornamental hint */
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    border-radius: 50%;
+    border: 1px dashed #d0d0d0;
+    opacity: 0.6;
+  }
 `
 
 const VerseText = styled.div`
