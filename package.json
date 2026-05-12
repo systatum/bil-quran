@@ -2,7 +2,7 @@
   "name": "bil-quran",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://systatum.github.io/bil-quran",
+  "homepage": "https://bil-quran.com",
   "scripts": {
     "start": "craco start",
     "build": "craco build",

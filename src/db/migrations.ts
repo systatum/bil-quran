@@ -72,10 +72,8 @@ async function listAppliedMigrations(client: PGlite): Promise<Set<string>> {
  * Find and retrieve all SQL migrations to be applied
  */
 async function getMigrationFiles(): Promise<MigrationFile[]> {
-  const isDev = process.env.NODE_ENV === "development" || !!process.env
-  const base = isDev
-    ? `${window.location.origin}${process.env.PUBLIC_URL}/table_migrations`
-    : `${window.location.origin}${process.env.PUBLIC_URL}/table_migrations`
+  const isDev = process.env.NODE_ENV === "development"
+  const base = `${window.location.origin}${process.env.PUBLIC_URL}/table_migrations`
   console.debug("Route base", base, process.env)
 
   const journalPath = `${base}/meta/${isDev ? "_journal.json" : "journal.json"}`
