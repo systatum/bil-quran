@@ -5,6 +5,7 @@ import { repo } from "@db/repo"
 import { unpackIPC } from "@services/Converter"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import styled from "styled-components"
+import { Bismillah } from "./fragments/bismillah"
 
 interface WordCell {
   renderingId: number
@@ -246,7 +247,27 @@ function VerseRow({
         <VerseMarker>{verse.number}</VerseMarker>
 
         <VerseText>
-          {verse.words.map((word) => (
+          {verse.number === 1 &&
+            verse.chapterId != 1 &&
+            verse.chapterId != 9 && (
+              <Word>
+                <Bismillah />
+
+                {showTransliteration && (
+                  <Transliteration>
+                    Bismillah hir-Rahman nir-Rahim
+                  </Transliteration>
+                )}
+
+                {showMeaning && (
+                  <Meaning marginTop="57px">
+                    In the name of Allah, the Most Gracious, the Most Merciful
+                  </Meaning>
+                )}
+              </Word>
+            )}
+
+          {verse.words.map((word, idx) => (
             <Word key={`${word.chapterId}-${word.verse}-${word.order}`}>
               <Arabic>{word.token}</Arabic>
 
@@ -330,10 +351,10 @@ const Transliteration = styled.span`
   text-align: center;
 `
 
-const Meaning = styled.span`
+const Meaning = styled.span<{ marginTop?: string }>`
   font-size: 14px;
   color: #888;
-  margin-top: 2px;
+  margin-top: ${({ marginTop }) => marginTop ?? "2px"};
   direction: ltr;
   text-align: center;
   max-width: 120px;
