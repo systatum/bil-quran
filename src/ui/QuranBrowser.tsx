@@ -27,9 +27,13 @@ interface VerseRow {
   words: WordCell[]
 }
 
-type RenderRow =
-  | { type: "chapter"; chapterId: number; name: string }
-  | { type: "verse"; verse: VerseRow }
+type RenderableChapterRow = { type: "chapter"; chapterId: number; name: string }
+type RenderableVerseRow = { type: "verse"; verse: VerseRow }
+type RenderRow = RenderableChapterRow | RenderableVerseRow
+
+function isVerseRow(row: RenderRow): row is RenderableVerseRow {
+  return row.type === "verse"
+}
 
 /**
  * Stable scroll container required by react-virtual.
@@ -140,6 +144,101 @@ export default function QuranBrowser() {
   })
 
   const items = virtualizer.getVirtualItems()
+
+  useEffect(() => {
+    const el = parentRef.current
+
+    if (!el) return
+
+    let timeout: number | undefined
+
+    // Persist the earliest sufficiently-visible verse
+    function recordScrolling() {
+      clearTimeout(timeout)
+
+      // detect whether an item is sufficiently visible, given the buffer space
+      // so that, if the verse is at the top but not 100% in the viewport, that
+      // verse is still can be considered. the buffer ratio is in percentage,
+      // the idea is that, the larger the row (the longer the verse), should
+      // be treated differently than the shorter verse, otherwise, on a shorter
+      // verse, half scrolling past that would rule out that row from being
+      // "visible" yet when on a longer verse, just scrolling a bit, had this
+      // buffer is a static pixel (instead of percentage ratio), would judge
+      // so confidently that the verse that follow is the one user is actually
+      // reading, while that might not be the case due to the verse being longer.
+      // by default, user must consume at least 60% of the pixel of a given item
+      // row, for that row to be judged as not the one user is reading.
+      function isVirtualItemNearView(
+        item: { start: number; size: number },
+        scrollTop: number,
+        viewportHeight: number,
+        bufferRatio = 0.6,
+      ) {
+        const dynamicBuffer = item.size * bufferRatio
+
+        const viewportTop = scrollTop - dynamicBuffer
+
+        const viewportBottom = scrollTop + viewportHeight + dynamicBuffer
+
+        const itemTop = item.start
+        const itemBottom = item.start + item.size
+
+        return itemTop < viewportBottom && itemBottom > viewportTop
+      }
+
+      timeout = window.setTimeout(() => {
+        if (!el) return
+
+        const visibleItems = virtualizer.getVirtualItems().filter((item) => {
+          const row = renderRows[item.index]
+          if (!row) return false
+          if (!isVerseRow(row)) return false
+
+          return isVirtualItemNearView(item, el.scrollTop, el.clientHeight)
+        })
+
+        // no item? then don't persist
+        if (visibleItems.length === 0) return
+
+        // the algorithm above is "imperfect" (and I can't perfect them properly perhaps)
+        // but we can do some clever brute-forcing here. the idea is, we want to select
+        // the earliest possible verse (within a valid buffer boundary). but, if there's a
+        // chapter marker in between (and chapter marker is quite huge-y) let's take the
+        // "current" verse, instead of the previous earlier verse that may even partially
+        // visible -- which, if there's no chapter row, will be a perfect-esque candidate
+        const selected = visibleItems[0]
+        let row = renderRows[selected.index]
+        if (selected.index > 1) {
+          if (renderRows[selected.index - 1].type === "chapter") {
+            // tried to backtrack, but got a chapter row; so skip
+          } else {
+            row = renderRows[selected.index + 1]
+          }
+        }
+
+        if (!row || row.type !== "verse") return
+        const verse = row.verse
+        console.debug("Current scrolling:", verse.chapterId, verse.number)
+
+        localStorage.setItem(
+          "userSettings",
+          JSON.stringify({
+            lastScroll: {
+              chapterId: verse.chapterId,
+              verse: verse.number,
+            },
+          }),
+        )
+      }, 120)
+    }
+
+    el.addEventListener("scroll", recordScrolling)
+
+    return () => {
+      clearTimeout(timeout)
+      el.removeEventListener("scroll", recordScrolling)
+    }
+  }, [verses])
 
   return (
     <div
