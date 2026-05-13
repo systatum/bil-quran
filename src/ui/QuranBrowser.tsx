@@ -247,25 +247,23 @@ function VerseRow({
         <VerseMarker>{verse.number}</VerseMarker>
 
         <VerseText>
-          {verse.number === 1 &&
-            verse.chapterId != 1 &&
-            verse.chapterId != 9 && (
-              <Word>
-                <Bismillah />
+          {Bismillah.isRenderableHere(verse.number, verse.chapterId) && (
+            <Word>
+              <Bismillah />
 
-                {showTransliteration && (
-                  <Transliteration>
-                    Bismillah hir-Rahman nir-Rahim
-                  </Transliteration>
-                )}
+              {showTransliteration && (
+                <Transliteration>
+                  Bismillah hir-Rahman nir-Rahim
+                </Transliteration>
+              )}
 
-                {showMeaning && (
-                  <Meaning marginTop="57px">
-                    In the name of Allah, the Most Gracious, the Most Merciful
-                  </Meaning>
-                )}
-              </Word>
-            )}
+              {showMeaning && (
+                <Meaning marginTop="57px">
+                  In the name of Allah, the Most Gracious, the Most Merciful
+                </Meaning>
+              )}
+            </Word>
+          )}
 
           {verse.words.map((word, idx) => (
             <Word key={`${word.chapterId}-${word.verse}-${word.order}`}>
