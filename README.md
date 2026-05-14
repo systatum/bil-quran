@@ -16,3 +16,4 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 - Better scroll preservation (both saving and restoring the position)
 - Better data handling (use zustand to centralize data)
 - Better typing (ie for the user settings)
+- Add more word-by-word translation: Indonesian

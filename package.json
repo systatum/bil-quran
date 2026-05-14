@@ -5,9 +5,9 @@
   "homepage": "https://bil-quran.com",
   "scripts": {
     "start": "craco start",
-    "build": "craco build",
+    "build": "craco build && node scripts/copy-files.js",
     "test": "craco test",
-    "predeploy": "node scripts/prepare-journal.js && pnpm run build",
+    "predeploy": "pnpm run build",
     "deploy": "gh-pages -d build",
     "db:generate": "drizzle-kit generate"
   },
