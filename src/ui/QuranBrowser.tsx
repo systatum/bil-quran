@@ -371,10 +371,10 @@ export default function QuranBrowser({
 
           if (row.type === "chapter") {
             return (
-              <ChapterHeaderRow
+              <ChapterRow
                 key={`ch-${row.chapter.id}`}
                 theme={theme}
-                index={row.chapter.id}
+                index={item.index}
                 chapter={row.chapter}
                 style={{ transform: `translateY(${item.start}px)` }}
                 sizeMap={sizeMap}
@@ -598,7 +598,7 @@ const Meaning = styled.span<{ theme: ThemeMode; marginTop?: string }>`
  * to report its height. If we don't report, then the difference will cause
  * offset drift, which makes scroll position restoration inaccurate.
  */
-function ChapterHeaderRow({
+function ChapterRow({
   chapter,
   index,
   style,
@@ -614,13 +614,15 @@ function ChapterHeaderRow({
   theme: ThemeMode
 }) {
   const ref = useRef<HTMLDivElement>(null)
-  console.log(chapter)
 
   useEffect(() => {
     if (!ref.current) return
 
+    // measure the actual height
     const h = ref.current.getBoundingClientRect().height
 
+    // checks whether the row height has changed since the
+    // last measurement. if so, stores the real height again
     if (sizeMap.current.get(index) !== h) {
       sizeMap.current.set(index, h)
       virtualizer.measure()
@@ -633,7 +635,7 @@ function ChapterHeaderRow({
       theme={theme}
       style={{ transform: style.transform }}
     >
-      <ChapterName>{`surah${String(index).padStart(3, "0")}`}</ChapterName>
+      <ChapterName>{`surah${String(chapter.id).padStart(3, "0")}`}</ChapterName>
       <ChapterDescription>
         {chapter.en} · {chapter.enMeaning}
       </ChapterDescription>
@@ -662,6 +664,7 @@ const ChapterName = styled.p`
 
 const ChapterDescription = styled.p`
   margin: 0;
+  margin-bottom: 3px;
   font-size: 0.3em;
   font-family: "Noto Naskh Arabic", serif;
 `
