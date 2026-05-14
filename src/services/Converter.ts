@@ -1,6 +1,6 @@
-// ===== ERROR ======================================
-
 import { IPCResponse } from "@constants/IPC"
+
+// ===== ERROR ======================================
 
 export function extractErrorMessage(err: unknown) {
   if (err == null) return ""

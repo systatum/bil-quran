@@ -28,7 +28,7 @@ export interface VerseRow {
   words: WordCell[]
 }
 
-type RenderableChapterRow = { type: "chapter"; chapterId: number; name: string }
+type RenderableChapterRow = { type: "chapter"; chapter: ChapterRecord }
 type RenderableVerseRow = { type: "verse"; verse: VerseRow }
 type RenderRow = RenderableChapterRow | RenderableVerseRow
 
@@ -126,12 +126,7 @@ export default function QuranBrowser({
     let lastChapterId: number | null = null
     for (const verse of verses) {
       if (verse.chapter.id !== lastChapterId) {
-        rows.push({
-          type: "chapter",
-          chapterId: verse.chapter.id,
-          name: chapters[verse.chapter.id].ar,
-        })
-
+        rows.push({ type: "chapter", chapter: verse.chapter })
         lastChapterId = verse.chapter.id
       }
 
@@ -377,9 +372,10 @@ export default function QuranBrowser({
           if (row.type === "chapter") {
             return (
               <ChapterHeaderRow
-                key={`ch-${row.chapterId}`}
-                index={item.index}
-                name={row.name}
+                key={`ch-${row.chapter.id}`}
+                theme={theme}
+                index={row.chapter.id}
+                chapter={row.chapter}
                 style={{ transform: `translateY(${item.start}px)` }}
                 sizeMap={sizeMap}
                 virtualizer={virtualizer}
@@ -603,19 +599,22 @@ const Meaning = styled.span<{ theme: ThemeMode; marginTop?: string }>`
  * offset drift, which makes scroll position restoration inaccurate.
  */
 function ChapterHeaderRow({
+  chapter,
   index,
-  name,
   style,
   sizeMap,
   virtualizer,
+  theme,
 }: {
+  chapter: ChapterRecord
   index: number
-  name: string
   style: React.CSSProperties
   sizeMap: React.RefObject<Map<number, number>>
   virtualizer: any
+  theme: ThemeMode
 }) {
   const ref = useRef<HTMLDivElement>(null)
+  console.log(chapter)
 
   useEffect(() => {
     if (!ref.current) return
@@ -626,28 +625,43 @@ function ChapterHeaderRow({
       sizeMap.current.set(index, h)
       virtualizer.measure()
     }
-  }, [index, name])
+  }, [index, chapter, sizeMap, virtualizer])
 
   return (
-    <div
+    <ChapterHeaderContainer
       ref={ref}
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        width: "100%",
-        transform: style.transform,
-      }}
+      theme={theme}
+      style={{ transform: style.transform }}
     >
-      <ChapterHeaderContainer>{name}</ChapterHeaderContainer>
-    </div>
+      <ChapterName>{`surah${String(index).padStart(3, "0")}`}</ChapterName>
+      <ChapterDescription>
+        {chapter.en} · {chapter.enMeaning}
+      </ChapterDescription>
+      <span style={{ display: "none" }}>{chapter.ar}</span>
+    </ChapterHeaderContainer>
   )
 }
 
-const ChapterHeaderContainer = styled.div`
+const ChapterHeaderContainer = styled.div<{ theme: ThemeMode }>`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
   text-align: center;
   font-size: 48px;
   font-family: "Noto Naskh Arabic", "Ubuntu", "Amiri", serif;
-  padding: 32px 24px;
-  border-bottom: 1px solid #eee;
+  border-color: ${({ theme }) => (theme === "dark" ? "#110b0b" : "#888")};
+  color: #d8c7a3;
+`
+
+const ChapterName = styled.p`
+  font-family: "SurahName";
+  font-size: 2em;
+  margin: 4px 0;
+`
+
+const ChapterDescription = styled.p`
+  margin: 0;
+  font-size: 0.3em;
+  font-family: "Noto Naskh Arabic", serif;
 `

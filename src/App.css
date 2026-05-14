@@ -53,6 +53,18 @@
   font-display: swap;
 }
 
+/* Ubuntu font for Arabic */
+@font-face {
+  font-family: "SurahName";
+  font-display: block;
+
+  src:
+    url("https://assets.bil-quran.com/fonts/surahnamev4/SurahNameV4.woff2")
+      format("woff2"),
+    url("https://assets.bil-quran.com/fonts/surahnamev4/SurahNameV4.ttf")
+      format("truetype");
+}
+
 .App {
   text-align: center;
 }
