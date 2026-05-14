@@ -39,6 +39,10 @@ function isVerseRow(row: RenderRow): row is RenderableVerseRow {
 interface QuranBrowserProps {
   onScroll: (verseRow: VerseRow) => void
   theme: ThemeMode
+
+  // if given, will scroll to this location
+  chapterId: number | null
+  verseNumber: number | null
 }
 
 /**
@@ -48,6 +52,8 @@ interface QuranBrowserProps {
 export default function QuranBrowser({
   onScroll,
   theme = "dark",
+  chapterId: requestedChapterId,
+  verseNumber: requestedVerseNumber,
 }: QuranBrowserProps) {
   const [words, setWords] = useState<WordCell[]>([])
   const [chapters, setChapters] = useState<Record<number, ChapterRecord>>({})
@@ -246,64 +252,31 @@ export default function QuranBrowser({
     }
   }, [renderRows])
 
-  // restore persisted scroll position ONCE.
-  useEffect(() => {
-    // do not attempt to restore, ever, if already restored
-    if (hasRestoredScrollRef.current) return
-    if (renderRows.length === 0) return
+  async function scrollToVerse(chapterId: number, verse: number) {
+    const targetIndex = renderRows.findIndex((row) => {
+      return (
+        row.type === "verse" &&
+        row.verse.chapter.id === chapterId &&
+        row.verse.number === verse
+      )
+    })
 
-    let cancelled = false
-    async function restoreScroll() {
-      // try to read previous setting, if possible
-      const raw = localStorage.getItem("userSettings")
-      let parsed: Record<string, any>
-      try {
-        if (!raw) {
-          hasRestoredScrollRef.current = true
-          return
-        }
-        parsed = JSON.parse(raw)
-      } catch {
-        hasRestoredScrollRef.current = true
-        return
-      }
+    // cannot find the target index? done deal
+    if (targetIndex < 0) return
+    // mark that we are currently "restoring" scroll
+    isRestoringScrollRef.current = true
 
-      // find the row
-      const lastScroll = parsed?.lastScroll
-      if (!lastScroll) {
-        hasRestoredScrollRef.current = true
-        return
-      }
-      const targetIndex = renderRows.findIndex((row) => {
-        return (
-          row.type === "verse" &&
-          row.verse.chapter.id === lastScroll.chapterId &&
-          row.verse.number === lastScroll.verse
-        )
-      })
+    // Wait for all fonts to render correctly; not doing this will affect
+    // the height and stuff, and result in way much more imprecise scroll
+    // restoration
+    await document.fonts.ready
 
-      if (targetIndex < 0) {
-        hasRestoredScrollRef.current = true
-        return
-      }
-
-      // ready to scroll, but now prevent persistence during restoration
-      isRestoringScrollRef.current = true
-
-      // Wait for all fonts to render correctly; not doing this will affect
-      // the height and stuff, and result in way much more imprecise scroll
-      // restoration
-      await document.fonts.ready
-
-      if (cancelled) return
-
-      // wait until multiple pass of painting
+    // essentially: wait until multiple pass of painting, before scrolling
+    return new Promise<void>((resolve) => {
       requestAnimationFrame(() => {
         // on this paint, document might be resized due to font having been
         // downloaded
         requestAnimationFrame(() => {
-          if (cancelled) return
-
           // initial scroll
           virtualizer.scrollToIndex(targetIndex, {
             align: "start",
@@ -311,8 +284,6 @@ export default function QuranBrowser({
 
           // wait until scrolling done, then try to re-adjust a bit
           requestAnimationFrame(() => {
-            if (cancelled) return
-
             const virtualItems = virtualizer.getVirtualItems()
             const item = virtualItems.find((x) => x.index === targetIndex)
             const previousItem = virtualItems.find(
@@ -328,19 +299,52 @@ export default function QuranBrowser({
                   (previousItem
                     ? Math.abs(item.start - previousItem.start)
                     : 0),
+
                 behavior: "instant",
               })
             }
 
             // reenable persistence after much more stable
             window.setTimeout(() => {
-              if (cancelled) return
               isRestoringScrollRef.current = false
-              hasRestoredScrollRef.current = true
+              resolve()
             }, 300)
           })
         })
       })
+    })
+  }
+
+  // restore persisted scroll position ONCE.
+  useEffect(() => {
+    if (hasRestoredScrollRef.current) return
+    if (renderRows.length === 0) return
+
+    let cancelled = false
+
+    async function restoreScroll() {
+      const raw = localStorage.getItem("userSettings")
+
+      if (!raw) {
+        hasRestoredScrollRef.current = true
+        return
+      }
+
+      try {
+        const parsed = JSON.parse(raw)
+        const lastScroll = parsed?.lastScroll
+
+        if (!lastScroll) {
+          hasRestoredScrollRef.current = true
+          return
+        }
+
+        await scrollToVerse(lastScroll.chapterId, lastScroll.verse)
+        if (cancelled) return
+        hasRestoredScrollRef.current = true
+      } catch {
+        hasRestoredScrollRef.current = true
+      }
     }
 
     restoreScroll()
@@ -349,6 +353,14 @@ export default function QuranBrowser({
       cancelled = true
     }
   }, [renderRows])
+
+  useEffect(() => {
+    // must have rows on the page
+    if (renderRows.length === 0) return
+    // must both be provided
+    if (!requestedChapterId || !requestedVerseNumber) return
+    scrollToVerse(requestedChapterId, requestedVerseNumber)
+  }, [requestedChapterId, requestedVerseNumber, renderRows])
 
   return (
     <div
@@ -460,7 +472,7 @@ function VerseRow({
             )}
 
             {showMeaning && (
-              <Meaning theme={theme} marginTop="57px">
+              <Meaning theme={theme} $marginTop="57px">
                 In the name of Allah, the Most Gracious, the Most Merciful
               </Meaning>
             )}
@@ -583,10 +595,10 @@ const Transliteration = styled.span`
   text-align: center;
 `
 
-const Meaning = styled.span<{ theme: ThemeMode; marginTop?: string }>`
+const Meaning = styled.span<{ theme: ThemeMode; $marginTop?: string }>`
   font-size: 14px;
   color: ${({ theme }) => (theme === "dark" ? "#bebebe" : "#888")};
-  margin-top: ${({ marginTop }) => marginTop ?? "2px"};
+  margin-top: ${({ $marginTop }) => $marginTop ?? "2px"};
   direction: ltr;
   text-align: center;
   max-width: 120px;

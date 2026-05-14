@@ -1,9 +1,10 @@
 import { applyMigrations } from "@db/migrations"
 import { seedData } from "@db/seeders"
+import { RouterProvider } from "@tanstack/react-router"
 import { useEffect, useRef, useState } from "react"
 import "./App.css"
 import logo from "./logo.svg"
-import UIIndex from "./ui"
+import { router } from "./ui/router"
 
 function App() {
   const boostrappedRef = useRef(false)
@@ -37,7 +38,7 @@ function App() {
   }, [])
 
   if (isReady) {
-    return <UIIndex />
+    return <RouterProvider router={router} />
   } else {
     return (
       <div className="App">

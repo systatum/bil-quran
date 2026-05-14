@@ -1,6 +1,9 @@
+import { ChapterRecord } from "@constants/records/chapters"
 import { ThemeMode } from "@constants/theme"
+import { repo } from "@db/repo"
 import { RiCloseLine, RiMenuLine } from "@remixicon/react"
-import { useState } from "react"
+import { unpackIPC } from "@services/Converter"
+import { useEffect, useState } from "react"
 import styled from "styled-components"
 
 interface AppNavbarProps {
@@ -11,6 +14,13 @@ interface AppNavbarProps {
 export default function AppNavbar({ theme, title }: AppNavbarProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const BurgerIcon = isSidebarOpen ? RiCloseLine : RiMenuLine
+  const [chapters, setChapters] = useState<ChapterRecord[]>([])
+
+  useEffect(() => {
+    repo.chapters
+      .findAllBy({})
+      .then((ipcResp) => setChapters(unpackIPC(ipcResp)))
+  }, [])
 
   return (
     <>
@@ -85,9 +95,10 @@ const SidebarOverlay = styled.div<{
 `
 
 const SidebarContainer = styled.aside<{
+  theme: ThemeMode
   $visible: boolean
 }>`
-  background: white;
+  background: ${({ theme }) => (theme === "dark" ? "#9fae81" : "white")};
   position: fixed;
   top: 0;
   right: 0;
