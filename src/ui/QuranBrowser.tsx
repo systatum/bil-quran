@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 
 import { ChapterRecord } from "@constants/records/chapters"
+import { ThemeMode } from "@constants/theme"
 import { repo } from "@db/repo"
 import { unpackIPC } from "@services/Converter"
 import { useVirtualizer } from "@tanstack/react-virtual"
@@ -35,7 +36,6 @@ function isVerseRow(row: RenderRow): row is RenderableVerseRow {
   return row.type === "verse"
 }
 
-type ThemeMode = "dark" | "light"
 interface QuranBrowserProps {
   onScroll: (verseRow: VerseRow) => void
   theme: ThemeMode
@@ -562,7 +562,7 @@ const VerseText = styled.div`
   text-align: right;
   font-size: 42px;
   line-height: 2.4;
-  font-family: "Amiri", serif;
+  font-family: "Noto Naskh Arabic", "Ubuntu", "Amiri", serif;
   white-space: normal;
 `
 
@@ -647,7 +647,7 @@ function ChapterHeaderRow({
 const ChapterHeaderContainer = styled.div`
   text-align: center;
   font-size: 48px;
-  font-family: "Amiri", serif;
+  font-family: "Noto Naskh Arabic", "Ubuntu", "Amiri", serif;
   padding: 32px 24px;
   border-bottom: 1px solid #eee;
 `

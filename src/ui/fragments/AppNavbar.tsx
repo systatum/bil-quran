@@ -1,27 +1,24 @@
+import { ThemeMode } from "@constants/theme"
 import { RiCloseLine, RiMenuLine } from "@remixicon/react"
 import { useState } from "react"
 import styled from "styled-components"
 
 interface AppNavbarProps {
+  theme: ThemeMode
   title: string
 }
 
-export default function AppNavbar({ title }: AppNavbarProps) {
+export default function AppNavbar({ theme, title }: AppNavbarProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const BurgerIcon = isSidebarOpen ? RiCloseLine : RiMenuLine
 
   return (
     <>
-      <NavbarContainer>
-        <NavbarItem>
-          <ChapterLabel>{title}</ChapterLabel>
-        </NavbarItem>
-
-        <NavbarItem>
-          <BurgerButton onClick={() => setIsSidebarOpen((x) => !x)}>
-            <BurgerIcon size={24} />
-          </BurgerButton>
-        </NavbarItem>
+      <NavbarContainer theme={theme}>
+        <ChapterLabel theme={theme}>{title}</ChapterLabel>
+        <BurgerButton theme={theme} onClick={() => setIsSidebarOpen((x) => !x)}>
+          <BurgerIcon size={24} />
+        </BurgerButton>
       </NavbarContainer>
 
       <SidebarOverlay
@@ -36,7 +33,7 @@ export default function AppNavbar({ title }: AppNavbarProps) {
   )
 }
 
-const NavbarContainer = styled.header`
+const NavbarContainer = styled.header<{ theme: ThemeMode }>`
   top: 0;
   position: sticky;
   z-index: 1000;
@@ -45,24 +42,21 @@ const NavbarContainer = styled.header`
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  background: rgba(255, 255, 255, 0.92);
+  background: ${({ theme }) =>
+    theme === "dark" ? "#22271b" : "rgba(255, 255, 255, 0.92)"};
+  border-bottom: 1px solid
+    ${({ theme }) => (theme === "dark" ? "#455230" : "#ececec")};
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid #ececec;
 `
 
-const NavbarItem = styled.div`
-  display: flex;
-  align-items: center;
-`
-
-const ChapterLabel = styled.div`
+const ChapterLabel = styled.div<{ theme: ThemeMode }>`
   font-size: 18px;
   font-weight: 600;
-  color: #222;
+  color: ${({ theme }) => (theme === "dark" ? "#6e9370" : "#222")};
 `
 
-const BurgerButton = styled.button`
-  display: flex;
+const BurgerButton = styled.button<{ theme: ThemeMode }>`
+  color: ${({ theme }) => (theme === "dark" ? "#475848" : "#222")};
   width: 42px;
   height: 42px;
   border: none;
@@ -74,7 +68,7 @@ const BurgerButton = styled.button`
   transition: background 0.15s ease;
 
   &:hover {
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(0, 0, 0, 0.08);
   }
 `
 
