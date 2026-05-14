@@ -13,4 +13,6 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## If I had more time
 
-- Better scroll restoration
+- Better scroll preservation (both saving and restoring the position)
+- Better data handling (use zustand to centralize data)
+- Better typing (ie for the user settings)

@@ -20,9 +20,9 @@ interface WordCell {
   meaning: string
 }
 
-interface VerseRow {
+export interface VerseRow {
   id: string
-  chapterId: number
+  chapter: ChapterRecord
   number: number
   words: WordCell[]
 }
@@ -35,11 +35,15 @@ function isVerseRow(row: RenderRow): row is RenderableVerseRow {
   return row.type === "verse"
 }
 
+interface QuranBrowserProps {
+  onScroll: (verseRow: VerseRow) => void
+}
+
 /**
  * Stable scroll container required by react-virtual.
  * It defines the coordinate system for all offset calculations.
  */
-export default function QuranBrowser() {
+export default function QuranBrowser({ onScroll }: QuranBrowserProps) {
   const [words, setWords] = useState<WordCell[]>([])
   const [chapters, setChapters] = useState<Record<number, ChapterRecord>>({})
   const parentRef = useRef<HTMLDivElement>(null)
@@ -95,7 +99,7 @@ export default function QuranBrowser() {
       if (!verse) {
         verse = {
           id: key,
-          chapterId: word.chapterId,
+          chapter: chapters[word.chapterId],
           number: word.verse,
           words: [],
         }
@@ -116,14 +120,14 @@ export default function QuranBrowser() {
     const rows: RenderRow[] = []
     let lastChapterId: number | null = null
     for (const verse of verses) {
-      if (verse.chapterId !== lastChapterId) {
+      if (verse.chapter.id !== lastChapterId) {
         rows.push({
           type: "chapter",
-          chapterId: verse.chapterId,
-          name: chapters[verse.chapterId].ar,
+          chapterId: verse.chapter.id,
+          name: chapters[verse.chapter.id].ar,
         })
 
-        lastChapterId = verse.chapterId
+        lastChapterId = verse.chapter.id
       }
 
       rows.push({ type: "verse", verse })
@@ -219,13 +223,14 @@ export default function QuranBrowser() {
 
         if (!row || row.type !== "verse") return
         const verse = row.verse
-        console.debug("Current scrolling:", verse.chapterId, verse.number)
+        console.debug("Current scrolling:", verse.chapter.id, verse.number)
+        if (onScroll) onScroll(row.verse)
 
         localStorage.setItem(
           "userSettings",
           JSON.stringify({
             lastScroll: {
-              chapterId: verse.chapterId,
+              chapterId: verse.chapter.id,
               verse: verse.number,
             },
           }),
@@ -272,7 +277,7 @@ export default function QuranBrowser() {
       const targetIndex = renderRows.findIndex((row) => {
         return (
           row.type === "verse" &&
-          row.verse.chapterId === lastScroll.chapterId &&
+          row.verse.chapter.id === lastScroll.chapterId &&
           row.verse.number === lastScroll.verse
         )
       })
@@ -451,7 +456,7 @@ function VerseRow({
         <VerseMarker>{verse.number}</VerseMarker>
 
         <VerseText>
-          {Bismillah.isRenderableHere(verse.number, verse.chapterId) && (
+          {Bismillah.isRenderableHere(verse.number, verse.chapter.id) && (
             <Word>
               <Bismillah />
 
