@@ -145,15 +145,19 @@ export default function QuranBrowser() {
 
   const items = virtualizer.getVirtualItems()
 
+  // record scrolling
+  const hasRestoredScrollRef = useRef(false)
+  // prevent recording while programmatically restoring.
+  const isRestoringScrollRef = useRef(false)
   useEffect(() => {
     const el = parentRef.current
-
     if (!el) return
 
     let timeout: number | undefined
 
     // Persist the earliest sufficiently-visible verse
     function recordScrolling() {
+      if (isRestoringScrollRef.current) return
       clearTimeout(timeout)
 
       // detect whether an item is sufficiently visible, given the buffer space
@@ -175,11 +179,8 @@ export default function QuranBrowser() {
         bufferRatio = 0.6,
       ) {
         const dynamicBuffer = item.size * bufferRatio
-
         const viewportTop = scrollTop - dynamicBuffer
-
         const viewportBottom = scrollTop + viewportHeight + dynamicBuffer
-
         const itemTop = item.start
         const itemBottom = item.start + item.size
 
@@ -238,7 +239,111 @@ export default function QuranBrowser() {
       clearTimeout(timeout)
       el.removeEventListener("scroll", recordScrolling)
     }
-  }, [verses])
+  }, [renderRows])
+
+  // restore persisted scroll position ONCE.
+  useEffect(() => {
+    // do not attempt to restore, ever, if already restored
+    if (hasRestoredScrollRef.current) return
+    if (renderRows.length === 0) return
+
+    let cancelled = false
+    async function restoreScroll() {
+      // try to read previous setting, if possible
+      const raw = localStorage.getItem("userSettings")
+      let parsed: Record<string, any>
+      try {
+        if (!raw) {
+          hasRestoredScrollRef.current = true
+          return
+        }
+        parsed = JSON.parse(raw)
+      } catch {
+        hasRestoredScrollRef.current = true
+        return
+      }
+
+      // find the row
+      const lastScroll = parsed?.lastScroll
+      if (!lastScroll) {
+        hasRestoredScrollRef.current = true
+        return
+      }
+      const targetIndex = renderRows.findIndex((row) => {
+        return (
+          row.type === "verse" &&
+          row.verse.chapterId === lastScroll.chapterId &&
+          row.verse.number === lastScroll.verse
+        )
+      })
+
+      if (targetIndex < 0) {
+        hasRestoredScrollRef.current = true
+        return
+      }
+
+      // ready to scroll, but now prevent persistence during restoration
+      isRestoringScrollRef.current = true
+
+      // Wait for all fonts to render correctly; not doing this will affect
+      // the height and stuff, and result in way much more imprecise scroll
+      // restoration
+      await document.fonts.ready
+
+      if (cancelled) return
+
+      // wait until multiple pass of painting
+      requestAnimationFrame(() => {
+        // on this paint, document might be resized due to font having been
+        // downloaded
+        requestAnimationFrame(() => {
+          if (cancelled) return
+
+          // initial scroll
+          virtualizer.scrollToIndex(targetIndex, {
+            align: "start",
+          })
+
+          // wait until scrolling done, then try to re-adjust a bit
+          requestAnimationFrame(() => {
+            if (cancelled) return
+
+            const virtualItems = virtualizer.getVirtualItems()
+            const item = virtualItems.find((x) => x.index === targetIndex)
+            const previousItem = virtualItems.find(
+              (x) => x.index === targetIndex - 1,
+            )
+            const parentContainer = parentRef.current
+
+            // last scrolling, trying to make the verse fully visible
+            if (item && parentContainer) {
+              parentContainer.scrollTo({
+                top:
+                  item.start +
+                  (previousItem
+                    ? Math.abs(item.start - previousItem.start)
+                    : 0),
+                behavior: "instant",
+              })
+            }
+
+            // reenable persistence after much more stable
+            window.setTimeout(() => {
+              if (cancelled) return
+              isRestoringScrollRef.current = false
+              hasRestoredScrollRef.current = true
+            }, 300)
+          })
+        })
+      })
+    }
+
+    restoreScroll()
+
+    return () => {
+      cancelled = true
+    }
+  }, [renderRows])
 
   return (
     <div
