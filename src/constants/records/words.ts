@@ -1,3 +1,7 @@
+/**
+ * Representing a word in a verse by binding a specific lexeme to
+ * that specific position of any given verse.
+ */
 export interface WordRecord {
   /**
    * Which chapter (or surah/surat) this word belongs to

@@ -5,6 +5,9 @@ import { and, eq } from "drizzle-orm"
 import { conditional, Repository } from "./repository"
 import { chapters as schema } from "./tables"
 
+/**
+ * Repository for a chapter.
+ */
 class ChapterRepo extends Repository<typeof schema, ChapterRecord> {
   constructor() {
     super(schema)

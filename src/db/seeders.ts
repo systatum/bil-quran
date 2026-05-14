@@ -9,6 +9,11 @@ import { unpackIPC } from "@services/Converter"
 import { inArray } from "drizzle-orm"
 import { withDb } from "./driver"
 
+// This module handle adding data to the database, especially
+// for the very first time. This should only be called after
+// the database is freshly created, and migration scripts
+// are executed against it.
+
 // seed the app with minimal data so that it can work
 export async function seedData() {
   await seedChapters()

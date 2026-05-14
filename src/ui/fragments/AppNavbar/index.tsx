@@ -9,6 +9,11 @@ interface AppNavbarProps {
   title: string
 }
 
+/**
+ * Component that shows the navbar and the relevant sidebar
+ * attached to it, which can be revealed by clicking the
+ * burger menu on the navbar.
+ */
 export default function AppNavbar({ theme, title }: AppNavbarProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const BurgerIcon = isSidebarOpen ? RiCloseLine : RiMenuLine

@@ -5,6 +5,8 @@ import { and, eq } from "drizzle-orm"
 import { conditional, Repository } from "./repository"
 import { renderings as schema } from "./tables"
 
+// this file contains module to do such as such.
+
 class RenderingRepo extends Repository<typeof schema, RenderingRecord> {
   constructor() {
     super(schema)

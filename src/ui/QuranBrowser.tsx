@@ -8,6 +8,13 @@ import { useVirtualizer } from "@tanstack/react-virtual"
 import styled from "styled-components"
 import { Bismillah } from "./fragments/bismillah"
 
+// This module contains the content browser of the Quran.
+// It includes various components to build the verse, and
+// virtualize the view so that, even if we have thousands
+// of verse to render, the browser is only displaying only
+// a few in the viewport so as not to crumble the device's
+// precious RAM and slowing down the device's processor.
+
 interface WordCell {
   renderingId: number
   chapterId: number

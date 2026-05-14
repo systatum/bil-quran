@@ -1,3 +1,6 @@
+/**
+ * Represents a chapter in the Qur'an.
+ */
 export interface ChapterRecord {
   /**
    * Starts from 1, the numbering of the surat in the Qur'an.
