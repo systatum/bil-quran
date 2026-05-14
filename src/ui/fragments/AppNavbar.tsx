@@ -8,23 +8,20 @@ interface AppNavbarProps {
 
 export default function AppNavbar({ title }: AppNavbarProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const BurgerIcon = isSidebarOpen ? RiCloseLine : RiMenuLine
 
   return (
     <>
       <NavbarContainer>
-        <NavbarLeft>
+        <NavbarItem>
           <ChapterLabel>{title}</ChapterLabel>
-        </NavbarLeft>
+        </NavbarItem>
 
-        <NavbarRight>
+        <NavbarItem>
           <BurgerButton onClick={() => setIsSidebarOpen((x) => !x)}>
-            {isSidebarOpen ? (
-              <RiCloseLine size={24} />
-            ) : (
-              <RiMenuLine size={24} />
-            )}
+            <BurgerIcon size={24} />
           </BurgerButton>
-        </NavbarRight>
+        </NavbarItem>
       </NavbarContainer>
 
       <SidebarOverlay
@@ -33,17 +30,15 @@ export default function AppNavbar({ title }: AppNavbarProps) {
       />
 
       <SidebarContainer $visible={isSidebarOpen}>
-        <SidebarContent>
-          <SidebarItem>Settings</SidebarItem>
-        </SidebarContent>
+        <SidebarItem>Settings</SidebarItem>
       </SidebarContainer>
     </>
   )
 }
 
 const NavbarContainer = styled.header`
-  position: sticky;
   top: 0;
+  position: sticky;
   z-index: 1000;
   height: 64px;
   display: flex;
@@ -55,12 +50,7 @@ const NavbarContainer = styled.header`
   border-bottom: 1px solid #ececec;
 `
 
-const NavbarLeft = styled.div`
-  display: flex;
-  align-items: center;
-`
-
-const NavbarRight = styled.div`
+const NavbarItem = styled.div`
   display: flex;
   align-items: center;
 `
@@ -72,11 +62,11 @@ const ChapterLabel = styled.div`
 `
 
 const BurgerButton = styled.button`
+  display: flex;
   width: 42px;
   height: 42px;
   border: none;
   background: transparent;
-  display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 10px;
@@ -103,21 +93,18 @@ const SidebarOverlay = styled.div<{
 const SidebarContainer = styled.aside<{
   $visible: boolean
 }>`
+  background: white;
   position: fixed;
   top: 0;
   right: 0;
-  width: 300px;
-  max-width: 85vw;
   height: 100vh;
-  background: white;
+  width: 300px;
+  max-width: 300px;
+  padding: 24px;
   box-shadow: -4px 0 24px rgba(0, 0, 0, 0.08);
   transform: translateX(${(p) => (p.$visible ? "0%" : "100%")});
   transition: transform 0.22s ease;
   z-index: 1200;
-`
-
-const SidebarContent = styled.div`
-  padding: 24px;
 `
 
 const SidebarItem = styled.button`
