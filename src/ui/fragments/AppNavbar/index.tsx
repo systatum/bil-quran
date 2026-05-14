@@ -1,10 +1,8 @@
-import { ChapterRecord } from "@constants/records/chapters"
 import { ThemeMode } from "@constants/theme"
-import { repo } from "@db/repo"
 import { RiCloseLine, RiMenuLine } from "@remixicon/react"
-import { unpackIPC } from "@services/Converter"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import styled from "styled-components"
+import VerseLookup from "./VerseLookup"
 
 interface AppNavbarProps {
   theme: ThemeMode
@@ -14,13 +12,6 @@ interface AppNavbarProps {
 export default function AppNavbar({ theme, title }: AppNavbarProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const BurgerIcon = isSidebarOpen ? RiCloseLine : RiMenuLine
-  const [chapters, setChapters] = useState<ChapterRecord[]>([])
-
-  useEffect(() => {
-    repo.chapters
-      .findAllBy({})
-      .then((ipcResp) => setChapters(unpackIPC(ipcResp)))
-  }, [])
 
   return (
     <>
@@ -36,8 +27,9 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
         onClick={() => setIsSidebarOpen(false)}
       />
 
-      <SidebarContainer $visible={isSidebarOpen}>
-        <SidebarItem>Settings</SidebarItem>
+      <SidebarContainer theme={theme} $visible={isSidebarOpen}>
+        <SidebarItem>Verse lookup</SidebarItem>
+        <VerseLookup />
       </SidebarContainer>
     </>
   )
