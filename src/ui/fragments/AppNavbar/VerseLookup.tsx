@@ -8,7 +8,7 @@ import styled from "styled-components"
 export default function VerseLookup() {
   const navigate = useNavigate()
   const [selectedChapterId, setSelectedChapterId] = useState<number>(1)
-  const [verseNumber, setVerseNumber] = useState<number>(1)
+  const [verseNumber, setVerseNumber] = useState<string>("1")
 
   const [chapters, setChapters] = useState<ChapterRecord[]>([])
   useEffect(() => {
@@ -19,7 +19,7 @@ export default function VerseLookup() {
 
   function goToVerse() {
     if (!selectedChapterId) return
-    if (Number.isNaN(verseNumber)) return
+    if (Number.isNaN(parseInt(verseNumber))) return
 
     navigate({
       to: "/c/$chapter/$verse",
@@ -32,28 +32,38 @@ export default function VerseLookup() {
 
   return (
     <FlexContainer direction="column">
-      <ChapterSelect
-        name="chapterId"
-        value={selectedChapterId}
-        onChange={(e) => setSelectedChapterId(parseInt(e.target.value))}
-      >
-        {chapters.map((chapter) => (
-          <option key={chapter.id} value={chapter.id}>
-            {chapter.id}. {chapter.en} ({chapter.ar}) - {chapter.enMeaning}
-          </option>
-        ))}
-      </ChapterSelect>
+      <form>
+        <ChapterSelect
+          title="Chapter"
+          name="chapterId"
+          value={selectedChapterId}
+          onChange={(e) => setSelectedChapterId(parseInt(e.target.value))}
+        >
+          {chapters.map((chapter) => (
+            <option key={chapter.id} value={chapter.id}>
+              {chapter.id}. {chapter.en} ({chapter.ar}) - {chapter.enMeaning}
+            </option>
+          ))}
+        </ChapterSelect>
 
-      <FlexContainer direction="row">
-        <VerseInput
-          name="verseNumber"
-          min="1"
-          value={verseNumber}
-          onChange={(e) => setVerseNumber(parseInt(e.target.value))}
-        />
+        <FlexContainer direction="row">
+          <VerseInput
+            name="verseNumber"
+            min="1"
+            value={verseNumber}
+            onChange={(e) => setVerseNumber(e.target.value)}
+          />
 
-        <GoButton onClick={goToVerse}>Go</GoButton>
-      </FlexContainer>
+          <GoButton
+            onClick={(e) => {
+              e.preventDefault()
+              goToVerse()
+            }}
+          >
+            Go
+          </GoButton>
+        </FlexContainer>
+      </form>
     </FlexContainer>
   )
 }
