@@ -63117,7 +63117,12 @@
     "trans": "ikh'watika",
     "root": "ا خ و"
   },
-  { "id": "12:5", "word": "فَيَكِيدُوا", "trans": "fayakīdū", "root": "ك ي د" },
+  {
+    "id": "12:5",
+    "word": "فَيَكِيْدُوْا",
+    "trans": "fayakīdū",
+    "root": "ك ي د"
+  },
   { "id": "12:5", "word": "لَكَ", "trans": "laka", "root": "ل" },
   { "id": "12:5", "word": "كَيْدًا", "trans": "kaydan", "root": "ك ي د" },
   { "id": "12:5", "word": "إِنَّ", "trans": "inna", "root": "ا ن ن" },
