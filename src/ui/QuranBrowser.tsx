@@ -508,61 +508,82 @@ const VerseRowWrapper = styled.div<{ theme: ThemeMode }>`
   align-items: start;
 
   color: ${({ theme }) => (theme === "dark" ? "#d8c7a3" : "#1f1f1f")};
-  background: ${({ theme }) => (theme === "dark" ? "#181818" : "#ffffff")};
+  background: ${({ theme }) => (theme === "dark" ? "#181818" : "#f6f1e7")};
   border-bottom: 1px solid
-    ${({ theme }) => (theme === "dark" ? "#303030" : "#ececec")};
+    ${({ theme }) => (theme === "dark" ? "#303030" : "#bfbfbf")};
 `
-
 const VerseMarker = styled.div<{ theme: ThemeMode }>`
   width: 42px;
   height: 42px;
+
   margin-top: 15px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  font-size: 18px;
-
-  color: ${({ theme }) => (theme === "dark" ? "#e5dcc3" : "#5a5a5a")};
-
-  border-radius: 50%;
-
-  border: 1.5px solid
-    ${({ theme }) => (theme === "dark" ? "#5f5644" : "#bdbdbd")};
+  flex-shrink: 0;
 
   position: relative;
 
+  border-radius: 50%;
+
+  font-size: 18px;
+
+  color: ${({ theme }) => (theme === "dark" ? "#e5dcc3" : "#755f4d")};
+
+  border: 1.5px solid
+    ${({ theme }) => (theme === "dark" ? "#5f5644" : "#cbb9a1")};
+
   background: ${({ theme }) =>
     theme === "dark"
-      ? "radial-gradient(circle, #2b2a26 40%, #1c1b18 100%)"
-      : "radial-gradient(circle, #ffffff 40%, #f6f6f6 100%)"};
+      ? `
+          radial-gradient(
+            circle,
+            #2b2a26 40%,
+            #1c1b18 100%
+          )
+        `
+      : `
+          radial-gradient(
+            circle,
+            #efe6d8 40%,
+            #e2d6c3 100%
+          )
+        `};
 
   box-shadow: ${({ theme }) =>
     theme === "dark"
       ? `
-        inset 0 0 0 2px #3b372f,
-        0 1px 3px rgba(0, 0, 0, 0.45)
-      `
+          inset 0 0 0 2px #3b372f,
+          0 1px 3px rgba(0,0,0,0.45)
+        `
       : `
-        inset 0 0 0 2px #e7e7e7,
-        0 1px 2px rgba(0, 0, 0, 0.08)
-      `};
+          inset 0 0 0 2px #f4ede2,
+          0 1px 2px rgba(117,95,77,0.08)
+        `};
 
-  flex-shrink: 0;
+  text-shadow: ${({ theme }) =>
+    theme === "dark"
+      ? `
+          0 1px 0 rgba(0,0,0,0.35)
+        `
+      : `
+          0 1px 0 rgba(255,255,255,0.30)
+        `};
 
-  /* subtle ornamental hint */
   &::after {
     content: "";
+
     position: absolute;
     inset: 4px;
 
     border-radius: 50%;
 
     border: 1px dashed
-      ${({ theme }) => (theme === "dark" ? "#7b715b" : "#d0d0d0")};
+      ${({ theme }) => (theme === "dark" ? "#7b715b" : "rgba(117,95,77,0.26)")};
 
-    opacity: ${({ theme }) => (theme === "dark" ? 0.4 : 0.6)};
+    opacity: ${({ theme }) => (theme === "dark" ? 0.4 : 0.5)};
   }
 `
 
@@ -597,7 +618,7 @@ const Transliteration = styled.span`
 
 const Meaning = styled.span<{ theme: ThemeMode; $marginTop?: string }>`
   font-size: 14px;
-  color: ${({ theme }) => (theme === "dark" ? "#bebebe" : "#888")};
+  color: ${({ theme }) => (theme === "dark" ? "#bebebe" : "#a09083")};
   margin-top: ${({ $marginTop }) => $marginTop ?? "2px"};
   direction: ltr;
   text-align: center;
@@ -644,7 +665,7 @@ function ChapterRow({
       theme={theme}
       style={{ transform: style.transform }}
     >
-      <ChapterPanel>
+      <ChapterPanel theme={theme}>
         <SideOrnament side="left">
           <svg viewBox="0 0 100 100" fill="none">
             <path
@@ -707,19 +728,23 @@ function ChapterRow({
   )
 }
 const ChapterHeaderContainer = styled.div<{ theme: ThemeMode }>`
-  --bg: #181818;
+  --bg: ${({ theme }) => (theme === "dark" ? "#181818" : "#f6f1e7")};
 
-  --panel-top: #26231d;
-  --panel-bottom: #1d1b17;
+  --panel-top: ${({ theme }) => (theme === "dark" ? "#26231d" : "#f4ede0")};
 
-  --gold: #d8ccb0;
-  --gold-soft: #8b7b58;
+  --panel-bottom: ${({ theme }) => (theme === "dark" ? "#1d1b17" : "#e7dcc8")};
 
-  --line: #5f5644;
-  --line-soft: #3b372f;
+  --gold: ${({ theme }) => (theme === "dark" ? "#d8ccb0" : "#7f6740")};
 
-  --text: #f3ead7;
-  --subtext: #b7ab90;
+  --gold-soft: ${({ theme }) => (theme === "dark" ? "#8b7b58" : "#9b8157")};
+
+  --line: ${({ theme }) => (theme === "dark" ? "#5f5644" : "#b8a27a")};
+
+  --line-soft: ${({ theme }) => (theme === "dark" ? "#3b372f" : "#d8ccb7")};
+
+  --text: ${({ theme }) => (theme === "dark" ? "#f3ead7" : "#3f3120")};
+
+  --subtext: ${({ theme }) => (theme === "dark" ? "#b7ab90" : "#7b6848")};
 
   position: absolute;
   top: 0;
@@ -735,7 +760,7 @@ const ChapterHeaderContainer = styled.div<{ theme: ThemeMode }>`
   overflow: hidden;
 `
 
-const ChapterPanel = styled.div`
+const ChapterPanel = styled.div<{ theme: ThemeMode }>`
   position: relative;
 
   width: 100%;
@@ -749,7 +774,10 @@ const ChapterPanel = styled.div`
 
   box-shadow:
     inset 0 0 0 2px var(--line-soft),
-    0 1px 3px rgba(0, 0, 0, 0.45);
+    ${({ theme }) =>
+      theme === "dark"
+        ? "0 1px 3px rgba(0,0,0,0.45)"
+        : "0 1px 2px rgba(90,70,40,0.10)"};
 
   display: flex;
   flex-direction: column;
@@ -764,7 +792,9 @@ const ChapterPanel = styled.div`
     position: absolute;
     inset: 7px;
 
-    border: 1px solid rgba(216, 204, 176, 0.12);
+    border: 1px solid
+      ${({ theme }) =>
+        theme === "dark" ? "rgba(216,204,176,0.12)" : "rgba(127,103,64,0.16)"};
 
     pointer-events: none;
   }
@@ -811,7 +841,9 @@ const ChapterName = styled.div`
 
   color: var(--text);
 
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.28);
+  text-shadow: 0 1px 0
+    ${({ theme }) =>
+      theme === "dark" ? "rgba(0,0,0,0.28)" : "rgba(255,255,255,0.55)"};
 
   font-feature-settings:
     "liga" 1,

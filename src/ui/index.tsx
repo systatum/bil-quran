@@ -8,7 +8,7 @@ import QuranBrowser from "./QuranBrowser"
 export default function UIIndex() {
   const [chapter, setChapter] = useState<ChapterRecord | null>(null)
   const navbarTitle = chapter?.en ?? "bil-Qur'an"
-  const theme: ThemeMode = "dark"
+  const theme: ThemeMode = "light"
 
   // read params
   const params = useParams({ strict: false })

@@ -50,7 +50,7 @@ const NavbarContainer = styled.header<{ theme: ThemeMode }>`
   justify-content: space-between;
   padding: 0 20px;
   background: ${({ theme }) =>
-    theme === "dark" ? "#22271b" : "rgba(255, 255, 255, 0.92)"};
+    theme === "dark" ? "#22271b" : "rgb(117 95 77)"};
   border-bottom: 1px solid
     ${({ theme }) => (theme === "dark" ? "#455230" : "#ececec")};
   backdrop-filter: blur(12px);
@@ -59,11 +59,11 @@ const NavbarContainer = styled.header<{ theme: ThemeMode }>`
 const ChapterLabel = styled.div<{ theme: ThemeMode }>`
   font-size: 18px;
   font-weight: 600;
-  color: ${({ theme }) => (theme === "dark" ? "#6e9370" : "#222")};
+  color: ${({ theme }) => (theme === "dark" ? "#6e9370" : "#fff0d3")};
 `
 
 const BurgerButton = styled.button<{ theme: ThemeMode }>`
-  color: ${({ theme }) => (theme === "dark" ? "#475848" : "#222")};
+  color: ${({ theme }) => (theme === "dark" ? "#475848" : "#fff0d3")};
   width: 42px;
   height: 42px;
   border: none;
@@ -95,7 +95,7 @@ const SidebarContainer = styled.aside<{
   theme: ThemeMode
   $visible: boolean
 }>`
-  background: ${({ theme }) => (theme === "dark" ? "#9fae81" : "white")};
+  background: ${({ theme }) => (theme === "dark" ? "#9fae81" : "#e1dfda")};
   position: fixed;
   top: 0;
   right: 0;
