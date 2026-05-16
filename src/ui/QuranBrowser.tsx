@@ -630,18 +630,13 @@ function ChapterRow({
   useEffect(() => {
     if (!ref.current) return
 
-    // measure the actual height
     const h = ref.current.getBoundingClientRect().height
 
-    // checks whether the row height has changed since the
-    // last measurement. if so, stores the real height again
     if (sizeMap.current.get(index) !== h) {
       sizeMap.current.set(index, h)
       virtualizer.measure()
     }
   }, [index, chapter, sizeMap, virtualizer])
-
-  console.log("chapter is", chapter)
 
   return (
     <ChapterHeaderContainer
@@ -649,36 +644,192 @@ function ChapterRow({
       theme={theme}
       style={{ transform: style.transform }}
     >
-      <ChapterName>{`surah${String(chapter.id).padStart(3, "0")}`}</ChapterName>
-      <ChapterDescription>
-        {chapter.en} · {chapter.meanings[DEFAULT_LOCALE]}
-      </ChapterDescription>
-      <span style={{ display: "none" }}>{chapter.ar}</span>
+      <ChapterPanel>
+        <SideOrnament side="left">
+          <svg viewBox="0 0 100 100" fill="none">
+            <path
+              d="
+            M50 10
+            C58 22 78 42 90 50
+            C78 58 58 78 50 90
+            C42 78 22 58 10 50
+            C22 42 42 22 50 10
+            Z
+          "
+              stroke="currentColor"
+              strokeWidth="2"
+            />
+
+            <circle
+              cx="50"
+              cy="50"
+              r="12"
+              stroke="currentColor"
+              strokeWidth="2"
+            />
+          </svg>
+        </SideOrnament>
+
+        <ChapterName>{chapter.namings[DEFAULT_LOCALE]}</ChapterName>
+
+        <ChapterDescription>
+          {chapter.transliterations[DEFAULT_LOCALE]}
+          {" · "}
+          {chapter.meanings[DEFAULT_LOCALE]}
+        </ChapterDescription>
+
+        <SideOrnament side="right">
+          <svg viewBox="0 0 100 100" fill="none">
+            <path
+              d="
+            M50 10
+            C58 22 78 42 90 50
+            C78 58 58 78 50 90
+            C42 78 22 58 10 50
+            C22 42 42 22 50 10
+            Z
+          "
+              stroke="currentColor"
+              strokeWidth="2"
+            />
+
+            <circle
+              cx="50"
+              cy="50"
+              r="12"
+              stroke="currentColor"
+              strokeWidth="2"
+            />
+          </svg>
+        </SideOrnament>
+      </ChapterPanel>
     </ChapterHeaderContainer>
   )
 }
-
 const ChapterHeaderContainer = styled.div<{ theme: ThemeMode }>`
+  --bg: #181818;
+
+  --panel-top: #26231d;
+  --panel-bottom: #1d1b17;
+
+  --gold: #d8ccb0;
+  --gold-soft: #8b7b58;
+
+  --line: #5f5644;
+  --line-soft: #3b372f;
+
+  --text: #f3ead7;
+  --subtext: #b7ab90;
+
   position: absolute;
   top: 0;
   left: 0;
+
   width: 100%;
-  text-align: center;
-  font-size: 48px;
-  font-family: "Noto Naskh Arabic", "Ubuntu", "Amiri", serif;
-  border-color: ${({ theme }) => (theme === "dark" ? "#110b0b" : "#888")};
-  color: #d8c7a3;
+  box-sizing: border-box;
+
+  padding: 10px 18px;
+
+  background: var(--bg);
+
+  overflow: hidden;
 `
 
-const ChapterName = styled.p`
-  font-family: "SurahName";
-  font-size: 2em;
-  margin: 4px 0;
+const ChapterPanel = styled.div`
+  position: relative;
+
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 18px 88px;
+
+  background: linear-gradient(180deg, var(--panel-top), var(--panel-bottom));
+
+  border: 1.5px solid var(--line);
+
+  box-shadow:
+    inset 0 0 0 2px var(--line-soft),
+    0 1px 3px rgba(0, 0, 0, 0.45);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  &::before {
+    content: "";
+
+    position: absolute;
+    inset: 7px;
+
+    border: 1px solid rgba(216, 204, 176, 0.12);
+
+    pointer-events: none;
+  }
 `
 
-const ChapterDescription = styled.p`
+const SideOrnament = styled.div<{
+  side: "left" | "right"
+}>`
+  position: absolute;
+
+  ${({ side }) => side}: 22px;
+
+  top: 50%;
+  transform: translateY(-50%);
+
+  width: 44px;
+  height: 44px;
+
+  color: var(--gold-soft);
+
+  opacity: 0.9;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+`
+
+const ChapterName = styled.div`
+  position: relative;
+  z-index: 2;
+
   margin: 0;
-  margin-bottom: 3px;
-  font-size: 0.3em;
-  font-family: "Noto Naskh Arabic", serif;
+
+  direction: rtl;
+  text-align: center;
+
+  font-family: "Amiri", "Noto Naskh Arabic", serif;
+
+  font-size: clamp(2rem, 4vw, 3rem);
+
+  line-height: 1.15;
+
+  color: var(--text);
+
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.28);
+
+  font-feature-settings:
+    "liga" 1,
+    "rlig" 1,
+    "calt" 1;
+`
+
+const ChapterDescription = styled.div`
+  margin-top: 5px;
+
+  text-align: center;
+
+  font-size: 0.72rem;
+  line-height: 1.2;
+
+  color: var(--subtext);
+
+  letter-spacing: 0.06em;
+
+  font-family: "Ubuntu", "Noto Naskh Arabic", serif;
 `
