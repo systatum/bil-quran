@@ -1,9 +1,5 @@
+import { Locale } from "./locales"
 import { Rendering } from "./records/renderings"
-
-export const Locale = {
-  English: "en-US",
-}
-export type Locale = (typeof Locale)[keyof typeof Locale]
 
 export interface WordByWordTranslationAsset {
   path: string

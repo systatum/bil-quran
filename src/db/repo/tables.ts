@@ -1,3 +1,4 @@
+import { Locale } from "@constants/locales"
 import { ChapterPartDivision } from "@constants/records/chapters"
 import {
   bigint,
@@ -15,12 +16,10 @@ export const chapters = pgTable("chapters", {
   id: bigint({ mode: "number" }).primaryKey(),
   isMeccan: boolean().notNull(),
   partDivisions: jsonb().$type<ChapterPartDivision[]>().notNull(),
-  // name transliterated from the original arabic
-  ar: varchar({ length: 20 }).notNull(),
-  // name transliterated in English
-  en: varchar({ length: 15 }).notNull(),
-  // the meaning of the chapter
-  enMeaning: varchar({ length: 35 }).notNull(),
+  // name of the chapters in arabic and other localities
+  readings: jsonb().$type<Record<Locale, string>>().notNull().default({}),
+  // the meaning of the chapter in various locales
+  meanings: jsonb().$type<Record<Locale, string>>().notNull().default({}),
 })
 
 // quran has some "style" or "font" rendering ie ligatures
@@ -37,7 +36,7 @@ export const lexemes = pgTable("lexemes", {
   id: bigint({ mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
   token: varchar({ length: 25 }).notNull(),
   root: varchar({ length: 15 }).notNull(),
-  enReading: varchar({ length: 50 }).notNull(),
+  readings: jsonb().$type<Record<Locale, string>>().notNull().default({}),
 })
 
 // a word that makes up a verse
