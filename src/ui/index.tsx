@@ -1,3 +1,4 @@
+import { DEFAULT_LOCALE } from "@constants/locales"
 import { ChapterRecord } from "@constants/records/ChapterRecord"
 import { ThemeMode } from "@constants/theme"
 import { useParams } from "@tanstack/react-router"
@@ -7,7 +8,9 @@ import QuranBrowser from "./QuranBrowser"
 
 export default function UIIndex() {
   const [chapter, setChapter] = useState<ChapterRecord | null>(null)
-  const navbarTitle = chapter?.en ?? "bil-Qur'an"
+  const navbarTitle = chapter
+    ? `${chapter.transliterations[DEFAULT_LOCALE]} (${chapter.meanings[DEFAULT_LOCALE] ?? chapter.meanings[DEFAULT_LOCALE]})`
+    : "bil-Qur'an"
   const theme: ThemeMode = "light"
 
   // read params
