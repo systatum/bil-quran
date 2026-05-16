@@ -1,4 +1,4 @@
-import { ChapterRecord } from "@constants/records/chapters"
+import { ChapterRecord } from "@constants/records/ChapterRecord"
 import { repo } from "@db/repo"
 import { unpackIPC } from "@services/Converter"
 import { useNavigate } from "@tanstack/react-router"

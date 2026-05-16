@@ -2,7 +2,7 @@
  * A translation for a single word. Each word in each verse in
  * each chapter will have this record.
  */
-export interface WbwTranslationRecord {
+export interface WordTranslationRecord {
   locale: string
   chapter: number
   ayat: number
@@ -10,7 +10,7 @@ export interface WbwTranslationRecord {
   meaning: string
 }
 
-export type WordByWordTranslation = Record<
+export type WordTranslation = Record<
   number,
   Record<number, Record<number, string>>
 >

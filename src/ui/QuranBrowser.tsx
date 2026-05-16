@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 
-import { ChapterRecord } from "@constants/records/chapters"
+import { DEFAULT_LOCALE } from "@constants/locales"
+import { ChapterRecord } from "@constants/records/ChapterRecord"
+import { WordWithLexemeRecord } from "@constants/records/WordRecord"
 import { ThemeMode } from "@constants/theme"
 import { repo } from "@db/repo"
 import { unpackIPC } from "@services/Converter"
@@ -15,16 +17,7 @@ import { Bismillah } from "./fragments/bismillah"
 // a few in the viewport so as not to crumble the device's
 // precious RAM and slowing down the device's processor.
 
-interface WordCell {
-  renderingId: number
-  chapterId: number
-  lexemeId: number
-  enReading: string
-  order: number
-  partNumber: number
-  verse: number
-  root: string
-  token: string
+interface WordCell extends WordWithLexemeRecord {
   meaning: string
 }
 
@@ -491,7 +484,7 @@ function VerseRow({
             <Arabic>{word.token}</Arabic>
 
             {showTransliteration && (
-              <Transliteration>{word.enReading}</Transliteration>
+              <Transliteration>{word.readings[DEFAULT_LOCALE]}</Transliteration>
             )}
 
             {showMeaning && <Meaning theme={theme}>{word.meaning}</Meaning>}
@@ -648,6 +641,8 @@ function ChapterRow({
     }
   }, [index, chapter, sizeMap, virtualizer])
 
+  console.log("chapter is", chapter)
+
   return (
     <ChapterHeaderContainer
       ref={ref}
@@ -656,7 +651,7 @@ function ChapterRow({
     >
       <ChapterName>{`surah${String(chapter.id).padStart(3, "0")}`}</ChapterName>
       <ChapterDescription>
-        {chapter.en} · {chapter.enMeaning}
+        {chapter.en} · {chapter.meanings[DEFAULT_LOCALE]}
       </ChapterDescription>
       <span style={{ display: "none" }}>{chapter.ar}</span>
     </ChapterHeaderContainer>

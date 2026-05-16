@@ -1,3 +1,5 @@
+import { Locale } from "@constants/locales"
+
 /**
  * Represents a chapter in the Qur'an.
  */
@@ -11,19 +13,13 @@ export interface ChapterRecord {
    * in Meccan or while the prophet already in Madinah.
    */
   isMeccan: boolean
-  partDivisions: ChapterPartDivision[]
-  /**
-   * The original arabic name of the quran
-   */
-  ar: string
-  /**
-   * The english name of the quran
-   */
-  en: string
-  /**
-   * The proper translation of the chapter's name
-   */
-  enMeaning: string
+  partitioning: ChapterPartDivision[]
+  // name of the chapters in arabic and other localities
+  namings: Record<Locale, string>
+  // name of the chapters in arabic and other localities
+  transliterations: Record<Locale, string>
+  // the meaning of the chapter in various locales
+  meanings: Record<Locale, string>
 }
 
 /**

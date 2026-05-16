@@ -1,5 +1,5 @@
 import { Locale } from "@constants/locales"
-import { ChapterPartDivision } from "@constants/records/chapters"
+import { ChapterPartDivision } from "@constants/records/ChapterRecord"
 import {
   bigint,
   boolean,
@@ -15,11 +15,13 @@ export const chapters = pgTable("chapters", {
   // starts from 1, the number of the surat
   id: bigint({ mode: "number" }).primaryKey(),
   isMeccan: boolean().notNull(),
-  partDivisions: jsonb().$type<ChapterPartDivision[]>().notNull(),
-  // name of the chapters in arabic and other localities
-  readings: jsonb().$type<Record<Locale, string>>().notNull().default({}),
+  partitioning: jsonb().$type<ChapterPartDivision[]>().notNull(),
+  // name of the chapters in original arabic; mostly the same but some
+  // countries might know of a chapter by a different name
+  namings: jsonb().$type<Record<Locale, string>>().notNull(),
+  transliterations: jsonb().$type<Record<Locale, string>>().notNull(),
   // the meaning of the chapter in various locales
-  meanings: jsonb().$type<Record<Locale, string>>().notNull().default({}),
+  meanings: jsonb().$type<Record<Locale, string>>().notNull(),
 })
 
 // quran has some "style" or "font" rendering ie ligatures
@@ -67,8 +69,8 @@ export const words = pgTable(
   ],
 )
 
-export const wbwTranslations = pgTable(
-  "word_by_word_translations",
+export const word_translations = pgTable(
+  "word_translations",
   {
     locale: varchar({ length: 6 }).notNull(),
     chapter: integer().notNull(),
@@ -77,7 +79,7 @@ export const wbwTranslations = pgTable(
     meaning: varchar({ length: 255 }).notNull(),
   },
   (table) => [
-    unique("unique_word_by_word_translation").on(
+    unique("unique_word_translation").on(
       table.locale,
       table.chapter,
       table.ayat,

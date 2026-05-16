@@ -1,5 +1,5 @@
 import { Locale } from "./locales"
-import { Rendering } from "./records/renderings"
+import { Rendering } from "./records/RenderingRecord"
 
 export interface WordByWordTranslationAsset {
   path: string

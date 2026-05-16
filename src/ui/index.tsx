@@ -1,4 +1,4 @@
-import { ChapterRecord } from "@constants/records/chapters"
+import { ChapterRecord } from "@constants/records/ChapterRecord"
 import { ThemeMode } from "@constants/theme"
 import { useParams } from "@tanstack/react-router"
 import { useState } from "react"
