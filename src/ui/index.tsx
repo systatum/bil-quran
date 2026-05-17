@@ -4,7 +4,7 @@ import { ThemeMode } from "@constants/theme"
 import { useParams } from "@tanstack/react-router"
 import { useState } from "react"
 import AppNavbar from "./fragments/AppNavbar"
-import QuranBrowser from "./QuranBrowser"
+import QuranPaper from "./fragments/QuranPaper"
 
 export default function UIIndex() {
   const [chapter, setChapter] = useState<ChapterRecord | null>(null)
@@ -27,7 +27,7 @@ export default function UIIndex() {
   return (
     <>
       <AppNavbar theme={theme} title={navbarTitle} />
-      <QuranBrowser
+      <QuranPaper
         theme={theme}
         onScroll={(verseRow) => setChapter(verseRow.chapter)}
         chapterId={chapterId}
