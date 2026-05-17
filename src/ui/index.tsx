@@ -2,16 +2,26 @@ import { DEFAULT_LOCALE } from "@constants/locales"
 import { ChapterRecord } from "@constants/records/ChapterRecord"
 import { ThemeMode } from "@constants/theme"
 import { useParams } from "@tanstack/react-router"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import AppNavbar from "./fragments/AppNavbar"
 import QuranPaper from "./fragments/QuranPaper"
 
 export default function UIIndex() {
   const [chapter, setChapter] = useState<ChapterRecord | null>(null)
-  const navbarTitle = chapter
-    ? `${chapter.transliterations[DEFAULT_LOCALE]} (${chapter.meanings[DEFAULT_LOCALE] ?? chapter.meanings[DEFAULT_LOCALE]})`
-    : "bil-Qur'an"
   const theme: ThemeMode = "light"
+
+  const navbarTitle = useMemo(() => {
+    if (chapter == null) return "bil-Qur'an"
+
+    const chapterNo = chapter.id
+    const chapterName = chapter.transliterations[DEFAULT_LOCALE]
+    const chapterMeaningInDefaultLocale = chapter.meanings[DEFAULT_LOCALE]
+    const chapterMeaningInCurrentLocale = chapter.meanings[DEFAULT_LOCALE]
+    const chapterMeaning =
+      chapterMeaningInCurrentLocale ?? chapterMeaningInDefaultLocale
+
+    return `${chapterNo}. ${chapterName} (${chapterMeaning})`
+  }, [chapter])
 
   // read params
   const params = useParams({ strict: false })
