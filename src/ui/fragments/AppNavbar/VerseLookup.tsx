@@ -1,21 +1,25 @@
-import { ChapterRecord } from "@constants/records/ChapterRecord"
-import { repo } from "@db/repo"
-import { unpackIPC } from "@services/Converter"
 import { useNavigate } from "@tanstack/react-router"
-import { useEffect, useState } from "react"
+import { useMemo, useState } from "react"
 import styled from "styled-components"
+import useChaptersState from "../../hooks/states/ChaptersState"
+import useUserSettingsState from "../../hooks/states/UserSettingsState"
 
 export default function VerseLookup() {
   const navigate = useNavigate()
   const [selectedChapterId, setSelectedChapterId] = useState<number>(1)
   const [verseNumber, setVerseNumber] = useState<string>("1")
 
-  const [chapters, setChapters] = useState<ChapterRecord[]>([])
-  useEffect(() => {
-    repo.chapters
-      .findAllBy({})
-      .then((ipcResp) => setChapters(unpackIPC(ipcResp)))
-  }, [])
+  // make sure Quranic chapters are loaded
+  const {
+    chapters,
+    loadChapters,
+    getChapterMeaning,
+    getChapterArabicName,
+    getChapterTransliteratedName,
+  } = useChaptersState()
+
+  // load the user locale
+  const { locale: userLocale } = useUserSettingsState()
 
   function goToVerse() {
     if (!selectedChapterId) return
@@ -30,6 +34,16 @@ export default function VerseLookup() {
     })
   }
 
+  const chaptersList = useMemo(() => {
+    return Object.values(chapters).map((chapter) => {
+      const meaning = getChapterMeaning(chapter.id)
+      const latinName = getChapterTransliteratedName(chapter.id)
+      const arabicName = getChapterArabicName(chapter.id)
+      const text = `${chapter.id}. ${latinName} (${arabicName}) - ${meaning}`
+      return { id: chapter.id, text: text }
+    })
+  }, [chapters])
+
   return (
     <FlexContainer direction="column">
       <form>
@@ -39,11 +53,13 @@ export default function VerseLookup() {
           value={selectedChapterId}
           onChange={(e) => setSelectedChapterId(parseInt(e.target.value))}
         >
-          {chapters.map((chapter) => (
-            <option key={chapter.id} value={chapter.id}>
-              {chapter.id}. {chapter.en} ({chapter.ar}) - {chapter.enMeaning}
-            </option>
-          ))}
+          {chaptersList.map((chapter) => {
+            return (
+              <option key={chapter.id} value={chapter.id}>
+                {chapter.text}
+              </option>
+            )
+          })}
         </ChapterSelect>
 
         <FlexContainer direction="row">

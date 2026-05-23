@@ -4,12 +4,14 @@ import { RouterProvider } from "@tanstack/react-router"
 import { useEffect, useRef, useState } from "react"
 import "./App.css"
 import logo from "./logo.svg"
+import useChaptersState from "./ui/hooks/states/ChaptersState"
 import { router } from "./ui/router"
 
 function App() {
   const boostrappedRef = useRef(false)
   const [isReady, setIsReady] = useState<boolean>(false)
   const [isError, setIsError] = useState<boolean>(false)
+  const { loadChapters } = useChaptersState()
 
   useEffect(() => {
     // the code in this effect is very sensistive and must only be run once
@@ -24,16 +26,18 @@ function App() {
       try {
         await applyMigrations()
         await seedData()
+        await loadChapters()
+
         setIsReady(true)
       } catch (e) {
         console.error("Error preparing application", e)
-        setIsError(true)
+        throw e
       }
     }
 
     bootstrap().catch((e) => {
-      console.error("Unhandled bootstrap failure", e)
-      setIsError(true)
+      console.log("CATCHING", e)
+      throw e
     })
   }, [])
 

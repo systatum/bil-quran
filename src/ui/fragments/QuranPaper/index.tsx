@@ -5,6 +5,7 @@ import { ThemeMode } from "@constants/theme"
 import { repo } from "@db/repo"
 import { unpackIPC } from "@services/Converter"
 import { useVirtualizer, VirtualItem } from "@tanstack/react-virtual"
+import useChaptersState from "../../hooks/states/ChaptersState"
 import ChapterRow from "./ChapterRow"
 import VerseRow, { Verse, WordCell } from "./VerseRow"
 
@@ -42,8 +43,8 @@ export default function QuranPaper({
   chapterId: requestedChapterId,
   verseNumber: requestedVerseNumber,
 }: QuranBrowserProps) {
+  const { chapters } = useChaptersState()
   const [words, setWords] = useState<WordCell[]>([])
-  const [chapters, setChapters] = useState<Record<number, ChapterRecord>>({})
   const parentRef = useRef<HTMLDivElement>(null)
 
   // some flags about the rendering
@@ -58,15 +59,6 @@ export default function QuranPaper({
 
   useEffect(() => {
     async function load() {
-      // load chapters
-      const rawChapters = unpackIPC(await repo.chapters.findAllBy({}))
-      setChapters(
-        rawChapters.reduce<Record<number, ChapterRecord>>((acc, ch) => {
-          acc[ch.id] = ch
-          return acc
-        }, {}),
-      )
-
       // load word-by-word translations and associate to its relevant word in a verse
       const wbwTranslations = unpackIPC(
         await repo.wbwTranslations.compile("en-US"),

@@ -71,7 +71,7 @@ async function seedVerses() {
       uniqueLexemes[v.word] = {
         token: v.word,
         root: v.root,
-        readings: { [Locale.English]: v.trans },
+        readings: { [Locale.IntEnglish]: v.trans },
       }
 
   const tokens = Object.keys(uniqueLexemes)
