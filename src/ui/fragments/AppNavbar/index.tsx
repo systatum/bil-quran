@@ -1,7 +1,9 @@
 import { ThemeMode } from "@constants/theme"
 import { RiCloseLine, RiMenuLine } from "@remixicon/react"
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import styled from "styled-components"
+import useUserSettingsState from "../../hooks/states/UserSettingsState"
+import { Combobox } from "./Combobox"
 import VerseLookup from "./VerseLookup"
 
 interface AppNavbarProps {
@@ -17,6 +19,13 @@ interface AppNavbarProps {
 export default function AppNavbar({ theme, title }: AppNavbarProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const BurgerIcon = isSidebarOpen ? RiCloseLine : RiMenuLine
+  const { setTheme, userSettings } = useUserSettingsState()
+
+  const changeTheme = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    e.preventDefault()
+    const value = e.target.value
+    setTheme(value as ThemeMode)
+  }, [])
 
   return (
     <>
@@ -35,6 +44,12 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
       <SidebarContainer theme={theme} $visible={isSidebarOpen}>
         <SidebarItem>Verse lookup</SidebarItem>
         <VerseLookup />
+
+        <SidebarItem>Theme</SidebarItem>
+        <Combobox onChange={changeTheme} value={userSettings.theme}>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </Combobox>
       </SidebarContainer>
     </>
   )

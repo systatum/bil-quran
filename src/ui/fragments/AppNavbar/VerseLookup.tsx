@@ -2,7 +2,7 @@ import { useNavigate } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 import styled from "styled-components"
 import useChaptersState from "../../hooks/states/ChaptersState"
-import useUserSettingsState from "../../hooks/states/UserSettingsState"
+import { Combobox } from "./Combobox"
 
 export default function VerseLookup() {
   const navigate = useNavigate()
@@ -17,9 +17,6 @@ export default function VerseLookup() {
     getChapterArabicName,
     getChapterTransliteratedName,
   } = useChaptersState()
-
-  // load the user locale
-  const { locale: userLocale } = useUserSettingsState()
 
   function goToVerse() {
     if (!selectedChapterId) return
@@ -47,7 +44,7 @@ export default function VerseLookup() {
   return (
     <FlexContainer direction="column">
       <form>
-        <ChapterSelect
+        <Combobox
           title="Chapter"
           name="chapterId"
           value={selectedChapterId}
@@ -60,7 +57,7 @@ export default function VerseLookup() {
               </option>
             )
           })}
-        </ChapterSelect>
+        </Combobox>
 
         <FlexContainer direction="row">
           <VerseInput
@@ -88,15 +85,6 @@ const FlexContainer = styled.div<{ direction: string }>`
   display: flex;
   gap: 5px;
   flex-direction: ${({ direction }) => direction};
-`
-
-const ChapterSelect = styled.select`
-  width: 100%;
-  height: 42px;
-  border-radius: 3px;
-  border: 1px solid #d8d8d8;
-  padding: 0 12px;
-  font-size: 14px;
 `
 
 const VerseInput = styled.input`

@@ -28,3 +28,7 @@ Scrolling works by using hash router, ie: https://bil-quran.com/#/c/11/12
 
 - React via create-react-app (webpack stack)
 - TanStack router for navigation, instead of react-router-dom, as it's strongly typed
+
+## Test to be made
+
+- [ ] Selecting/changing theme should be recorded/persisted (event after reload)

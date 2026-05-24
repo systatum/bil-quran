@@ -5,10 +5,12 @@ import { useParams } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 import AppNavbar from "./fragments/AppNavbar"
 import QuranPaper from "./fragments/QuranPaper"
+import useUserSettingsState from "./hooks/states/UserSettingsState"
 
 export default function UIIndex() {
   const [chapter, setChapter] = useState<ChapterRecord | null>(null)
-  const theme: ThemeMode = "light"
+  const { userSettings } = useUserSettingsState()
+  const theme: ThemeMode = userSettings.theme
 
   const navbarTitle = useMemo(() => {
     if (chapter == null) return "bil-Qur'an"

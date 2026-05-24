@@ -1,4 +1,5 @@
 import { DEFAULT_LOCALE, Locale } from "@constants/locales"
+import { ThemeMode } from "@constants/theme"
 import LOGGER from "@services/Logger"
 import { mergeKnownKeys } from "@services/mutator"
 import { create } from "zustand"
@@ -6,6 +7,7 @@ import { create } from "zustand"
 const useUserSettingsState = create<UserSettingsState>((set, get) => ({
   userSettings: {
     locale: DEFAULT_LOCALE,
+    theme: "light",
     lastScroll: {
       chapterId: 0,
       verse: 0,
@@ -14,7 +16,6 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
 
   persistState() {
     const stringified = JSON.stringify(get().userSettings)
-    LOGGER.debug("Persisted as", stringified)
     localStorage.setItem("userSettings", stringified)
   },
 
@@ -31,6 +32,20 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
     })
 
     return hydrated
+  },
+
+  setTheme(theme) {
+    if (theme != "light" && theme != "dark")
+      return LOGGER.error(`Skipping setting unknown theme: ${theme}`)
+
+    set((s) => ({
+      userSettings: {
+        ...s.userSettings,
+        theme: theme,
+      },
+    }))
+
+    get().persistState()
   },
 
   setScrollPosition(chapterId, verse) {
@@ -64,11 +79,13 @@ export interface UserSettingsState {
    */
   persistState(): void
 
+  setTheme(theme: ThemeMode): void
   setScrollPosition(chapterId: number, verse: number): void
 }
 
 export interface UserSettings {
   locale: Locale
+  theme: ThemeMode
   lastScroll: {
     chapterId: number
     verse: number
