@@ -1,4 +1,4 @@
-import { ArabicFontFamily, ArabicFonts } from "@constants/assets"
+import { ArabicFontFamily, ArabicFonts } from "@constants/fonts"
 import { DEFAULT_LOCALE, Locale } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import LOGGER from "@services/Logger"
@@ -81,9 +81,10 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
     if (next.arabic.family && !(next.arabic.family in ArabicFonts))
       return LOGGER.error(`Skip setting unknown font: ${font}`)
 
-    next.arabic.size = parseInt(String(next.arabic.size))
-    if (Number.isNaN(next.arabic.size)) next.arabic.size = 42
+    next.arabic.size = Number(String(next.arabic.size))
+    if (Number.isNaN(next.arabic.size)) next.arabic.size = 42.5
 
+    LOGGER.debug("Updating font to:", JSON.stringify(next))
     get().partialUpdate({ font: next })
   },
 
@@ -125,11 +126,17 @@ export interface UserSettingsState {
   setScrollPosition(chapterId: number, verse: number): void
 }
 
+export interface FontSetting {
+  family: ArabicFontFamily
+
+  /**
+   * Size of the font to be rendered in pixel
+   */
+  size: number
+}
+
 export interface UserFontSettings {
-  arabic: {
-    family: ArabicFontFamily
-    size: number
-  }
+  arabic: FontSetting
 }
 
 export interface UserSettings {

@@ -1,12 +1,14 @@
-import { useEffect, useRef } from "react"
+import { useLayoutEffect, useRef } from "react"
 
-import { ArabicFontFamily } from "@constants/assets"
+import { ArabicFontFamily } from "@constants/fonts"
 import { ChapterRecord } from "@constants/records/ChapterRecord"
 import { WordWithLexemeRecord } from "@constants/records/WordRecord"
 import { DEFAULT_LOCALE } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import styled from "styled-components"
-import useUserSettingsState from "../../hooks/states/UserSettingsState"
+import useUserSettingsState, {
+  FontSetting,
+} from "../../hooks/states/UserSettingsState"
 import { Bismillah } from "./Bismillah"
 
 export type Verse = {
@@ -50,16 +52,47 @@ export default function VerseRow({
   const ref = useRef<HTMLDivElement>(null)
   const { userSettings } = useUserSettingsState()
 
-  useEffect(() => {
-    if (!ref.current) return
+  // when the font changes, view port changes, "re-render" so that
+  // the height of all verse row is calculated correctly, and there
+  // is no empty region due to using old calculation
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
 
-    const height = ref.current.getBoundingClientRect().height
+    let frame = 0
 
-    if (sizeMap.current.get(index) !== height) {
-      sizeMap.current.set(index, height)
-      virtualizer.measure()
+    const measure = () => {
+      cancelAnimationFrame(frame)
+
+      frame = requestAnimationFrame(() => {
+        const height = el.getBoundingClientRect().height
+        const cached = sizeMap.current.get(index)
+
+        if (cached !== height) {
+          sizeMap.current.set(index, height)
+
+          // IMPORTANT:
+          // update only this row instead of full measure()
+          virtualizer.resizeItem(index, height)
+        }
+      })
     }
-  }, [index, verse.words.length])
+
+    // initial measurement
+    measure()
+
+    // observe all future layout changes
+    const observer = new ResizeObserver(() => {
+      measure()
+    })
+
+    observer.observe(el)
+
+    return () => {
+      cancelAnimationFrame(frame)
+      observer.disconnect()
+    }
+  }, [index])
 
   return (
     <VerseRowWrapper
@@ -69,7 +102,7 @@ export default function VerseRow({
     >
       <VerseMarker theme={theme}>{verse.number}</VerseMarker>
 
-      <VerseText fontFamily={userSettings.font.arabic.family}>
+      <VerseText font={userSettings.font.arabic}>
         {Bismillah.isRenderableHere(verse.number, verse.chapter.id) && (
           <Word>
             <Bismillah />
@@ -220,12 +253,12 @@ const VerseMarker = styled.div<{ theme: ThemeMode }>`
   }
 `
 
-const VerseText = styled.div<{ fontFamily: ArabicFontFamily }>`
+const VerseText = styled.div<{ font: FontSetting }>`
   text-align: right;
-  font-size: 42px;
+  font-size: ${({ font }) => `${font.size}px`};
   line-height: 2.4;
   font-family:
-    ${({ fontFamily }) => `"${fontFamily}"`},
+    ${({ font }) => `"${font.family}"`},
     "${"NotoNaskhArabic" satisfies ArabicFontFamily}", serif;
   white-space: normal;
 `
@@ -239,7 +272,6 @@ const Word = styled.span`
 `
 
 const Arabic = styled.span`
-  font-size: 42px;
   line-height: 1.6;
 `
 

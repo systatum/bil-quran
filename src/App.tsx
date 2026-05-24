@@ -1,4 +1,4 @@
-import { ArabicFonts } from "@constants/assets"
+import { ArabicFonts } from "@constants/fonts"
 import { applyMigrations } from "@db/migrations"
 import { seedData } from "@db/seeders"
 import { RouterProvider } from "@tanstack/react-router"
@@ -75,6 +75,8 @@ export function registerFonts(): void {
           font-style: normal;
           font-display: swap;
           font-weight: 400;
+          font-synthesis: none;
+          text-rendering: optimizeLegibility;
           src:
             url("${url}.woff2") format("woff2"),
             url("${url}.woff") format("woff"),

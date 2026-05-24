@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import { ChapterRecord } from "@constants/records/ChapterRecord"
 import { ThemeMode } from "@constants/theme"
@@ -76,13 +76,6 @@ export default function QuranPaper({
 
     load().catch(console.error)
   }, [])
-
-  // when the font changes, re-render so that the height of all verse
-  // row is calculated correctly
-  useLayoutEffect(() => {
-    sizeMap.current.clear()
-    virtualizer.measure()
-  }, [userSettings.font])
 
   /**
    * Group words into verses.

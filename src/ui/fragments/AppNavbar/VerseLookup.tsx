@@ -3,6 +3,7 @@ import { useMemo, useState } from "react"
 import styled from "styled-components"
 import useChaptersState from "../../hooks/states/ChaptersState"
 import { Combobox } from "./Combobox"
+import { FlexContainer } from "./Container"
 
 export default function VerseLookup() {
   const navigate = useNavigate()
@@ -12,7 +13,6 @@ export default function VerseLookup() {
   // make sure Quranic chapters are loaded
   const {
     chapters,
-    loadChapters,
     getChapterMeaning,
     getChapterArabicName,
     getChapterTransliteratedName,
@@ -80,12 +80,6 @@ export default function VerseLookup() {
     </FlexContainer>
   )
 }
-
-const FlexContainer = styled.div<{ direction: string }>`
-  display: flex;
-  gap: 5px;
-  flex-direction: ${({ direction }) => direction};
-`
 
 const VerseInput = styled.input`
   width: 65%;

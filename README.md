@@ -18,8 +18,6 @@ Scrolling works by using hash router, ie: https://bil-quran.com/#/c/11/12
 - Better scroll preservation (both saving and restoring the position)
 - Better typing (ie for the user settings)
 - Add more word-by-word translation: Indonesian
-- Restructure chapter reading to be just "reading" (instead of `enReading`) and make it JSON, similarly for "translation"
-- Add centralized storage (so we don't load multiple times on: chapters)
 - Ability to bookmark any verse and go to that any moment
 - Store number of verses in each chapter, so that the verse lookup component can display verse number rather than making user type
 
