@@ -2,6 +2,12 @@ import { PGlite } from "@electric-sql/pglite"
 import { drizzle } from "drizzle-orm/pglite"
 import { repo } from "./repo"
 
+// This module handles raw database creation and setup
+// and connection handling.
+
+/**
+ * Where shall the data be stored
+ */
 const DATA_DIR = `idb://bilquran`
 
 let pgClient: PGlite | null = null

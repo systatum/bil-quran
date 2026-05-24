@@ -1,4 +1,5 @@
-import { ChapterPartDivision } from "@constants/records/chapters"
+import { ChapterPartDivision } from "@constants/records/ChapterRecord"
+import { Locale } from "@constants/settings"
 import {
   bigint,
   boolean,
@@ -14,13 +15,13 @@ export const chapters = pgTable("chapters", {
   // starts from 1, the number of the surat
   id: bigint({ mode: "number" }).primaryKey(),
   isMeccan: boolean().notNull(),
-  partDivisions: jsonb().$type<ChapterPartDivision[]>().notNull(),
-  // name transliterated from the original arabic
-  ar: varchar({ length: 20 }).notNull(),
-  // name transliterated in English
-  en: varchar({ length: 15 }).notNull(),
-  // the meaning of the chapter
-  enMeaning: varchar({ length: 35 }).notNull(),
+  partitioning: jsonb().$type<ChapterPartDivision[]>().notNull(),
+  // name of the chapters in original arabic; mostly the same but some
+  // countries might know of a chapter by a different name
+  namings: jsonb().$type<Record<Locale, string>>().notNull(),
+  transliterations: jsonb().$type<Record<Locale, string>>().notNull(),
+  // the meaning of the chapter in various locales
+  meanings: jsonb().$type<Record<Locale, string>>().notNull(),
 })
 
 // quran has some "style" or "font" rendering ie ligatures
@@ -37,7 +38,7 @@ export const lexemes = pgTable("lexemes", {
   id: bigint({ mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
   token: varchar({ length: 25 }).notNull(),
   root: varchar({ length: 15 }).notNull(),
-  enReading: varchar({ length: 50 }).notNull(),
+  readings: jsonb().$type<Record<Locale, string>>().notNull().default({}),
 })
 
 // a word that makes up a verse
@@ -68,8 +69,8 @@ export const words = pgTable(
   ],
 )
 
-export const wbwTranslations = pgTable(
-  "word_by_word_translations",
+export const word_translations = pgTable(
+  "word_translations",
   {
     locale: varchar({ length: 6 }).notNull(),
     chapter: integer().notNull(),
@@ -78,7 +79,7 @@ export const wbwTranslations = pgTable(
     meaning: varchar({ length: 255 }).notNull(),
   },
   (table) => [
-    unique("unique_word_by_word_translation").on(
+    unique("unique_word_translation").on(
       table.locale,
       table.chapter,
       table.ayat,

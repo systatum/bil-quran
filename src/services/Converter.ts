@@ -14,6 +14,13 @@ export function stringifyError(e: unknown) {
   return e instanceof Error ? `${msg}\n\n${e.stack}` : msg
 }
 
+/**
+ * Unpack data communicated through IPC. If the data itself
+ * indicates an error, an error will be raised.
+ *
+ * @param resp the IPC response to unpack
+ * @returns data communicated by the IPC
+ */
 export function unpackIPC<T>(resp: IPCResponse<T>): T {
   if (resp.succeed) return resp.data as T
 

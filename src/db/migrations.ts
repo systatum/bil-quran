@@ -1,6 +1,11 @@
 import { PGlite } from "@electric-sql/pglite"
 import { getPostgresDriver } from "./driver"
 
+// This module handles database migration, that is,
+// setting up the tables, indexes, and properties
+// of the database so that the database is ready to
+// be meaningfully used by the app.
+
 /**
  * Table to take note which migrations have been applied in the database
  */

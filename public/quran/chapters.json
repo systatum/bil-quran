@@ -1,973 +1,1693 @@
 {
   "1": {
     "length": 7,
-    "en": "Al-Faatiha",
-    "ar": "الفاتحة",
     "isMeccan": true,
-    "partDivisions": [{ "part": 1, "start": 1, "end": 7 }],
-    "enMeaning": "The Opener"
+    "partitioning": [{ "part": 1, "start": 1, "end": 7 }],
+    "meanings": { "en-US": "The Opener", "ar-IQ": null, "id-ID": "Pembukaan" },
+    "namings": { "en-US": "الفاتحة", "ar-IQ": "الفاتحة", "id-ID": "الفاتحة" },
+    "transliterations": {
+      "en-US": "Al-Faatiha",
+      "ar-IQ": "الفاتحة",
+      "id-ID": "Al-Fatihah"
+    }
   },
   "2": {
     "length": 286,
-    "en": "Al-Baqara",
-    "ar": "البقرة",
     "isMeccan": false,
-    "partDivisions": [
+    "partitioning": [
       { "part": 1, "start": 1, "end": 141 },
       { "part": 2, "start": 142, "end": 252 },
       { "part": 3, "start": 253, "end": 286 }
     ],
-    "enMeaning": "The Cow"
+    "meanings": {
+      "en-US": "The Heifer",
+      "ar-IQ": null,
+      "id-ID": "Sapi Betina"
+    },
+    "namings": { "en-US": "البقرة", "ar-IQ": "البقرة", "id-ID": "البقرة" },
+    "transliterations": {
+      "en-US": "Al-Baqara",
+      "ar-IQ": "البقرة",
+      "id-ID": "Al-Baqarah"
+    }
   },
   "3": {
     "length": 200,
-    "en": "Aal-i-Imraan",
-    "ar": "آل عمران",
     "isMeccan": false,
-    "partDivisions": [
+    "partitioning": [
       { "part": 3, "start": 1, "end": 92 },
       { "part": 4, "start": 93, "end": 200 }
     ],
-    "enMeaning": "Family of Imran"
+    "meanings": {
+      "en-US": "Family of Imran",
+      "ar-IQ": null,
+      "id-ID": "Keluarga Imran"
+    },
+    "namings": {
+      "en-US": "آل عمران",
+      "ar-IQ": "آل عمران",
+      "id-ID": "آل عمران"
+    },
+    "transliterations": {
+      "en-US": "Aal-i-Imraan",
+      "ar-IQ": "آل عمران",
+      "id-ID": "Ali 'Imran"
+    }
   },
   "4": {
     "length": 176,
-    "en": "An-Nisaa",
-    "ar": "النساء",
     "isMeccan": false,
-    "partDivisions": [
+    "partitioning": [
       { "part": 4, "start": 1, "end": 23 },
       { "part": 5, "start": 24, "end": 147 },
       { "part": 6, "start": 148, "end": 176 }
     ],
-    "enMeaning": "The Women"
+    "meanings": { "en-US": "The Women", "ar-IQ": null, "id-ID": "Wanita" },
+    "namings": { "en-US": "النساء", "ar-IQ": "النساء", "id-ID": "النساء" },
+    "transliterations": {
+      "en-US": "An-Nisaa",
+      "ar-IQ": "النساء",
+      "id-ID": "An-Nisa'"
+    }
   },
   "5": {
     "length": 120,
-    "en": "Al-Maaida",
-    "ar": "المائدة",
     "isMeccan": false,
-    "partDivisions": [
+    "partitioning": [
       { "part": 6, "start": 1, "end": 81 },
       { "part": 7, "start": 82, "end": 120 }
     ],
-    "enMeaning": "The Table Spread"
+    "meanings": {
+      "en-US": "The Table Spread",
+      "ar-IQ": null,
+      "id-ID": "Hidangan"
+    },
+    "namings": { "en-US": "المائدة", "ar-IQ": "المائدة", "id-ID": "المائدة" },
+    "transliterations": {
+      "en-US": "Al-Maaida",
+      "ar-IQ": "المائدة",
+      "id-ID": "Al-Ma'idah"
+    }
   },
   "6": {
     "length": 165,
-    "en": "Al-An'aam",
-    "ar": "الأنعام",
     "isMeccan": true,
-    "partDivisions": [
+    "partitioning": [
       { "part": 7, "start": 1, "end": 110 },
       { "part": 8, "start": 111, "end": 165 }
     ],
-    "enMeaning": "The Cattle"
+    "meanings": {
+      "en-US": "The Cattle",
+      "ar-IQ": null,
+      "id-ID": "Binatang Ternak"
+    },
+    "namings": { "en-US": "الأنعام", "ar-IQ": "الأنعام", "id-ID": "الأنعام" },
+    "transliterations": {
+      "en-US": "Al-An'aam",
+      "ar-IQ": "الأنعام",
+      "id-ID": "Al-An'am"
+    }
   },
   "7": {
     "length": 206,
-    "en": "Al-A'raaf",
-    "ar": "الأعراف",
     "isMeccan": true,
-    "partDivisions": [
+    "partitioning": [
       { "part": 8, "start": 1, "end": 87 },
       { "part": 9, "start": 88, "end": 206 }
     ],
-    "enMeaning": "The Heights"
+    "meanings": {
+      "en-US": "The Heights",
+      "ar-IQ": null,
+      "id-ID": "Tempat Tertinggi"
+    },
+    "namings": { "en-US": "الأعراف", "ar-IQ": "الأعراف", "id-ID": "الأعراف" },
+    "transliterations": {
+      "en-US": "Al-A'raaf",
+      "ar-IQ": "الأعراف",
+      "id-ID": "Al-A'raf"
+    }
   },
   "8": {
     "length": 75,
-    "en": "Al-Anfaal",
-    "ar": "الأنفال",
     "isMeccan": false,
-    "partDivisions": [
+    "partitioning": [
       { "part": 9, "start": 1, "end": 40 },
       { "part": 10, "start": 41, "end": 75 }
     ],
-    "enMeaning": "The Spoils of War"
+    "meanings": {
+      "en-US": "The Spoils of War",
+      "ar-IQ": null,
+      "id-ID": "Rampasan Perang"
+    },
+    "namings": { "en-US": "الأنفال", "ar-IQ": "الأنفال", "id-ID": "الأنفال" },
+    "transliterations": {
+      "en-US": "Al-Anfaal",
+      "ar-IQ": "الأنفال",
+      "id-ID": "Al-Anfal"
+    }
   },
   "9": {
     "length": 129,
-    "en": "At-Tawba",
-    "ar": "التوبة",
     "isMeccan": false,
-    "partDivisions": [
+    "partitioning": [
       { "part": 10, "start": 1, "end": 92 },
       { "part": 11, "start": 93, "end": 129 }
     ],
-    "enMeaning": "The Repentance"
+    "meanings": {
+      "en-US": "The Repentance",
+      "ar-IQ": null,
+      "id-ID": "Pengampunan"
+    },
+    "namings": { "en-US": "التوبة", "ar-IQ": "التوبة", "id-ID": "التوبة" },
+    "transliterations": {
+      "en-US": "At-Tawba",
+      "ar-IQ": "التوبة",
+      "id-ID": "At-Taubah"
+    }
   },
   "10": {
     "length": 109,
-    "en": "Yunus",
-    "ar": "يونس",
     "isMeccan": true,
-    "partDivisions": [{ "part": 11, "start": 1, "end": 109 }],
-    "enMeaning": "Jonah"
+    "partitioning": [{ "part": 11, "start": 1, "end": 109 }],
+    "meanings": { "en-US": "Jonah", "ar-IQ": null, "id-ID": "Yunus" },
+    "namings": { "en-US": "يونس", "ar-IQ": "يونس", "id-ID": "يونس" },
+    "transliterations": { "en-US": "Yunus", "ar-IQ": "يونس", "id-ID": "Yunus" }
   },
   "11": {
     "length": 123,
-    "en": "Hud",
-    "ar": "هود",
     "isMeccan": true,
-    "partDivisions": [
+    "partitioning": [
       { "part": 11, "start": 1, "end": 5 },
       { "part": 12, "start": 6, "end": 123 }
     ],
-    "enMeaning": "Hud"
+    "meanings": { "en-US": "Hud", "ar-IQ": null, "id-ID": "Hud" },
+    "namings": { "en-US": "هود", "ar-IQ": "هود", "id-ID": "هود" },
+    "transliterations": { "en-US": "Hud", "ar-IQ": "هود", "id-ID": "Hud" }
   },
   "12": {
     "length": 111,
-    "en": "Yusuf",
-    "ar": "يوسف",
     "isMeccan": true,
-    "partDivisions": [
+    "partitioning": [
       { "part": 12, "start": 1, "end": 52 },
       { "part": 13, "start": 53, "end": 111 }
     ],
-    "enMeaning": "Joseph"
+    "meanings": { "en-US": "Joseph", "ar-IQ": null, "id-ID": "Yusuf" },
+    "namings": { "en-US": "يوسف", "ar-IQ": "يوسف", "id-ID": "يوسف" },
+    "transliterations": { "en-US": "Yusuf", "ar-IQ": "يوسف", "id-ID": "Yusuf" }
   },
   "13": {
     "length": 43,
-    "en": "Ar-Ra'd",
-    "ar": "الرعد",
     "isMeccan": false,
-    "partDivisions": [{ "part": 13, "start": 1, "end": 43 }],
-    "enMeaning": "Thunder"
+    "partitioning": [{ "part": 13, "start": 1, "end": 43 }],
+    "meanings": { "en-US": "Thunder", "ar-IQ": null, "id-ID": "Gemuruh" },
+    "namings": { "en-US": "الرعد", "ar-IQ": "الرعد", "id-ID": "الرعد" },
+    "transliterations": {
+      "en-US": "Ar-Ra'd",
+      "ar-IQ": "الرعد",
+      "id-ID": "Ar-Ra'd"
+    }
   },
   "14": {
     "length": 52,
-    "en": "Ibrahim",
-    "ar": "إبراهيم",
     "isMeccan": true,
-    "partDivisions": [{ "part": 13, "start": 1, "end": 52 }],
-    "enMeaning": "Abraham"
+    "partitioning": [{ "part": 13, "start": 1, "end": 52 }],
+    "meanings": { "en-US": "Abraham", "ar-IQ": null, "id-ID": "Ibrahim" },
+    "namings": { "en-US": "إبراهيم", "ar-IQ": "إبراهيم", "id-ID": "إبراهيم" },
+    "transliterations": {
+      "en-US": "Ibrahim",
+      "ar-IQ": "إبراهيم",
+      "id-ID": "Ibrahim"
+    }
   },
   "15": {
     "length": 99,
-    "en": "Al-Hijr",
-    "ar": "الحجر",
     "isMeccan": true,
-    "partDivisions": [{ "part": 14, "start": 1, "end": 99 }],
-    "enMeaning": "The Stoneland"
+    "partitioning": [{ "part": 14, "start": 1, "end": 99 }],
+    "meanings": { "en-US": "The Stoneland", "ar-IQ": null, "id-ID": "Hijr" },
+    "namings": { "en-US": "الحجر", "ar-IQ": "الحجر", "id-ID": "الحجر" },
+    "transliterations": {
+      "en-US": "Al-Hijr",
+      "ar-IQ": "الحجر",
+      "id-ID": "Al-Hijr"
+    }
   },
   "16": {
     "length": 128,
-    "en": "An-Nahl",
-    "ar": "النحل",
     "isMeccan": true,
-    "partDivisions": [{ "part": 14, "start": 1, "end": 128 }],
-    "enMeaning": "The Bee"
+    "partitioning": [{ "part": 14, "start": 1, "end": 128 }],
+    "meanings": { "en-US": "The Bee", "ar-IQ": null, "id-ID": "Lebah" },
+    "namings": { "en-US": "النحل", "ar-IQ": "النحل", "id-ID": "النحل" },
+    "transliterations": {
+      "en-US": "An-Nahl",
+      "ar-IQ": "النحل",
+      "id-ID": "An-Nahl"
+    }
   },
   "17": {
     "length": 111,
-    "en": "Al-Israa",
-    "ar": "الإسراء",
     "isMeccan": true,
-    "partDivisions": [{ "part": 15, "start": 1, "end": 111 }],
-    "enMeaning": "The Night Journey"
+    "partitioning": [{ "part": 15, "start": 1, "end": 111 }],
+    "meanings": {
+      "en-US": "The Night Journey",
+      "ar-IQ": null,
+      "id-ID": "Memperjalankan Malam Hari"
+    },
+    "namings": { "en-US": "الإسراء", "ar-IQ": "الإسراء", "id-ID": "الإسراء" },
+    "transliterations": {
+      "en-US": "Al-Israa",
+      "ar-IQ": "الإسراء",
+      "id-ID": "Al-Isra'"
+    }
   },
   "18": {
     "length": 110,
-    "en": "Al-Kahf",
-    "ar": "الكهف",
     "isMeccan": true,
-    "partDivisions": [
+    "partitioning": [
       { "part": 15, "start": 1, "end": 74 },
       { "part": 16, "start": 75, "end": 110 }
     ],
-    "enMeaning": "The Cave"
+    "meanings": { "en-US": "The Cave", "ar-IQ": null, "id-ID": "Goa" },
+    "namings": { "en-US": "الكهف", "ar-IQ": "الكهف", "id-ID": "الكهف" },
+    "transliterations": {
+      "en-US": "Al-Kahf",
+      "ar-IQ": "الكهف",
+      "id-ID": "Al-Kahfi"
+    }
   },
   "19": {
     "length": 98,
-    "en": "Maryam",
-    "ar": "مريم",
     "isMeccan": true,
-    "partDivisions": [{ "part": 16, "start": 1, "end": 98 }],
-    "enMeaning": "Mary"
+    "partitioning": [{ "part": 16, "start": 1, "end": 98 }],
+    "meanings": { "en-US": "Mary", "ar-IQ": null, "id-ID": "Maryam" },
+    "namings": { "en-US": "مريم", "ar-IQ": "مريم", "id-ID": "مريم" },
+    "transliterations": {
+      "en-US": "Maryam",
+      "ar-IQ": "مريم",
+      "id-ID": "Maryam"
+    }
   },
   "20": {
     "length": 135,
-    "en": "Taa-Haa",
-    "ar": "طه",
     "isMeccan": true,
-    "partDivisions": [{ "part": 16, "start": 1, "end": 135 }],
-    "enMeaning": "Ta-Ha"
+    "partitioning": [{ "part": 16, "start": 1, "end": 135 }],
+    "meanings": { "en-US": "Ta-Ha", "ar-IQ": null, "id-ID": "Taha" },
+    "namings": { "en-US": "طه", "ar-IQ": "طه", "id-ID": "طه" },
+    "transliterations": { "en-US": "Taa-Haa", "ar-IQ": "طه", "id-ID": "Taha" }
   },
   "21": {
     "length": 112,
-    "en": "Al-Anbiyaa",
-    "ar": "الأنبياء",
     "isMeccan": true,
-    "partDivisions": [{ "part": 17, "start": 1, "end": 112 }],
-    "enMeaning": "The Prophets"
+    "partitioning": [{ "part": 17, "start": 1, "end": 112 }],
+    "meanings": {
+      "en-US": "The Prophets",
+      "ar-IQ": null,
+      "id-ID": "Para Nabi"
+    },
+    "namings": {
+      "en-US": "الأنبياء",
+      "ar-IQ": "الأنبياء",
+      "id-ID": "الأنبياء"
+    },
+    "transliterations": {
+      "en-US": "Al-Anbiyaa",
+      "ar-IQ": "الأنبياء",
+      "id-ID": "Al-Anbiya'"
+    }
   },
   "22": {
     "length": 78,
-    "en": "Al-Hajj",
-    "ar": "الحج",
     "isMeccan": false,
-    "partDivisions": [{ "part": 17, "start": 1, "end": 78 }],
-    "enMeaning": "The Pilgrimage"
+    "partitioning": [{ "part": 17, "start": 1, "end": 78 }],
+    "meanings": { "en-US": "The Pilgrimage", "ar-IQ": null, "id-ID": "Haji" },
+    "namings": { "en-US": "الحج", "ar-IQ": "الحج", "id-ID": "الحج" },
+    "transliterations": {
+      "en-US": "Al-Hajj",
+      "ar-IQ": "الحج",
+      "id-ID": "Al-Hajj"
+    }
   },
   "23": {
     "length": 118,
-    "en": "Al-Muminoon",
-    "ar": "المؤمنون",
     "isMeccan": true,
-    "partDivisions": [{ "part": 18, "start": 1, "end": 118 }],
-    "enMeaning": "The Believers"
+    "partitioning": [{ "part": 18, "start": 1, "end": 118 }],
+    "meanings": {
+      "en-US": "The Believers",
+      "ar-IQ": null,
+      "id-ID": "Orang-Orang Mukmin"
+    },
+    "namings": {
+      "en-US": "المؤمنون",
+      "ar-IQ": "المؤمنون",
+      "id-ID": "المؤمنون"
+    },
+    "transliterations": {
+      "en-US": "Al-Muminoon",
+      "ar-IQ": "المؤمنون",
+      "id-ID": "Al-Mu'minun"
+    }
   },
   "24": {
     "length": 64,
-    "en": "An-Noor",
-    "ar": "النور",
     "isMeccan": false,
-    "partDivisions": [{ "part": 18, "start": 1, "end": 64 }],
-    "enMeaning": "The Light"
+    "partitioning": [{ "part": 18, "start": 1, "end": 64 }],
+    "meanings": { "en-US": "The Light", "ar-IQ": null, "id-ID": "Cahaya" },
+    "namings": { "en-US": "النور", "ar-IQ": "النور", "id-ID": "النور" },
+    "transliterations": {
+      "en-US": "An-Noor",
+      "ar-IQ": "النور",
+      "id-ID": "An-Nur"
+    }
   },
   "25": {
     "length": 77,
-    "en": "Al-Furqaan",
-    "ar": "الفرقان",
     "isMeccan": true,
-    "partDivisions": [
+    "partitioning": [
       { "part": 18, "start": 1, "end": 20 },
       { "part": 19, "start": 21, "end": 77 }
     ],
-    "enMeaning": "The Criterion"
+    "meanings": { "en-US": "The Criterion", "ar-IQ": null, "id-ID": "Pembeda" },
+    "namings": { "en-US": "الفرقان", "ar-IQ": "الفرقان", "id-ID": "الفرقان" },
+    "transliterations": {
+      "en-US": "Al-Furqaan",
+      "ar-IQ": "الفرقان",
+      "id-ID": "Al-Furqan"
+    }
   },
   "26": {
     "length": 227,
-    "en": "Ash-Shu'araa",
-    "ar": "الشعراء",
     "isMeccan": true,
-    "partDivisions": [{ "part": 19, "start": 1, "end": 227 }],
-    "enMeaning": "The Poets"
+    "partitioning": [{ "part": 19, "start": 1, "end": 227 }],
+    "meanings": {
+      "en-US": "The Poets",
+      "ar-IQ": null,
+      "id-ID": "Para Penyair"
+    },
+    "namings": { "en-US": "الشعراء", "ar-IQ": "الشعراء", "id-ID": "الشعراء" },
+    "transliterations": {
+      "en-US": "Ash-Shu'araa",
+      "ar-IQ": "الشعراء",
+      "id-ID": "Asy-Syu'ara'"
+    }
   },
   "27": {
     "length": 93,
-    "en": "An-Naml",
-    "ar": "النمل",
     "isMeccan": true,
-    "partDivisions": [
+    "partitioning": [
       { "part": 19, "start": 1, "end": 55 },
       { "part": 20, "start": 56, "end": 93 }
     ],
-    "enMeaning": "The Ants"
+    "meanings": { "en-US": "The Ants", "ar-IQ": null, "id-ID": "Semut-semut" },
+    "namings": { "en-US": "النمل", "ar-IQ": "النمل", "id-ID": "النمل" },
+    "transliterations": {
+      "en-US": "An-Naml",
+      "ar-IQ": "النمل",
+      "id-ID": "An-Naml"
+    }
   },
   "28": {
     "length": 88,
-    "en": "Al-Qasas",
-    "ar": "القصص",
     "isMeccan": true,
-    "partDivisions": [{ "part": 20, "start": 1, "end": 88 }],
-    "enMeaning": "The Story"
+    "partitioning": [{ "part": 20, "start": 1, "end": 88 }],
+    "meanings": { "en-US": "The Story", "ar-IQ": null, "id-ID": "Kisah-Kisah" },
+    "namings": { "en-US": "القصص", "ar-IQ": "القصص", "id-ID": "القصص" },
+    "transliterations": {
+      "en-US": "Al-Qasas",
+      "ar-IQ": "القصص",
+      "id-ID": "Al-Qasas"
+    }
   },
   "29": {
     "length": 69,
-    "en": "Al-Ankaboot",
-    "ar": "العنكبوت",
     "isMeccan": true,
-    "partDivisions": [
+    "partitioning": [
       { "part": 20, "start": 1, "end": 45 },
       { "part": 21, "start": 46, "end": 69 }
     ],
-    "enMeaning": "Spider"
+    "meanings": { "en-US": "Spider", "ar-IQ": null, "id-ID": "Laba-Laba" },
+    "namings": {
+      "en-US": "العنكبوت",
+      "ar-IQ": "العنكبوت",
+      "id-ID": "العنكبوت"
+    },
+    "transliterations": {
+      "en-US": "Al-Ankaboot",
+      "ar-IQ": "العنكبوت",
+      "id-ID": "Al-'Ankabut"
+    }
   },
   "30": {
     "length": 60,
-    "en": "Ar-Room",
-    "ar": "الروم",
     "isMeccan": true,
-    "partDivisions": [{ "part": 21, "start": 1, "end": 60 }],
-    "enMeaning": "The Romans"
+    "partitioning": [{ "part": 21, "start": 1, "end": 60 }],
+    "meanings": { "en-US": "The Romans", "ar-IQ": null, "id-ID": "Romawi" },
+    "namings": { "en-US": "الروم", "ar-IQ": "الروم", "id-ID": "الروم" },
+    "transliterations": {
+      "en-US": "Ar-Room",
+      "ar-IQ": "الروم",
+      "id-ID": "Ar-Rum"
+    }
   },
   "31": {
     "length": 34,
-    "en": "Luqman",
-    "ar": "لقمان",
     "isMeccan": true,
-    "partDivisions": [{ "part": 21, "start": 1, "end": 34 }],
-    "enMeaning": "Luqman"
+    "partitioning": [{ "part": 21, "start": 1, "end": 34 }],
+    "meanings": { "en-US": "Luqman", "ar-IQ": null, "id-ID": "Luqman" },
+    "namings": { "en-US": "لقمان", "ar-IQ": "لقمان", "id-ID": "لقمان" },
+    "transliterations": {
+      "en-US": "Luqman",
+      "ar-IQ": "لقمان",
+      "id-ID": "Luqman"
+    }
   },
   "32": {
     "length": 30,
-    "en": "As-Sajda",
-    "ar": "السجدة",
     "isMeccan": true,
-    "partDivisions": [{ "part": 21, "start": 1, "end": 30 }],
-    "enMeaning": "Prostration"
+    "partitioning": [{ "part": 21, "start": 1, "end": 30 }],
+    "meanings": { "en-US": "Prostration", "ar-IQ": null, "id-ID": "Sajdah" },
+    "namings": { "en-US": "السجدة", "ar-IQ": "السجدة", "id-ID": "السجدة" },
+    "transliterations": {
+      "en-US": "As-Sajda",
+      "ar-IQ": "السجدة",
+      "id-ID": "As-Sajdah"
+    }
   },
   "33": {
     "length": 73,
-    "en": "Al-Ahzaab",
-    "ar": "الأحزاب",
     "isMeccan": false,
-    "partDivisions": [
+    "partitioning": [
       { "part": 21, "start": 1, "end": 30 },
       { "part": 22, "start": 31, "end": 73 }
     ],
-    "enMeaning": "The Confederates"
+    "meanings": {
+      "en-US": "The Confederates",
+      "ar-IQ": null,
+      "id-ID": "Golongan Yang Bersekutu"
+    },
+    "namings": { "en-US": "الأحزاب", "ar-IQ": "الأحزاب", "id-ID": "الأحزاب" },
+    "transliterations": {
+      "en-US": "Al-Ahzaab",
+      "ar-IQ": "الأحزاب",
+      "id-ID": "Al-Ahzab"
+    }
   },
   "34": {
     "length": 54,
-    "en": "Saba",
-    "ar": "سبأ",
     "isMeccan": true,
-    "partDivisions": [{ "part": 22, "start": 1, "end": 54 }],
-    "enMeaning": "Sheba"
+    "partitioning": [{ "part": 22, "start": 1, "end": 54 }],
+    "meanings": { "en-US": "Sheba", "ar-IQ": null, "id-ID": "Saba'" },
+    "namings": { "en-US": "سبأ", "ar-IQ": "سبأ", "id-ID": "سبأ" },
+    "transliterations": { "en-US": "Saba", "ar-IQ": "سبأ", "id-ID": "Saba'" }
   },
   "35": {
     "length": 45,
-    "en": "Faatir",
-    "ar": "فاطر",
     "isMeccan": true,
-    "partDivisions": [{ "part": 22, "start": 1, "end": 45 }],
-    "enMeaning": "The Originator"
+    "partitioning": [{ "part": 22, "start": 1, "end": 45 }],
+    "meanings": {
+      "en-US": "The Originator",
+      "ar-IQ": null,
+      "id-ID": "Sang Maha Pencipta"
+    },
+    "namings": { "en-US": "فاطر", "ar-IQ": "فاطر", "id-ID": "فاطر" },
+    "transliterations": { "en-US": "Faatir", "ar-IQ": "فاطر", "id-ID": "Fatir" }
   },
   "36": {
     "length": 83,
-    "en": "Yaseen",
-    "ar": "يس",
     "isMeccan": true,
-    "partDivisions": [
+    "partitioning": [
       { "part": 22, "start": 1, "end": 27 },
       { "part": 23, "start": 28, "end": 83 }
     ],
-    "enMeaning": "Ya Sin"
+    "meanings": { "en-US": "Ya Sin", "ar-IQ": null, "id-ID": "Yasin" },
+    "namings": { "en-US": "يس", "ar-IQ": "يس", "id-ID": "يس" },
+    "transliterations": { "en-US": "Yaseen", "ar-IQ": "يس", "id-ID": "Yasin" }
   },
   "37": {
     "length": 182,
-    "en": "As-Saaffaat",
-    "ar": "الصافات",
     "isMeccan": true,
-    "partDivisions": [{ "part": 23, "start": 1, "end": 182 }],
-    "enMeaning": "Those Who Set the Ranks"
+    "partitioning": [{ "part": 23, "start": 1, "end": 182 }],
+    "meanings": {
+      "en-US": "Ranged in Row",
+      "ar-IQ": null,
+      "id-ID": "Barisan-Barisan"
+    },
+    "namings": { "en-US": "الصافات", "ar-IQ": "الصافات", "id-ID": "الصافات" },
+    "transliterations": {
+      "en-US": "As-Saaffaat",
+      "ar-IQ": "الصافات",
+      "id-ID": "As-Saffat"
+    }
   },
   "38": {
     "length": 88,
-    "en": "Saad",
-    "ar": "ص",
     "isMeccan": true,
-    "partDivisions": [{ "part": 23, "start": 1, "end": 88 }],
-    "enMeaning": "The Letter Saad"
+    "partitioning": [{ "part": 23, "start": 1, "end": 88 }],
+    "meanings": { "en-US": "The Letter Saad", "ar-IQ": null, "id-ID": "Sad" },
+    "namings": { "en-US": "ص", "ar-IQ": "ص", "id-ID": "ص" },
+    "transliterations": { "en-US": "Saad", "ar-IQ": "ص", "id-ID": "Sad" }
   },
   "39": {
     "length": 75,
-    "en": "Az-Zumar",
-    "ar": "الزمر",
     "isMeccan": true,
-    "partDivisions": [
+    "partitioning": [
       { "part": 23, "start": 1, "end": 31 },
       { "part": 24, "start": 32, "end": 75 }
     ],
-    "enMeaning": "The Troops"
+    "meanings": { "en-US": "The Troops", "ar-IQ": null, "id-ID": "Rombongan" },
+    "namings": { "en-US": "الزمر", "ar-IQ": "الزمر", "id-ID": "الزمر" },
+    "transliterations": {
+      "en-US": "Az-Zumar",
+      "ar-IQ": "الزمر",
+      "id-ID": "Az-Zumar"
+    }
   },
   "40": {
     "length": 85,
-    "en": "Al-Ghaafir",
-    "ar": "غافر",
     "isMeccan": true,
-    "partDivisions": [{ "part": 24, "start": 1, "end": 85 }],
-    "enMeaning": "The Forgiver"
+    "partitioning": [{ "part": 24, "start": 1, "end": 85 }],
+    "meanings": {
+      "en-US": "The Forgiver",
+      "ar-IQ": null,
+      "id-ID": "Maha Pengampun"
+    },
+    "namings": { "en-US": "غافر", "ar-IQ": "غافر", "id-ID": "غافر" },
+    "transliterations": {
+      "en-US": "Al-Ghaafir",
+      "ar-IQ": "غافر",
+      "id-ID": "Gafir"
+    }
   },
   "41": {
     "length": 54,
-    "en": "Fussilat",
-    "ar": "فصلت",
     "isMeccan": true,
-    "partDivisions": [
+    "partitioning": [
       { "part": 24, "start": 1, "end": 46 },
       { "part": 25, "start": 47, "end": 54 }
     ],
-    "enMeaning": "Explained in Detail"
+    "meanings": {
+      "en-US": "Explained in Detail",
+      "ar-IQ": null,
+      "id-ID": "Yang Dijelaskan"
+    },
+    "namings": { "en-US": "فصلت", "ar-IQ": "فصلت", "id-ID": "فصلت" },
+    "transliterations": {
+      "en-US": "Fussilat",
+      "ar-IQ": "فصلت",
+      "id-ID": "Fussilat"
+    }
   },
   "42": {
     "length": 53,
-    "en": "Ash-Shura",
-    "ar": "الشورى",
     "isMeccan": true,
-    "partDivisions": [{ "part": 25, "start": 1, "end": 53 }],
-    "enMeaning": "The Consultation"
+    "partitioning": [{ "part": 25, "start": 1, "end": 53 }],
+    "meanings": {
+      "en-US": "The Consultation",
+      "ar-IQ": null,
+      "id-ID": "Musyawarah"
+    },
+    "namings": { "en-US": "الشورى", "ar-IQ": "الشورى", "id-ID": "الشورى" },
+    "transliterations": {
+      "en-US": "Ash-Shura",
+      "ar-IQ": "الشورى",
+      "id-ID": "Asy-Syura"
+    }
   },
   "43": {
     "length": 89,
-    "en": "Az-Zukhruf",
-    "ar": "الزخرف",
     "isMeccan": true,
-    "partDivisions": [{ "part": 25, "start": 1, "end": 89 }],
-    "enMeaning": "The Ornaments of Gold"
+    "partitioning": [{ "part": 25, "start": 1, "end": 89 }],
+    "meanings": { "en-US": "Luxury", "ar-IQ": null, "id-ID": "Perhiasan" },
+    "namings": { "en-US": "الزخرف", "ar-IQ": "الزخرف", "id-ID": "الزخرف" },
+    "transliterations": {
+      "en-US": "Az-Zukhruf",
+      "ar-IQ": "الزخرف",
+      "id-ID": "Az-Zukhruf"
+    }
   },
   "44": {
     "length": 59,
-    "en": "Ad-Dukhaan",
-    "ar": "الدخان",
     "isMeccan": true,
-    "partDivisions": [{ "part": 25, "start": 1, "end": 59 }],
-    "enMeaning": "The Smoke"
+    "partitioning": [{ "part": 25, "start": 1, "end": 59 }],
+    "meanings": { "en-US": "The Smoke", "ar-IQ": null, "id-ID": "Kabut" },
+    "namings": { "en-US": "الدخان", "ar-IQ": "الدخان", "id-ID": "الدخان" },
+    "transliterations": {
+      "en-US": "Ad-Dukhaan",
+      "ar-IQ": "الدخان",
+      "id-ID": "Ad-Dukhan"
+    }
   },
   "45": {
     "length": 37,
-    "en": "Al-Jaathiya",
-    "ar": "الجاثية",
     "isMeccan": true,
-    "partDivisions": [{ "part": 25, "start": 1, "end": 37 }],
-    "enMeaning": "The Crouching"
+    "partitioning": [{ "part": 25, "start": 1, "end": 37 }],
+    "meanings": {
+      "en-US": "The Crouching",
+      "ar-IQ": null,
+      "id-ID": "Berlutut"
+    },
+    "namings": { "en-US": "الجاثية", "ar-IQ": "الجاثية", "id-ID": "الجاثية" },
+    "transliterations": {
+      "en-US": "Al-Jaathiya",
+      "ar-IQ": "الجاثية",
+      "id-ID": "Al-Jasiyah"
+    }
   },
   "46": {
     "length": 35,
-    "en": "Al-Ahqaf",
-    "ar": "الأحقاف",
     "isMeccan": true,
-    "partDivisions": [{ "part": 26, "start": 1, "end": 35 }],
-    "enMeaning": "The Wind-Curved Sandhill"
+    "partitioning": [{ "part": 26, "start": 1, "end": 35 }],
+    "meanings": {
+      "en-US": "The Sand Dunes",
+      "ar-IQ": null,
+      "id-ID": "Bukit Pasir"
+    },
+    "namings": { "en-US": "الأحقاف", "ar-IQ": "الأحقاف", "id-ID": "الأحقاف" },
+    "transliterations": {
+      "en-US": "Al-Ahqaf",
+      "ar-IQ": "الأحقاف",
+      "id-ID": "Al-Ahqaf"
+    }
   },
   "47": {
     "length": 38,
-    "en": "Muhammad",
-    "ar": "محمد",
     "isMeccan": false,
-    "partDivisions": [{ "part": 26, "start": 1, "end": 38 }],
-    "enMeaning": "Muhammad"
+    "partitioning": [{ "part": 26, "start": 1, "end": 38 }],
+    "meanings": { "en-US": "Muhammad", "ar-IQ": null, "id-ID": "Muhammad" },
+    "namings": { "en-US": "محمد", "ar-IQ": "محمد", "id-ID": "محمد" },
+    "transliterations": {
+      "en-US": "Muhammad",
+      "ar-IQ": "محمد",
+      "id-ID": "Muhammad"
+    }
   },
   "48": {
     "length": 29,
-    "en": "Al-Fath",
-    "ar": "الفتح",
     "isMeccan": false,
-    "partDivisions": [{ "part": 26, "start": 1, "end": 29 }],
-    "enMeaning": "The Victory"
+    "partitioning": [{ "part": 26, "start": 1, "end": 29 }],
+    "meanings": {
+      "en-US": "The Victory",
+      "ar-IQ": null,
+      "id-ID": "Kemenangan"
+    },
+    "namings": { "en-US": "الفتح", "ar-IQ": "الفتح", "id-ID": "الفتح" },
+    "transliterations": {
+      "en-US": "Al-Fath",
+      "ar-IQ": "الفتح",
+      "id-ID": "Al-Fath"
+    }
   },
   "49": {
     "length": 18,
-    "en": "Al-Hujuraat",
-    "ar": "الحجرات",
     "isMeccan": false,
-    "partDivisions": [{ "part": 26, "start": 1, "end": 18 }],
-    "enMeaning": "The Private Chambers"
+    "partitioning": [{ "part": 26, "start": 1, "end": 18 }],
+    "meanings": {
+      "en-US": "The Chambers",
+      "ar-IQ": null,
+      "id-ID": "Kamar-Kamar"
+    },
+    "namings": { "en-US": "الحجرات", "ar-IQ": "الحجرات", "id-ID": "الحجرات" },
+    "transliterations": {
+      "en-US": "Al-Hujuraat",
+      "ar-IQ": "الحجرات",
+      "id-ID": "Al-Hujurat"
+    }
   },
   "50": {
     "length": 45,
-    "en": "Qaaf",
-    "ar": "ق",
     "isMeccan": true,
-    "partDivisions": [{ "part": 26, "start": 1, "end": 45 }],
-    "enMeaning": "Qaf"
+    "partitioning": [{ "part": 26, "start": 1, "end": 45 }],
+    "meanings": { "en-US": "Qaf", "ar-IQ": null, "id-ID": "Qaf" },
+    "namings": { "en-US": "ق", "ar-IQ": "ق", "id-ID": "ق" },
+    "transliterations": { "en-US": "Qaaf", "ar-IQ": "ق", "id-ID": "Qaf" }
   },
   "51": {
     "length": 60,
-    "en": "Adh-Dhaariyat",
-    "ar": "الذاريات",
     "isMeccan": true,
-    "partDivisions": [
+    "partitioning": [
       { "part": 26, "start": 1, "end": 30 },
       { "part": 27, "start": 31, "end": 60 }
     ],
-    "enMeaning": "The Scatterers"
+    "meanings": {
+      "en-US": "The Scatterers",
+      "ar-IQ": null,
+      "id-ID": "Angin yang Menerbangkan"
+    },
+    "namings": {
+      "en-US": "الذاريات",
+      "ar-IQ": "الذاريات",
+      "id-ID": "الذاريات"
+    },
+    "transliterations": {
+      "en-US": "Adh-Dhaariyat",
+      "ar-IQ": "الذاريات",
+      "id-ID": "Az-Zariyat"
+    }
   },
   "52": {
     "length": 49,
-    "en": "At-Tur",
-    "ar": "الطور",
     "isMeccan": true,
-    "partDivisions": [{ "part": 27, "start": 1, "end": 49 }],
-    "enMeaning": "The Mountain"
+    "partitioning": [{ "part": 27, "start": 1, "end": 49 }],
+    "meanings": {
+      "en-US": "The Mountain",
+      "ar-IQ": null,
+      "id-ID": "Bukit Tursina"
+    },
+    "namings": { "en-US": "الطور", "ar-IQ": "الطور", "id-ID": "الطور" },
+    "transliterations": {
+      "en-US": "At-Tur",
+      "ar-IQ": "الطور",
+      "id-ID": "At-Tur"
+    }
   },
   "53": {
     "length": 62,
-    "en": "An-Najm",
-    "ar": "النجم",
     "isMeccan": true,
-    "partDivisions": [{ "part": 27, "start": 1, "end": 62 }],
-    "enMeaning": "The Star"
+    "partitioning": [{ "part": 27, "start": 1, "end": 62 }],
+    "meanings": { "en-US": "The Star", "ar-IQ": null, "id-ID": "Bintang" },
+    "namings": { "en-US": "النجم", "ar-IQ": "النجم", "id-ID": "النجم" },
+    "transliterations": {
+      "en-US": "An-Najm",
+      "ar-IQ": "النجم",
+      "id-ID": "An-Najm"
+    }
   },
   "54": {
     "length": 55,
-    "en": "Al-Qamar",
-    "ar": "القمر",
     "isMeccan": true,
-    "partDivisions": [{ "part": 27, "start": 1, "end": 55 }],
-    "enMeaning": "The Moon"
+    "partitioning": [{ "part": 27, "start": 1, "end": 55 }],
+    "meanings": { "en-US": "The Moon", "ar-IQ": null, "id-ID": "Bulan" },
+    "namings": { "en-US": "القمر", "ar-IQ": "القمر", "id-ID": "القمر" },
+    "transliterations": {
+      "en-US": "Al-Qamar",
+      "ar-IQ": "القمر",
+      "id-ID": "Al-Qamar"
+    }
   },
   "55": {
     "length": 78,
-    "en": "Ar-Rahmaan",
-    "ar": "الرحمن",
     "isMeccan": false,
-    "partDivisions": [{ "part": 27, "start": 1, "end": 78 }],
-    "enMeaning": "The Beneficent"
+    "partitioning": [{ "part": 27, "start": 1, "end": 78 }],
+    "meanings": {
+      "en-US": "The Beneficent",
+      "ar-IQ": null,
+      "id-ID": "Maha Pengasih"
+    },
+    "namings": { "en-US": "الرحمن", "ar-IQ": "الرحمن", "id-ID": "الرحمن" },
+    "transliterations": {
+      "en-US": "Ar-Rahmaan",
+      "ar-IQ": "الرحمن",
+      "id-ID": "Ar-Rahman"
+    }
   },
   "56": {
     "length": 96,
-    "en": "Al-Waaqia",
-    "ar": "الواقعة",
     "isMeccan": true,
-    "partDivisions": [{ "part": 27, "start": 1, "end": 96 }],
-    "enMeaning": "The Inevitable"
+    "partitioning": [{ "part": 27, "start": 1, "end": 96 }],
+    "meanings": {
+      "en-US": "The Inevitable",
+      "ar-IQ": null,
+      "id-ID": "Hari Kiamat"
+    },
+    "namings": { "en-US": "الواقعة", "ar-IQ": "الواقعة", "id-ID": "الواقعة" },
+    "transliterations": {
+      "en-US": "Al-Waaqia",
+      "ar-IQ": "الواقعة",
+      "id-ID": "Al-Waqi'ah"
+    }
   },
   "57": {
     "length": 29,
-    "en": "Al-Hadid",
-    "ar": "الحديد",
     "isMeccan": false,
-    "partDivisions": [{ "part": 27, "start": 1, "end": 29 }],
-    "enMeaning": "The Iron"
+    "partitioning": [{ "part": 27, "start": 1, "end": 29 }],
+    "meanings": { "en-US": "The Iron", "ar-IQ": null, "id-ID": "Besi" },
+    "namings": { "en-US": "الحديد", "ar-IQ": "الحديد", "id-ID": "الحديد" },
+    "transliterations": {
+      "en-US": "Al-Hadid",
+      "ar-IQ": "الحديد",
+      "id-ID": "Al-Hadid"
+    }
   },
   "58": {
     "length": 22,
-    "en": "Al-Mujaadila",
-    "ar": "المجادلة",
     "isMeccan": false,
-    "partDivisions": [{ "part": 28, "start": 1, "end": 22 }],
-    "enMeaning": "The Pleading Woman"
+    "partitioning": [{ "part": 28, "start": 1, "end": 22 }],
+    "meanings": {
+      "en-US": "The Pleading Woman",
+      "ar-IQ": null,
+      "id-ID": "Gugatan"
+    },
+    "namings": {
+      "en-US": "المجادلة",
+      "ar-IQ": "المجادلة",
+      "id-ID": "المجادلة"
+    },
+    "transliterations": {
+      "en-US": "Al-Mujaadila",
+      "ar-IQ": "المجادلة",
+      "id-ID": "Al-Mujadalah"
+    }
   },
   "59": {
     "length": 24,
-    "en": "Al-Hashr",
-    "ar": "الحشر",
     "isMeccan": false,
-    "partDivisions": [{ "part": 28, "start": 1, "end": 24 }],
-    "enMeaning": "The Exile"
+    "partitioning": [{ "part": 28, "start": 1, "end": 24 }],
+    "meanings": { "en-US": "The Exile", "ar-IQ": null, "id-ID": "Pengusiran" },
+    "namings": { "en-US": "الحشر", "ar-IQ": "الحشر", "id-ID": "الحشر" },
+    "transliterations": {
+      "en-US": "Al-Hashr",
+      "ar-IQ": "الحشر",
+      "id-ID": "Al-Hasyr"
+    }
   },
   "60": {
     "length": 13,
-    "en": "Al-Mumtahana",
-    "ar": "الممتحنة",
     "isMeccan": false,
-    "partDivisions": [{ "part": 28, "start": 1, "end": 13 }],
-    "enMeaning": "She That Is to Be Examined"
+    "partitioning": [{ "part": 28, "start": 1, "end": 13 }],
+    "meanings": {
+      "en-US": "She That Is To Be Examined",
+      "ar-IQ": null,
+      "id-ID": "Wanita Yang Diuji"
+    },
+    "namings": {
+      "en-US": "الممتحنة",
+      "ar-IQ": "الممتحنة",
+      "id-ID": "الممتحنة"
+    },
+    "transliterations": {
+      "en-US": "Al-Mumtahana",
+      "ar-IQ": "الممتحنة",
+      "id-ID": "Al-Mumtahanah"
+    }
   },
   "61": {
     "length": 14,
-    "en": "As-Saff",
-    "ar": "الصف",
     "isMeccan": false,
-    "partDivisions": [{ "part": 28, "start": 1, "end": 14 }],
-    "enMeaning": "The Ranks"
+    "partitioning": [{ "part": 28, "start": 1, "end": 14 }],
+    "meanings": { "en-US": "The Ranks", "ar-IQ": null, "id-ID": "Barisan" },
+    "namings": { "en-US": "الصف", "ar-IQ": "الصف", "id-ID": "الصف" },
+    "transliterations": {
+      "en-US": "As-Saff",
+      "ar-IQ": "الصف",
+      "id-ID": "As-Saff"
+    }
   },
   "62": {
     "length": 11,
-    "en": "Al-Jumu'a",
-    "ar": "الجمعة",
     "isMeccan": false,
-    "partDivisions": [{ "part": 28, "start": 1, "end": 11 }],
-    "enMeaning": "Congregation Prayer"
+    "partitioning": [{ "part": 28, "start": 1, "end": 11 }],
+    "meanings": {
+      "en-US": "Congregation Prayer",
+      "ar-IQ": null,
+      "id-ID": "Jumat"
+    },
+    "namings": { "en-US": "الجمعة", "ar-IQ": "الجمعة", "id-ID": "الجمعة" },
+    "transliterations": {
+      "en-US": "Al-Jumu'a",
+      "ar-IQ": "الجمعة",
+      "id-ID": "Al-Jumu'ah"
+    }
   },
   "63": {
     "length": 11,
-    "en": "Al-Munaafiqoon",
-    "ar": "المنافقون",
     "isMeccan": false,
-    "partDivisions": [{ "part": 28, "start": 1, "end": 11 }],
-    "enMeaning": "The Hypocrites"
+    "partitioning": [{ "part": 28, "start": 1, "end": 11 }],
+    "meanings": {
+      "en-US": "The Hypocrites",
+      "ar-IQ": null,
+      "id-ID": "Orang-Orang Munafik"
+    },
+    "namings": {
+      "en-US": "المنافقون",
+      "ar-IQ": "المنافقون",
+      "id-ID": "المنافقون"
+    },
+    "transliterations": {
+      "en-US": "Al-Munaafiqoon",
+      "ar-IQ": "المنافقون",
+      "id-ID": "Al-Munafiqun"
+    }
   },
   "64": {
     "length": 18,
-    "en": "At-Taghaabun",
-    "ar": "التغابن",
     "isMeccan": false,
-    "partDivisions": [{ "part": 28, "start": 1, "end": 18 }],
-    "enMeaning": "Mutual Dispossession"
+    "partitioning": [{ "part": 28, "start": 1, "end": 18 }],
+    "meanings": {
+      "en-US": "Mutual Dispossession",
+      "ar-IQ": null,
+      "id-ID": "Pengungkapan Kesalahan"
+    },
+    "namings": { "en-US": "التغابن", "ar-IQ": "التغابن", "id-ID": "التغابن" },
+    "transliterations": {
+      "en-US": "At-Taghaabun",
+      "ar-IQ": "التغابن",
+      "id-ID": "At-Tagabun"
+    }
   },
   "65": {
     "length": 12,
-    "en": "At-Talaaq",
-    "ar": "الطلاق",
     "isMeccan": false,
-    "partDivisions": [{ "part": 28, "start": 1, "end": 12 }],
-    "enMeaning": "The Divorce"
+    "partitioning": [{ "part": 28, "start": 1, "end": 12 }],
+    "meanings": { "en-US": "The Divorce", "ar-IQ": null, "id-ID": "Talak" },
+    "namings": { "en-US": "الطلاق", "ar-IQ": "الطلاق", "id-ID": "الطلاق" },
+    "transliterations": {
+      "en-US": "At-Talaaq",
+      "ar-IQ": "الطلاق",
+      "id-ID": "At-Talaq"
+    }
   },
   "66": {
     "length": 12,
-    "en": "At-Tahrim",
-    "ar": "التحريم",
     "isMeccan": false,
-    "partDivisions": [{ "part": 28, "start": 1, "end": 12 }],
-    "enMeaning": "The Prohibition"
+    "partitioning": [{ "part": 28, "start": 1, "end": 12 }],
+    "meanings": {
+      "en-US": "The Prohibition",
+      "ar-IQ": null,
+      "id-ID": "Pengharaman"
+    },
+    "namings": { "en-US": "التحريم", "ar-IQ": "التحريم", "id-ID": "التحريم" },
+    "transliterations": {
+      "en-US": "At-Tahrim",
+      "ar-IQ": "التحريم",
+      "id-ID": "At-Tahrim"
+    }
   },
   "67": {
     "length": 30,
-    "en": "Al-Mulk",
-    "ar": "الملك",
     "isMeccan": true,
-    "partDivisions": [{ "part": 29, "start": 1, "end": 30 }],
-    "enMeaning": "The Sovereignty"
+    "partitioning": [{ "part": 29, "start": 1, "end": 30 }],
+    "meanings": {
+      "en-US": "The Sovereignty",
+      "ar-IQ": null,
+      "id-ID": "Kerajaan"
+    },
+    "namings": { "en-US": "الملك", "ar-IQ": "الملك", "id-ID": "الملك" },
+    "transliterations": {
+      "en-US": "Al-Mulk",
+      "ar-IQ": "الملك",
+      "id-ID": "Al-Mulk"
+    }
   },
   "68": {
     "length": 52,
-    "en": "Al-Qalam",
-    "ar": "القلم",
     "isMeccan": true,
-    "partDivisions": [{ "part": 29, "start": 1, "end": 52 }],
-    "enMeaning": "The Pen"
+    "partitioning": [{ "part": 29, "start": 1, "end": 52 }],
+    "meanings": { "en-US": "The Pen", "ar-IQ": null, "id-ID": "Pena" },
+    "namings": { "en-US": "القلم", "ar-IQ": "القلم", "id-ID": "القلم" },
+    "transliterations": {
+      "en-US": "Al-Qalam",
+      "ar-IQ": "القلم",
+      "id-ID": "Al-Qalam"
+    }
   },
   "69": {
     "length": 52,
-    "en": "Al-Haaqqa",
-    "ar": "الحاقة",
     "isMeccan": true,
-    "partDivisions": [{ "part": 29, "start": 1, "end": 52 }],
-    "enMeaning": "The Reality"
+    "partitioning": [{ "part": 29, "start": 1, "end": 52 }],
+    "meanings": {
+      "en-US": "The Reality",
+      "ar-IQ": null,
+      "id-ID": "Hari Kiamat"
+    },
+    "namings": { "en-US": "الحاقة", "ar-IQ": "الحاقة", "id-ID": "الحاقة" },
+    "transliterations": {
+      "en-US": "Al-Haaqqa",
+      "ar-IQ": "الحاقة",
+      "id-ID": "Al-Haqqah"
+    }
   },
   "70": {
     "length": 44,
-    "en": "Al-Ma'aarij",
-    "ar": "المعارج",
     "isMeccan": true,
-    "partDivisions": [{ "part": 29, "start": 1, "end": 44 }],
-    "enMeaning": "The Ascending Stairways"
+    "partitioning": [{ "part": 29, "start": 1, "end": 44 }],
+    "meanings": {
+      "en-US": "The Ascending Stairways",
+      "ar-IQ": null,
+      "id-ID": "Tempat Naik"
+    },
+    "namings": { "en-US": "المعارج", "ar-IQ": "المعارج", "id-ID": "المعارج" },
+    "transliterations": {
+      "en-US": "Al-Ma'aarij",
+      "ar-IQ": "المعارج",
+      "id-ID": "Al-Ma'arij"
+    }
   },
   "71": {
     "length": 28,
-    "en": "Nooh",
-    "ar": "نوح",
     "isMeccan": true,
-    "partDivisions": [{ "part": 29, "start": 1, "end": 28 }],
-    "enMeaning": "Noah"
+    "partitioning": [{ "part": 29, "start": 1, "end": 28 }],
+    "meanings": { "en-US": "Noah", "ar-IQ": null, "id-ID": "Nuh" },
+    "namings": { "en-US": "نوح", "ar-IQ": "نوح", "id-ID": "نوح" },
+    "transliterations": { "en-US": "Nooh", "ar-IQ": "نوح", "id-ID": "Nuh" }
   },
   "72": {
     "length": 28,
-    "en": "Al-Jinn",
-    "ar": "الجن",
     "isMeccan": true,
-    "partDivisions": [{ "part": 29, "start": 1, "end": 28 }],
-    "enMeaning": "The Jinn"
+    "partitioning": [{ "part": 29, "start": 1, "end": 28 }],
+    "meanings": { "en-US": "The Jinn", "ar-IQ": null, "id-ID": "Jin" },
+    "namings": { "en-US": "الجن", "ar-IQ": "الجن", "id-ID": "الجن" },
+    "transliterations": {
+      "en-US": "Al-Jinn",
+      "ar-IQ": "الجن",
+      "id-ID": "Al-Jinn"
+    }
   },
   "73": {
     "length": 20,
-    "en": "Al-Muzzammil",
-    "ar": "المزمل",
     "isMeccan": true,
-    "partDivisions": [{ "part": 29, "start": 1, "end": 20 }],
-    "enMeaning": "The Enshrouded One"
+    "partitioning": [{ "part": 29, "start": 1, "end": 20 }],
+    "meanings": {
+      "en-US": "The Enshrouded One",
+      "ar-IQ": null,
+      "id-ID": "Orang Yang Berselimut"
+    },
+    "namings": { "en-US": "المزمل", "ar-IQ": "المزمل", "id-ID": "المزمل" },
+    "transliterations": {
+      "en-US": "Al-Muzzammil",
+      "ar-IQ": "المزمل",
+      "id-ID": "Al-Muzzammil"
+    }
   },
   "74": {
     "length": 56,
-    "en": "Al-Muddaththir",
-    "ar": "المدثر",
     "isMeccan": true,
-    "partDivisions": [{ "part": 29, "start": 1, "end": 56 }],
-    "enMeaning": "The Cloaked One"
+    "partitioning": [{ "part": 29, "start": 1, "end": 56 }],
+    "meanings": {
+      "en-US": "The Cloaked One",
+      "ar-IQ": null,
+      "id-ID": "Yang Berkemul"
+    },
+    "namings": { "en-US": "المدثر", "ar-IQ": "المدثر", "id-ID": "المدثر" },
+    "transliterations": {
+      "en-US": "Al-Muddaththir",
+      "ar-IQ": "المدثر",
+      "id-ID": "Al-Muddassir"
+    }
   },
   "75": {
     "length": 40,
-    "en": "Al-Qiyaama",
-    "ar": "القيامة",
     "isMeccan": true,
-    "partDivisions": [{ "part": 29, "start": 1, "end": 40 }],
-    "enMeaning": "The Resurrection"
+    "partitioning": [{ "part": 29, "start": 1, "end": 40 }],
+    "meanings": {
+      "en-US": "The Resurrection",
+      "ar-IQ": null,
+      "id-ID": "Hari Kiamat"
+    },
+    "namings": { "en-US": "القيامة", "ar-IQ": "القيامة", "id-ID": "القيامة" },
+    "transliterations": {
+      "en-US": "Al-Qiyaama",
+      "ar-IQ": "القيامة",
+      "id-ID": "Al-Qiyamah"
+    }
   },
   "76": {
     "length": 31,
-    "en": "Al-Insaan",
-    "ar": "الإنسان",
     "isMeccan": false,
-    "partDivisions": [{ "part": 29, "start": 1, "end": 31 }],
-    "enMeaning": "The Man"
+    "partitioning": [{ "part": 29, "start": 1, "end": 31 }],
+    "meanings": { "en-US": "The Man", "ar-IQ": null, "id-ID": "Manusia" },
+    "namings": { "en-US": "الإنسان", "ar-IQ": "الإنسان", "id-ID": "الإنسان" },
+    "transliterations": {
+      "en-US": "Al-Insaan",
+      "ar-IQ": "الإنسان",
+      "id-ID": "Al-Insan"
+    }
   },
   "77": {
     "length": 50,
-    "en": "Al-Mursalaat",
-    "ar": "المرسلات",
     "isMeccan": true,
-    "partDivisions": [{ "part": 29, "start": 1, "end": 50 }],
-    "enMeaning": "The Emissaries"
+    "partitioning": [{ "part": 29, "start": 1, "end": 50 }],
+    "meanings": {
+      "en-US": "The Emissaries",
+      "ar-IQ": null,
+      "id-ID": "Malaikat Yang Diutus"
+    },
+    "namings": {
+      "en-US": "المرسلات",
+      "ar-IQ": "المرسلات",
+      "id-ID": "المرسلات"
+    },
+    "transliterations": {
+      "en-US": "Al-Mursalaat",
+      "ar-IQ": "المرسلات",
+      "id-ID": "Al-Mursalat"
+    }
   },
   "78": {
     "length": 40,
-    "en": "An-Naba",
-    "ar": "النبأ",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 40 }],
-    "enMeaning": "The Tidings"
+    "partitioning": [{ "part": 30, "start": 1, "end": 40 }],
+    "meanings": {
+      "en-US": "The Tidings",
+      "ar-IQ": null,
+      "id-ID": "Berita Besar"
+    },
+    "namings": { "en-US": "النبأ", "ar-IQ": "النبأ", "id-ID": "النبأ" },
+    "transliterations": {
+      "en-US": "An-Naba",
+      "ar-IQ": "النبأ",
+      "id-ID": "An-Naba'"
+    }
   },
   "79": {
     "length": 46,
-    "en": "An-Naazi'aat",
-    "ar": "النازعات",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 46 }],
-    "enMeaning": "Those Who Drag Forth"
+    "partitioning": [{ "part": 30, "start": 1, "end": 46 }],
+    "meanings": {
+      "en-US": "Those Who Drag Forth",
+      "ar-IQ": null,
+      "id-ID": "Malaikat Yang Mencabut"
+    },
+    "namings": {
+      "en-US": "النازعات",
+      "ar-IQ": "النازعات",
+      "id-ID": "النازعات"
+    },
+    "transliterations": {
+      "en-US": "An-Naazi'aat",
+      "ar-IQ": "النازعات",
+      "id-ID": "An-Nazi'at"
+    }
   },
   "80": {
     "length": 42,
-    "en": "Abasa",
-    "ar": "عبس",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 42 }],
-    "enMeaning": "He Frowned"
+    "partitioning": [{ "part": 30, "start": 1, "end": 42 }],
+    "meanings": {
+      "en-US": "He Frowned",
+      "ar-IQ": null,
+      "id-ID": "Bermuka Masam"
+    },
+    "namings": { "en-US": "عبس", "ar-IQ": "عبس", "id-ID": "عبس" },
+    "transliterations": { "en-US": "Abasa", "ar-IQ": "عبس", "id-ID": "'Abasa" }
   },
   "81": {
     "length": 29,
-    "en": "At-Takwir",
-    "ar": "التكوير",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 29 }],
-    "enMeaning": "The Overthrowing"
+    "partitioning": [{ "part": 30, "start": 1, "end": 29 }],
+    "meanings": {
+      "en-US": "The Overthrowing",
+      "ar-IQ": null,
+      "id-ID": "Penggulungan"
+    },
+    "namings": { "en-US": "التكوير", "ar-IQ": "التكوير", "id-ID": "التكوير" },
+    "transliterations": {
+      "en-US": "At-Takwir",
+      "ar-IQ": "التكوير",
+      "id-ID": "At-Takwir"
+    }
   },
   "82": {
     "length": 19,
-    "en": "Al-Infitaar",
-    "ar": "الإنفطار",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 19 }],
-    "enMeaning": "The Cleaving"
+    "partitioning": [{ "part": 30, "start": 1, "end": 19 }],
+    "meanings": { "en-US": "The Cleaving", "ar-IQ": null, "id-ID": "Terbelah" },
+    "namings": {
+      "en-US": "الإنفطار",
+      "ar-IQ": "الإنفطار",
+      "id-ID": "الإنفطار"
+    },
+    "transliterations": {
+      "en-US": "Al-Infitaar",
+      "ar-IQ": "الإنفطار",
+      "id-ID": "Al-Infitar"
+    }
   },
   "83": {
     "length": 36,
-    "en": "Al-Mutaffifin",
-    "ar": "المطففين",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 36 }],
-    "enMeaning": "The Defrauding"
+    "partitioning": [{ "part": 30, "start": 1, "end": 36 }],
+    "meanings": {
+      "en-US": "The Defrauding",
+      "ar-IQ": null,
+      "id-ID": "Orang-Orang Curang"
+    },
+    "namings": {
+      "en-US": "المطففين",
+      "ar-IQ": "المطففين",
+      "id-ID": "المطففين"
+    },
+    "transliterations": {
+      "en-US": "Al-Mutaffifin",
+      "ar-IQ": "المطففين",
+      "id-ID": "Al-Mutaffifin"
+    }
   },
   "84": {
     "length": 25,
-    "en": "Al-Inshiqaaq",
-    "ar": "الإنشقاق",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 25 }],
-    "enMeaning": "The Sundering"
+    "partitioning": [{ "part": 30, "start": 1, "end": 25 }],
+    "meanings": {
+      "en-US": "The Sundering",
+      "ar-IQ": null,
+      "id-ID": "Terbelah"
+    },
+    "namings": {
+      "en-US": "الإنشقاق",
+      "ar-IQ": "الإنشقاق",
+      "id-ID": "الإنشقاق"
+    },
+    "transliterations": {
+      "en-US": "Al-Inshiqaaq",
+      "ar-IQ": "الإنشقاق",
+      "id-ID": "Al-Insyiqaq"
+    }
   },
   "85": {
     "length": 22,
-    "en": "Al-Burooj",
-    "ar": "البروج",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 22 }],
-    "enMeaning": "The Mansions of the Stars"
+    "partitioning": [{ "part": 30, "start": 1, "end": 22 }],
+    "meanings": {
+      "en-US": "The Mansions of the Stars",
+      "ar-IQ": null,
+      "id-ID": "Gugusan Bintang"
+    },
+    "namings": { "en-US": "البروج", "ar-IQ": "البروج", "id-ID": "البروج" },
+    "transliterations": {
+      "en-US": "Al-Burooj",
+      "ar-IQ": "البروج",
+      "id-ID": "Al-Buruj"
+    }
   },
   "86": {
     "length": 17,
-    "en": "At-Taariq",
-    "ar": "الطارق",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 17 }],
-    "enMeaning": "The Nightcomer"
+    "partitioning": [{ "part": 30, "start": 1, "end": 17 }],
+    "meanings": {
+      "en-US": "The Nightcomer",
+      "ar-IQ": null,
+      "id-ID": "Pengunjung Malam"
+    },
+    "namings": { "en-US": "الطارق", "ar-IQ": "الطارق", "id-ID": "الطارق" },
+    "transliterations": {
+      "en-US": "At-Taariq",
+      "ar-IQ": "الطارق",
+      "id-ID": "At-Tariq"
+    }
   },
   "87": {
     "length": 19,
-    "en": "Al-A'laa",
-    "ar": "الأعلى",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 19 }],
-    "enMeaning": "The Most High"
+    "partitioning": [{ "part": 30, "start": 1, "end": 19 }],
+    "meanings": {
+      "en-US": "The Most High",
+      "ar-IQ": null,
+      "id-ID": "Yang Maha Tinggi"
+    },
+    "namings": { "en-US": "الأعلى", "ar-IQ": "الأعلى", "id-ID": "الأعلى" },
+    "transliterations": {
+      "en-US": "Al-A'laa",
+      "ar-IQ": "الأعلى",
+      "id-ID": "Al-A'la"
+    }
   },
   "88": {
     "length": 26,
-    "en": "Al-Ghaashiya",
-    "ar": "الغاشية",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 26 }],
-    "enMeaning": "The Overwhelming"
+    "partitioning": [{ "part": 30, "start": 1, "end": 26 }],
+    "meanings": {
+      "en-US": "The Overwhelming",
+      "ar-IQ": null,
+      "id-ID": "Hari Pembalasan"
+    },
+    "namings": { "en-US": "الغاشية", "ar-IQ": "الغاشية", "id-ID": "الغاشية" },
+    "transliterations": {
+      "en-US": "Al-Ghaashiya",
+      "ar-IQ": "الغاشية",
+      "id-ID": "Al-Gasyiyah"
+    }
   },
   "89": {
     "length": 30,
-    "en": "Al-Fajr",
-    "ar": "الفجر",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 30 }],
-    "enMeaning": "The Dawn"
+    "partitioning": [{ "part": 30, "start": 1, "end": 30 }],
+    "meanings": { "en-US": "The Dawn", "ar-IQ": null, "id-ID": "Fajar" },
+    "namings": { "en-US": "الفجر", "ar-IQ": "الفجر", "id-ID": "الفجر" },
+    "transliterations": {
+      "en-US": "Al-Fajr",
+      "ar-IQ": "الفجر",
+      "id-ID": "Al-Fajr"
+    }
   },
   "90": {
     "length": 20,
-    "en": "Al-Balad",
-    "ar": "البلد",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 20 }],
-    "enMeaning": "The City"
+    "partitioning": [{ "part": 30, "start": 1, "end": 20 }],
+    "meanings": { "en-US": "The City", "ar-IQ": null, "id-ID": "Negeri" },
+    "namings": { "en-US": "البلد", "ar-IQ": "البلد", "id-ID": "البلد" },
+    "transliterations": {
+      "en-US": "Al-Balad",
+      "ar-IQ": "البلد",
+      "id-ID": "Al-Balad"
+    }
   },
   "91": {
     "length": 15,
-    "en": "Ash-Shams",
-    "ar": "الشمس",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 15 }],
-    "enMeaning": "The Sun"
+    "partitioning": [{ "part": 30, "start": 1, "end": 15 }],
+    "meanings": { "en-US": "The Sun", "ar-IQ": null, "id-ID": "Matahari" },
+    "namings": { "en-US": "الشمس", "ar-IQ": "الشمس", "id-ID": "الشمس" },
+    "transliterations": {
+      "en-US": "Ash-Shams",
+      "ar-IQ": "الشمس",
+      "id-ID": "Asy-Syams"
+    }
   },
   "92": {
     "length": 21,
-    "en": "Al-Lail",
-    "ar": "الليل",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 21 }],
-    "enMeaning": "The Night"
+    "partitioning": [{ "part": 30, "start": 1, "end": 21 }],
+    "meanings": { "en-US": "The Night", "ar-IQ": null, "id-ID": "Malam" },
+    "namings": { "en-US": "الليل", "ar-IQ": "الليل", "id-ID": "الليل" },
+    "transliterations": {
+      "en-US": "Al-Lail",
+      "ar-IQ": "الليل",
+      "id-ID": "Al-Lail"
+    }
   },
   "93": {
     "length": 11,
-    "en": "Ad-Dhuhaa",
-    "ar": "الضحى",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 11 }],
-    "enMeaning": "The Morning Brightness"
+    "partitioning": [{ "part": 30, "start": 1, "end": 11 }],
+    "meanings": {
+      "en-US": "The Morning Brightness",
+      "ar-IQ": null,
+      "id-ID": "Matahari Sepenggalah"
+    },
+    "namings": { "en-US": "الضحى", "ar-IQ": "الضحى", "id-ID": "الضحى" },
+    "transliterations": {
+      "en-US": "Ad-Dhuhaa",
+      "ar-IQ": "الضحى",
+      "id-ID": "Ad-Duha"
+    }
   },
   "94": {
     "length": 8,
-    "en": "Ash-Sharh",
-    "ar": "الشرح",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 8 }],
-    "enMeaning": "The Expansion"
+    "partitioning": [{ "part": 30, "start": 1, "end": 8 }],
+    "meanings": { "en-US": "The Expansion", "ar-IQ": null, "id-ID": "Lapang" },
+    "namings": { "en-US": "الشرح", "ar-IQ": "الشرح", "id-ID": "الشرح" },
+    "transliterations": {
+      "en-US": "Ash-Sharh",
+      "ar-IQ": "الشرح",
+      "id-ID": "Asy-Syarh"
+    }
   },
   "95": {
     "length": 8,
-    "en": "At-Tin",
-    "ar": "التين",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 8 }],
-    "enMeaning": "The Fig"
+    "partitioning": [{ "part": 30, "start": 1, "end": 8 }],
+    "meanings": { "en-US": "The Fig", "ar-IQ": null, "id-ID": "Buah Tin" },
+    "namings": { "en-US": "التين", "ar-IQ": "التين", "id-ID": "التين" },
+    "transliterations": {
+      "en-US": "At-Tin",
+      "ar-IQ": "التين",
+      "id-ID": "At-Tin"
+    }
   },
   "96": {
     "length": 19,
-    "en": "Al-Alaq",
-    "ar": "العلق",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 19 }],
-    "enMeaning": "The Blood Clot"
+    "partitioning": [{ "part": 30, "start": 1, "end": 19 }],
+    "meanings": {
+      "en-US": "The Blood Clot",
+      "ar-IQ": null,
+      "id-ID": "Segumpal Darah"
+    },
+    "namings": { "en-US": "العلق", "ar-IQ": "العلق", "id-ID": "العلق" },
+    "transliterations": {
+      "en-US": "Al-Alaq",
+      "ar-IQ": "العلق",
+      "id-ID": "Al-'Alaq"
+    }
   },
   "97": {
     "length": 5,
-    "en": "Al-Qadr",
-    "ar": "القدر",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 5 }],
-    "enMeaning": "The Power"
+    "partitioning": [{ "part": 30, "start": 1, "end": 5 }],
+    "meanings": { "en-US": "The Power", "ar-IQ": null, "id-ID": "Kemuliaan" },
+    "namings": { "en-US": "القدر", "ar-IQ": "القدر", "id-ID": "القدر" },
+    "transliterations": {
+      "en-US": "Al-Qadr",
+      "ar-IQ": "القدر",
+      "id-ID": "Al-Qadr"
+    }
   },
   "98": {
     "length": 8,
-    "en": "Al-Bayyina",
-    "ar": "البينة",
     "isMeccan": false,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 8 }],
-    "enMeaning": "The Evidence"
+    "partitioning": [{ "part": 30, "start": 1, "end": 8 }],
+    "meanings": {
+      "en-US": "The Evidence",
+      "ar-IQ": null,
+      "id-ID": "Bukti Nyata"
+    },
+    "namings": { "en-US": "البينة", "ar-IQ": "البينة", "id-ID": "البينة" },
+    "transliterations": {
+      "en-US": "Al-Bayyina",
+      "ar-IQ": "البينة",
+      "id-ID": "Al-Bayyinah"
+    }
   },
   "99": {
     "length": 8,
-    "en": "Az-Zalzala",
-    "ar": "الزلزلة",
     "isMeccan": false,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 8 }],
-    "enMeaning": "The Earthquake"
+    "partitioning": [{ "part": 30, "start": 1, "end": 8 }],
+    "meanings": {
+      "en-US": "The Earthquake",
+      "ar-IQ": null,
+      "id-ID": "Guncangan"
+    },
+    "namings": { "en-US": "الزلزلة", "ar-IQ": "الزلزلة", "id-ID": "الزلزلة" },
+    "transliterations": {
+      "en-US": "Az-Zalzala",
+      "ar-IQ": "الزلزلة",
+      "id-ID": "Az-Zalzalah"
+    }
   },
   "100": {
     "length": 11,
-    "en": "Al-Aadiyaat",
-    "ar": "العاديات",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 11 }],
-    "enMeaning": "The Courser"
+    "partitioning": [{ "part": 30, "start": 1, "end": 11 }],
+    "meanings": {
+      "en-US": "The Courser",
+      "ar-IQ": null,
+      "id-ID": "Kuda Yang Berlari Kencang"
+    },
+    "namings": {
+      "en-US": "العاديات",
+      "ar-IQ": "العاديات",
+      "id-ID": "العاديات"
+    },
+    "transliterations": {
+      "en-US": "Al-Aadiyaat",
+      "ar-IQ": "العاديات",
+      "id-ID": "Al-'Adiyat"
+    }
   },
   "101": {
     "length": 11,
-    "en": "Al-Qaari'a",
-    "ar": "القارعة",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 11 }],
-    "enMeaning": "The Calamity"
+    "partitioning": [{ "part": 30, "start": 1, "end": 11 }],
+    "meanings": {
+      "en-US": "The Calamity",
+      "ar-IQ": null,
+      "id-ID": "Hari Kiamat"
+    },
+    "namings": { "en-US": "القارعة", "ar-IQ": "القارعة", "id-ID": "القارعة" },
+    "transliterations": {
+      "en-US": "Al-Qaari'a",
+      "ar-IQ": "القارعة",
+      "id-ID": "Al-Qari'ah"
+    }
   },
   "102": {
     "length": 8,
-    "en": "At-Takaathur",
-    "ar": "التكاثر",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 8 }],
-    "enMeaning": "Vying for Increase"
+    "partitioning": [{ "part": 30, "start": 1, "end": 8 }],
+    "meanings": {
+      "en-US": "Vying for Increase",
+      "ar-IQ": null,
+      "id-ID": "Bermegah-Megahan"
+    },
+    "namings": { "en-US": "التكاثر", "ar-IQ": "التكاثر", "id-ID": "التكاثر" },
+    "transliterations": {
+      "en-US": "At-Takaathur",
+      "ar-IQ": "التكاثر",
+      "id-ID": "At-Takasur"
+    }
   },
   "103": {
     "length": 3,
-    "en": "Al-Asr",
-    "ar": "العصر",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 3 }],
-    "enMeaning": "The Declining Day"
+    "partitioning": [{ "part": 30, "start": 1, "end": 3 }],
+    "meanings": {
+      "en-US": "The Declining Day",
+      "ar-IQ": null,
+      "id-ID": "Masa"
+    },
+    "namings": { "en-US": "العصر", "ar-IQ": "العصر", "id-ID": "العصر" },
+    "transliterations": {
+      "en-US": "Al-Asr",
+      "ar-IQ": "العصر",
+      "id-ID": "Al-'Asr"
+    }
   },
   "104": {
     "length": 9,
-    "en": "Al-Humaza",
-    "ar": "الهمزة",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 9 }],
-    "enMeaning": "The Slanderer"
+    "partitioning": [{ "part": 30, "start": 1, "end": 9 }],
+    "meanings": {
+      "en-US": "The Slanderer",
+      "ar-IQ": null,
+      "id-ID": "Pengumpat"
+    },
+    "namings": { "en-US": "الهمزة", "ar-IQ": "الهمزة", "id-ID": "الهمزة" },
+    "transliterations": {
+      "en-US": "Al-Humaza",
+      "ar-IQ": "الهمزة",
+      "id-ID": "Al-Humazah"
+    }
   },
   "105": {
     "length": 5,
-    "en": "Al-Fil",
-    "ar": "الفيل",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 5 }],
-    "enMeaning": "The Elephant"
+    "partitioning": [{ "part": 30, "start": 1, "end": 5 }],
+    "meanings": { "en-US": "The Elephant", "ar-IQ": null, "id-ID": "Gajah" },
+    "namings": { "en-US": "الفيل", "ar-IQ": "الفيل", "id-ID": "الفيل" },
+    "transliterations": {
+      "en-US": "Al-Fil",
+      "ar-IQ": "الفيل",
+      "id-ID": "Al-Fil"
+    }
   },
   "106": {
     "length": 4,
-    "en": "Quraish",
-    "ar": "قريش",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 4 }],
-    "enMeaning": "Quraish"
+    "partitioning": [{ "part": 30, "start": 1, "end": 4 }],
+    "meanings": { "en-US": "Quraish", "ar-IQ": null, "id-ID": "Kaum Quraisy" },
+    "namings": { "en-US": "قريش", "ar-IQ": "قريش", "id-ID": "قريش" },
+    "transliterations": {
+      "en-US": "Quraish",
+      "ar-IQ": "قريش",
+      "id-ID": "Quraisy"
+    }
   },
   "107": {
     "length": 7,
-    "en": "Al-Maa'un",
-    "ar": "الماعون",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 7 }],
-    "enMeaning": "The Small Kindness"
+    "partitioning": [{ "part": 30, "start": 1, "end": 7 }],
+    "meanings": {
+      "en-US": "The Small Kindness",
+      "ar-IQ": null,
+      "id-ID": "Barang Berguna"
+    },
+    "namings": { "en-US": "الماعون", "ar-IQ": "الماعون", "id-ID": "الماعون" },
+    "transliterations": {
+      "en-US": "Al-Maa'un",
+      "ar-IQ": "الماعون",
+      "id-ID": "Al-Ma'un"
+    }
   },
   "108": {
     "length": 3,
-    "en": "Al-Kawthar",
-    "ar": "الكوثر",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 3 }],
-    "enMeaning": "The Abundance"
+    "partitioning": [{ "part": 30, "start": 1, "end": 3 }],
+    "meanings": {
+      "en-US": "The Abundance",
+      "ar-IQ": null,
+      "id-ID": "Pemberian Berlimpah"
+    },
+    "namings": { "en-US": "الكوثر", "ar-IQ": "الكوثر", "id-ID": "الكوثر" },
+    "transliterations": {
+      "en-US": "Al-Kawthar",
+      "ar-IQ": "الكوثر",
+      "id-ID": "Al-Kausar"
+    }
   },
   "109": {
     "length": 6,
-    "en": "Al-Kaafiroon",
-    "ar": "الكافرون",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 6 }],
-    "enMeaning": "The Disbelievers"
+    "partitioning": [{ "part": 30, "start": 1, "end": 6 }],
+    "meanings": {
+      "en-US": "The Disbelievers",
+      "ar-IQ": null,
+      "id-ID": "Orang-Orang Kafir"
+    },
+    "namings": {
+      "en-US": "الكافرون",
+      "ar-IQ": "الكافرون",
+      "id-ID": "الكافرون"
+    },
+    "transliterations": {
+      "en-US": "Al-Kaafiroon",
+      "ar-IQ": "الكافرون",
+      "id-ID": "Al-Kafirun"
+    }
   },
   "110": {
     "length": 3,
-    "en": "An-Nasr",
-    "ar": "النصر",
     "isMeccan": false,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 3 }],
-    "enMeaning": "The Divine Support"
+    "partitioning": [{ "part": 30, "start": 1, "end": 3 }],
+    "meanings": {
+      "en-US": "The Divine Support",
+      "ar-IQ": null,
+      "id-ID": "Pertolongan"
+    },
+    "namings": { "en-US": "النصر", "ar-IQ": "النصر", "id-ID": "النصر" },
+    "transliterations": {
+      "en-US": "An-Nasr",
+      "ar-IQ": "النصر",
+      "id-ID": "An-Nasr"
+    }
   },
   "111": {
     "length": 5,
-    "en": "Al-Masad",
-    "ar": "المسد",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 5 }],
-    "enMeaning": "The Palm Fiber"
+    "partitioning": [{ "part": 30, "start": 1, "end": 5 }],
+    "meanings": {
+      "en-US": "The Palm Fiber",
+      "ar-IQ": null,
+      "id-ID": "Api Yang Bergejolak"
+    },
+    "namings": { "en-US": "المسد", "ar-IQ": "المسد", "id-ID": "اللهب" },
+    "transliterations": {
+      "en-US": "Al-Masad",
+      "ar-IQ": "المسد",
+      "id-ID": "Al-Lahab"
+    }
   },
   "112": {
     "length": 4,
-    "en": "Al-Ikhlaas",
-    "ar": "الإخلاص",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 4 }],
-    "enMeaning": "The Sincerity"
+    "partitioning": [{ "part": 30, "start": 1, "end": 4 }],
+    "meanings": { "en-US": "The Sincerity", "ar-IQ": null, "id-ID": "Ikhlas" },
+    "namings": { "en-US": "الإخلاص", "ar-IQ": "الإخلاص", "id-ID": "الإخلاص" },
+    "transliterations": {
+      "en-US": "Al-Ikhlaas",
+      "ar-IQ": "الإخلاص",
+      "id-ID": "Al-Ikhlas"
+    }
   },
   "113": {
     "length": 5,
-    "en": "Al-Falaq",
-    "ar": "الفلق",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 5 }],
-    "enMeaning": "The Daybreak"
+    "partitioning": [{ "part": 30, "start": 1, "end": 5 }],
+    "meanings": { "en-US": "The Daybreak", "ar-IQ": null, "id-ID": "Subuh" },
+    "namings": { "en-US": "الفلق", "ar-IQ": "الفلق", "id-ID": "الفلق" },
+    "transliterations": {
+      "en-US": "Al-Falaq",
+      "ar-IQ": "الفلق",
+      "id-ID": "Al-Falaq"
+    }
   },
   "114": {
     "length": 6,
-    "en": "An-Naas",
-    "ar": "الناس",
     "isMeccan": true,
-    "partDivisions": [{ "part": 30, "start": 1, "end": 6 }],
-    "enMeaning": "Mankind"
+    "partitioning": [{ "part": 30, "start": 1, "end": 6 }],
+    "meanings": { "en-US": "Mankind", "ar-IQ": null, "id-ID": "Manusia" },
+    "namings": { "en-US": "الناس", "ar-IQ": "الناس", "id-ID": "الناس" },
+    "transliterations": {
+      "en-US": "An-Naas",
+      "ar-IQ": "الناس",
+      "id-ID": "An-Nas"
+    }
   }
 }

@@ -1,25 +1,26 @@
-import { ChapterRecord } from "@constants/records/chapters"
-import { repo } from "@db/repo"
-import { unpackIPC } from "@services/Converter"
 import { useNavigate } from "@tanstack/react-router"
-import { useEffect, useState } from "react"
+import { useMemo, useState } from "react"
 import styled from "styled-components"
+import useChaptersState from "../../hooks/states/ChaptersState"
+import { Combobox } from "./Combobox"
+import { FlexContainer } from "./Container"
 
 export default function VerseLookup() {
   const navigate = useNavigate()
   const [selectedChapterId, setSelectedChapterId] = useState<number>(1)
-  const [verseNumber, setVerseNumber] = useState<number>(1)
+  const [verseNumber, setVerseNumber] = useState<string>("1")
 
-  const [chapters, setChapters] = useState<ChapterRecord[]>([])
-  useEffect(() => {
-    repo.chapters
-      .findAllBy({})
-      .then((ipcResp) => setChapters(unpackIPC(ipcResp)))
-  }, [])
+  // make sure Quranic chapters are loaded
+  const {
+    chapters,
+    getChapterMeaning,
+    getChapterArabicName,
+    getChapterTransliteratedName,
+  } = useChaptersState()
 
   function goToVerse() {
     if (!selectedChapterId) return
-    if (Number.isNaN(verseNumber)) return
+    if (Number.isNaN(parseInt(verseNumber))) return
 
     navigate({
       to: "/c/$chapter/$verse",
@@ -30,48 +31,75 @@ export default function VerseLookup() {
     })
   }
 
+  const chaptersList = useMemo(() => {
+    return Object.values(chapters).map((chapter) => {
+      const meaning = getChapterMeaning(chapter.id)
+      const latinName = getChapterTransliteratedName(chapter.id)
+      const arabicName = getChapterArabicName(chapter.id)
+      const text = `${chapter.id}. ${latinName} (${arabicName}) - ${meaning}`
+      return { id: chapter.id, text: text }
+    })
+  }, [chapters])
+
+  /**
+   * Range of verses of the currently selected chapter
+   */
+  const verseRange: number[] = useMemo(() => {
+    if (chapters == null) return [1]
+    const chapter = chapters[selectedChapterId]
+    if (!chapter) return [1]
+
+    let verses: number[] = []
+    const firstVerse = chapter.partitioning[0].start
+    const endVerse = chapter.partitioning[chapter.partitioning.length - 1].end
+    for (let i = firstVerse; i <= endVerse; i++) verses.push(i)
+
+    return verses
+  }, [selectedChapterId])
+
   return (
     <FlexContainer direction="column">
-      <ChapterSelect
-        name="chapterId"
-        value={selectedChapterId}
-        onChange={(e) => setSelectedChapterId(parseInt(e.target.value))}
-      >
-        {chapters.map((chapter) => (
-          <option key={chapter.id} value={chapter.id}>
-            {chapter.id}. {chapter.en} ({chapter.ar}) - {chapter.enMeaning}
-          </option>
-        ))}
-      </ChapterSelect>
+      <form>
+        <Combobox
+          title="Chapter"
+          name="chapterId"
+          value={selectedChapterId}
+          onChange={(e) => setSelectedChapterId(parseInt(e.target.value))}
+        >
+          {chaptersList.map((chapter) => {
+            return (
+              <option key={chapter.id} value={chapter.id}>
+                {chapter.text}
+              </option>
+            )
+          })}
+        </Combobox>
 
-      <FlexContainer direction="row">
-        <VerseInput
-          name="verseNumber"
-          min="1"
-          value={verseNumber}
-          onChange={(e) => setVerseNumber(parseInt(e.target.value))}
-        />
+        <FlexContainer direction="row">
+          <Combobox
+            value={verseNumber}
+            onChange={(e) => setVerseNumber(e.target.value.toString())}
+          >
+            {verseRange.map((v) => (
+              <option key={v} value={v.toString()}>
+                {v}
+              </option>
+            ))}
+          </Combobox>
 
-        <GoButton onClick={goToVerse}>Go</GoButton>
-      </FlexContainer>
+          <GoButton
+            onClick={(e) => {
+              e.preventDefault()
+              goToVerse()
+            }}
+          >
+            Go
+          </GoButton>
+        </FlexContainer>
+      </form>
     </FlexContainer>
   )
 }
-
-const FlexContainer = styled.div<{ direction: string }>`
-  display: flex;
-  gap: 5px;
-  flex-direction: ${({ direction }) => direction};
-`
-
-const ChapterSelect = styled.select`
-  width: 100%;
-  height: 42px;
-  border-radius: 3px;
-  border: 1px solid #d8d8d8;
-  padding: 0 12px;
-  font-size: 14px;
-`
 
 const VerseInput = styled.input`
   width: 65%;

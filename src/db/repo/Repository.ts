@@ -19,6 +19,10 @@ type OrderDict<T> = {
   [K in keyof T]?: OrderingMode
 }
 
+/**
+ * Repository wraps the raw ORM layer into a class that can easily be
+ * extended and used by various different table domains.
+ */
 export abstract class Repository<
   T extends PgTableWithColumns<any>,
   R extends SelectOf<T> = SelectOf<T>,
@@ -29,7 +33,11 @@ export abstract class Repository<
     this.schema = schema
   }
 
-  async findBy(
+  /**
+   * Send a query to find or retrieve a set of data matching
+   * given clauses and parameters
+   */
+  protected async findBy(
     db: DbConn,
     clauses?: SQL,
     orderBy?: OrderDict<R>,
@@ -56,6 +64,9 @@ export abstract class Repository<
     }
   }
 
+  /**
+   * Create data in bulk
+   */
   async createBulk(data: Partial<R>[]): Promise<IPCResponse<R[]>> {
     try {
       const records = await withDb(async (db: DbConn) => {
@@ -92,6 +103,9 @@ export abstract class Repository<
     }
   }
 
+  /**
+   * Create an individual data persisted to the database
+   */
   async create(data: Partial<R>): Promise<IPCResponse<R>> {
     const result = await this.createBulk([data])
     if (!result.succeed) {
@@ -104,6 +118,9 @@ export abstract class Repository<
     })
   }
 
+  /**
+   * Update a data given the column that an update is planned for
+   */
   async updateBy<C extends AnyPgColumn>(
     keyColumn: C,
     value: C["_"]["data"],

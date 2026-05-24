@@ -1,17 +1,17 @@
 import { newIPCResponse, type IPCResponse } from "@constants/IPC"
 import {
-  WbwTranslationRecord,
-  WordByWordTranslation,
-} from "@constants/records/wbwTranslations"
+  WordTranslation,
+  WordTranslationRecord,
+} from "@constants/records/WordTranslationRecord"
 import { unpackIPC } from "@services/Converter"
 import { and, eq } from "drizzle-orm"
 import { withDb } from "../driver"
-import { conditional, Repository } from "./repository"
-import { wbwTranslations as schema } from "./tables"
+import { conditional, Repository } from "./Repository"
+import { word_translations as schema } from "./tables"
 
 class WbwTranslationRepo extends Repository<
   typeof schema,
-  WbwTranslationRecord
+  WordTranslationRecord
 > {
   constructor() {
     super(schema)
@@ -23,7 +23,7 @@ class WbwTranslationRepo extends Repository<
   }: {
     chapter?: number
     locale?: string
-  }): Promise<IPCResponse<WbwTranslationRecord[]>> {
+  }): Promise<IPCResponse<WordTranslationRecord[]>> {
     return withDb(
       async (db) =>
         await this.findBy(
@@ -36,8 +36,8 @@ class WbwTranslationRepo extends Repository<
     )
   }
 
-  async compile(locale: string): Promise<IPCResponse<WordByWordTranslation>> {
-    let translations: WordByWordTranslation = {}
+  async compile(locale: string): Promise<IPCResponse<WordTranslation>> {
+    let translations: WordTranslation = {}
     const records = unpackIPC(await this.findAllBy({ locale: locale }))
 
     for (const record of records) {
