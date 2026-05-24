@@ -11,6 +11,9 @@
     },
     {
       "tag": "0003_create_lexemes_table"
+    },
+    {
+      "tag": "0004_unify_and_simplify_labelings"
     }
   ]
 }

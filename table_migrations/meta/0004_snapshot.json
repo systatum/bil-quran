@@ -1,5 +1,5 @@
 {
-  "id": "7720c950-7f39-41e3-815e-30c71e908161",
+  "id": "a4b80efd-d827-4f35-a160-2faa6dee4e0d",
   "prevId": "738b8283-4bed-4e70-8ffd-4c15ccfe6adf",
   "version": "7",
   "dialect": "postgresql",
@@ -20,14 +20,20 @@
           "primaryKey": false,
           "notNull": true
         },
-        "part_divisions": {
-          "name": "part_divisions",
+        "partitioning": {
+          "name": "partitioning",
           "type": "jsonb",
           "primaryKey": false,
           "notNull": true
         },
-        "readings": {
-          "name": "readings",
+        "namings": {
+          "name": "namings",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "transliterations": {
+          "name": "transliterations",
           "type": "jsonb",
           "primaryKey": false,
           "notNull": true
@@ -84,7 +90,8 @@
           "name": "readings",
           "type": "jsonb",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "'{}'::jsonb"
         }
       },
       "indexes": {},
@@ -151,8 +158,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.word_by_word_translations": {
-      "name": "word_by_word_translations",
+    "public.word_translations": {
+      "name": "word_translations",
       "schema": "",
       "columns": {
         "locale": {
@@ -190,8 +197,8 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "unique_word_by_word_translation": {
-          "name": "unique_word_by_word_translation",
+        "unique_word_translation": {
+          "name": "unique_word_translation",
           "nullsNotDistinct": false,
           "columns": [
             "locale",
