@@ -1,3 +1,9 @@
+import { Locale } from "@constants/settings"
+
+/**
+ * Representing a word in a verse by binding a specific lexeme to
+ * that specific position of any given verse.
+ */
 export interface WordRecord {
   /**
    * Which chapter (or surah/surat) this word belongs to
@@ -24,6 +30,10 @@ export interface WordRecord {
   partNumber: number
 }
 
+/**
+ * A special, efficient data type used to type data returned
+ * from retrieving all Quranic word translations
+ */
 export interface WordWithLexemeRecord {
   chapterId: number
   verse: number
@@ -36,5 +46,5 @@ export interface WordWithLexemeRecord {
 
   token: string
   root: string
-  enReading: string
+  readings: Record<Locale, string>
 }

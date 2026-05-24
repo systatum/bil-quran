@@ -1,14 +1,29 @@
-import { ChapterRecord } from "@constants/records/chapters"
+import { ChapterRecord } from "@constants/records/ChapterRecord"
+import { DEFAULT_LOCALE } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import { useParams } from "@tanstack/react-router"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import AppNavbar from "./fragments/AppNavbar"
-import QuranBrowser from "./QuranBrowser"
+import QuranPaper from "./fragments/QuranPaper"
+import useUserSettingsState from "./hooks/states/UserSettingsState"
 
 export default function UIIndex() {
   const [chapter, setChapter] = useState<ChapterRecord | null>(null)
-  const navbarTitle = chapter?.en ?? "bil-Qur'an"
-  const theme: ThemeMode = "dark"
+  const { userSettings } = useUserSettingsState()
+  const theme: ThemeMode = userSettings.theme
+
+  const navbarTitle = useMemo(() => {
+    if (chapter == null) return "bil-Qur'an"
+
+    const chapterNo = chapter.id
+    const chapterName = chapter.transliterations[DEFAULT_LOCALE]
+    const chapterMeaningInDefaultLocale = chapter.meanings[DEFAULT_LOCALE]
+    const chapterMeaningInCurrentLocale = chapter.meanings[DEFAULT_LOCALE]
+    const chapterMeaning =
+      chapterMeaningInCurrentLocale ?? chapterMeaningInDefaultLocale
+
+    return `${chapterNo}. ${chapterName} (${chapterMeaning})`
+  }, [chapter])
 
   // read params
   const params = useParams({ strict: false })
@@ -24,7 +39,7 @@ export default function UIIndex() {
   return (
     <>
       <AppNavbar theme={theme} title={navbarTitle} />
-      <QuranBrowser
+      <QuranPaper
         theme={theme}
         onScroll={(verseRow) => setChapter(verseRow.chapter)}
         chapterId={chapterId}

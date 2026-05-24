@@ -1,7 +1,10 @@
 import { ThemeMode } from "@constants/theme"
 import { RiCloseLine, RiMenuLine } from "@remixicon/react"
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import styled from "styled-components"
+import useUserSettingsState from "../../hooks/states/UserSettingsState"
+import { Combobox } from "./Combobox"
+import FontSettings from "./FontSettings"
 import VerseLookup from "./VerseLookup"
 
 interface AppNavbarProps {
@@ -9,9 +12,21 @@ interface AppNavbarProps {
   title: string
 }
 
+/**
+ * Component that shows the navbar and the relevant sidebar
+ * attached to it, which can be revealed by clicking the
+ * burger menu on the navbar.
+ */
 export default function AppNavbar({ theme, title }: AppNavbarProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const BurgerIcon = isSidebarOpen ? RiCloseLine : RiMenuLine
+  const { setTheme, userSettings } = useUserSettingsState()
+
+  const changeTheme = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    e.preventDefault()
+    const value = e.target.value
+    setTheme(value as ThemeMode)
+  }, [])
 
   return (
     <>
@@ -30,6 +45,15 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
       <SidebarContainer theme={theme} $visible={isSidebarOpen}>
         <SidebarItem>Verse lookup</SidebarItem>
         <VerseLookup />
+
+        <SidebarItem>Theme</SidebarItem>
+        <Combobox onChange={changeTheme} value={userSettings.theme}>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </Combobox>
+
+        <SidebarItem>Font</SidebarItem>
+        <FontSettings />
       </SidebarContainer>
     </>
   )
@@ -45,7 +69,7 @@ const NavbarContainer = styled.header<{ theme: ThemeMode }>`
   justify-content: space-between;
   padding: 0 20px;
   background: ${({ theme }) =>
-    theme === "dark" ? "#22271b" : "rgba(255, 255, 255, 0.92)"};
+    theme === "dark" ? "#22271b" : "rgb(117 95 77)"};
   border-bottom: 1px solid
     ${({ theme }) => (theme === "dark" ? "#455230" : "#ececec")};
   backdrop-filter: blur(12px);
@@ -54,11 +78,11 @@ const NavbarContainer = styled.header<{ theme: ThemeMode }>`
 const ChapterLabel = styled.div<{ theme: ThemeMode }>`
   font-size: 18px;
   font-weight: 600;
-  color: ${({ theme }) => (theme === "dark" ? "#6e9370" : "#222")};
+  color: ${({ theme }) => (theme === "dark" ? "#6e9370" : "#fff0d3")};
 `
 
 const BurgerButton = styled.button<{ theme: ThemeMode }>`
-  color: ${({ theme }) => (theme === "dark" ? "#475848" : "#222")};
+  color: ${({ theme }) => (theme === "dark" ? "#475848" : "#fff0d3")};
   width: 42px;
   height: 42px;
   border: none;
@@ -90,7 +114,7 @@ const SidebarContainer = styled.aside<{
   theme: ThemeMode
   $visible: boolean
 }>`
-  background: ${({ theme }) => (theme === "dark" ? "#9fae81" : "white")};
+  background: ${({ theme }) => (theme === "dark" ? "#9fae81" : "#e1dfda")};
   position: fixed;
   top: 0;
   right: 0;
@@ -113,7 +137,6 @@ const SidebarItem = styled.button`
   font-size: 16px;
   color: #333;
   cursor: pointer;
-  border-bottom: 1px solid #f0f0f0;
   transition: color 0.15s ease;
 
   &:hover {

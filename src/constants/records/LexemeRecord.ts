@@ -1,3 +1,5 @@
+import { Locale } from "@constants/settings"
+
 /**
  * Represent all the unique word in a Quranic "dictionary"
  */
@@ -5,5 +7,7 @@ export interface LexemeRecord {
   id: number
   token: string
   root: string
-  enReading: string
+  readings: Record<Locale, string>
 }
+
+export type NewLexemeRecord = Omit<LexemeRecord, "id">

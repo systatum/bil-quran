@@ -1,9 +1,5 @@
-import { Rendering } from "./records/renderings"
-
-export const Locale = {
-  English: "en-US",
-}
-export type Locale = (typeof Locale)[keyof typeof Locale]
+import { Rendering } from "./records/RenderingRecord"
+import { Locale } from "./settings"
 
 export interface WordByWordTranslationAsset {
   path: string
@@ -30,7 +26,7 @@ export const Asset: Asset = {
   },
   translations: {
     wordByWord: {
-      [Locale.English]: {
+      [Locale.IntEnglish]: {
         path: `${basePath}/quran/wbw_translations/en-US.json`,
       },
     },

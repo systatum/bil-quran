@@ -1,9 +1,11 @@
 import { IPCResponse } from "@constants/IPC"
-import { RenderingRecord } from "@constants/records/renderings"
+import { RenderingRecord } from "@constants/records/RenderingRecord"
 import { withDb } from "@db/driver"
 import { and, eq } from "drizzle-orm"
-import { conditional, Repository } from "./repository"
+import { conditional, Repository } from "./Repository"
 import { renderings as schema } from "./tables"
+
+// this file contains module to do such as such.
 
 class RenderingRepo extends Repository<typeof schema, RenderingRecord> {
   constructor() {

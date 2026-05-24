@@ -1,19 +1,25 @@
 import { Asset } from "@constants/assets"
-import { ChapterRecord } from "@constants/records/chapters"
-import { LexemeRecord } from "@constants/records/lexemes"
-import { Rendering } from "@constants/records/renderings"
-import { WbwTranslationRecord } from "@constants/records/wbwTranslations"
-import { WordRecord } from "@constants/records/words"
+import { ChapterRecord } from "@constants/records/ChapterRecord"
+import { LexemeRecord, NewLexemeRecord } from "@constants/records/LexemeRecord"
+import { Rendering } from "@constants/records/RenderingRecord"
+import { WordRecord } from "@constants/records/WordRecord"
+import { WordTranslationRecord } from "@constants/records/WordTranslationRecord"
+import { DEFAULT_LOCALE, Locale } from "@constants/settings"
 import { repo } from "@db/repo/index"
 import { unpackIPC } from "@services/Converter"
 import { inArray } from "drizzle-orm"
 import { withDb } from "./driver"
 
+// This module handle adding data to the database, especially
+// for the very first time. This should only be called after
+// the database is freshly created, and migration scripts
+// are executed against it.
+
 // seed the app with minimal data so that it can work
 export async function seedData() {
   await seedChapters()
   await seedVerses()
-  await seedWbwTranslations()
+  await seedWordTranslations()
   console.debug("Return from seeding: done")
 }
 
@@ -58,14 +64,14 @@ async function seedVerses() {
   // collect unique lexemes
   // ------------------------------------------------------------
 
-  const uniqueLexemes: Record<string, Omit<LexemeRecord, "id">> = {}
+  const uniqueLexemes: Record<string, NewLexemeRecord> = {}
 
   for (const v of verseWords)
     if (uniqueLexemes[v.word] == null)
       uniqueLexemes[v.word] = {
         token: v.word,
         root: v.root,
-        enReading: v.trans,
+        readings: { [Locale.IntEnglish]: v.trans },
       }
 
   const tokens = Object.keys(uniqueLexemes)
@@ -88,12 +94,7 @@ async function seedVerses() {
   }
 
   // push missing lexeme, before doing batch creation
-  const missing: {
-    token: string
-    root: string
-    enReading: string
-  }[] = []
-
+  const missing: NewLexemeRecord[] = []
   for (const [token, lexeme] of Object.entries(uniqueLexemes))
     if (lexemeCache[token] == null) missing.push(lexeme)
 
@@ -131,7 +132,7 @@ async function seedVerses() {
       lexemeId: lexeme.id,
       order,
       renderingId: rendering.id,
-      partNumber: 0,
+      partNumber: 0, // TODO: specify which part of the juz is this verse
     })
 
     if (wordBatch.length >= BATCH_SIZE) await flushWords()
@@ -140,8 +141,8 @@ async function seedVerses() {
   await flushWords()
 }
 
-async function seedWbwTranslations() {
-  const defaultLocale = "en-US"
+async function seedWordTranslations() {
+  const defaultLocale = DEFAULT_LOCALE
 
   const locales = unpackIPC(
     await repo.wbwTranslations.findAllBy({
@@ -159,7 +160,7 @@ async function seedWbwTranslations() {
 
   const BATCH_SIZE = 1200
 
-  let batch: Partial<WbwTranslationRecord>[] = []
+  let batch: Partial<WordTranslationRecord>[] = []
 
   async function flushBatch() {
     if (batch.length === 0) return
@@ -171,10 +172,10 @@ async function seedWbwTranslations() {
     // skip verse markers like "(1)"
     if (
       meaning.length >= 2 &&
-      meaning[0] == "(" &&
-      meaning[meaning.length - 1] == ")"
+      meaning[0] === "(" &&
+      meaning[meaning.length - 1] === ")"
     )
-      continue
+      continue // this is just chapter marker ie (1), (2)
 
     const [chapter, verse, word] = loc.split(":")
     batch.push({

@@ -1,8 +1,8 @@
 import { IPCResponse, newErrIPCResponse, newIPCResponse } from "@constants/IPC"
-import { WordRecord, WordWithLexemeRecord } from "@constants/records/words"
+import { WordRecord, WordWithLexemeRecord } from "@constants/records/WordRecord"
 import { withDb } from "@db/driver"
 import { and, eq } from "drizzle-orm"
-import { conditional, Repository } from "./repository"
+import { conditional, Repository } from "./Repository"
 import { lexemes, words as schema } from "./tables"
 
 class WordRepo extends Repository<typeof schema, WordRecord> {
@@ -27,7 +27,7 @@ class WordRepo extends Repository<typeof schema, WordRecord> {
             renderingId: schema.renderingId,
             token: lexemes.token,
             root: lexemes.root,
-            enReading: lexemes.enReading,
+            readings: lexemes.readings,
           })
           .from(schema)
           .innerJoin(lexemes, eq(schema.lexemeId, lexemes.id))
