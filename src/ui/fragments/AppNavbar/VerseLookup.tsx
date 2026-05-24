@@ -41,6 +41,22 @@ export default function VerseLookup() {
     })
   }, [chapters])
 
+  /**
+   * Range of verses of the currently selected chapter
+   */
+  const verseRange: number[] = useMemo(() => {
+    if (chapters == null) return [1]
+    const chapter = chapters[selectedChapterId]
+    if (!chapter) return [1]
+
+    let verses: number[] = []
+    const firstVerse = chapter.partitioning[0].start
+    const endVerse = chapter.partitioning[chapter.partitioning.length - 1].end
+    for (let i = firstVerse; i <= endVerse; i++) verses.push(i)
+
+    return verses
+  }, [selectedChapterId])
+
   return (
     <FlexContainer direction="column">
       <form>
@@ -60,12 +76,16 @@ export default function VerseLookup() {
         </Combobox>
 
         <FlexContainer direction="row">
-          <VerseInput
-            name="verseNumber"
-            min="1"
+          <Combobox
             value={verseNumber}
-            onChange={(e) => setVerseNumber(e.target.value)}
-          />
+            onChange={(e) => setVerseNumber(e.target.value.toString())}
+          >
+            {verseRange.map((v) => (
+              <option key={v} value={v.toString()}>
+                {v}
+              </option>
+            ))}
+          </Combobox>
 
           <GoButton
             onClick={(e) => {

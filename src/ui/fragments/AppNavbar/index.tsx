@@ -137,7 +137,6 @@ const SidebarItem = styled.button`
   font-size: 16px;
   color: #333;
   cursor: pointer;
-  border-bottom: 1px solid #f0f0f0;
   transition: color 0.15s ease;
 
   &:hover {

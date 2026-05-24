@@ -31,3 +31,4 @@ Scrolling works by using hash router, ie: https://bil-quran.com/#/c/11/12
 - [ ] Selecting/changing theme should be recorded/persisted (event after reload)
 - [ ] Can change font, and when changing the font, all the rows are calculated correctly (the distance between one verse row to another is 0, check for all the first 100 rows, and change one by one from one font to another).
   - and when revisiting the page should read/use the same font
+- [ ] Can go to specific chapter and verse of the Quran through the lookup form
