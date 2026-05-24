@@ -268,7 +268,7 @@ export default function QuranPaper({
     <div
       ref={parentRef}
       style={{
-        height: "100vh",
+        height: "calc(100vh - 64px)",
         overflow: "auto",
         background: theme === "dark" ? "rgb(31, 31, 31)" : "white",
         color: theme === "dark" ? "rgb(122, 122, 122)" : "black",
