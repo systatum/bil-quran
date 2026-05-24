@@ -24,28 +24,31 @@ const useChaptersState = create<ChaptersState>((set, get) => ({
   },
 
   getChapterMeaning(chapterNumber: number) {
-    const userLocale = useUserSettingsState.getState().locale
-    LOGGER.debug("User selected locale is", userLocale)
+    const { userSettings } = useUserSettingsState.getState()
+    const { locale } = userSettings
+    LOGGER.debug("User selected locale is", locale)
     const chapter = get().chapters[chapterNumber]
     if (chapter == null) return null
-    return chapter.meanings[userLocale] || chapter.meanings[DEFAULT_LOCALE]
+    return chapter.meanings[locale] || chapter.meanings[DEFAULT_LOCALE]
   },
 
   getChapterArabicName(chapterNumber: number) {
-    const userLocale = useUserSettingsState.getState().locale
-    LOGGER.debug("User selected locale is", userLocale)
+    const { userSettings } = useUserSettingsState.getState()
+    const { locale } = userSettings
+    LOGGER.debug("User selected locale is", locale)
     const chapter = get().chapters[chapterNumber]
     if (chapter == null) return null
-    return chapter.namings[userLocale] || chapter.namings[DEFAULT_LOCALE]
+    return chapter.namings[locale] || chapter.namings[DEFAULT_LOCALE]
   },
 
   getChapterTransliteratedName(chapterNumber: number) {
-    const userLocale = useUserSettingsState.getState().locale
-    LOGGER.debug("User selected locale is", userLocale)
+    const { userSettings } = useUserSettingsState.getState()
+    const { locale } = userSettings
+    LOGGER.debug("User selected locale is", locale)
     const chapter = get().chapters[chapterNumber]
     if (chapter == null) return null
     return (
-      chapter.transliterations[userLocale] ||
+      chapter.transliterations[locale] ||
       chapter.transliterations[DEFAULT_LOCALE]
     )
   },

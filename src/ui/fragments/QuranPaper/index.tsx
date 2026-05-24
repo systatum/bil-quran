@@ -6,6 +6,7 @@ import { repo } from "@db/repo"
 import { unpackIPC } from "@services/Converter"
 import { useVirtualizer, VirtualItem } from "@tanstack/react-virtual"
 import useChaptersState from "../../hooks/states/ChaptersState"
+import useUserSettingsState from "../../hooks/states/UserSettingsState"
 import ChapterRow from "./ChapterRow"
 import VerseRow, { Verse, WordCell } from "./VerseRow"
 
@@ -46,6 +47,7 @@ export default function QuranPaper({
   const { chapters } = useChaptersState()
   const [words, setWords] = useState<WordCell[]>([])
   const parentRef = useRef<HTMLDivElement>(null)
+  const { setScrollPosition, userSettings } = useUserSettingsState()
 
   // some flags about the rendering
   const [showTransliteration, setShowTransliteration] = useState(false)
@@ -162,18 +164,9 @@ export default function QuranPaper({
 
         if (!row || row.type !== "verse") return
         const verse = row.verse
-        console.debug("Current scrolling:", verse.chapter.id, verse.number)
         if (onScroll) onScroll(row.verse)
 
-        localStorage.setItem(
-          "userSettings",
-          JSON.stringify({
-            lastScroll: {
-              chapterId: verse.chapter.id,
-              verse: verse.number,
-            },
-          }),
-        )
+        setScrollPosition(verse.chapter.id, verse.number)
       }, 120)
     }
 
@@ -253,38 +246,14 @@ export default function QuranPaper({
     if (hasRestoredScrollRef.current) return
     if (renderRows.length === 0) return
 
-    let cancelled = false
-
     async function restoreScroll() {
-      const raw = localStorage.getItem("userSettings")
-
-      if (!raw) {
-        hasRestoredScrollRef.current = true
-        return
-      }
-
-      try {
-        const parsed = JSON.parse(raw)
-        const lastScroll = parsed?.lastScroll
-
-        if (!lastScroll) {
-          hasRestoredScrollRef.current = true
-          return
-        }
-
+      const { lastScroll } = userSettings
+      if (lastScroll.chapterId > 0)
         await scrollToVerse(lastScroll.chapterId, lastScroll.verse)
-        if (cancelled) return
-        hasRestoredScrollRef.current = true
-      } catch {
-        hasRestoredScrollRef.current = true
-      }
+      hasRestoredScrollRef.current = true
     }
 
     restoreScroll()
-
-    return () => {
-      cancelled = true
-    }
   }, [renderRows])
 
   useEffect(() => {

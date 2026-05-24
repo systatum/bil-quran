@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react"
 import "./App.css"
 import logo from "./logo.svg"
 import useChaptersState from "./ui/hooks/states/ChaptersState"
+import useUserSettingsState from "./ui/hooks/states/UserSettingsState"
 import { router } from "./ui/router"
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
   const [isReady, setIsReady] = useState<boolean>(false)
   const [isError, setIsError] = useState<boolean>(false)
   const { loadChapters } = useChaptersState()
+  const { restoreState } = useUserSettingsState()
 
   useEffect(() => {
     // the code in this effect is very sensistive and must only be run once
@@ -27,6 +29,7 @@ function App() {
         await applyMigrations()
         await seedData()
         await loadChapters()
+        restoreState()
 
         setIsReady(true)
       } catch (e) {
