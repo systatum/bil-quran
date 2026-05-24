@@ -1,4 +1,4 @@
-import { Locale } from "@constants/locales"
+import { Locale } from "@constants/settings"
 
 /**
  * Represent all the unique word in a Quranic "dictionary"

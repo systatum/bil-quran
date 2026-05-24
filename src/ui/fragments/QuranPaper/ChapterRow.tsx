@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react"
 
-import { DEFAULT_LOCALE } from "@constants/locales"
 import { ChapterRecord } from "@constants/records/ChapterRecord"
+import { DEFAULT_LOCALE } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import styled from "styled-components"
 

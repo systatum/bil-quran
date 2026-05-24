@@ -1,10 +1,12 @@
 import { useEffect, useRef } from "react"
 
-import { DEFAULT_LOCALE } from "@constants/locales"
+import { ArabicFontFamily } from "@constants/assets"
 import { ChapterRecord } from "@constants/records/ChapterRecord"
 import { WordWithLexemeRecord } from "@constants/records/WordRecord"
+import { DEFAULT_LOCALE } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import styled from "styled-components"
+import useUserSettingsState from "../../hooks/states/UserSettingsState"
 import { Bismillah } from "./Bismillah"
 
 export type Verse = {
@@ -46,6 +48,7 @@ export default function VerseRow({
   theme: ThemeMode
 }) {
   const ref = useRef<HTMLDivElement>(null)
+  const { userSettings } = useUserSettingsState()
 
   useEffect(() => {
     if (!ref.current) return
@@ -66,7 +69,7 @@ export default function VerseRow({
     >
       <VerseMarker theme={theme}>{verse.number}</VerseMarker>
 
-      <VerseText>
+      <VerseText fontFamily={userSettings.font.arabic.family}>
         {Bismillah.isRenderableHere(verse.number, verse.chapter.id) && (
           <Word>
             <Bismillah />
@@ -217,11 +220,13 @@ const VerseMarker = styled.div<{ theme: ThemeMode }>`
   }
 `
 
-const VerseText = styled.div`
+const VerseText = styled.div<{ fontFamily: ArabicFontFamily }>`
   text-align: right;
   font-size: 42px;
   line-height: 2.4;
-  font-family: "Noto Naskh Arabic", "Ubuntu", "Amiri", serif;
+  font-family:
+    ${({ fontFamily }) => `"${fontFamily}"`},
+    "${"NotoNaskhArabic" satisfies ArabicFontFamily}", serif;
   white-space: normal;
 `
 
@@ -249,6 +254,7 @@ const Transliteration = styled.span`
 const Meaning = styled.span<{ theme: ThemeMode; $marginTop?: string }>`
   font-size: 14px;
   color: ${({ theme }) => (theme === "dark" ? "#bebebe" : "#a09083")};
+  font-family: "${"NotoNaskhArabic" satisfies ArabicFontFamily}", serif;
   margin-top: ${({ $marginTop }) => $marginTop ?? "2px"};
   direction: ltr;
   text-align: center;

@@ -1,3 +1,4 @@
+import { ArabicFonts } from "@constants/assets"
 import { applyMigrations } from "@db/migrations"
 import { seedData } from "@db/seeders"
 import { RouterProvider } from "@tanstack/react-router"
@@ -26,6 +27,7 @@ function App() {
 
     async function bootstrap() {
       try {
+        registerFonts()
         await applyMigrations()
         await seedData()
         await loadChapters()
@@ -56,6 +58,36 @@ function App() {
       </div>
     )
   }
+}
+
+/**
+ * Register fonts available
+ */
+const FONT_ASSETS_BASE_URL = "https://assets.bil-quran.com/fonts"
+export function registerFonts(): void {
+  const css = Object.entries(ArabicFonts)
+    .map(([fontId, { relativePath }]) => {
+      const url = `${FONT_ASSETS_BASE_URL}/${relativePath}`
+
+      return `
+        @font-face {
+          font-family: "${fontId}";
+          font-style: normal;
+          font-display: swap;
+          font-weight: 400;
+          src:
+            url("${url}.woff2") format("woff2"),
+            url("${url}.woff") format("woff"),
+            url("${url}.ttf") format("truetype");
+        }`
+    })
+    .join("\n")
+
+  const style = document.createElement("style")
+  style.setAttribute("data-fonts", "generated")
+  style.textContent = css
+
+  document.head.appendChild(style)
 }
 
 export default App

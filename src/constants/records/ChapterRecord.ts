@@ -1,4 +1,4 @@
-import { Locale } from "@constants/locales"
+import { Locale } from "@constants/settings"
 
 /**
  * Represents a chapter in the Qur'an.

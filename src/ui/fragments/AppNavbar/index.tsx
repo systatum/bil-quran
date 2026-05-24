@@ -4,6 +4,7 @@ import { useCallback, useState } from "react"
 import styled from "styled-components"
 import useUserSettingsState from "../../hooks/states/UserSettingsState"
 import { Combobox } from "./Combobox"
+import FontSettings from "./FontSettings"
 import VerseLookup from "./VerseLookup"
 
 interface AppNavbarProps {
@@ -50,6 +51,9 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
           <option value="light">Light</option>
           <option value="dark">Dark</option>
         </Combobox>
+
+        <SidebarItem>Font</SidebarItem>
+        <FontSettings />
       </SidebarContainer>
     </>
   )

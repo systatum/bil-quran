@@ -1,5 +1,5 @@
-import { Locale } from "@constants/locales"
 import { ChapterPartDivision } from "@constants/records/ChapterRecord"
+import { Locale } from "@constants/settings"
 import {
   bigint,
   boolean,

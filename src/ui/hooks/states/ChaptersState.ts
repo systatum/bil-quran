@@ -1,5 +1,5 @@
-import { DEFAULT_LOCALE } from "@constants/locales"
 import { ChapterRecord } from "@constants/records/ChapterRecord"
+import { DEFAULT_LOCALE } from "@constants/settings"
 import { repo } from "@db/repo"
 import { unpackIPC } from "@services/Converter"
 import LOGGER from "@services/Logger"

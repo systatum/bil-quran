@@ -1,4 +1,4 @@
-import { Locale } from "@constants/locales"
+import { Locale } from "@constants/settings"
 
 /**
  * Representing a word in a verse by binding a specific lexeme to

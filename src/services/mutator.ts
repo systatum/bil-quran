@@ -1,6 +1,10 @@
 import { Dict } from "styled-components/dist/types"
 import { isPlainObject } from "./checker"
 
+export type DeepPartial<T> = {
+  [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K]
+}
+
 /**
  * Recursively merges values from `source` into `target`,
  * but only for keys that already exist in `target`.

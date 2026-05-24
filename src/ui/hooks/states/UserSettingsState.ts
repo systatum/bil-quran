@@ -1,18 +1,29 @@
-import { DEFAULT_LOCALE, Locale } from "@constants/locales"
+import { ArabicFontFamily, ArabicFonts } from "@constants/assets"
+import { DEFAULT_LOCALE, Locale } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import LOGGER from "@services/Logger"
-import { mergeKnownKeys } from "@services/mutator"
+import { DeepPartial, mergeKnownKeys } from "@services/mutator"
 import { create } from "zustand"
 
-const useUserSettingsState = create<UserSettingsState>((set, get) => ({
-  userSettings: {
-    locale: DEFAULT_LOCALE,
-    theme: "light",
-    lastScroll: {
-      chapterId: 0,
-      verse: 0,
+const DEFAULT_USER_SETTINGS: UserSettings = {
+  locale: DEFAULT_LOCALE,
+  theme: "light",
+  font: {
+    arabic: {
+      family: "NotoNaskhArabic",
+      size: 42,
     },
   },
+  lastScroll: {
+    chapterId: 0,
+    verse: 0,
+  },
+}
+
+const useUserSettingsState = create<UserSettingsState>((set, get) => ({
+  userSettings: DEFAULT_USER_SETTINGS,
+
+  // ==== Local storage handler ==========================================
 
   persistState() {
     const stringified = JSON.stringify(get().userSettings)
@@ -34,33 +45,53 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
     return hydrated
   },
 
-  setTheme(theme) {
-    if (theme != "light" && theme != "dark")
-      return LOGGER.error(`Skipping setting unknown theme: ${theme}`)
+  // ==== Settings updater ===============================================
 
-    set((s) => ({
-      userSettings: {
-        ...s.userSettings,
-        theme: theme,
-      },
-    }))
+  partialUpdate(arg) {
+    set((state) => {
+      const next = typeof arg === "function" ? arg(state.userSettings) : arg
+
+      return {
+        userSettings: {
+          ...state.userSettings,
+          ...next,
+        },
+      }
+    })
 
     get().persistState()
   },
 
-  setScrollPosition(chapterId, verse) {
-    set((s) => ({
-      userSettings: {
-        ...s.userSettings,
-        lastScroll: {
-          chapterId,
-          verse,
-        },
-      },
-    }))
+  setTheme(theme) {
+    if (theme != "light" && theme != "dark")
+      return LOGGER.error(`Skip setting unknown theme: ${theme}`)
 
+    get().partialUpdate({ theme })
+  },
+
+  setFont(font) {
+    const current = get().userSettings.font
+    const next: UserFontSettings = {
+      arabic: {
+        ...current.arabic,
+        ...font.arabic,
+      },
+    }
+
+    if (next.arabic.family && !(next.arabic.family in ArabicFonts))
+      return LOGGER.error(`Skip setting unknown font: ${font}`)
+
+    next.arabic.size = parseInt(String(next.arabic.size))
+    if (Number.isNaN(next.arabic.size)) next.arabic.size = 42
+
+    get().partialUpdate({ font: next })
+  },
+
+  setScrollPosition(chapterId, verse) {
     LOGGER.debug("Persisting scrol position to", chapterId, verse)
-    get().persistState()
+    get().partialUpdate({
+      lastScroll: { chapterId, verse },
+    })
   },
 }))
 
@@ -79,13 +110,32 @@ export interface UserSettingsState {
    */
   persistState(): void
 
+  /**
+   * Method to allow partial updates to the user settings
+   * @param partial part of user settings data
+   */
+  partialUpdate(
+    partial:
+      | Partial<UserSettings>
+      | ((current: UserSettings) => Partial<UserSettings>),
+  ): void
+
   setTheme(theme: ThemeMode): void
+  setFont(font: DeepPartial<UserFontSettings>): void
   setScrollPosition(chapterId: number, verse: number): void
+}
+
+export interface UserFontSettings {
+  arabic: {
+    family: ArabicFontFamily
+    size: number
+  }
 }
 
 export interface UserSettings {
   locale: Locale
   theme: ThemeMode
+  font: UserFontSettings
   lastScroll: {
     chapterId: number
     verse: number

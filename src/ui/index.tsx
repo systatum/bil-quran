@@ -1,5 +1,5 @@
-import { DEFAULT_LOCALE } from "@constants/locales"
 import { ChapterRecord } from "@constants/records/ChapterRecord"
+import { DEFAULT_LOCALE } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import { useParams } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
