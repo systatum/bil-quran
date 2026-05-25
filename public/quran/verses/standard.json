@@ -39112,7 +39112,7 @@
   { "id": "6:143", "word": "كُنْتُمْ", "trans": "kuntum", "root": "ك و ن" },
   { "id": "6:143", "word": "صَادِقِينَ", "trans": "ṣādiqīna", "root": "ص د ق" },
   { "id": "6:144", "word": "وَمِنَ", "trans": "wamina", "root": "م ن" },
-  { "id": "6:144", "word": "الْإِبِلِ", "trans": "l-ibili", "root": "ا ب ل" },
+  { "id": "6:144", "word": "الْاِبِلِ", "trans": "l-ibili", "root": "ا ب ل" },
   { "id": "6:144", "word": "اثْنَيْنِ", "trans": "ith'nayni", "root": "ث ن ي" },
   { "id": "6:144", "word": "وَمِنَ", "trans": "wamina", "root": "م ن" },
   { "id": "6:144", "word": "الْبَقَرِ", "trans": "l-baqari", "root": "ب ق ر" },
@@ -162549,7 +162549,7 @@
     "root": "ن ظ ر"
   },
   { "id": "88:17", "word": "إِلَى", "trans": "ilā", "root": "ا ل ي" },
-  { "id": "88:17", "word": "الْإِبِلِ", "trans": "l-ibili", "root": "ا ب ل" },
+  { "id": "88:17", "word": "الْاِبِلِ", "trans": "l-ibili", "root": "ا ب ل" },
   { "id": "88:17", "word": "كَيْفَ", "trans": "kayfa", "root": "ك ي ف" },
   { "id": "88:17", "word": "خُلِقَتْ", "trans": "khuliqat", "root": "خ ل ق" },
   { "id": "88:18", "word": "وَإِلَى", "trans": "wa-ilā", "root": "ا ل ي" },
