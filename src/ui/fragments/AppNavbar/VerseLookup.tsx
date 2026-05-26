@@ -1,8 +1,9 @@
+import { Combobox, ComboboxOption } from "@systatum/coneto/combobox"
 import { useNavigate } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 import styled from "styled-components"
 import useChaptersState from "../../hooks/states/ChaptersState"
-import { Combobox } from "./Combobox"
+import { Combobox as RawCombobox } from "./Combobox"
 import { FlexContainer } from "./Container"
 
 export default function VerseLookup() {
@@ -31,13 +32,17 @@ export default function VerseLookup() {
     })
   }
 
-  const chaptersList = useMemo(() => {
+  const chaptersList: ComboboxOption[] = useMemo(() => {
     return Object.values(chapters).map((chapter) => {
       const meaning = getChapterMeaning(chapter.id)
       const latinName = getChapterTransliteratedName(chapter.id)
       const arabicName = getChapterArabicName(chapter.id)
       const text = `${chapter.id}. ${latinName} (${arabicName}) - ${meaning}`
-      return { id: chapter.id, text: text }
+      return {
+        id: chapter.id,
+        value: chapter.id,
+        text: text,
+      }
     })
   }, [chapters])
 
@@ -61,22 +66,15 @@ export default function VerseLookup() {
     <FlexContainer direction="column">
       <form>
         <Combobox
-          title="Chapter"
-          name="chapterId"
-          value={selectedChapterId}
-          onChange={(e) => setSelectedChapterId(parseInt(e.target.value))}
-        >
-          {chaptersList.map((chapter) => {
-            return (
-              <option key={chapter.id} value={chapter.id}>
-                {chapter.text}
-              </option>
-            )
-          })}
-        </Combobox>
+          mobile
+          clearable
+          selectedOptions={selectedChapterId}
+          onChange={(e) => setSelectedChapterId(parseInt(String(e)))}
+          options={chaptersList}
+        />
 
         <FlexContainer direction="row">
-          <Combobox
+          <RawCombobox
             value={verseNumber}
             onChange={(e) => setVerseNumber(e.target.value.toString())}
           >
@@ -85,7 +83,7 @@ export default function VerseLookup() {
                 {v}
               </option>
             ))}
-          </Combobox>
+          </RawCombobox>
 
           <GoButton
             onClick={(e) => {
