@@ -12,7 +12,7 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
   font: {
     arabic: {
       family: "NotoNaskhArabic",
-      size: 42,
+      size: 42.5,
     },
   },
   lastScroll: {
