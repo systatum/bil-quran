@@ -1,6 +1,9 @@
+import { Locale } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
+import { messages } from "@i18n/message"
 import { RiCloseLine, RiMenuLine } from "@remixicon/react"
 import { useCallback, useState } from "react"
+import { useIntl } from "react-intl"
 import styled from "styled-components"
 import useUserSettingsState from "../../hooks/states/UserSettingsState"
 import { Combobox } from "./Combobox"
@@ -18,15 +21,25 @@ interface AppNavbarProps {
  * burger menu on the navbar.
  */
 export default function AppNavbar({ theme, title }: AppNavbarProps) {
+  const intl = useIntl()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const BurgerIcon = isSidebarOpen ? RiCloseLine : RiMenuLine
-  const { setTheme, userSettings } = useUserSettingsState()
+  const { setTheme, setLocale, userSettings } = useUserSettingsState()
 
   const changeTheme = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     e.preventDefault()
     const value = e.target.value
     setTheme(value as ThemeMode)
   }, [])
+
+  const changeLocale = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      e.preventDefault()
+      const value = e.target.value
+      setLocale(value)
+    },
+    [],
+  )
 
   return (
     <>
@@ -43,17 +56,34 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
       />
 
       <SidebarContainer theme={theme} $visible={isSidebarOpen}>
-        <SidebarItem>Verse lookup</SidebarItem>
+        <SidebarItem>
+          {intl.formatMessage({ id: messages.lookup.title })}
+        </SidebarItem>
         <VerseLookup />
 
-        <SidebarItem>Theme</SidebarItem>
+        <SidebarItem>
+          {intl.formatMessage({ id: messages.theme.title })}
+        </SidebarItem>
         <Combobox onChange={changeTheme} value={userSettings.theme}>
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
+          <option value="light">
+            {intl.formatMessage({ id: messages.theme.light })}
+          </option>
+          <option value="dark">
+            {intl.formatMessage({ id: messages.theme.dark })}
+          </option>
         </Combobox>
 
-        <SidebarItem>Font</SidebarItem>
+        <SidebarItem>{intl.formatMessage({ id: messages.font })}</SidebarItem>
         <FontSettings />
+
+        <SidebarItem>{intl.formatMessage({ id: messages.lang })}</SidebarItem>
+        <Combobox onChange={changeLocale} value={userSettings.locale}>
+          {Object.values(Locale).map((l) => (
+            <option key={l} value={l}>
+              {intl.formatMessage({ id: messages.locale[l] })}
+            </option>
+          ))}
+        </Combobox>
       </SidebarContainer>
     </>
   )

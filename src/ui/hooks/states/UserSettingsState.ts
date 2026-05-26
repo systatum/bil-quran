@@ -1,6 +1,7 @@
 import { ArabicFontFamily, ArabicFonts } from "@constants/fonts"
 import { DEFAULT_LOCALE, Locale } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
+import { resolveLocale } from "@i18n"
 import LOGGER from "@services/Logger"
 import { DeepPartial, mergeKnownKeys } from "@services/mutator"
 import { create } from "zustand"
@@ -69,6 +70,10 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
     get().partialUpdate({ theme })
   },
 
+  setLocale(locale) {
+    get().partialUpdate({ locale: resolveLocale(locale) })
+  },
+
   setFont(font) {
     const current = get().userSettings.font
     const next: UserFontSettings = {
@@ -122,6 +127,7 @@ export interface UserSettingsState {
   ): void
 
   setTheme(theme: ThemeMode): void
+  setLocale(locale: string): void
   setFont(font: DeepPartial<UserFontSettings>): void
   setScrollPosition(chapterId: number, verse: number): void
 }

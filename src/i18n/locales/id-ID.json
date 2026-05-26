@@ -1,0 +1,18 @@
+{
+  "font": "Font",
+  "lang": "Bahasa",
+  "lookup": {
+    "title": "Lompat ke ayat",
+    "go": "Tuju"
+  },
+  "locale": {
+    "ar-IQ": "Bahasa Arab (Iraq)",
+    "en-US": "Bahasa Inggris (Amerika)",
+    "id-ID": "Bahasa Indonesia"
+  },
+  "theme": {
+    "title": "Pewarnaan",
+    "light": "Cerah",
+    "dark": "Gelap"
+  }
+}
