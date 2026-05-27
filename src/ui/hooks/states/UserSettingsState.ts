@@ -149,6 +149,7 @@ export interface UserSettings {
   locale: Locale
   theme: ThemeMode
   font: UserFontSettings
+  basmallah: ""
   lastScroll: {
     chapterId: number
     verse: number
