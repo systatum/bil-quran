@@ -10,26 +10,32 @@ export interface FontAsset {
  */
 
 export const ArabicFonts = {
-  Albayan: {
-    name: "Albayan",
-    relativePath: "albayan/albayan",
-  },
+  // weird rendering at 2:5
+  // Albayan: {
+  //   name: "Albayan",
+  //   relativePath: "albayan/albayan",
+  // },
   Almushaf: {
     name: "Almushaf",
     relativePath: "almushaf/almushaf",
   },
-  AmiriColor: {
-    name: "Amiri Color",
-    relativePath: "amiri-color/amiri-quran-colored",
+  AlquranWbw: {
+    name: "AlquranWBW",
+    relativePath: "alquranwbw/alquran_wbw",
   },
+  // AmiriColor: {
+  //   name: "Amiri Color",
+  //   relativePath: "amiri-color/amiri-quran-colored",
+  // },
   Amiri: {
     name: "Amiri",
     relativePath: "amiri/amiri_arabic-400-normal",
   },
-  Bahij: {
-    name: "Bahij",
-    relativePath: "bahij/bahij",
-  },
+  // weird rendering at 2:5
+  // Bahij: {
+  //   name: "Bahij",
+  //   relativePath: "bahij/bahij",
+  // },
   DroidNaskh: {
     name: "Droid Naskh",
     relativePath: "droid-naskh/droid-naskh-regular",
