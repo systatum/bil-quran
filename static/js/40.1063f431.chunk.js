@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkbil_quran=self.webpackChunkbil_quran||[]).push([[40],{40(e){e.exports=JSON.parse('{"font":"Font","lang":"Language","lookup":{"title":"Verse lookup","go":"Go"},"locale":{"ar-IQ":"Arabic (Iraqi)","en-US":"English (American)","id-ID":"Indonesian"},"theme":{"title":"Theme","light":"Light","dark":"Dark"}}')}}]);
