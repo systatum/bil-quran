@@ -21,7 +21,7 @@ export const ArabicFonts = {
   },
   AlquranWbw: {
     name: "AlquranWBW",
-    relativePath: "alquranwbw/alquran_wbw",
+    relativePath: "alquranwbw/QuranWBW(1)",
   },
   // AmiriColor: {
   //   name: "Amiri Color",
