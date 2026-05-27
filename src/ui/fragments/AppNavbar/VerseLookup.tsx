@@ -114,29 +114,27 @@ export default function VerseLookup() {
 
   return (
     <FlexContainer direction="column">
-      <form>
-        <FlexContainer direction="row">
-          <Combobox
-            clearable
-            onChange={(selectionOption) => {
-              const value = selectionOption as string
-              const [chapterId, verseId] = value.split("-")
-              setSelectedChapterId(chapterId)
-              setVerseNumber(verseId)
-            }}
-            options={chaptersList}
-          />
+      <FlexContainer direction="row">
+        <Combobox
+          clearable
+          onChange={(selectionOption) => {
+            const value = selectionOption as string
+            const [chapterId, verseId] = value.split("-")
+            setSelectedChapterId(chapterId)
+            setVerseNumber(verseId)
+          }}
+          options={chaptersList}
+        />
 
-          <Button
-            onClick={(e) => {
-              e.preventDefault()
-              goToVerse()
-            }}
-          >
-            Go
-          </Button>
-        </FlexContainer>
-      </form>
+        <Button
+          onClick={(e) => {
+            e.preventDefault()
+            goToVerse()
+          }}
+        >
+          Go
+        </Button>
+      </FlexContainer>
     </FlexContainer>
   )
 }
