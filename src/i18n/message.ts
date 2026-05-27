@@ -20,3 +20,9 @@ export const messages = {
     dark: "theme.dark",
   },
 } as const
+
+export function isProperThemeValue(
+  value: string,
+): value is keyof typeof messages.theme {
+  return value in messages.theme
+}

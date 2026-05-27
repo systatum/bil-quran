@@ -8,6 +8,7 @@ import styled from "styled-components"
 import useUserSettingsState from "../../hooks/states/UserSettingsState"
 import { Combobox } from "./Combobox"
 import FontSettings from "./FontSettings"
+import UserSettingsForm from "./UserSettingsForm"
 import VerseLookup from "./VerseLookup"
 
 interface AppNavbarProps {
@@ -25,12 +26,6 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const BurgerIcon = isSidebarOpen ? RiCloseLine : RiMenuLine
   const { setTheme, setLocale, userSettings } = useUserSettingsState()
-
-  const changeTheme = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    e.preventDefault()
-    const value = e.target.value
-    setTheme(value as ThemeMode)
-  }, [])
 
   const changeLocale = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -61,17 +56,7 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
         </SidebarItem>
         <VerseLookup />
 
-        <SidebarItem>
-          {intl.formatMessage({ id: messages.theme.title })}
-        </SidebarItem>
-        <Combobox onChange={changeTheme} value={userSettings.theme}>
-          <option value="light">
-            {intl.formatMessage({ id: messages.theme.light })}
-          </option>
-          <option value="dark">
-            {intl.formatMessage({ id: messages.theme.dark })}
-          </option>
-        </Combobox>
+        <UserSettingsForm />
 
         <SidebarItem>{intl.formatMessage({ id: messages.font })}</SidebarItem>
         <FontSettings />
