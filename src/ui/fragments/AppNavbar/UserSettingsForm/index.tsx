@@ -1,10 +1,10 @@
 import { ArabicFonts, ArabicFontSizes } from "@constants/fonts"
-import { ThemeMode } from "@constants/theme"
+import { Locale } from "@constants/settings"
 import { isProperThemeValue, messages } from "@i18n/message"
 import { ComboboxOption } from "@systatum/coneto/combobox"
 import { FormFieldGroup, StatefulForm } from "@systatum/coneto/stateful-form"
 import { useTheme } from "@systatum/coneto/theme"
-import { useCallback, useMemo, useState } from "react"
+import { useState } from "react"
 import { useIntl } from "react-intl"
 import useUserSettingsState from "../../../hooks/states/UserSettingsState"
 export default function UserSettingsForm() {
@@ -16,65 +16,69 @@ export default function UserSettingsForm() {
     theme: mode,
     arabicFontFamily: userSettings.font.arabic.family,
     arabicFontSize: String(userSettings.font.arabic.size),
+    locale: userSettings.locale,
   })
 
-  const FIELDS: FormFieldGroup[] = useMemo(
-    () => [
+  const FIELDS: FormFieldGroup[] = [
+    {
+      name: "theme",
+      title: intl.formatMessage({ id: messages.theme.title }),
+      type: "combo",
+      combobox: {
+        options: ["light", "dark"]
+          .filter((t) => isProperThemeValue(t))
+          .map(
+            (t) =>
+              ({
+                text: intl.formatMessage({
+                  id: messages.theme[t],
+                }),
+                value: t,
+              }) satisfies ComboboxOption,
+          ),
+      },
+    },
+
+    [
       {
-        name: "theme",
-        title: intl.formatMessage({ id: messages.theme.title }),
+        name: "arabicFontFamily",
+        title: intl.formatMessage({ id: messages.font }),
         type: "combo",
         combobox: {
-          options: ["light", "dark"]
-            .filter((t) => isProperThemeValue(t))
-            .map(
-              (t) =>
-                ({
-                  text: intl.formatMessage({
-                    id: messages.theme[t],
-                  }),
-                  value: t,
-                }) satisfies ComboboxOption,
-            ),
+          options: Object.entries(ArabicFonts).map(([fontId, font]) => {
+            return {
+              text: font.name,
+              value: fontId,
+            }
+          }),
         },
       },
-
-      [
-        {
-          name: "arabicFontFamily",
-          title: intl.formatMessage({ id: messages.font }),
-          type: "combo",
-          combobox: {
-            options: Object.entries(ArabicFonts).map(([fontId, font]) => {
-              return {
-                text: font.name,
-                value: fontId,
-              }
-            }),
-          },
+      {
+        name: "arabicFontSize",
+        type: "combo",
+        placeholder: "Size of the font",
+        width: "50%",
+        combobox: {
+          options: ArabicFontSizes.map((s) => ({
+            text: s.toString(),
+            value: s.toString(),
+          })),
         },
-        {
-          name: "arabicFontSize",
-          type: "combo",
-          placeholder: "Size of the font",
-          width: "50%",
-          combobox: {
-            options: ArabicFontSizes.map((s) => ({
-              text: s.toString(),
-              value: s.toString(),
-            })),
-          },
-        },
-      ],
+      },
     ],
-    [],
-  )
 
-  const changeTheme = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    e.preventDefault()
-    const value = e.target.value
-    setTheme(value as ThemeMode)
-  }, [])
+    {
+      name: "locale",
+      title: intl.formatMessage({ id: messages.lang }),
+      type: "combo",
+      combobox: {
+        options: Object.values(Locale).map((l) => ({
+          text: intl.formatMessage({ id: messages.locale[l] }),
+          value: l,
+        })),
+      },
+    },
+  ]
 
   return (
     <StatefulForm
@@ -87,7 +91,14 @@ export default function UserSettingsForm() {
           setFont({ arabic: { family: currentState.arabicFontFamily } })
         } else if ("arabicFontSize" in currentState) {
           setFont({ arabic: { size: Number(currentState.arabicFontSize) } })
+        } else if ("locale" in currentState) {
+          setLocale(currentState.locale)
         }
+
+        setFormValues((s) => ({
+          ...s,
+          ...currentState,
+        }))
       }}
     />
   )

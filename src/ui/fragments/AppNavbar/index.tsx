@@ -1,4 +1,3 @@
-import { Locale } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import { messages } from "@i18n/message"
 import { RiCloseLine, RiMenuLine } from "@remixicon/react"
@@ -6,7 +5,6 @@ import { useCallback, useState } from "react"
 import { useIntl } from "react-intl"
 import styled from "styled-components"
 import useUserSettingsState from "../../hooks/states/UserSettingsState"
-import { Combobox } from "./Combobox"
 import UserSettingsForm from "./UserSettingsForm"
 import VerseLookup from "./VerseLookup"
 
@@ -56,15 +54,6 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
         <VerseLookup />
 
         <UserSettingsForm />
-
-        <SidebarItem>{intl.formatMessage({ id: messages.lang })}</SidebarItem>
-        <Combobox onChange={changeLocale} value={userSettings.locale}>
-          {Object.values(Locale).map((l) => (
-            <option key={l} value={l}>
-              {intl.formatMessage({ id: messages.locale[l] })}
-            </option>
-          ))}
-        </Combobox>
       </SidebarContainer>
     </>
   )
