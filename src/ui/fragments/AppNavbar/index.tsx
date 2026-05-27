@@ -7,7 +7,6 @@ import { useIntl } from "react-intl"
 import styled from "styled-components"
 import useUserSettingsState from "../../hooks/states/UserSettingsState"
 import { Combobox } from "./Combobox"
-import FontSettings from "./FontSettings"
 import UserSettingsForm from "./UserSettingsForm"
 import VerseLookup from "./VerseLookup"
 
@@ -57,9 +56,6 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
         <VerseLookup />
 
         <UserSettingsForm />
-
-        <SidebarItem>{intl.formatMessage({ id: messages.font })}</SidebarItem>
-        <FontSettings />
 
         <SidebarItem>{intl.formatMessage({ id: messages.lang })}</SidebarItem>
         <Combobox onChange={changeLocale} value={userSettings.locale}>

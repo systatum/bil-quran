@@ -1,3 +1,4 @@
+import { ArabicFonts, ArabicFontSizes } from "@constants/fonts"
 import { ThemeMode } from "@constants/theme"
 import { isProperThemeValue, messages } from "@i18n/message"
 import { ComboboxOption } from "@systatum/coneto/combobox"
@@ -9,10 +10,13 @@ import useUserSettingsState from "../../../hooks/states/UserSettingsState"
 export default function UserSettingsForm() {
   const intl = useIntl()
   const { mode } = useTheme()
+  const { setTheme, setFont, setLocale, userSettings } = useUserSettingsState()
+
   const [formValues, setFormValues] = useState({
     theme: mode,
+    arabicFontFamily: userSettings.font.arabic.family,
+    arabicFontSize: String(userSettings.font.arabic.size),
   })
-  const { setTheme, setLocale, userSettings } = useUserSettingsState()
 
   const FIELDS: FormFieldGroup[] = useMemo(
     () => [
@@ -34,6 +38,34 @@ export default function UserSettingsForm() {
             ),
         },
       },
+
+      [
+        {
+          name: "arabicFontFamily",
+          title: intl.formatMessage({ id: messages.font }),
+          type: "combo",
+          combobox: {
+            options: Object.entries(ArabicFonts).map(([fontId, font]) => {
+              return {
+                text: font.name,
+                value: fontId,
+              }
+            }),
+          },
+        },
+        {
+          name: "arabicFontSize",
+          type: "combo",
+          placeholder: "Size of the font",
+          width: "50%",
+          combobox: {
+            options: ArabicFontSizes.map((s) => ({
+              text: s.toString(),
+              value: s.toString(),
+            })),
+          },
+        },
+      ],
     ],
     [],
   )
@@ -51,6 +83,10 @@ export default function UserSettingsForm() {
       onChange={({ currentState }) => {
         if ("theme" in currentState) {
           setTheme(currentState.theme)
+        } else if ("arabicFontFamily" in currentState) {
+          setFont({ arabic: { family: currentState.arabicFontFamily } })
+        } else if ("arabicFontSize" in currentState) {
+          setFont({ arabic: { size: Number(currentState.arabicFontSize) } })
         }
       }}
     />
