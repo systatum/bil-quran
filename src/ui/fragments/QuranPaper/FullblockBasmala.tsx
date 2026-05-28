@@ -1,5 +1,5 @@
 import { ThemeMode } from "@constants/theme"
-import { useEffect, useRef } from "react"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import styled from "styled-components"
 
 export default function FullblockBasmala({
@@ -19,18 +19,58 @@ export default function FullblockBasmala({
 }) {
   const ref = useRef<HTMLDivElement>(null)
 
+  const [viewportWidth, setViewportWidth] = useState(window.innerWidth)
+
   useEffect(() => {
-    if (!ref.current) return
-
-    const h = ref.current.getBoundingClientRect().height
-
-    if (sizeMap.current.get(index) !== h) {
-      sizeMap.current.set(index, h)
-      virtualizer.measure()
+    function onResize() {
+      setViewportWidth(window.innerWidth)
     }
-  }, [index, sizeMap, virtualizer, hidden])
 
-  console.log("is hidden", hidden)
+    window.addEventListener("resize", onResize)
+
+    return () => {
+      window.removeEventListener("resize", onResize)
+    }
+  }, [])
+
+  // prevents "white" gaps on screen resizing
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    // It stores the current requestAnimationFrame ID so you can cancel stale
+    // scheduled measurements. Without cancellation, rapid resize/orientation
+    // events queue many measurements simultaneously, which can cause thrashing
+    // as even stale measurements can race newer ones, rendering unwanted white gaps.
+    let frame = 0
+
+    const measure = () => {
+      cancelAnimationFrame(frame)
+
+      frame = requestAnimationFrame(() => {
+        const height = Math.ceil(el.getBoundingClientRect().height)
+        const cached = sizeMap.current.get(index)
+
+        if (cached !== height) {
+          sizeMap.current.set(index, height)
+          virtualizer.resizeItem(index, height)
+        }
+      })
+    }
+
+    measure()
+
+    const observer = new ResizeObserver(() => {
+      measure()
+    })
+
+    observer.observe(el)
+
+    return () => {
+      cancelAnimationFrame(frame)
+      observer.disconnect()
+    }
+  }, [index, viewportWidth, hidden])
 
   return (
     <BasmalaContainer

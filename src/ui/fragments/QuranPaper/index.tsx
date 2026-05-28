@@ -8,6 +8,7 @@ import { unpackIPC } from "@services/Converter"
 import { useVirtualizer, VirtualItem } from "@tanstack/react-virtual"
 import useChaptersState from "../../hooks/states/ChaptersState"
 import useUserSettingsState from "../../hooks/states/UserSettingsState"
+import { Bismillah } from "./Bismillah"
 import ChapterRow from "./ChapterRow"
 import FullblockBasmala from "./FullblockBasmala"
 import VerseRow, { Verse, WordCell } from "./VerseRow"
@@ -101,7 +102,8 @@ export default function QuranPaper({
     for (const verse of verses) {
       if (verse.chapter.id !== lastChapterId) {
         rows.push({ type: "chapter", chapter: verse.chapter })
-        rows.push({ type: "basmala" })
+        if (Bismillah.isRenderableHere(verse.number, verse.chapter.id))
+          rows.push({ type: "basmala" })
         lastChapterId = verse.chapter.id
       }
 
@@ -270,6 +272,33 @@ export default function QuranPaper({
     if (!requestedChapterId || !requestedVerseNumber) return
     scrollToVerse(requestedChapterId, requestedVerseNumber)
   }, [requestedChapterId, requestedVerseNumber, renderRows])
+
+  // global resize/orientation observer that invalidates every cached measurement
+  // which then would force the virtualizer to recompute
+  useEffect(() => {
+    function remeasureAll() {
+      // clear all cached heights
+      sizeMap.current.clear()
+
+      // force virtualizer recalculation
+      virtualizer.measure()
+
+      // resize observer/layout might still settle
+      requestAnimationFrame(() => {
+        virtualizer.measure()
+      })
+    }
+
+    const media = window.matchMedia("(orientation: portrait)")
+
+    window.addEventListener("resize", remeasureAll)
+    media.addEventListener("change", remeasureAll)
+
+    return () => {
+      window.removeEventListener("resize", remeasureAll)
+      media.removeEventListener("change", remeasureAll)
+    }
+  }, [virtualizer])
 
   return (
     <div

@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from "react"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
 
 import { ArabicFontFamily } from "@constants/fonts"
 import { ChapterRecord } from "@constants/records/ChapterRecord"
@@ -52,6 +52,7 @@ export default function VerseRow({
   const ref = useRef<HTMLDivElement>(null)
   const { userSettings } = useUserSettingsState()
   const { basmalaPosition } = userSettings
+  const [viewportWidth, setViewportWidth] = useState(window.innerWidth)
 
   // when the font changes, view port changes, "re-render" so that
   // the height of all verse row is calculated correctly, and there
@@ -93,7 +94,19 @@ export default function VerseRow({
       cancelAnimationFrame(frame)
       observer.disconnect()
     }
-  }, [index, basmalaPosition])
+  }, [index, basmalaPosition, viewportWidth])
+
+  useEffect(() => {
+    function onResize() {
+      setViewportWidth(window.innerWidth)
+    }
+
+    window.addEventListener("resize", onResize)
+
+    return () => {
+      window.removeEventListener("resize", onResize)
+    }
+  }, [])
 
   return (
     <VerseRowWrapper

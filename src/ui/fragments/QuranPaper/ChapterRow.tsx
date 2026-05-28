@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
 
 import { ChapterRecord } from "@constants/records/ChapterRecord"
 import { BasmalaPosition, DEFAULT_LOCALE } from "@constants/settings"
@@ -30,17 +30,56 @@ export default function ChapterRow({
     userSettings: { basmalaPosition },
   } = useUserSettingsState()
   const ref = useRef<HTMLDivElement>(null)
+  const [viewportWidth, setViewportWidth] = useState(window.innerWidth)
 
   useEffect(() => {
-    if (!ref.current) return
-
-    const h = ref.current.getBoundingClientRect().height
-
-    if (sizeMap.current.get(index) !== h) {
-      sizeMap.current.set(index, h)
-      virtualizer.measure()
+    function onResize() {
+      setViewportWidth(window.innerWidth)
     }
-  }, [index, chapter, sizeMap, virtualizer, basmalaPosition])
+
+    window.addEventListener("resize", onResize)
+
+    return () => {
+      window.removeEventListener("resize", onResize)
+    }
+  }, [])
+
+  // prevents "white" gaps on screen resizing
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    let frame = 0
+
+    const measure = () => {
+      cancelAnimationFrame(frame)
+
+      frame = requestAnimationFrame(() => {
+        const height = Math.ceil(el.getBoundingClientRect().height)
+
+        const cached = sizeMap.current.get(index)
+
+        if (cached !== height) {
+          sizeMap.current.set(index, height)
+
+          virtualizer.resizeItem(index, height)
+        }
+      })
+    }
+
+    measure()
+
+    const observer = new ResizeObserver(() => {
+      measure()
+    })
+
+    observer.observe(el)
+
+    return () => {
+      cancelAnimationFrame(frame)
+      observer.disconnect()
+    }
+  }, [index, viewportWidth, basmalaPosition])
 
   return (
     <ChapterHeaderContainer
