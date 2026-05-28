@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 
 import { ChapterRecord } from "@constants/records/ChapterRecord"
+import { BasmalaPosition } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import { repo } from "@db/repo"
 import { unpackIPC } from "@services/Converter"
@@ -8,6 +9,7 @@ import { useVirtualizer, VirtualItem } from "@tanstack/react-virtual"
 import useChaptersState from "../../hooks/states/ChaptersState"
 import useUserSettingsState from "../../hooks/states/UserSettingsState"
 import ChapterRow from "./ChapterRow"
+import FullblockBasmala from "./FullblockBasmala"
 import VerseRow, { Verse, WordCell } from "./VerseRow"
 
 // This module contains the content browser of the Quran.
@@ -19,7 +21,11 @@ import VerseRow, { Verse, WordCell } from "./VerseRow"
 
 type RenderableChapterRow = { type: "chapter"; chapter: ChapterRecord }
 type RenderableVerseRow = { type: "verse"; verse: Verse }
-type RenderRow = RenderableChapterRow | RenderableVerseRow
+type RenderableBasmalaRow = { type: "basmala" }
+type RenderRow =
+  | RenderableChapterRow
+  | RenderableVerseRow
+  | RenderableBasmalaRow
 
 function isVerseRow(row: RenderRow): row is RenderableVerseRow {
   return row.type === "verse"
@@ -95,6 +101,7 @@ export default function QuranPaper({
     for (const verse of verses) {
       if (verse.chapter.id !== lastChapterId) {
         rows.push({ type: "chapter", chapter: verse.chapter })
+        rows.push({ type: "basmala" })
         lastChapterId = verse.chapter.id
       }
 
@@ -293,6 +300,22 @@ export default function QuranPaper({
                 style={{ transform: `translateY(${item.start}px)` }}
                 sizeMap={sizeMap}
                 virtualizer={virtualizer}
+              />
+            )
+          }
+
+          if (row.type === "basmala") {
+            return (
+              <FullblockBasmala
+                key={`basmala-${item.index}`}
+                theme={theme}
+                index={item.index}
+                style={{ transform: `translateY(${item.start}px)` }}
+                sizeMap={sizeMap}
+                virtualizer={virtualizer}
+                hidden={
+                  userSettings.basmalaPosition === BasmalaPosition.Embedded
+                }
               />
             )
           }

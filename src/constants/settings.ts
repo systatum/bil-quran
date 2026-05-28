@@ -8,10 +8,10 @@ export type Locale = (typeof Locale)[keyof typeof Locale]
 
 export const DEFAULT_LOCALE = Locale.IntEnglish
 
-export const BismillahPosition = {
-  Embedded: 0,
-  Detached: 1,
-}
+export const BasmalaPosition = {
+  Embedded: "0",
+  Detached: "1",
+} as const
 
-export type BismillahPosition =
-  (typeof BismillahPosition)[keyof typeof BismillahPosition]
+export type BasmalaPosition =
+  (typeof BasmalaPosition)[keyof typeof BasmalaPosition]

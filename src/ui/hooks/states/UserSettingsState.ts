@@ -1,5 +1,5 @@
 import { ArabicFontFamily, ArabicFonts } from "@constants/fonts"
-import { DEFAULT_LOCALE, Locale } from "@constants/settings"
+import { BasmalaPosition, DEFAULT_LOCALE, Locale } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import { resolveLocale } from "@i18n"
 import LOGGER from "@services/Logger"
@@ -9,6 +9,7 @@ import { create } from "zustand"
 const DEFAULT_USER_SETTINGS: UserSettings = {
   locale: DEFAULT_LOCALE,
   theme: "light",
+  basmalaPosition: BasmalaPosition.Detached,
   font: {
     arabic: {
       family: "NotoNaskhArabic",
@@ -93,6 +94,10 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
     get().partialUpdate({ font: next })
   },
 
+  setBasmalaPosition(basmalaPosition) {
+    get().partialUpdate({ basmalaPosition })
+  },
+
   setScrollPosition(chapterId, verse) {
     LOGGER.debug("Persisting scrol position to", chapterId, verse)
     get().partialUpdate({
@@ -129,6 +134,7 @@ export interface UserSettingsState {
   setTheme(theme: ThemeMode): void
   setLocale(locale: string): void
   setFont(font: DeepPartial<UserFontSettings>): void
+  setBasmalaPosition(basmalaPosition: BasmalaPosition): void
   setScrollPosition(chapterId: number, verse: number): void
 }
 
@@ -149,7 +155,7 @@ export interface UserSettings {
   locale: Locale
   theme: ThemeMode
   font: UserFontSettings
-  basmallah: ""
+  basmalaPosition: BasmalaPosition
   lastScroll: {
     chapterId: number
     verse: number

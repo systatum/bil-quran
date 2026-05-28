@@ -2,7 +2,7 @@ import {
   getAllPossibleFontOptions,
   getAllPossibleFontSizeOptions,
 } from "@constants/fonts"
-import { Locale } from "@constants/settings"
+import { BasmalaPosition, Locale } from "@constants/settings"
 import { isProperThemeValue, messages } from "@i18n/message"
 import { ComboboxOption } from "@systatum/coneto/combobox"
 import { FormFieldGroup, StatefulForm } from "@systatum/coneto/stateful-form"
@@ -11,15 +11,19 @@ import { useMemo, useState } from "react"
 import { useIntl } from "react-intl"
 import useUserSettingsState from "../../../hooks/states/UserSettingsState"
 export default function UserSettingsForm() {
-  const intl = useIntl()
+  const { formatMessage } = useIntl()
   const { mode } = useTheme()
-  const { setTheme, setFont, setLocale, userSettings } = useUserSettingsState()
+  const { setTheme, setFont, setLocale, setBasmalaPosition, userSettings } =
+    useUserSettingsState()
+
+  console.log("user settings", userSettings)
 
   const [formValues, setFormValues] = useState({
     theme: mode,
     arabicFontFamily: userSettings.font.arabic.family,
     arabicFontSize: String(userSettings.font.arabic.size),
     locale: userSettings.locale,
+    basmalaPosition: userSettings.basmalaPosition,
   })
 
   const arabicFontOptions = useMemo(getAllPossibleFontOptions, [])
@@ -28,7 +32,7 @@ export default function UserSettingsForm() {
   const FIELDS: FormFieldGroup[] = [
     {
       name: "theme",
-      title: intl.formatMessage({ id: messages.theme.title }),
+      title: formatMessage({ id: messages.theme.title }),
       type: "combo",
       combobox: {
         options: ["light", "dark"]
@@ -36,7 +40,7 @@ export default function UserSettingsForm() {
           .map(
             (t) =>
               ({
-                text: intl.formatMessage({
+                text: formatMessage({
                   id: messages.theme[t],
                 }),
                 value: t,
@@ -48,7 +52,7 @@ export default function UserSettingsForm() {
     [
       {
         name: "arabicFontFamily",
-        title: intl.formatMessage({ id: messages.font }),
+        title: formatMessage({ id: messages.font }),
         type: "combo",
         combobox: { options: arabicFontOptions },
       },
@@ -63,12 +67,24 @@ export default function UserSettingsForm() {
 
     {
       name: "locale",
-      title: intl.formatMessage({ id: messages.lang }),
+      title: formatMessage({ id: messages.lang }),
       type: "combo",
       combobox: {
         options: Object.values(Locale).map((l) => ({
-          text: intl.formatMessage({ id: messages.locale[l] }),
+          text: formatMessage({ id: messages.locale[l] }),
           value: l,
+        })),
+      },
+    },
+
+    {
+      name: "basmalaPosition",
+      title: formatMessage({ id: messages.basmalaPosition.title }),
+      type: "combo",
+      combobox: {
+        options: Object.values(BasmalaPosition).map((p) => ({
+          text: formatMessage({ id: messages.basmalaPosition[p] }),
+          value: p,
         })),
       },
     },
@@ -87,6 +103,8 @@ export default function UserSettingsForm() {
           setFont({ arabic: { size: Number(currentState.arabicFontSize) } })
         } else if ("locale" in currentState) {
           setLocale(currentState.locale)
+        } else if ("basmalaPosition" in currentState) {
+          setBasmalaPosition(currentState.basmalaPosition)
         }
 
         setFormValues((s) => ({

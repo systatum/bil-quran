@@ -1,9 +1,10 @@
 import { useEffect, useRef } from "react"
 
 import { ChapterRecord } from "@constants/records/ChapterRecord"
-import { DEFAULT_LOCALE } from "@constants/settings"
+import { BasmalaPosition, DEFAULT_LOCALE } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import styled from "styled-components"
+import useUserSettingsState from "../../hooks/states/UserSettingsState"
 
 /**
  * Row for each chapter. Because it is a virtualized row, we still need
@@ -25,6 +26,9 @@ export default function ChapterRow({
   virtualizer: any
   theme: ThemeMode
 }) {
+  const {
+    userSettings: { basmalaPosition },
+  } = useUserSettingsState()
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -36,30 +40,40 @@ export default function ChapterRow({
       sizeMap.current.set(index, h)
       virtualizer.measure()
     }
-  }, [index, chapter, sizeMap, virtualizer])
+  }, [index, chapter, sizeMap, virtualizer, basmalaPosition])
 
   return (
     <ChapterHeaderContainer
       ref={ref}
       theme={theme}
       style={{ transform: style.transform }}
+      basmalaPosition={basmalaPosition}
     >
-      <ChapterPanel theme={theme}>
+      <ChapterPanel theme={theme} basmalaPosition={basmalaPosition}>
         <SideOrnament side="left" />
+        <ChapterGlowLine side="left" theme={theme} />
 
-        <ChapterName>{chapter.namings[DEFAULT_LOCALE]}</ChapterName>
-        <ChapterDescription>
-          {chapter.transliterations[DEFAULT_LOCALE]}
-          {" · "}
-          {chapter.meanings[DEFAULT_LOCALE]}
-        </ChapterDescription>
+        <ChapterCenter>
+          <ChapterName>{chapter.namings[DEFAULT_LOCALE]}</ChapterName>
 
+          <ChapterDescription>
+            {chapter.transliterations[DEFAULT_LOCALE]}
+            {" · "}
+            {chapter.meanings[DEFAULT_LOCALE]}
+          </ChapterDescription>
+        </ChapterCenter>
+
+        <ChapterGlowLine side="right" theme={theme} />
         <SideOrnament side="right" />
       </ChapterPanel>
     </ChapterHeaderContainer>
   )
 }
-const ChapterHeaderContainer = styled.div<{ theme: ThemeMode }>`
+
+const ChapterHeaderContainer = styled.div<{
+  theme: ThemeMode
+  basmalaPosition: BasmalaPosition
+}>`
   --bg: ${({ theme }) => (theme === "dark" ? "#181818" : "#f6f1e7")};
   --panel-top: ${({ theme }) => (theme === "dark" ? "#26231d" : "#f4ede0")};
   --panel-bottom: ${({ theme }) => (theme === "dark" ? "#1d1b17" : "#e7dcc8")};
@@ -75,16 +89,25 @@ const ChapterHeaderContainer = styled.div<{ theme: ThemeMode }>`
   left: 0;
   width: 100%;
   box-sizing: border-box;
-  padding: 10px 18px;
+  padding: ${({ basmalaPosition }) =>
+    basmalaPosition === BasmalaPosition.Detached
+      ? "10px 18px 0"
+      : "6px 18px 0"};
   background: var(--bg);
   overflow: hidden;
 `
 
-const ChapterPanel = styled.div<{ theme: ThemeMode }>`
+const ChapterPanel = styled.div<{
+  theme: ThemeMode
+  basmalaPosition: BasmalaPosition
+}>`
   position: relative;
   width: 100%;
   box-sizing: border-box;
-  padding: 18px 88px;
+  padding: ${({ basmalaPosition }) =>
+    basmalaPosition === BasmalaPosition.Detached
+      ? "18px 88px"
+      : "12px 88px 10px"};
   background: linear-gradient(180deg, var(--panel-top), var(--panel-bottom));
   border: 1.5px solid var(--line);
 
@@ -181,5 +204,59 @@ const SideOrnamentWrapper = styled.div<{
     width: 100%;
     height: 100%;
     display: block;
+  }
+`
+
+const ChapterCenter = styled.div`
+  position: relative;
+  z-index: 3;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`
+
+const ChapterGlowLine = styled.div<{
+  side: "left" | "right"
+  theme: ThemeMode
+}>`
+  position: absolute;
+
+  ${({ side }) => side}: 74px;
+
+  top: 50%;
+  transform: translateY(-50%);
+
+  width: calc(50% - 210px);
+  height: 18px;
+
+  pointer-events: none;
+  opacity: 0.82;
+
+  &::before {
+    content: "";
+
+    position: absolute;
+    top: 50%;
+
+    left: 0;
+    right: 0;
+
+    height: 1px;
+
+    transform: translateY(-50%);
+
+    background: linear-gradient(
+      ${({ side }) => (side === "left" ? "to left" : "to right")},
+      ${({ theme }) =>
+          theme === "dark" ? "rgba(216,204,176,0.58)" : "rgba(127,103,64,0.42)"}
+        0%,
+
+      ${({ theme }) =>
+          theme === "dark" ? "rgba(216,204,176,0.20)" : "rgba(127,103,64,0.16)"}
+        55%,
+
+      transparent 100%
+    );
   }
 `

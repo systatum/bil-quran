@@ -19,6 +19,11 @@ export const messages = {
     light: "theme.light",
     dark: "theme.dark",
   },
+  basmalaPosition: {
+    title: "basmalaPosition.title",
+    "0": "basmalaPosition.0",
+    "1": "basmalaPosition.1",
+  },
 } as const
 
 export function isProperThemeValue(

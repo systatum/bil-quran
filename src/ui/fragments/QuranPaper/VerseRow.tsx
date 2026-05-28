@@ -3,7 +3,7 @@ import { useLayoutEffect, useRef } from "react"
 import { ArabicFontFamily } from "@constants/fonts"
 import { ChapterRecord } from "@constants/records/ChapterRecord"
 import { WordWithLexemeRecord } from "@constants/records/WordRecord"
-import { DEFAULT_LOCALE } from "@constants/settings"
+import { BasmalaPosition, DEFAULT_LOCALE } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import styled from "styled-components"
 import useUserSettingsState, {
@@ -51,6 +51,7 @@ export default function VerseRow({
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const { userSettings } = useUserSettingsState()
+  const { basmalaPosition } = userSettings
 
   // when the font changes, view port changes, "re-render" so that
   // the height of all verse row is calculated correctly, and there
@@ -92,7 +93,7 @@ export default function VerseRow({
       cancelAnimationFrame(frame)
       observer.disconnect()
     }
-  }, [index])
+  }, [index, basmalaPosition])
 
   return (
     <VerseRowWrapper
@@ -103,21 +104,24 @@ export default function VerseRow({
       <VerseMarker theme={theme}>{verse.number}</VerseMarker>
 
       <VerseText font={userSettings.font.arabic}>
-        {Bismillah.isRenderableHere(verse.number, verse.chapter.id) && (
-          <Word>
-            <Bismillah />
+        {basmalaPosition === BasmalaPosition.Embedded &&
+          Bismillah.isRenderableHere(verse.number, verse.chapter.id) && (
+            <Word>
+              <Bismillah />
 
-            {showTransliteration && (
-              <Transliteration>Bismillah hir-Rahman nir-Rahim</Transliteration>
-            )}
+              {showTransliteration && (
+                <Transliteration>
+                  Bismillah hir-Rahman nir-Rahim
+                </Transliteration>
+              )}
 
-            {showMeaning && (
-              <Meaning theme={theme} $marginTop="57px">
-                In the name of Allah, the Most Gracious, the Most Merciful
-              </Meaning>
-            )}
-          </Word>
-        )}
+              {showMeaning && (
+                <Meaning theme={theme} $marginTop="57px">
+                  In the name of Allah, the Most Gracious, the Most Merciful
+                </Meaning>
+              )}
+            </Word>
+          )}
 
         {verse.words.map((word, idx) => (
           <Word key={`${word.chapterId}-${word.verse}-${word.order}`}>

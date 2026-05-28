@@ -14,5 +14,10 @@
     "title": "Theme",
     "light": "Light",
     "dark": "Dark"
+  },
+  "basmalaPosition": {
+    "title": "Basmala position",
+    "0": "Embedded",
+    "1": "Detached"
   }
 }
