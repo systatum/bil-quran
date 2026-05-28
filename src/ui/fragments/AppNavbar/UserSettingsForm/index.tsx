@@ -1,10 +1,13 @@
-import { ArabicFonts, ArabicFontSizes } from "@constants/fonts"
+import {
+  getAllPossibleFontOptions,
+  getAllPossibleFontSizeOptions,
+} from "@constants/fonts"
 import { Locale } from "@constants/settings"
 import { isProperThemeValue, messages } from "@i18n/message"
 import { ComboboxOption } from "@systatum/coneto/combobox"
 import { FormFieldGroup, StatefulForm } from "@systatum/coneto/stateful-form"
 import { useTheme } from "@systatum/coneto/theme"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useIntl } from "react-intl"
 import useUserSettingsState from "../../../hooks/states/UserSettingsState"
 export default function UserSettingsForm() {
@@ -18,6 +21,9 @@ export default function UserSettingsForm() {
     arabicFontSize: String(userSettings.font.arabic.size),
     locale: userSettings.locale,
   })
+
+  const arabicFontOptions = useMemo(getAllPossibleFontOptions, [])
+  const arabicFontSizeOptions = useMemo(getAllPossibleFontSizeOptions, [])
 
   const FIELDS: FormFieldGroup[] = [
     {
@@ -44,26 +50,14 @@ export default function UserSettingsForm() {
         name: "arabicFontFamily",
         title: intl.formatMessage({ id: messages.font }),
         type: "combo",
-        combobox: {
-          options: Object.entries(ArabicFonts).map(([fontId, font]) => {
-            return {
-              text: font.name,
-              value: fontId,
-            }
-          }),
-        },
+        combobox: { options: arabicFontOptions },
       },
       {
         name: "arabicFontSize",
         type: "combo",
         placeholder: "Size of the font",
         width: "50%",
-        combobox: {
-          options: ArabicFontSizes.map((s) => ({
-            text: s.toString(),
-            value: s.toString(),
-          })),
-        },
+        combobox: { options: arabicFontSizeOptions },
       },
     ],
 

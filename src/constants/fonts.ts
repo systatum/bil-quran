@@ -1,3 +1,5 @@
+import { ComboboxOption } from "@systatum/coneto/combobox"
+
 export interface FontAsset {
   name: string
   relativePath: string
@@ -63,3 +65,19 @@ export type ArabicFontFamily = keyof typeof ArabicFonts
 export const ArabicFontSizes = [
   15, 17.5, 20, 22.5, 25, 27.5, 30, 32.5, 35, 40, 42.5, 45, 47.5, 50,
 ]
+
+export function getAllPossibleFontOptions(): ComboboxOption[] {
+  return Object.entries(ArabicFonts).map(([fontId, font]) => {
+    return {
+      text: font.name,
+      value: fontId,
+    }
+  })
+}
+
+export function getAllPossibleFontSizeOptions(): ComboboxOption[] {
+  return ArabicFontSizes.map((s) => ({
+    text: s.toString(),
+    value: s.toString(),
+  }))
+}
