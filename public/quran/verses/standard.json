@@ -98233,7 +98233,7 @@
   { "id": "25:14", "word": "ثُبُورًا", "trans": "thubūran", "root": "ث ب ر" },
   { "id": "25:14", "word": "كَثِيرًا", "trans": "kathīran", "root": "ك ث ر" },
   { "id": "25:15", "word": "قُلْ", "trans": "qul", "root": "ق و ل" },
-  { "id": "25:15", "word": "أَذَلِكَ", "trans": "adhālika", "root": "ذ ل ك" },
+  { "id": "25:15", "word": "اَذٰلِكَ", "trans": "adhālika", "root": "ذ ل ك" },
   { "id": "25:15", "word": "خَيْرٌ", "trans": "khayrun", "root": "خ ي ر" },
   { "id": "25:15", "word": "أَمْ", "trans": "am", "root": "ا م" },
   { "id": "25:15", "word": "جَنَّةُ", "trans": "jannatu", "root": "ج ن ن" },
@@ -122419,7 +122419,7 @@
     "trans": "l-ʿāmilūna",
     "root": "ع م ل"
   },
-  { "id": "37:62", "word": "أَذَلِكَ", "trans": "adhālika", "root": "ذ ل ك" },
+  { "id": "37:62", "word": "اَذٰلِكَ", "trans": "adhālika", "root": "ذ ل ك" },
   { "id": "37:62", "word": "خَيْرٌ", "trans": "khayrun", "root": "خ ي ر" },
   { "id": "37:62", "word": "نُزُلًا", "trans": "nuzulan", "root": "ن ز ل" },
   { "id": "37:62", "word": "أَمْ", "trans": "am", "root": "ا م" },
