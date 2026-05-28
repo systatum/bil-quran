@@ -1,10 +1,9 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react"
-
 import { ArabicFontFamily } from "@constants/fonts"
 import { ChapterRecord } from "@constants/records/ChapterRecord"
 import { WordWithLexemeRecord } from "@constants/records/WordRecord"
 import { BasmalaPosition, DEFAULT_LOCALE } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
+import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
 import styled from "styled-components"
 import useUserSettingsState, {
   FontSetting,
@@ -49,64 +48,20 @@ export default function VerseRow({
   showMeaning?: boolean
   theme: ThemeMode
 }) {
-  const ref = useRef<HTMLDivElement>(null)
   const { userSettings } = useUserSettingsState()
   const { basmalaPosition } = userSettings
-  const [viewportWidth, setViewportWidth] = useState(window.innerWidth)
 
-  // when the font changes, view port changes, "re-render" so that
-  // the height of all verse row is calculated correctly, and there
-  // is no empty region due to using old calculation
-  useLayoutEffect(() => {
-    const el = ref.current
-    if (!el) return
-
-    let frame = 0
-
-    const measure = () => {
-      cancelAnimationFrame(frame)
-
-      frame = requestAnimationFrame(() => {
-        const height = el.getBoundingClientRect().height
-        const cached = sizeMap.current.get(index)
-
-        if (cached !== height) {
-          sizeMap.current.set(index, height)
-
-          // IMPORTANT:
-          // update only this row instead of full measure()
-          virtualizer.resizeItem(index, height)
-        }
-      })
-    }
-
-    // initial measurement
-    measure()
-
-    // observe all future layout changes
-    const observer = new ResizeObserver(() => {
-      measure()
-    })
-
-    observer.observe(el)
-
-    return () => {
-      cancelAnimationFrame(frame)
-      observer.disconnect()
-    }
-  }, [index, basmalaPosition, viewportWidth])
-
-  useEffect(() => {
-    function onResize() {
-      setViewportWidth(window.innerWidth)
-    }
-
-    window.addEventListener("resize", onResize)
-
-    return () => {
-      window.removeEventListener("resize", onResize)
-    }
-  }, [])
+  const ref = useVirtualRowMeasurer({
+    index,
+    sizeMap,
+    virtualizer,
+    deps: [
+      basmalaPosition,
+      showMeaning,
+      showTransliteration,
+      userSettings.font.arabic,
+    ],
+  })
 
   return (
     <VerseRowWrapper

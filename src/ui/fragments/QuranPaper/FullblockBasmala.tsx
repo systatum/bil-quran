@@ -1,5 +1,5 @@
 import { ThemeMode } from "@constants/theme"
-import { useEffect, useLayoutEffect, useRef, useState } from "react"
+import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
 import styled from "styled-components"
 
 export default function FullblockBasmala({
@@ -17,60 +17,12 @@ export default function FullblockBasmala({
   theme: ThemeMode
   hidden: boolean
 }) {
-  const ref = useRef<HTMLDivElement>(null)
-
-  const [viewportWidth, setViewportWidth] = useState(window.innerWidth)
-
-  useEffect(() => {
-    function onResize() {
-      setViewportWidth(window.innerWidth)
-    }
-
-    window.addEventListener("resize", onResize)
-
-    return () => {
-      window.removeEventListener("resize", onResize)
-    }
-  }, [])
-
-  // prevents "white" gaps on screen resizing
-  useLayoutEffect(() => {
-    const el = ref.current
-    if (!el) return
-
-    // It stores the current requestAnimationFrame ID so you can cancel stale
-    // scheduled measurements. Without cancellation, rapid resize/orientation
-    // events queue many measurements simultaneously, which can cause thrashing
-    // as even stale measurements can race newer ones, rendering unwanted white gaps.
-    let frame = 0
-
-    const measure = () => {
-      cancelAnimationFrame(frame)
-
-      frame = requestAnimationFrame(() => {
-        const height = Math.ceil(el.getBoundingClientRect().height)
-        const cached = sizeMap.current.get(index)
-
-        if (cached !== height) {
-          sizeMap.current.set(index, height)
-          virtualizer.resizeItem(index, height)
-        }
-      })
-    }
-
-    measure()
-
-    const observer = new ResizeObserver(() => {
-      measure()
-    })
-
-    observer.observe(el)
-
-    return () => {
-      cancelAnimationFrame(frame)
-      observer.disconnect()
-    }
-  }, [index, viewportWidth, hidden])
+  const ref = useVirtualRowMeasurer({
+    index,
+    sizeMap,
+    virtualizer,
+    deps: [hidden],
+  })
 
   return (
     <BasmalaContainer
