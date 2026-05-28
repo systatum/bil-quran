@@ -50,6 +50,10 @@ export const ArabicFonts = {
     name: "Noto Naskh Arabic",
     relativePath: "notonaskh/NotoNaskhArabic-Regular",
   },
+  NotoNastaqUrdu: {
+    name: "Noto Nastaliq Urdu",
+    relativePath: "notonastaq-urdu/notonastaq-urdu",
+  },
   TahaNaskh: {
     name: "Taha Naskh",
     relativePath: "taha-naskh/taha-naskh",
