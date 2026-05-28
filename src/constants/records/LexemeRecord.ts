@@ -1,4 +1,5 @@
 import { Locale } from "@constants/settings"
+import { RootRecord } from "./RootRecord"
 
 /**
  * Represent all the unique word in a Quranic "dictionary"
@@ -6,8 +7,14 @@ import { Locale } from "@constants/settings"
 export interface LexemeRecord {
   id: number
   token: string
-  root: string
-  readings: Record<Locale, string>
+  rootId: number
+
+  /**
+   * The root characters that make up this word
+   */
+  root: RootRecord
+
+  readings: Partial<Record<Locale, string>>
 }
 
 export type NewLexemeRecord = Omit<LexemeRecord, "id">

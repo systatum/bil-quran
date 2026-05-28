@@ -3,7 +3,7 @@ import { WordRecord, WordWithLexemeRecord } from "@constants/records/WordRecord"
 import { withDb } from "@db/driver"
 import { and, eq } from "drizzle-orm"
 import { conditional, Repository } from "./Repository"
-import { lexemes, words as schema } from "./tables"
+import { lexemes, roots, words as schema } from "./tables"
 
 class WordRepo extends Repository<typeof schema, WordRecord> {
   constructor() {
@@ -26,11 +26,15 @@ class WordRepo extends Repository<typeof schema, WordRecord> {
             lexemeId: schema.lexemeId,
             renderingId: schema.renderingId,
             token: lexemes.token,
-            root: lexemes.root,
+            root: {
+              id: roots.id,
+              root: roots.root,
+            },
             readings: lexemes.readings,
           })
           .from(schema)
           .innerJoin(lexemes, eq(schema.lexemeId, lexemes.id))
+          .innerJoin(roots, eq(lexemes.rootId, roots.id))
           .where(
             and(
               ...conditional(chapterId, eq(schema.chapterId, chapterId ?? -1)),

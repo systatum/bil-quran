@@ -1,7 +1,7 @@
 import { IPCResponse } from "@constants/IPC"
 import { LexemeRecord } from "@constants/records/LexemeRecord"
 import { withDb } from "@db/driver"
-import { and, eq } from "drizzle-orm"
+import { and, eq, inArray } from "drizzle-orm"
 import { conditional, Repository } from "./Repository"
 import { lexemes as schema } from "./tables"
 
@@ -14,16 +14,26 @@ class LexemeRepo extends Repository<typeof schema, LexemeRecord> {
     super(schema)
   }
 
+  /**
+   * Find lexemes.
+   * - if token is provided, will find one matching token
+   * - if tokens[] is provided, will find those tokens
+   */
   async findAllBy({
     token,
+    tokens = [],
   }: {
-    token: string
+    token?: string
+    tokens?: string[]
   }): Promise<IPCResponse<LexemeRecord[]>> {
     return withDb(
       async (db) =>
         await this.findBy(
           db,
-          and(...conditional(token, eq(schema.token, token ?? ""))),
+          and(
+            ...conditional(token, eq(schema.token, token ?? "")),
+            ...conditional(tokens.length > 0, inArray(schema.token, tokens)),
+          ),
         ),
     )
   }

@@ -34,11 +34,21 @@ export const renderings = pgTable("renderings", {
   updatedAt: timestamp().notNull(),
 })
 
+export const roots = pgTable("roots", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  root: varchar({ length: 18 }).notNull(),
+})
+
 export const lexemes = pgTable("lexemes", {
   id: bigint({ mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
+  rootId: integer()
+    .notNull()
+    .references(() => roots.id, { onDelete: "cascade" }),
   token: varchar({ length: 25 }).notNull(),
-  root: varchar({ length: 15 }).notNull(),
-  readings: jsonb().$type<Record<Locale, string>>().notNull().default({}),
+  readings: jsonb()
+    .$type<Partial<Record<Locale, string>>>()
+    .notNull()
+    .default({}),
 })
 
 // a word that makes up a verse
