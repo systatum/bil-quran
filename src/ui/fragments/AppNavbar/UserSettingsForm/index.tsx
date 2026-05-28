@@ -17,7 +17,7 @@ export default function UserSettingsForm() {
     useUserSettingsState()
 
   const [formValues, setFormValues] = useState({
-    theme: mode,
+    theme: userSettings.theme ?? mode,
     arabicFontFamily: userSettings.font.arabic.family,
     arabicFontSize: String(userSettings.font.arabic.size),
     locale: userSettings.locale,
