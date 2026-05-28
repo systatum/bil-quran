@@ -1,15 +1,18 @@
 import { ArabicFonts } from "@constants/fonts"
 import { applyMigrations } from "@db/migrations"
 import { seedData } from "@db/seeders"
+import { loadMessages, resolveLocale } from "@i18n"
+import { I18nProvider } from "@i18n/provider"
 import { RouterProvider } from "@tanstack/react-router"
-import { useEffect, useRef, useState } from "react"
+import { JSX, useEffect, useRef, useState } from "react"
 import "./App.css"
+import ErrorRescuer from "./ErrorRescuer"
 import logo from "./logo.svg"
 import useChaptersState from "./ui/hooks/states/ChaptersState"
 import useUserSettingsState from "./ui/hooks/states/UserSettingsState"
 import { router } from "./ui/router"
 
-function App() {
+function AppRoot() {
   const boostrappedRef = useRef(false)
   const [isReady, setIsReady] = useState<boolean>(false)
   const [isError, setIsError] = useState<boolean>(false)
@@ -90,6 +93,29 @@ export function registerFonts(): void {
   style.textContent = css
 
   document.head.appendChild(style)
+}
+
+function App(): JSX.Element {
+  const [messages, setMessages] = useState<Record<string, string>>({})
+  const { userSettings } = useUserSettingsState()
+  const locale = resolveLocale(userSettings.locale)
+
+  // load the locale
+  useEffect(() => {
+    loadMessages(locale)
+      .then((values) => setMessages(values))
+      .catch((e) => {
+        throw e
+      })
+  }, [userSettings.locale])
+
+  return (
+    <ErrorRescuer>
+      <I18nProvider locale={locale} messages={messages}>
+        <AppRoot />
+      </I18nProvider>
+    </ErrorRescuer>
+  )
 }
 
 export default App

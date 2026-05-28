@@ -7,3 +7,11 @@ export const Locale = {
 export type Locale = (typeof Locale)[keyof typeof Locale]
 
 export const DEFAULT_LOCALE = Locale.IntEnglish
+
+export const BasmalaPosition = {
+  Embedded: "0",
+  Detached: "1",
+} as const
+
+export type BasmalaPosition =
+  (typeof BasmalaPosition)[keyof typeof BasmalaPosition]

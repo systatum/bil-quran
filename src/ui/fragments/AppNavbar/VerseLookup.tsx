@@ -1,13 +1,14 @@
+import LOGGER from "@services/Logger"
+import { Button } from "@systatum/coneto/button"
+import { Combobox, ComboboxOption } from "@systatum/coneto/combobox"
 import { useNavigate } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
-import styled from "styled-components"
 import useChaptersState from "../../hooks/states/ChaptersState"
-import { Combobox } from "./Combobox"
 import { FlexContainer } from "./Container"
 
 export default function VerseLookup() {
   const navigate = useNavigate()
-  const [selectedChapterId, setSelectedChapterId] = useState<number>(1)
+  const [selectedChapterId, setSelectedChapterId] = useState<string>("1")
   const [verseNumber, setVerseNumber] = useState<string>("1")
 
   // make sure Quranic chapters are loaded
@@ -21,6 +22,7 @@ export default function VerseLookup() {
   function goToVerse() {
     if (!selectedChapterId) return
     if (Number.isNaN(parseInt(verseNumber))) return
+    if (Number.isNaN(parseInt(selectedChapterId))) return
 
     navigate({
       to: "/c/$chapter/$verse",
@@ -31,93 +33,108 @@ export default function VerseLookup() {
     })
   }
 
-  const chaptersList = useMemo(() => {
+  /**
+   * Range of verses of all the chapters
+   */
+  const chaptersVerseRange: Record<number, [number, number]> = useMemo(() => {
+    LOGGER.debug("Calculating verses range of each every chapter")
+    if (chapters == null) return {}
+
+    return Object.values(chapters).reduce<Record<number, [number, number]>>(
+      (acc, chapter) => ({
+        ...acc,
+        [chapter.id]: [
+          chapter.partitioning[0].start,
+          chapter.partitioning[chapter.partitioning.length - 1].end,
+        ],
+      }),
+      {},
+    )
+  }, [chapters])
+
+  const chaptersList: ComboboxOption[] = useMemo(() => {
+    const VERSE_GROUP_SIZE = 30
+
+    const createVerseOption = (
+      chapterName: string,
+      chapterId: number,
+      verse: number,
+    ): ComboboxOption =>
+      ({
+        text: `${chapterName} - ${verse}`,
+        render: String(verse),
+        value: `${chapterId}-${verse}`,
+        groupOptions: [],
+      }) satisfies ComboboxOption
+
     return Object.values(chapters).map((chapter) => {
       const meaning = getChapterMeaning(chapter.id)
       const latinName = getChapterTransliteratedName(chapter.id)
       const arabicName = getChapterArabicName(chapter.id)
       const text = `${chapter.id}. ${latinName} (${arabicName}) - ${meaning}`
-      return { id: chapter.id, text: text }
+      const [firstVerseNumber, lastVerseNumber] = chaptersVerseRange[chapter.id]
+
+      if (lastVerseNumber <= VERSE_GROUP_SIZE) {
+        return {
+          value: chapter.id,
+          text: text,
+          groupOptions: Array.from(
+            { length: lastVerseNumber - firstVerseNumber + 1 },
+            (_, i) => firstVerseNumber + i,
+          ).map((v) => createVerseOption(latinName!, chapter.id, v)),
+        } satisfies ComboboxOption
+      } else {
+        const groupedOptions: ComboboxOption[] = []
+
+        for (
+          let start = firstVerseNumber;
+          start <= lastVerseNumber;
+          start += VERSE_GROUP_SIZE
+        ) {
+          const end = Math.min(start + VERSE_GROUP_SIZE - 1, lastVerseNumber)
+
+          groupedOptions.push({
+            text: `${start}-${end}`,
+            value: `${chapter.id}-${start}-${end}`,
+            groupOptions: Array.from(
+              { length: end - start + 1 },
+              (_, i) => start + i,
+            ).map((v) => createVerseOption(latinName!, chapter.id, v)),
+          })
+        }
+
+        return {
+          value: chapter.id,
+          text,
+          groupOptions: groupedOptions,
+        } satisfies ComboboxOption
+      }
     })
   }, [chapters])
 
-  /**
-   * Range of verses of the currently selected chapter
-   */
-  const verseRange: number[] = useMemo(() => {
-    if (chapters == null) return [1]
-    const chapter = chapters[selectedChapterId]
-    if (!chapter) return [1]
-
-    let verses: number[] = []
-    const firstVerse = chapter.partitioning[0].start
-    const endVerse = chapter.partitioning[chapter.partitioning.length - 1].end
-    for (let i = firstVerse; i <= endVerse; i++) verses.push(i)
-
-    return verses
-  }, [selectedChapterId])
-
   return (
     <FlexContainer direction="column">
-      <form>
+      <FlexContainer direction="row">
         <Combobox
-          title="Chapter"
-          name="chapterId"
-          value={selectedChapterId}
-          onChange={(e) => setSelectedChapterId(parseInt(e.target.value))}
+          clearable
+          onChange={(selectionOption) => {
+            const value = selectionOption as string
+            const [chapterId, verseId] = value.split("-")
+            setSelectedChapterId(chapterId)
+            setVerseNumber(verseId)
+          }}
+          options={chaptersList}
+        />
+
+        <Button
+          onClick={(e) => {
+            e.preventDefault()
+            goToVerse()
+          }}
         >
-          {chaptersList.map((chapter) => {
-            return (
-              <option key={chapter.id} value={chapter.id}>
-                {chapter.text}
-              </option>
-            )
-          })}
-        </Combobox>
-
-        <FlexContainer direction="row">
-          <Combobox
-            value={verseNumber}
-            onChange={(e) => setVerseNumber(e.target.value.toString())}
-          >
-            {verseRange.map((v) => (
-              <option key={v} value={v.toString()}>
-                {v}
-              </option>
-            ))}
-          </Combobox>
-
-          <GoButton
-            onClick={(e) => {
-              e.preventDefault()
-              goToVerse()
-            }}
-          >
-            Go
-          </GoButton>
-        </FlexContainer>
-      </form>
+          Go
+        </Button>
+      </FlexContainer>
     </FlexContainer>
   )
 }
-
-const VerseInput = styled.input`
-  width: 65%;
-  height: 42px;
-  border-radius: 3px;
-  border: 1px solid #d8d8d8;
-  padding: 0 12px;
-  font-size: 14px;
-`
-
-const GoButton = styled.button`
-  width: 35%;
-  height: 42px;
-  padding: 0 18px;
-  border: none;
-  border-radius: 3px;
-  background: #2f3b26;
-  color: white;
-  cursor: pointer;
-  font-size: 14px;
-`

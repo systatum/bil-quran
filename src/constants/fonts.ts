@@ -1,3 +1,5 @@
+import { ComboboxOption } from "@systatum/coneto/combobox"
+
 export interface FontAsset {
   name: string
   relativePath: string
@@ -10,26 +12,32 @@ export interface FontAsset {
  */
 
 export const ArabicFonts = {
-  Albayan: {
-    name: "Albayan",
-    relativePath: "albayan/albayan",
-  },
+  // weird rendering at 2:5
+  // Albayan: {
+  //   name: "Albayan",
+  //   relativePath: "albayan/albayan",
+  // },
   Almushaf: {
     name: "Almushaf",
     relativePath: "almushaf/almushaf",
   },
-  AmiriColor: {
-    name: "Amiri Color",
-    relativePath: "amiri-color/amiri-quran-colored",
+  AlquranWbw: {
+    name: "AlquranWBW",
+    relativePath: "alquranwbw/QuranWBW(1)",
   },
+  // AmiriColor: {
+  //   name: "Amiri Color",
+  //   relativePath: "amiri-color/amiri-quran-colored",
+  // },
   Amiri: {
     name: "Amiri",
     relativePath: "amiri/amiri_arabic-400-normal",
   },
-  Bahij: {
-    name: "Bahij",
-    relativePath: "bahij/bahij",
-  },
+  // weird rendering at 2:5
+  // Bahij: {
+  //   name: "Bahij",
+  //   relativePath: "bahij/bahij",
+  // },
   DroidNaskh: {
     name: "Droid Naskh",
     relativePath: "droid-naskh/droid-naskh-regular",
@@ -41,6 +49,10 @@ export const ArabicFonts = {
   NotoNaskhArabic: {
     name: "Noto Naskh Arabic",
     relativePath: "notonaskh/NotoNaskhArabic-Regular",
+  },
+  NotoNastaqUrdu: {
+    name: "Noto Nastaliq Urdu",
+    relativePath: "notonastaq-urdu/notonastaq-urdu",
   },
   TahaNaskh: {
     name: "Taha Naskh",
@@ -57,3 +69,19 @@ export type ArabicFontFamily = keyof typeof ArabicFonts
 export const ArabicFontSizes = [
   15, 17.5, 20, 22.5, 25, 27.5, 30, 32.5, 35, 40, 42.5, 45, 47.5, 50,
 ]
+
+export function getAllPossibleFontOptions(): ComboboxOption[] {
+  return Object.entries(ArabicFonts).map(([fontId, font]) => {
+    return {
+      text: font.name,
+      value: fontId,
+    }
+  })
+}
+
+export function getAllPossibleFontSizeOptions(): ComboboxOption[] {
+  return ArabicFontSizes.map((s) => ({
+    text: s.toString(),
+    value: s.toString(),
+  }))
+}

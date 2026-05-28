@@ -1,6 +1,7 @@
 import { ArabicFontFamily, ArabicFonts } from "@constants/fonts"
-import { DEFAULT_LOCALE, Locale } from "@constants/settings"
+import { BasmalaPosition, DEFAULT_LOCALE, Locale } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
+import { resolveLocale } from "@i18n"
 import LOGGER from "@services/Logger"
 import { DeepPartial, mergeKnownKeys } from "@services/mutator"
 import { create } from "zustand"
@@ -8,10 +9,11 @@ import { create } from "zustand"
 const DEFAULT_USER_SETTINGS: UserSettings = {
   locale: DEFAULT_LOCALE,
   theme: "light",
+  basmalaPosition: BasmalaPosition.Detached,
   font: {
     arabic: {
       family: "NotoNaskhArabic",
-      size: 42,
+      size: 42.5,
     },
   },
   lastScroll: {
@@ -69,6 +71,10 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
     get().partialUpdate({ theme })
   },
 
+  setLocale(locale) {
+    get().partialUpdate({ locale: resolveLocale(locale) })
+  },
+
   setFont(font) {
     const current = get().userSettings.font
     const next: UserFontSettings = {
@@ -86,6 +92,10 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
 
     LOGGER.debug("Updating font to:", JSON.stringify(next))
     get().partialUpdate({ font: next })
+  },
+
+  setBasmalaPosition(basmalaPosition) {
+    get().partialUpdate({ basmalaPosition })
   },
 
   setScrollPosition(chapterId, verse) {
@@ -122,7 +132,9 @@ export interface UserSettingsState {
   ): void
 
   setTheme(theme: ThemeMode): void
+  setLocale(locale: string): void
   setFont(font: DeepPartial<UserFontSettings>): void
+  setBasmalaPosition(basmalaPosition: BasmalaPosition): void
   setScrollPosition(chapterId: number, verse: number): void
 }
 
@@ -143,6 +155,7 @@ export interface UserSettings {
   locale: Locale
   theme: ThemeMode
   font: UserFontSettings
+  basmalaPosition: BasmalaPosition
   lastScroll: {
     chapterId: number
     verse: number

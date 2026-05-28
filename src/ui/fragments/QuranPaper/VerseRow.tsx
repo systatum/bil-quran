@@ -1,10 +1,9 @@
-import { useLayoutEffect, useRef } from "react"
-
 import { ArabicFontFamily } from "@constants/fonts"
 import { ChapterRecord } from "@constants/records/ChapterRecord"
 import { WordWithLexemeRecord } from "@constants/records/WordRecord"
-import { DEFAULT_LOCALE } from "@constants/settings"
+import { BasmalaPosition, DEFAULT_LOCALE } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
+import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
 import styled from "styled-components"
 import useUserSettingsState, {
   FontSetting,
@@ -49,50 +48,20 @@ export default function VerseRow({
   showMeaning?: boolean
   theme: ThemeMode
 }) {
-  const ref = useRef<HTMLDivElement>(null)
   const { userSettings } = useUserSettingsState()
+  const { basmalaPosition } = userSettings
 
-  // when the font changes, view port changes, "re-render" so that
-  // the height of all verse row is calculated correctly, and there
-  // is no empty region due to using old calculation
-  useLayoutEffect(() => {
-    const el = ref.current
-    if (!el) return
-
-    let frame = 0
-
-    const measure = () => {
-      cancelAnimationFrame(frame)
-
-      frame = requestAnimationFrame(() => {
-        const height = el.getBoundingClientRect().height
-        const cached = sizeMap.current.get(index)
-
-        if (cached !== height) {
-          sizeMap.current.set(index, height)
-
-          // IMPORTANT:
-          // update only this row instead of full measure()
-          virtualizer.resizeItem(index, height)
-        }
-      })
-    }
-
-    // initial measurement
-    measure()
-
-    // observe all future layout changes
-    const observer = new ResizeObserver(() => {
-      measure()
-    })
-
-    observer.observe(el)
-
-    return () => {
-      cancelAnimationFrame(frame)
-      observer.disconnect()
-    }
-  }, [index])
+  const ref = useVirtualRowMeasurer({
+    index,
+    sizeMap,
+    virtualizer,
+    deps: [
+      basmalaPosition,
+      showMeaning,
+      showTransliteration,
+      userSettings.font.arabic,
+    ],
+  })
 
   return (
     <VerseRowWrapper
@@ -103,21 +72,24 @@ export default function VerseRow({
       <VerseMarker theme={theme}>{verse.number}</VerseMarker>
 
       <VerseText font={userSettings.font.arabic}>
-        {Bismillah.isRenderableHere(verse.number, verse.chapter.id) && (
-          <Word>
-            <Bismillah />
+        {basmalaPosition === BasmalaPosition.Embedded &&
+          Bismillah.isRenderableHere(verse.number, verse.chapter.id) && (
+            <Word>
+              <Bismillah />
 
-            {showTransliteration && (
-              <Transliteration>Bismillah hir-Rahman nir-Rahim</Transliteration>
-            )}
+              {showTransliteration && (
+                <Transliteration>
+                  Bismillah hir-Rahman nir-Rahim
+                </Transliteration>
+              )}
 
-            {showMeaning && (
-              <Meaning theme={theme} $marginTop="57px">
-                In the name of Allah, the Most Gracious, the Most Merciful
-              </Meaning>
-            )}
-          </Word>
-        )}
+              {showMeaning && (
+                <Meaning theme={theme} $marginTop="57px">
+                  In the name of Allah, the Most Gracious, the Most Merciful
+                </Meaning>
+              )}
+            </Word>
+          )}
 
         {verse.words.map((word, idx) => (
           <Word key={`${word.chapterId}-${word.verse}-${word.order}`}>
@@ -186,7 +158,21 @@ const VerseRowWrapper = styled.div<{ theme: ThemeMode }>`
   border-bottom: 1px solid
     ${({ theme }) => (theme === "dark" ? "#303030" : "#bfbfbf")};
 `
+
 const VerseMarker = styled.div<{ theme: ThemeMode }>`
+  --text: ${({ theme }) => (theme === "dark" ? "#e5dcc3" : "#755f4d")};
+  --border: ${({ theme }) => (theme === "dark" ? "#5f5644" : "#cbb9a1")};
+  --bg-start: ${({ theme }) => (theme === "dark" ? "#2b2a26" : "#efe6d8")};
+  --bg-end: ${({ theme }) => (theme === "dark" ? "#1c1b18" : "#e2d6c3")};
+  --inset: ${({ theme }) => (theme === "dark" ? "#3b372f" : "#f4ede2")};
+  --shadow: ${({ theme }) =>
+    theme === "dark" ? "rgba(0,0,0,0.45)" : "rgba(117,95,77,0.08)"};
+  --text-shadow: ${({ theme }) =>
+    theme === "dark" ? "rgba(0,0,0,0.35)" : "rgba(255,255,255,0.30)"};
+  --dashed: ${({ theme }) =>
+    theme === "dark" ? "#7b715b" : "rgba(117,95,77,0.26)"};
+  --dashed-opacity: ${({ theme }) => (theme === "dark" ? 0.4 : 0.5)};
+
   width: 42px;
   height: 42px;
   margin-top: 15px;
@@ -197,59 +183,22 @@ const VerseMarker = styled.div<{ theme: ThemeMode }>`
   position: relative;
   border-radius: 50%;
   font-size: 18px;
+  color: var(--text);
+  border: 1.5px solid var(--border);
 
-  color: ${({ theme }) => (theme === "dark" ? "#e5dcc3" : "#755f4d")};
-
-  border: 1.5px solid
-    ${({ theme }) => (theme === "dark" ? "#5f5644" : "#cbb9a1")};
-
-  background: ${({ theme }) =>
-    theme === "dark"
-      ? `
-          radial-gradient(
-            circle,
-            #2b2a26 40%,
-            #1c1b18 100%
-          )
-        `
-      : `
-          radial-gradient(
-            circle,
-            #efe6d8 40%,
-            #e2d6c3 100%
-          )
-        `};
-
-  box-shadow: ${({ theme }) =>
-    theme === "dark"
-      ? `
-          inset 0 0 0 2px #3b372f,
-          0 1px 3px rgba(0,0,0,0.45)
-        `
-      : `
-          inset 0 0 0 2px #f4ede2,
-          0 1px 2px rgba(117,95,77,0.08)
-        `};
-
-  text-shadow: ${({ theme }) =>
-    theme === "dark"
-      ? `
-          0 1px 0 rgba(0,0,0,0.35)
-        `
-      : `
-          0 1px 0 rgba(255,255,255,0.30)
-        `};
+  background: radial-gradient(circle, var(--bg-start) 40%, var(--bg-end) 100%);
+  box-shadow:
+    inset 0 0 0 2px var(--inset),
+    0 1px 3px var(--shadow);
+  text-shadow: 0 1px 0 var(--text-shadow);
 
   &::after {
     content: "";
     position: absolute;
     inset: 4px;
     border-radius: 50%;
-
-    border: 1px dashed
-      ${({ theme }) => (theme === "dark" ? "#7b715b" : "rgba(117,95,77,0.26)")};
-
-    opacity: ${({ theme }) => (theme === "dark" ? 0.4 : 0.5)};
+    border: 1px dashed var(--dashed);
+    opacity: var(--dashed-opacity);
   }
 `
 

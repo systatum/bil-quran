@@ -12,8 +12,10 @@ module.exports = {
     },
 
     alias: {
-      "@db": path.resolve(__dirname, "src/db"),
       "@constants": path.resolve(__dirname, "src/constants"),
+      "@db": path.resolve(__dirname, "src/db"),
+      "@hooks": path.resolve(__dirname, "src/ui/hooks"),
+      "@i18n": path.resolve(__dirname, "src/i18n"),
       "@services": path.resolve(__dirname, "src/services"),
     },
   },

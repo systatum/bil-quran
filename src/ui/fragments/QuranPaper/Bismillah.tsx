@@ -14,10 +14,3 @@ const BismillahContainer = styled.span`
   line-height: 1;
   margin-top: -33px;
 `
-
-// const BismillahContainer = styled.span`
-//   display: inline-block;
-//   font-family: "BasmalahVer01";
-//   font-size: 72px;
-//   line-height: 1;
-// `

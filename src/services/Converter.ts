@@ -29,3 +29,57 @@ export function unpackIPC<T>(resp: IPCResponse<T>): T {
     : "Unknown IPC error"
   throw new Error(message)
 }
+
+// ===== OBJECT =====================================
+
+export function flattenObject(
+  obj: Record<string, any>,
+  prefix = "",
+): Record<string, string> {
+  return Object.entries(obj).reduce(
+    (acc, [key, value]) => {
+      const nextKey = prefix ? `${prefix}.${key}` : key
+
+      if (typeof value === "object" && value !== null) {
+        Object.assign(acc, flattenObject(value, nextKey))
+      } else {
+        acc[nextKey] = value
+      }
+
+      return acc
+    },
+    {} as Record<string, string>,
+  )
+}
+
+// ===== STRING =====================================
+
+/**
+ * Move Arabic kasra (ِ) below shadda (ّ) when they appear in the wrong order.
+ *
+ * Example:
+ *   يُهَيِّئْ
+ * becomes:
+ *   يُهَيِّئْ
+ *
+ * Unicode:
+ *   Shadda = \u0651
+ *   Kasra  = \u0650
+ *
+ * Wrong order:
+ *   kasra + shadda
+ *
+ * Correct order:
+ *   shadda + kasra
+ */
+export function normalizeArabicDiacritics(text: string): string {
+  // Replace: kasra + shadda
+  // With:    shadda + kasra
+  return text.replace(/\u0650\u0651/g, "\u0651\u0650")
+}
+
+// Example
+const input = "وَيُهَيِّئْ"
+const output = normalizeArabicDiacritics(input)
+
+console.log(output)
