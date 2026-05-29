@@ -82,6 +82,7 @@ const ChapterLabel = styled.div<{ theme: ThemeMode }>`
 `
 
 const BurgerButton = styled.button<{ theme: ThemeMode }>`
+  display: flex;
   color: ${({ theme }) => (theme === "dark" ? "#475848" : "#fff0d3")};
   width: 42px;
   height: 42px;
