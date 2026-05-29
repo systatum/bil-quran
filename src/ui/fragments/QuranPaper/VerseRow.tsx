@@ -4,11 +4,13 @@ import { WordWithLexemeRecord } from "@constants/records/WordRecord"
 import { BasmalaPosition, DEFAULT_LOCALE } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
-import styled from "styled-components"
+import styled, { css } from "styled-components"
 import useUserSettingsState, {
   FontSetting,
 } from "../../hooks/states/UserSettingsState"
 import { Bismillah } from "./Bismillah"
+import { useRef, useState } from "react"
+import { PaperDialog, PaperDialogRef } from "@systatum/coneto/paper-dialog"
 
 export type Verse = {
   id: string
@@ -48,8 +50,13 @@ export default function VerseRow({
   showMeaning?: boolean
   theme: ThemeMode
 }) {
+  const [content, setContent] = useState<WordCell | undefined>(undefined)
+
   const { userSettings } = useUserSettingsState()
   const { basmalaPosition } = userSettings
+
+  const paperDialogRef = useRef<PaperDialogRef>(null)
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const ref = useVirtualRowMeasurer({
     index,
@@ -64,46 +71,91 @@ export default function VerseRow({
   })
 
   return (
-    <VerseRowWrapper
-      ref={ref}
-      theme={theme}
-      style={{ transform: style.transform }}
-    >
-      <VerseMarker theme={theme}>{verse.number}</VerseMarker>
+    <>
+      <VerseRowWrapper
+        ref={ref}
+        theme={theme}
+        style={{ transform: style.transform }}
+      >
+        <VerseMarker theme={theme}>{verse.number}</VerseMarker>
+        <VerseText font={userSettings.font.arabic}>
+          {basmalaPosition === BasmalaPosition.Embedded &&
+            Bismillah.isRenderableHere(verse.number, verse.chapter.id) && (
+              <Word>
+                <Bismillah />
 
-      <VerseText font={userSettings.font.arabic}>
-        {basmalaPosition === BasmalaPosition.Embedded &&
-          Bismillah.isRenderableHere(verse.number, verse.chapter.id) && (
-            <Word>
-              <Bismillah />
+                {showTransliteration && (
+                  <Transliteration>
+                    Bismillah hir-Rahman nir-Rahim
+                  </Transliteration>
+                )}
+
+                {showMeaning && (
+                  <Meaning theme={theme} $marginTop="57px">
+                    In the name of Allah, the Most Gracious, the Most Merciful
+                  </Meaning>
+                )}
+              </Word>
+            )}
+
+          {verse.words.map((word, idx) => (
+            <Word key={`${word.chapterId}-${word.verse}-${word.order}`}>
+              <Arabic
+                onMouseDown={() => {
+                  setContent(word)
+                }}
+                onPointerDown={() => {
+                  hoverTimeoutRef.current = setTimeout(() => {
+                    paperDialogRef.current?.openDialog()
+                  }, 700)
+                }}
+                onPointerUp={() => {
+                  if (hoverTimeoutRef.current) {
+                    clearTimeout(hoverTimeoutRef.current)
+                  }
+                }}
+                onPointerLeave={() => {
+                  if (hoverTimeoutRef.current) {
+                    clearTimeout(hoverTimeoutRef.current)
+                  }
+                }}
+                onPointerCancel={() => {
+                  if (hoverTimeoutRef.current) {
+                    clearTimeout(hoverTimeoutRef.current)
+                  }
+                }}
+              >
+                {word.token}
+              </Arabic>
 
               {showTransliteration && (
                 <Transliteration>
-                  Bismillah hir-Rahman nir-Rahim
+                  {word.readings[DEFAULT_LOCALE]}
                 </Transliteration>
               )}
 
-              {showMeaning && (
-                <Meaning theme={theme} $marginTop="57px">
-                  In the name of Allah, the Most Gracious, the Most Merciful
-                </Meaning>
-              )}
+              {showMeaning && <Meaning theme={theme}>{word.meaning}</Meaning>}
             </Word>
-          )}
-
-        {verse.words.map((word, idx) => (
-          <Word key={`${word.chapterId}-${word.verse}-${word.order}`}>
-            <Arabic>{word.token}</Arabic>
-
-            {showTransliteration && (
-              <Transliteration>{word.readings[DEFAULT_LOCALE]}</Transliteration>
-            )}
-
-            {showMeaning && <Meaning theme={theme}>{word.meaning}</Meaning>}
-          </Word>
-        ))}
-      </VerseText>
-    </VerseRowWrapper>
+          ))}
+        </VerseText>
+      </VerseRowWrapper>
+      <PaperDialog
+        mobile
+        ref={paperDialogRef}
+        height="60dvh"
+        controls={[]}
+        closable
+        styles={{
+          contentStyle: css`
+            display: flex;
+            min-width: auto;
+            overflow-wrap: break-word;
+          `,
+        }}
+      >
+        {JSON.stringify(content)}
+      </PaperDialog>
+    </>
   )
 }
 
@@ -222,6 +274,7 @@ const Word = styled.span`
 
 const Arabic = styled.span`
   line-height: 1.6;
+  cursor: pointer;
 `
 
 const Transliteration = styled.span`
