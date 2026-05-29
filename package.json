@@ -5,6 +5,8 @@
   "homepage": "https://bil-quran.com",
   "scripts": {
     "start": "craco start",
+    "start:android": "cap run android",
+    "start:ios": "cap run ios",
     "build": "craco build && node scripts/copy-files.js",
     "test": "craco test",
     "predeploy": "pnpm run build",
@@ -12,9 +14,13 @@
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
+    "@capacitor/android": "^8.3.4",
+    "@capacitor/cli": "^8.3.4",
+    "@capacitor/core": "^8.3.4",
+    "@capacitor/ios": "^8.3.4",
     "@electric-sql/pglite": "^0.4.5",
     "@remixicon/react": "^4.9.0",
-    "@systatum/coneto": "file:./../coneto",
+    "@systatum/coneto": "file:./../systatum/coneto",
     "@tanstack/react-router": "^1.169.2",
     "@tanstack/react-virtual": "^3.13.24",
     "@testing-library/dom": "^10.4.1",
