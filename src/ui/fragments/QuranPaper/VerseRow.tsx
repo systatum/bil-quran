@@ -11,6 +11,7 @@ import useUserSettingsState, {
 import { Bismillah } from "./Bismillah"
 import { useRef, useState } from "react"
 import { PaperDialog, PaperDialogRef } from "@systatum/coneto/paper-dialog"
+import { Grid } from "@systatum/coneto/grid"
 
 export type Verse = {
   id: string
@@ -107,7 +108,7 @@ export default function VerseRow({
                 onPointerDown={() => {
                   hoverTimeoutRef.current = setTimeout(() => {
                     paperDialogRef.current?.openDialog()
-                  }, 700)
+                  }, 500)
                 }}
                 onPointerUp={() => {
                   if (hoverTimeoutRef.current) {
@@ -142,7 +143,7 @@ export default function VerseRow({
       <PaperDialog
         mobile
         ref={paperDialogRef}
-        height="60dvh"
+        height="55dvh"
         controls={[]}
         closable
         styles={{
@@ -150,10 +151,17 @@ export default function VerseRow({
             display: flex;
             min-width: auto;
             overflow-wrap: break-word;
+            flex-direction: column;
           `,
         }}
       >
-        {JSON.stringify(content)}
+        {content && (
+          <WordDialogContent
+            content={content}
+            arabicFont={userSettings.font.arabic.family}
+            theme={theme}
+          />
+        )}
       </PaperDialog>
     </>
   )
@@ -294,4 +302,133 @@ const Meaning = styled.span<{ theme: ThemeMode; $marginTop?: string }>`
   text-align: center;
   max-width: 120px;
   line-height: 16px;
+`
+
+// word detail verse content
+interface WordDialogContentProps {
+  content: WordCell
+  arabicFont: string
+  theme: ThemeMode
+}
+
+export function WordDialogContent({
+  content,
+  arabicFont,
+  theme,
+}: WordDialogContentProps) {
+  const rootLetters = content.root.root ?? "—"
+  const transliteration = content.readings[DEFAULT_LOCALE]
+
+  return (
+    <>
+      <TokenSection $theme={theme}>
+        <ArabicToken $font={arabicFont} $theme={theme}>
+          {content.token}
+        </ArabicToken>
+        {transliteration && (
+          <Transliteration>{transliteration}</Transliteration>
+        )}
+      </TokenSection>
+
+      <Grid preset="2-col">
+        <InfoTile theme={theme} label="Meaning" value={content.meaning} />
+        <InfoTile
+          theme={theme}
+          label="Root"
+          value={rootLetters}
+          arabic
+          arabicFont={arabicFont}
+        />
+        <InfoTile
+          theme={theme}
+          label="Position"
+          value={`${content.chapterId}:${content.verse} · Word ${content.order}`}
+        />
+        <InfoTile
+          theme={theme}
+          label="Chapter"
+          value={String(content.chapterId)}
+        />
+      </Grid>
+    </>
+  )
+}
+
+interface InfoTileProps {
+  label: string
+  value: string
+  theme: ThemeMode
+  arabic?: boolean
+  arabicFont?: string
+}
+
+function InfoTile({ label, value, theme, arabic, arabicFont }: InfoTileProps) {
+  return (
+    <Grid.Card
+      styles={{
+        self: css`
+          background: ${theme === "dark" ? "#1f1e1b" : "#ede6d9"};
+          border-radius: 8px;
+          padding: 10px 12px;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        `,
+      }}
+    >
+      <TileLabel $theme={theme}>{label}</TileLabel>
+      <TileValue $theme={theme} $arabic={arabic} $font={arabicFont}>
+        {value}
+      </TileValue>
+    </Grid.Card>
+  )
+}
+
+const TokenSection = styled.div<{ $theme: ThemeMode }>`
+  padding: 1.5rem 1.5rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border-bottom: 1px solid
+    ${({ $theme }) => ($theme === "dark" ? "#303030" : "#e2d6c3")};
+`
+
+const ArabicToken = styled.span<{ $font: string; $theme: ThemeMode }>`
+  font-family:
+    ${({ $font }) => `"${$font}"`},
+    "${"NotoNaskhArabic" satisfies ArabicFontFamily}", serif;
+  font-size: 52px;
+  line-height: 1.4;
+  direction: rtl;
+  letter-spacing: 2px;
+  color: ${({ $theme }) => ($theme === "dark" ? "#d8c7a3" : "#1f1f1f")};
+`
+
+const TileLabel = styled.p<{ $theme: ThemeMode }>`
+  font-size: 11px;
+  color: ${({ $theme }) => ($theme === "dark" ? "#7b715b" : "#a09083")};
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+`
+
+const TileValue = styled.p<{
+  $theme: ThemeMode
+  $arabic?: boolean
+  $font?: string
+}>`
+  font-size: ${({ $arabic }) => ($arabic ? "18px" : "14px")};
+  color: ${({ $theme }) => ($theme === "dark" ? "#d8c7a3" : "#1f1f1f")};
+  margin: 0;
+  font-weight: 500;
+
+  ${({ $arabic, $font }) =>
+    $arabic &&
+    css`
+      font-family:
+        "${$font}", "${"NotoNaskhArabic" satisfies ArabicFontFamily}", serif;
+      direction: rtl;
+      letter-spacing: 1px;
+    `}
 `
