@@ -150,6 +150,9 @@ export default function VerseRow({
         controls={[]}
         closable
         styles={{
+          indicatorStyle: css`
+            height: 40px;
+          `,
           contentStyle: css`
             display: flex;
             min-width: auto;
