@@ -33,6 +33,7 @@ export default function UserSettingsForm() {
       title: formatMessage({ id: messages.theme.title }),
       type: "combo",
       combobox: {
+        mobile: true,
         options: ["light", "dark"]
           .filter((t) => isProperThemeValue(t))
           .map(
@@ -52,14 +53,14 @@ export default function UserSettingsForm() {
         name: "arabicFontFamily",
         title: formatMessage({ id: messages.font }),
         type: "combo",
-        combobox: { options: arabicFontOptions },
+        combobox: { mobile: true, options: arabicFontOptions },
       },
       {
         name: "arabicFontSize",
         type: "combo",
         placeholder: "Size of the font",
         width: "50%",
-        combobox: { options: arabicFontSizeOptions },
+        combobox: { mobile: true, options: arabicFontSizeOptions },
       },
     ],
 
@@ -68,6 +69,7 @@ export default function UserSettingsForm() {
       title: formatMessage({ id: messages.lang }),
       type: "combo",
       combobox: {
+        mobile: true,
         options: Object.values(Locale).map((l) => ({
           text: formatMessage({ id: messages.locale[l] }),
           value: l,
@@ -80,6 +82,7 @@ export default function UserSettingsForm() {
       title: formatMessage({ id: messages.basmalaPosition.title }),
       type: "combo",
       combobox: {
+        mobile: true,
         options: Object.values(BasmalaPosition).map((p) => ({
           text: formatMessage({ id: messages.basmalaPosition[p] }),
           value: p,
