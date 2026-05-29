@@ -9,9 +9,9 @@ import { useVirtualizer, VirtualItem } from "@tanstack/react-virtual"
 import useChaptersState from "../../hooks/states/ChaptersState"
 import useUserSettingsState from "../../hooks/states/UserSettingsState"
 import BasmalaRow from "./BasmalaRow"
-import { Bismillah } from "./Bismillah"
 import ChapterRow from "./ChapterRow"
 import VerseRow, { Verse, WordCell } from "./VerseRow"
+import { Bismillah } from "./VerseRow/Bismillah"
 
 // This module contains the content browser of the Quran.
 // It includes various components to build the verse, and
