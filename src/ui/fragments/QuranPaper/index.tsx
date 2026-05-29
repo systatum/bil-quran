@@ -8,9 +8,9 @@ import { unpackIPC } from "@services/Converter"
 import { useVirtualizer, VirtualItem } from "@tanstack/react-virtual"
 import useChaptersState from "../../hooks/states/ChaptersState"
 import useUserSettingsState from "../../hooks/states/UserSettingsState"
+import BasmalaRow from "./BasmalaRow"
 import { Bismillah } from "./Bismillah"
 import ChapterRow from "./ChapterRow"
-import FullblockBasmala from "./FullblockBasmala"
 import VerseRow, { Verse, WordCell } from "./VerseRow"
 
 // This module contains the content browser of the Quran.
@@ -335,7 +335,7 @@ export default function QuranPaper({
 
           if (row.type === "basmala") {
             return (
-              <FullblockBasmala
+              <BasmalaRow
                 key={`basmala-${item.index}`}
                 theme={theme}
                 index={item.index}
