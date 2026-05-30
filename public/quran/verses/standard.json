@@ -283,12 +283,12 @@
   { "id": "2:13", "word": "لَهُمْ", "trans": "lahum", "root": "ل" },
   { "id": "2:13", "word": "اٰمِنُوا", "trans": "āminū", "root": "ا م ن" },
   { "id": "2:13", "word": "كَمَا", "trans": "kamā", "root": "ك م ا" },
-  { "id": "2:13", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "2:13", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   { "id": "2:13", "word": "النَّاسُ", "trans": "l-nāsu", "root": "ن و س" },
   { "id": "2:13", "word": "قَالُوْا", "trans": "qālū", "root": "ق و ل" },
   { "id": "2:13", "word": "أَنُؤْمِنُ", "trans": "anu'minu", "root": "ا م ن" },
   { "id": "2:13", "word": "كَمَا", "trans": "kamā", "root": "ك م ا" },
-  { "id": "2:13", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "2:13", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   {
     "id": "2:13",
     "word": "السُّفَهَاءُ",
@@ -2005,7 +2005,7 @@
     "root": "ص ب ا"
   },
   { "id": "2:62", "word": "مَنْ", "trans": "man", "root": "م ن" },
-  { "id": "2:62", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "2:62", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   { "id": "2:62", "word": "بِاللَّهِ", "trans": "bil-lahi", "root": "ا ل ه" },
   {
     "id": "2:62",
@@ -4623,7 +4623,7 @@
     "root": "ث م ر"
   },
   { "id": "2:126", "word": "مَنْ", "trans": "man", "root": "م ن" },
-  { "id": "2:126", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "2:126", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   { "id": "2:126", "word": "مِنْهُمْ", "trans": "min'hum", "root": "م ن" },
   { "id": "2:126", "word": "بِاللَّهِ", "trans": "bil-lahi", "root": "ا ل ه" },
   {
@@ -6729,7 +6729,7 @@
   { "id": "2:177", "word": "وَلَكِنَّ", "trans": "walākinna", "root": "ل ك ن" },
   { "id": "2:177", "word": "الْبِرَّ", "trans": "l-bira", "root": "ب ر ر" },
   { "id": "2:177", "word": "مَنْ", "trans": "man", "root": "م ن" },
-  { "id": "2:177", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "2:177", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   { "id": "2:177", "word": "بِاللَّهِ", "trans": "bil-lahi", "root": "ا ل ه" },
   {
     "id": "2:177",
@@ -11037,7 +11037,7 @@
   },
   { "id": "2:253", "word": "فَمِنْهُمْ", "trans": "famin'hum", "root": "م ن" },
   { "id": "2:253", "word": "مَنْ", "trans": "man", "root": "م ن" },
-  { "id": "2:253", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "2:253", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   { "id": "2:253", "word": "وَمِنْهُمْ", "trans": "wamin'hum", "root": "م ن" },
   { "id": "2:253", "word": "مَنْ", "trans": "man", "root": "م ن" },
   { "id": "2:253", "word": "كَفَرَ", "trans": "kafara", "root": "ك ف ر" },
@@ -13058,7 +13058,7 @@
   { "id": "2:284", "word": "كُلِّ", "trans": "kulli", "root": "ك ل ل" },
   { "id": "2:284", "word": "شَيْءٍ", "trans": "shayin", "root": "ش ي ا" },
   { "id": "2:284", "word": "قَدِيرٌ", "trans": "qadīrun", "root": "ق د ر" },
-  { "id": "2:285", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "2:285", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   { "id": "2:285", "word": "الرَّسُولُ", "trans": "l-rasūlu", "root": "ر س ل" },
   { "id": "2:285", "word": "بِمَا", "trans": "bimā", "root": "ب م ا" },
   { "id": "2:285", "word": "أُنْزِلَ", "trans": "unzila", "root": "ن ز ل" },
@@ -13072,7 +13072,7 @@
     "root": "ا م ن"
   },
   { "id": "2:285", "word": "كُلٌّ", "trans": "kullun", "root": "ك ل ل" },
-  { "id": "2:285", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "2:285", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   { "id": "2:285", "word": "بِاللَّهِ", "trans": "bil-lahi", "root": "ا ل ه" },
   {
     "id": "2:285",
@@ -16503,7 +16503,7 @@
   { "id": "3:99", "word": "سَبِيلِ", "trans": "sabīli", "root": "س ب ل" },
   { "id": "3:99", "word": "اللَّهِ", "trans": "l-lahi", "root": "ا ل ه" },
   { "id": "3:99", "word": "مَنْ", "trans": "man", "root": "م ن" },
-  { "id": "3:99", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "3:99", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   {
     "id": "3:99",
     "word": "تَبْغُونَهَا",
@@ -16965,7 +16965,7 @@
   },
   { "id": "3:110", "word": "بِاللَّهِ", "trans": "bil-lahi", "root": "ا ل ه" },
   { "id": "3:110", "word": "وَلَوْ", "trans": "walaw", "root": "ل و" },
-  { "id": "3:110", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "3:110", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   { "id": "3:110", "word": "أَهْلُ", "trans": "ahlu", "root": "ا ه ل" },
   { "id": "3:110", "word": "الْكِتَابِ", "trans": "l-kitābi", "root": "ك ت ب" },
   { "id": "3:110", "word": "لَكَانَ", "trans": "lakāna", "root": "ك و ن" },
@@ -23301,7 +23301,7 @@
   { "id": "4:54", "word": "عَظِيمًا", "trans": "ʿaẓīman", "root": "ع ظ م" },
   { "id": "4:55", "word": "فَمِنْهُمْ", "trans": "famin'hum", "root": "م ن" },
   { "id": "4:55", "word": "مَنْ", "trans": "man", "root": "م ن" },
-  { "id": "4:55", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "4:55", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   { "id": "4:55", "word": "بِهِ", "trans": "bihi", "root": "ب" },
   { "id": "4:55", "word": "وَمِنْهُمْ", "trans": "wamin'hum", "root": "م ن" },
   { "id": "4:55", "word": "مَنْ", "trans": "man", "root": "م ن" },
@@ -31818,7 +31818,7 @@
     "root": "ن ص ر"
   },
   { "id": "5:69", "word": "مَنْ", "trans": "man", "root": "م ن" },
-  { "id": "5:69", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "5:69", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   { "id": "5:69", "word": "بِاللَّهِ", "trans": "bil-lahi", "root": "ا ل ه" },
   {
     "id": "5:69",
@@ -35458,7 +35458,7 @@
     "root": "ن ذ ر"
   },
   { "id": "6:48", "word": "فَمَنْ", "trans": "faman", "root": "م ن" },
-  { "id": "6:48", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "6:48", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   { "id": "6:48", "word": "وَأَصْلَحَ", "trans": "wa-aṣlaḥa", "root": "ص ل ح" },
   { "id": "6:48", "word": "فَلَا", "trans": "falā", "root": "ل ا" },
   { "id": "6:48", "word": "خَوْفٌ", "trans": "khawfun", "root": "خ و ف" },
@@ -42695,7 +42695,7 @@
     "root": "ض ع ف"
   },
   { "id": "7:75", "word": "لِمَنْ", "trans": "liman", "root": "م ن" },
-  { "id": "7:75", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "7:75", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   { "id": "7:75", "word": "مِنْهُمْ", "trans": "min'hum", "root": "م ن" },
   {
     "id": "7:75",
@@ -42986,7 +42986,7 @@
   { "id": "7:86", "word": "سَبِيلِ", "trans": "sabīli", "root": "س ب ل" },
   { "id": "7:86", "word": "اللَّهِ", "trans": "l-lahi", "root": "ا ل ه" },
   { "id": "7:86", "word": "مَنْ", "trans": "man", "root": "م ن" },
-  { "id": "7:86", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "7:86", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   { "id": "7:86", "word": "بِهِ", "trans": "bihi", "root": "ب" },
   {
     "id": "7:86",
@@ -50668,7 +50668,7 @@
   { "id": "9:18", "word": "مَسَاجِدَ", "trans": "masājida", "root": "س ج د" },
   { "id": "9:18", "word": "اللَّهِ", "trans": "l-lahi", "root": "ا ل ه" },
   { "id": "9:18", "word": "مَنْ", "trans": "man", "root": "م ن" },
-  { "id": "9:18", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "9:18", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   { "id": "9:18", "word": "بِاللَّهِ", "trans": "bil-lahi", "root": "ا ل ه" },
   {
     "id": "9:18",
@@ -50718,7 +50718,7 @@
   },
   { "id": "9:19", "word": "الْحَرَامِ", "trans": "l-ḥarāmi", "root": "ح ر م" },
   { "id": "9:19", "word": "كَمَنْ", "trans": "kaman", "root": "م ن" },
-  { "id": "9:19", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "9:19", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   { "id": "9:19", "word": "بِاللَّهِ", "trans": "bil-lahi", "root": "ا ل ه" },
   {
     "id": "9:19",
@@ -58415,7 +58415,7 @@
     "root": "ج ر م"
   },
   { "id": "10:83", "word": "فَمَا", "trans": "famā", "root": "م ا" },
-  { "id": "10:83", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "10:83", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   { "id": "10:83", "word": "لِمُوسَى", "trans": "limūsā", "root": "م و س" },
   { "id": "10:83", "word": "إِلَّا", "trans": "illā", "root": "ا ل ل ا" },
   {
@@ -60553,7 +60553,7 @@
   { "id": "11:36", "word": "إِلَّا", "trans": "illā", "root": "ا ل ل ا" },
   { "id": "11:36", "word": "مَنْ", "trans": "man", "root": "م ن" },
   { "id": "11:36", "word": "قَدْ", "trans": "qad", "root": "ق د" },
-  { "id": "11:36", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "11:36", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   { "id": "11:36", "word": "فَلَا", "trans": "falā", "root": "ل ا" },
   { "id": "11:36", "word": "تَبْتَئِسْ", "trans": "tabta-is", "root": "ب ا س" },
   { "id": "11:36", "word": "بِمَا", "trans": "bimā", "root": "ب م ا" },
@@ -60684,9 +60684,9 @@
   { "id": "11:40", "word": "عَلَيْهِ", "trans": "ʿalayhi", "root": "ع ل ي" },
   { "id": "11:40", "word": "الْقَوْلُ", "trans": "l-qawlu", "root": "ق و ل" },
   { "id": "11:40", "word": "وَمَنْ", "trans": "waman", "root": "م ن" },
-  { "id": "11:40", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "11:40", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   { "id": "11:40", "word": "وَمَا", "trans": "wamā", "root": "م ا" },
-  { "id": "11:40", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "11:40", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   { "id": "11:40", "word": "مَعَهُ", "trans": "maʿahu", "root": "م ع" },
   { "id": "11:40", "word": "إِلَّا", "trans": "illā", "root": "ا ل ل ا" },
   { "id": "11:40", "word": "قَلِيلٌ", "trans": "qalīlun", "root": "ق ل ل" },
@@ -81920,7 +81920,7 @@
   { "id": "18:87", "word": "نُكْرًا", "trans": "nuk'ran", "root": "ن ك ر" },
   { "id": "18:88", "word": "وَأَمَّا", "trans": "wa-ammā", "root": "ا م م ا" },
   { "id": "18:88", "word": "مَنْ", "trans": "man", "root": "م ن" },
-  { "id": "18:88", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "18:88", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   { "id": "18:88", "word": "وَعَمِلَ", "trans": "waʿamila", "root": "ع م ل" },
   { "id": "18:88", "word": "صَالِحًا", "trans": "ṣāliḥan", "root": "ص ل ح" },
   { "id": "18:88", "word": "فَلَهُ", "trans": "falahu", "root": "ل" },
@@ -108003,7 +108003,7 @@
   { "id": "28:80", "word": "اللَّهِ", "trans": "l-lahi", "root": "ا ل ه" },
   { "id": "28:80", "word": "خَيْرٌ", "trans": "khayrun", "root": "خ ي ر" },
   { "id": "28:80", "word": "لِمَنْ", "trans": "liman", "root": "م ن" },
-  { "id": "28:80", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "28:80", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   { "id": "28:80", "word": "وَعَمِلَ", "trans": "waʿamila", "root": "ع م ل" },
   { "id": "28:80", "word": "صَالِحًا", "trans": "ṣāliḥan", "root": "ص ل ح" },
   { "id": "28:80", "word": "وَلَا", "trans": "walā", "root": "ل ا" },
@@ -118142,7 +118142,7 @@
   { "id": "34:37", "word": "زُلْفَى", "trans": "zul'fā", "root": "ز ل ف" },
   { "id": "34:37", "word": "إِلَّا", "trans": "illā", "root": "ا ل ل ا" },
   { "id": "34:37", "word": "مَنْ", "trans": "man", "root": "م ن" },
-  { "id": "34:37", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "34:37", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   { "id": "34:37", "word": "وَعَمِلَ", "trans": "waʿamila", "root": "ع م ل" },
   { "id": "34:37", "word": "صَالِحًا", "trans": "ṣāliḥan", "root": "ص ل ح" },
   {
@@ -128844,7 +128844,7 @@
   },
   { "id": "40:30", "word": "وَقَالَ", "trans": "waqāla", "root": "ق و ل" },
   { "id": "40:30", "word": "الَّذِي", "trans": "alladhī", "root": "ا ل ل ذ" },
-  { "id": "40:30", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "40:30", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   { "id": "40:30", "word": "يَاقَوْمِ", "trans": "yāqawmi", "root": "ق و م" },
   { "id": "40:30", "word": "اِنِّیْ", "trans": "innī", "root": "ا ن ن" },
   { "id": "40:30", "word": "أَخَافُ", "trans": "akhāfu", "root": "خ و ف" },
@@ -129075,7 +129075,7 @@
   { "id": "40:37", "word": "تَبَابٍ", "trans": "tabābin", "root": "ت ب ب" },
   { "id": "40:38", "word": "وَقَالَ", "trans": "waqāla", "root": "ق و ل" },
   { "id": "40:38", "word": "الَّذِي", "trans": "alladhī", "root": "ا ل ل ذ" },
-  { "id": "40:38", "word": "ءَامَنَ", "trans": "āmana", "root": "ا م ن" },
+  { "id": "40:38", "word": "اٰمَنَ", "trans": "āmana", "root": "ا م ن" },
   { "id": "40:38", "word": "يَاقَوْمِ", "trans": "yāqawmi", "root": "ق و م" },
   {
     "id": "40:38",
