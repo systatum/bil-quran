@@ -1,16 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef } from "react"
 
 import { WordWithLexemeRecord } from "@constants/records/WordRecord"
 import {
   TranslationCorpusMap,
   WordTranslationOption,
 } from "@constants/records/WordTranslationRecord"
-import { repo } from "@db/repo"
 import useAppState from "@hooks/states/AppState"
+import useTranslationsState from "@hooks/states/TranslationsState"
 import useWordsState from "@hooks/states/WordsState"
-import { stringifyError, unpackIPC } from "@services/Converter"
+import { stringifyError } from "@services/Converter"
 import LOGGER from "@services/Logger"
-import { ensureHasTranslation } from "@services/translations"
 import toast from "react-hot-toast"
 import { WordCell } from "../../fragments/QuranPaper/VerseRow"
 
@@ -20,8 +19,8 @@ import { WordCell } from "../../fragments/QuranPaper/VerseRow"
 export function useWordTranslations(
   locales: WordTranslationOption[],
 ): Partial<TranslationCorpusMap> {
-  const { pushError, setLoadingText, setIsVersesLoaded } = useAppState()
-  const [corpora, setCorpora] = useState<Partial<TranslationCorpusMap>>({})
+  const { pushError, setIsVersesLoaded } = useAppState()
+  const { corpora, getCorpus } = useTranslationsState()
 
   /**
    * For solving out-of-order completion issue, by monotonically increasing
@@ -39,23 +38,18 @@ export function useWordTranslations(
        */
       const requestId = ++requestIdRef.current
 
-      const entries = await Promise.all(
+      await Promise.all(
         locales.map(async (locale) => {
           // no need to recompile if it is already loaded in memory
-          if (corpora[locale] != null) return [locale, corpora[locale]] as const
-
-          if (requestId !== requestIdRef.current) return [locale, {}]
-          await ensureHasTranslation(locale)
-          const corpus = unpackIPC(await repo.wbwTranslations.compile(locale))
-          return [locale, corpus] as const
+          if (corpora[locale] != null) return
+          if (requestId !== requestIdRef.current) return
+          await getCorpus(locale)
         }),
       )
 
       // A newer request started while this one was running.
       // Ignore these results because they are already obsolete.
       if (requestId !== requestIdRef.current) return
-
-      setCorpora(Object.fromEntries(entries))
       setIsVersesLoaded(true)
     }
 
