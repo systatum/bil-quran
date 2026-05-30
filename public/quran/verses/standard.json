@@ -1128,7 +1128,7 @@
   { "id": "2:36", "word": "إِلَى", "trans": "ilā", "root": "ا ل ي" },
   { "id": "2:36", "word": "حِينٍ", "trans": "ḥīnin", "root": "ح ي ن" },
   { "id": "2:37", "word": "فَتَلَقَّى", "trans": "fatalaqqā", "root": "ل ق ي" },
-  { "id": "2:37", "word": "ءَادَمُ", "trans": "ādamu", "root": "ا د م" },
+  { "id": "2:37", "word": "اٰدَمُ", "trans": "ādamu", "root": "ا د م" },
   { "id": "2:37", "word": "مِنْ", "trans": "min", "root": "م ن" },
   { "id": "2:37", "word": "رَبِّهِ", "trans": "rabbihi", "root": "ر ب ب" },
   { "id": "2:37", "word": "كَلِمَاتٍ", "trans": "kalimātin", "root": "ك ل م" },
@@ -86677,7 +86677,7 @@
     "root": "ج ن ن"
   },
   { "id": "20:121", "word": "وَعَصَى", "trans": "waʿaṣā", "root": "ع ص ي" },
-  { "id": "20:121", "word": "ءَادَمُ", "trans": "ādamu", "root": "ا د م" },
+  { "id": "20:121", "word": "اٰدَمُ", "trans": "ādamu", "root": "ا د م" },
   { "id": "20:121", "word": "رَبَّهُ", "trans": "rabbahu", "root": "ر ب ب" },
   { "id": "20:121", "word": "فَغَوَى", "trans": "faghawā", "root": "غ و ي" },
   { "id": "20:122", "word": "ثُمَّ", "trans": "thumma", "root": "ث م م" },
