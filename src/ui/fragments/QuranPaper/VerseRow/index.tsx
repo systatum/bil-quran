@@ -1,11 +1,13 @@
 import { ArabicFontFamily } from "@constants/fonts"
 import { ChapterRecord } from "@constants/records/ChapterRecord"
 import { WordWithLexemeRecord } from "@constants/records/WordRecord"
+import { TranslatedWord } from "@constants/records/WordTranslationRecord"
 import { BasmalaPosition, DEFAULT_LOCALE } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import useUserSettingsState, {
   FontSetting,
 } from "@hooks/states/UserSettingsState"
+import useAligner from "@hooks/tools/useAligner"
 import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
 import { PaperDialog, PaperDialogRef } from "@systatum/coneto/paper-dialog"
 import { useRef, useState } from "react"
@@ -21,7 +23,7 @@ export type Verse = {
 }
 
 export interface WordCell extends WordWithLexemeRecord {
-  meaning: string
+  meanings: Partial<TranslatedWord>
 }
 
 /**
@@ -52,6 +54,7 @@ export default function VerseRow({
   theme: ThemeMode
 }) {
   const [content, setContent] = useState<WordCell | undefined>(undefined)
+
   const { userSettings } = useUserSettingsState()
   const { basmalaPosition } = userSettings
 
@@ -69,6 +72,8 @@ export default function VerseRow({
       userSettings.font.arabic,
     ],
   })
+
+  const { refs: meaningRefs, layerHeights } = useAligner({ key: verse.id })
 
   return (
     <>
@@ -134,7 +139,25 @@ export default function VerseRow({
                 </Transliteration>
               )}
 
-              {showMeaning && <Meaning theme={theme}>{word.meaning}</Meaning>}
+              {showMeaning && (
+                <Meanings>
+                  {userSettings.wbwTranslations.map((t, layer) => (
+                    <Meaning
+                      key={t}
+                      theme={theme}
+                      ref={(el) => {
+                        if (!el) return
+
+                        meaningRefs.current[layer] ??= []
+                        meaningRefs.current[layer].push(el)
+                      }}
+                      $minHeight={layerHeights[layer]}
+                    >
+                      {word.meanings[t]}
+                    </Meaning>
+                  ))}
+                </Meanings>
+              )}
             </Word>
           ))}
         </VerseText>
@@ -299,13 +322,23 @@ export const Transliteration = styled.span`
   text-align: center;
 `
 
-const Meaning = styled.span<{ theme: ThemeMode; $marginTop?: string }>`
+const Meanings = styled.span`
+  line-height: 16px;
+  margin-top: 3px;
+`
+
+const Meaning = styled.div<{
+  theme: ThemeMode
+  $minHeight?: number
+  $marginTop?: string
+}>`
+  min-height: ${({ $minHeight }) => ($minHeight ? `${$minHeight}px` : "auto")};
   font-size: 14px;
+  display: block;
   color: ${({ theme }) => (theme === "dark" ? "#bebebe" : "#a09083")};
   font-family: "${"NotoNaskhArabic" satisfies ArabicFontFamily}", serif;
-  margin-top: ${({ $marginTop }) => $marginTop ?? "2px"};
+  margin-top: ${({ $marginTop }) => $marginTop ?? "8px"};
   direction: ltr;
   text-align: center;
   max-width: 120px;
-  line-height: 16px;
 `

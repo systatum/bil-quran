@@ -1,6 +1,6 @@
 import { newIPCResponse, type IPCResponse } from "@constants/IPC"
 import {
-  WordTranslation,
+  TranslationCorpus,
   WordTranslationRecord,
 } from "@constants/records/WordTranslationRecord"
 import { unpackIPC } from "@services/Converter"
@@ -36,8 +36,13 @@ class WbwTranslationRepo extends Repository<
     )
   }
 
-  async compile(locale: string): Promise<IPCResponse<WordTranslation>> {
-    let translations: WordTranslation = {}
+  /**
+   * Compile the translation corpus into a dictionary where the translation
+   * can be found by delving into the chapter, the verse, and then the position
+   * of the word of which translation is wanted to be known.
+   */
+  async compile(locale: string): Promise<IPCResponse<TranslationCorpus>> {
+    let translations: TranslationCorpus = {}
     const records = unpackIPC(await this.findAllBy({ locale: locale }))
 
     for (const record of records) {

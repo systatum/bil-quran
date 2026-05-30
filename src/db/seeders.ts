@@ -4,11 +4,12 @@ import { LexemeRecord, NewLexemeRecord } from "@constants/records/LexemeRecord"
 import { Rendering } from "@constants/records/RenderingRecord"
 import { NewRootRecord, RootRecord } from "@constants/records/RootRecord"
 import { WordRecord } from "@constants/records/WordRecord"
-import { WordTranslationRecord } from "@constants/records/WordTranslationRecord"
-import { DEFAULT_LOCALE, Locale } from "@constants/settings"
+import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
+import { Locale } from "@constants/settings"
 import { repo } from "@db/repo/index"
 import { unpackIPC } from "@services/Converter"
 import LOGGER from "@services/Logger"
+import { ensureHasTranslation } from "@services/translations"
 
 // This module handle adding data to the database, especially
 // for the very first time. This should only be called after
@@ -207,51 +208,5 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
 }
 
 async function seedWordTranslations() {
-  const defaultLocale = DEFAULT_LOCALE
-
-  const locales = unpackIPC(
-    await repo.wbwTranslations.findAllBy({
-      locale: defaultLocale,
-    }),
-  )
-
-  if (locales.length > 0) return
-  console.debug("Seeding word-by-word translations")
-
-  const translations: Record<string, string> = await (
-    await fetch(Asset.translations.wordByWord[defaultLocale].path)
-  ).json()
-
-  const BATCH_SIZE = 1200
-
-  let batch: Partial<WordTranslationRecord>[] = []
-
-  async function flushBatch() {
-    if (batch.length === 0) return
-    unpackIPC(await repo.wbwTranslations.createBulk(batch))
-    batch = []
-  }
-
-  for (const [loc, meaning] of Object.entries(translations)) {
-    // skip verse markers like "(1)"
-    if (
-      meaning.length >= 2 &&
-      meaning[0] === "(" &&
-      meaning[meaning.length - 1] === ")"
-    )
-      continue // this is just chapter marker ie (1), (2)
-
-    const [chapter, verse, word] = loc.split(":")
-    batch.push({
-      locale: defaultLocale,
-      chapter: parseInt(chapter),
-      ayat: parseInt(verse),
-      word: parseInt(word),
-      meaning,
-    })
-
-    if (batch.length >= BATCH_SIZE) await flushBatch()
-  }
-
-  await flushBatch()
+  await ensureHasTranslation(WordTranslationOption.AmericanEnglish)
 }
