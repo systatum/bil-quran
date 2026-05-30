@@ -79,11 +79,11 @@ export default function VerseRow({
     <>
       <VerseRowWrapper
         ref={ref}
-        theme={theme}
+        $theme={theme}
         style={{ transform: style.transform }}
       >
-        <VerseMarker theme={theme}>{verse.number}</VerseMarker>
-        <VerseText font={userSettings.font.arabic}>
+        <VerseMarker $theme={theme}>{verse.number}</VerseMarker>
+        <VerseText $font={userSettings.font.arabic}>
           {basmalaPosition === BasmalaPosition.Embedded &&
             Bismillah.isRenderableHere(verse.number, verse.chapter.id) && (
               <Word>
@@ -96,7 +96,7 @@ export default function VerseRow({
                 )}
 
                 {showMeaning && (
-                  <Meaning theme={theme} $marginTop="57px">
+                  <Meaning $theme={theme} $marginTop="57px">
                     In the name of Allah, the Most Gracious, the Most Merciful
                   </Meaning>
                 )}
@@ -144,7 +144,7 @@ export default function VerseRow({
                   {userSettings.wbwTranslations.map((t, layer) => (
                     <Meaning
                       key={t}
-                      theme={theme}
+                      $theme={theme}
                       ref={(el) => {
                         if (!el) return
 
@@ -230,7 +230,7 @@ VerseRow.groupVerse = (
   return Array.from(Object.values(grouped))
 }
 
-const VerseRowWrapper = styled.div<{ theme: ThemeMode }>`
+const VerseRowWrapper = styled.div<{ $theme: ThemeMode }>`
   position: absolute;
   top: 0;
   left: 0;
@@ -242,25 +242,25 @@ const VerseRowWrapper = styled.div<{ theme: ThemeMode }>`
   direction: rtl;
   align-items: start;
 
-  color: ${({ theme }) => (theme === "dark" ? "#d8c7a3" : "#1f1f1f")};
-  background: ${({ theme }) => (theme === "dark" ? "#181818" : "#f6f1e7")};
+  color: ${({ $theme }) => ($theme === "dark" ? "#d8c7a3" : "#1f1f1f")};
+  background: ${({ $theme }) => ($theme === "dark" ? "#181818" : "#f6f1e7")};
   border-bottom: 1px solid
-    ${({ theme }) => (theme === "dark" ? "#303030" : "#bfbfbf")};
+    ${({ $theme }) => ($theme === "dark" ? "#303030" : "#bfbfbf")};
 `
 
-const VerseMarker = styled.div<{ theme: ThemeMode }>`
-  --text: ${({ theme }) => (theme === "dark" ? "#e5dcc3" : "#755f4d")};
-  --border: ${({ theme }) => (theme === "dark" ? "#5f5644" : "#cbb9a1")};
-  --bg-start: ${({ theme }) => (theme === "dark" ? "#2b2a26" : "#efe6d8")};
-  --bg-end: ${({ theme }) => (theme === "dark" ? "#1c1b18" : "#e2d6c3")};
-  --inset: ${({ theme }) => (theme === "dark" ? "#3b372f" : "#f4ede2")};
-  --shadow: ${({ theme }) =>
-    theme === "dark" ? "rgba(0,0,0,0.45)" : "rgba(117,95,77,0.08)"};
-  --text-shadow: ${({ theme }) =>
-    theme === "dark" ? "rgba(0,0,0,0.35)" : "rgba(255,255,255,0.30)"};
-  --dashed: ${({ theme }) =>
-    theme === "dark" ? "#7b715b" : "rgba(117,95,77,0.26)"};
-  --dashed-opacity: ${({ theme }) => (theme === "dark" ? 0.4 : 0.5)};
+const VerseMarker = styled.div<{ $theme: ThemeMode }>`
+  --text: ${({ $theme }) => ($theme === "dark" ? "#e5dcc3" : "#755f4d")};
+  --border: ${({ $theme }) => ($theme === "dark" ? "#5f5644" : "#cbb9a1")};
+  --bg-start: ${({ $theme }) => ($theme === "dark" ? "#2b2a26" : "#efe6d8")};
+  --bg-end: ${({ $theme }) => ($theme === "dark" ? "#1c1b18" : "#e2d6c3")};
+  --inset: ${({ $theme }) => ($theme === "dark" ? "#3b372f" : "#f4ede2")};
+  --shadow: ${({ $theme }) =>
+    $theme === "dark" ? "rgba(0,0,0,0.45)" : "rgba(117,95,77,0.08)"};
+  --text-shadow: ${({ $theme }) =>
+    $theme === "dark" ? "rgba(0,0,0,0.35)" : "rgba(255,255,255,0.30)"};
+  --dashed: ${({ $theme }) =>
+    $theme === "dark" ? "#7b715b" : "rgba(117,95,77,0.26)"};
+  --dashed-opacity: ${({ $theme }) => ($theme === "dark" ? 0.4 : 0.5)};
 
   width: 42px;
   height: 42px;
@@ -291,12 +291,12 @@ const VerseMarker = styled.div<{ theme: ThemeMode }>`
   }
 `
 
-const VerseText = styled.div<{ font: FontSetting }>`
+const VerseText = styled.div<{ $font: FontSetting }>`
   text-align: right;
-  font-size: ${({ font }) => `${font.size}px`};
+  font-size: ${({ $font }) => `${$font.size}px`};
   line-height: 2.4;
   font-family:
-    ${({ font }) => `"${font.family}"`},
+    ${({ $font }) => `"${$font.family}"`},
     "${"NotoNaskhArabic" satisfies ArabicFontFamily}", serif;
   white-space: normal;
 `
@@ -328,14 +328,14 @@ const Meanings = styled.span`
 `
 
 const Meaning = styled.div<{
-  theme: ThemeMode
+  $theme: ThemeMode
   $minHeight?: number
   $marginTop?: string
 }>`
   min-height: ${({ $minHeight }) => ($minHeight ? `${$minHeight}px` : "auto")};
   font-size: 14px;
   display: block;
-  color: ${({ theme }) => (theme === "dark" ? "#bebebe" : "#a09083")};
+  color: ${({ $theme }) => ($theme === "dark" ? "#bebebe" : "#a09083")};
   font-family: "${"NotoNaskhArabic" satisfies ArabicFontFamily}", serif;
   margin-top: ${({ $marginTop }) => $marginTop ?? "8px"};
   direction: ltr;
