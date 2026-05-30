@@ -308,3 +308,7 @@ video {
 [hidden] {
   display: none;
 }
+
+* {
+  user-select: none;
+}

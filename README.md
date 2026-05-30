@@ -35,3 +35,4 @@ Scrolling works by using hash router, ie: https://bil-quran.com/#/c/11/12
 - [ ] Can go to specific chapter and verse of the Quran through the lookup form
 - [ ] Test when user translations has English and Indonesian, both are shown fine on first load (Indonesian is not the default). This is to test first pre-flight translation downloading and insertion works.
 - [ ] Test seeing "Seeding verses..." and "Preparing the layout..." in that sequence
+- [ ] When hard-pressing each word in the verse, show the paper dialog, with all proper information
