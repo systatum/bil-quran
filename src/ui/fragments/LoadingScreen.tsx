@@ -2,7 +2,7 @@ import useAppState from "@hooks/states/AppState"
 import { useEffect, useState } from "react"
 import styled from "styled-components"
 
-const IMAGES = Array.from({ length: 8 }, (_, i) => `/mosques/${i + 1}.jpg`)
+const IMAGES = Array.from({ length: 8 }, (_, i) => `/mosques/${i + 1}_1.jpg`)
 
 /**
  * How long each image stays fully visible.
