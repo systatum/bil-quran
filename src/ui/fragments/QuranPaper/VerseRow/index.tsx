@@ -307,6 +307,7 @@ const Word = styled.span`
   align-items: center;
   margin: 0 6px;
   vertical-align: top;
+  user-select: none;
 `
 
 const Arabic = styled.span`
