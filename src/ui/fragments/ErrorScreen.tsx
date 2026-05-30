@@ -50,7 +50,7 @@ export default function ErrorScreen() {
   return (
     <Container>
       <Card>
-        <Logo src="/logo_full.png" alt="logo" />
+        <Logo src="/logo_full.jpg" alt="logo" />
 
         <Title>Something went wrong</Title>
 
