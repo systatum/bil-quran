@@ -6,6 +6,7 @@ import {
   WordTranslationOption,
 } from "@constants/records/WordTranslationRecord"
 import { repo } from "@db/repo"
+import useAppState from "@hooks/states/AppState"
 import { stringifyError, unpackIPC } from "@services/Converter"
 import LOGGER from "@services/Logger"
 import { ensureHasTranslation } from "@services/translations"
@@ -18,6 +19,7 @@ import { WordCell } from "../../fragments/QuranPaper/VerseRow"
 export function useWordTranslations(
   locales: WordTranslationOption[],
 ): Partial<TranslationCorpusMap> {
+  const { pushError, setLoadingText, setIsVersesLoaded } = useAppState()
   const [corpora, setCorpora] = useState<Partial<TranslationCorpusMap>>({})
 
   /**
@@ -41,6 +43,7 @@ export function useWordTranslations(
           // no need to recompile if it is already loaded in memory
           if (corpora[locale] != null) return [locale, corpora[locale]] as const
 
+          if (requestId !== requestIdRef.current) return [locale, {}]
           await ensureHasTranslation(locale)
           const corpus = unpackIPC(await repo.wbwTranslations.compile(locale))
           return [locale, corpus] as const
@@ -52,6 +55,7 @@ export function useWordTranslations(
       if (requestId !== requestIdRef.current) return
 
       setCorpora(Object.fromEntries(entries))
+      setIsVersesLoaded(true)
     }
 
     load().catch((e) => {
@@ -60,6 +64,7 @@ export function useWordTranslations(
           stringifyError(e),
       )
       LOGGER.error(e)
+      pushError(e)
     })
   }, [locales])
 

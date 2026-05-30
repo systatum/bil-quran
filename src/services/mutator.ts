@@ -36,3 +36,11 @@ export function mergeKnownKeys(target: Dict, source: Dict): Dict {
 
   return result
 }
+
+/**
+ * Create a pause that must be awaited before some
+ * other action can be done
+ */
+export async function pause(ms: number) {
+  return new Promise((f) => setTimeout(f, ms))
+}

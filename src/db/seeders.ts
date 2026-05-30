@@ -23,7 +23,6 @@ export async function seedData() {
 
   const chapters = await seedChapters()
   await seedVerses(chapters)
-  await seedWordTranslations()
   console.debug("Return from seeding: done")
 }
 
@@ -207,6 +206,6 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
   await flushWords()
 }
 
-async function seedWordTranslations() {
+export async function seedWordTranslations() {
   await ensureHasTranslation(WordTranslationOption.AmericanEnglish)
 }
