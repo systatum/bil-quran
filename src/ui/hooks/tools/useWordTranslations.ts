@@ -7,6 +7,7 @@ import {
 } from "@constants/records/WordTranslationRecord"
 import { repo } from "@db/repo"
 import useAppState from "@hooks/states/AppState"
+import useWordsState from "@hooks/states/WordsState"
 import { stringifyError, unpackIPC } from "@services/Converter"
 import LOGGER from "@services/Logger"
 import { ensureHasTranslation } from "@services/translations"
@@ -73,14 +74,17 @@ export function useWordTranslations(
 
 export function useWords() {
   const { pushError } = useAppState()
-  const [words, setWords] = useState<WordWithLexemeRecord[]>([])
+  const { words, loadWords } = useWordsState()
 
   useEffect(() => {
-    async function load() {
-      setWords(unpackIPC(await repo.words.findAllBy()))
-    }
-
-    load().catch(pushError)
+    ;(async () => {
+      if (words.length > 0) return
+      try {
+        loadWords()
+      } catch (e) {
+        pushError(e)
+      }
+    })()
   }, [])
 
   return words
