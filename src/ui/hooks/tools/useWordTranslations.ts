@@ -72,6 +72,7 @@ export function useWordTranslations(
 }
 
 export function useWords() {
+  const { pushError } = useAppState()
   const [words, setWords] = useState<WordWithLexemeRecord[]>([])
 
   useEffect(() => {
@@ -79,7 +80,7 @@ export function useWords() {
       setWords(unpackIPC(await repo.words.findAllBy()))
     }
 
-    load().catch(console.error)
+    load().catch(pushError)
   }, [])
 
   return words

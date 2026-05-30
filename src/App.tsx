@@ -9,6 +9,7 @@ import { RouterProvider } from "@tanstack/react-router"
 import { JSX, useEffect, useRef, useState } from "react"
 import "./App.css"
 import ErrorRescuer from "./ErrorRescuer"
+import ErrorScreen from "./ui/fragments/ErrorScreen"
 import LoadingScreen from "./ui/fragments/LoadingScreen"
 import useChaptersState from "./ui/hooks/states/ChaptersState"
 import useUserSettingsState from "./ui/hooks/states/UserSettingsState"
@@ -21,6 +22,7 @@ function AppRoot() {
     setLoadingText,
     isVersesLoaded: isFullyLoaded,
     pushError,
+    errors,
   } = useAppState()
 
   // ensure the minimum data is in the database
@@ -65,7 +67,10 @@ function AppRoot() {
   return (
     <>
       {(!isBootstrapped || !isFullyLoaded) && <LoadingScreen />}
-      {isBootstrapped && <RouterProvider router={router} />}
+      {isBootstrapped && errors.length === 0 && (
+        <RouterProvider router={router} />
+      )}
+      {errors.length > 0 && <ErrorScreen />}
     </>
   )
 }
