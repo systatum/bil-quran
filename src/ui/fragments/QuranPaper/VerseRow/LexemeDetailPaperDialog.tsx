@@ -135,6 +135,7 @@ const ArabicToken = styled.span<{
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: ${({ $scrolled }) => ($scrolled ? "32px" : "52px")};
   line-height: ${({ $scrolled }) => ($scrolled ? "1.2" : "1.4")};
+  user-select: all;
 `
 
 const TransliterationCollapsible = styled.div<{ $scrolled: boolean }>`
