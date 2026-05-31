@@ -110,6 +110,7 @@ export default function VerseRow({
                   setContent(word)
                 }}
                 onPointerDown={() => {
+                  setContent(word)
                   hoverTimeoutRef.current = setTimeout(() => {
                     paperDialogRef.current?.openDialog()
                   }, 500)

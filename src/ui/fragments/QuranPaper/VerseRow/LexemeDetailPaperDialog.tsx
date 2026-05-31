@@ -1,4 +1,5 @@
 import { ArabicFontFamily } from "@constants/fonts"
+import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
 import { ThemeMode } from "@constants/theme"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import { Grid } from "@systatum/coneto/grid"
@@ -31,6 +32,9 @@ export function LexemeDetailPaperDialog({
     setScrolled(e.currentTarget.scrollTop > 10)
   }, [])
 
+  const meaning = content.meanings[WordTranslationOption.fromLocale(locale)]
+  console.log(content)
+
   return (
     <>
       <TokenSection $theme={theme} $scrolled={scrolled}>
@@ -46,7 +50,7 @@ export function LexemeDetailPaperDialog({
 
       <ScrollContainer ref={scrollRef} onScroll={handleScroll}>
         <Grid preset="2-col">
-          <InfoTile theme={theme} label="Meaning" value={content.meaning} />
+          <InfoTile theme={theme} label="Meaning" value={meaning ?? "?"} />
           <InfoTile
             theme={theme}
             label="Root"
@@ -127,7 +131,6 @@ const ArabicToken = styled.span<{
     ${({ $font }) => `"${$font}"`},
     "${"NotoNaskhArabic" satisfies ArabicFontFamily}", serif;
   direction: rtl;
-  letter-spacing: 2px;
   color: ${({ $theme }) => ($theme === "dark" ? "#d8c7a3" : "#1f1f1f")};
   transition:
     font-size 0.3s cubic-bezier(0.4, 0, 0.2, 1),
