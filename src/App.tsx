@@ -4,7 +4,6 @@ import { seedData, seedWordTranslations } from "@db/seeders"
 import useAppState from "@hooks/states/AppState"
 import { loadMessages, resolveLocale } from "@i18n"
 import { I18nProvider } from "@i18n/provider"
-import { pause } from "@services/mutator"
 import { RouterProvider } from "@tanstack/react-router"
 import { JSX, useEffect, useRef, useState } from "react"
 import "./App.css"
@@ -47,13 +46,13 @@ function AppRoot() {
 
         setLoadingText("Seeding verses...")
         await seedData()
-        await loadChapters()
+        setLoadingText("Loading chapters...")
+        loadChapters()
 
         setLoadingText("Seeding translations...")
         await seedWordTranslations()
 
         setLoadingText("Preparing the layout...")
-        await pause(500)
 
         restoreState()
         setIsBootstrapped(true)
