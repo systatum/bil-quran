@@ -1,4 +1,5 @@
 import { PGlite } from "@electric-sql/pglite"
+import LOGGER from "@services/Logger"
 import { drizzle } from "drizzle-orm/pglite"
 import { repo } from "./repo"
 
@@ -20,7 +21,8 @@ export async function getPostgresDriver() {
       relaxedDurability: true,
     })
   } catch (e) {
-    console.error("Error getting PGlite database instance", e)
+    LOGGER.error("Error getting PGlite database instance", e)
+    throw e
   }
 
   return pgClient

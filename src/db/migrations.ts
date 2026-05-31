@@ -26,18 +26,31 @@ export async function applyMigrations() {
     let applied = await listAppliedMigrations(client)
     console.debug("Applied migrations thus far", applied)
 
-    let migrations = await getMigrationFiles()
-    let executedMigrations = 0
-    for (const m of migrations) {
-      if (applied.has(m.filename)) continue
-      console.debug(`Applying migration ${executedMigrations + 1}`, m.filename)
-      await client.transaction(async (tx) => {
-        await tx.exec(m.sqlContent)
-        await tx.exec(
-          `INSERT INTO ${RECORD_KEEPER_TABLE_NAME} (id) VALUES ('${m.filename}')`,
+    const journal = await getMigrationJournal()
+    let completelyMigrated = true
+    for (const entry of journal.entries) {
+      if (!applied.has(entry.tag)) {
+        completelyMigrated = false
+      }
+    }
+
+    if (!completelyMigrated) {
+      let migrations = await getMigrationFiles(journal)
+      let executedMigrations = 0
+      for (const m of migrations) {
+        if (applied.has(m.filename)) continue
+        console.debug(
+          `Applying migration ${executedMigrations + 1}`,
+          m.filename,
         )
-      })
-      executedMigrations++
+        await client.transaction(async (tx) => {
+          await tx.exec(m.sqlContent)
+          await tx.exec(
+            `INSERT INTO ${RECORD_KEEPER_TABLE_NAME} (id) VALUES ('${m.filename}')`,
+          )
+        })
+        executedMigrations++
+      }
     }
   } catch (e) {
     console.error("Failed applying migrations", e)
@@ -74,20 +87,23 @@ async function listAppliedMigrations(client: PGlite): Promise<Set<string>> {
   return applied
 }
 
+const isDev = process.env.NODE_ENV === "development"
+const migBasePath = `${window.location.origin}${process.env.PUBLIC_URL}/table_migrations`
+
+async function getMigrationJournal(): Promise<Journal> {
+  const journalPath = `${migBasePath}/meta/${isDev ? "_journal.json" : "journal.json"}`
+  const journal: Journal = await fetch(journalPath).then((r) => r.json())
+  console.debug("Migration journal:", journal)
+  return journal
+}
+
 /**
  * Find and retrieve all SQL migrations to be applied
  */
-async function getMigrationFiles(): Promise<MigrationFile[]> {
-  const isDev = process.env.NODE_ENV === "development"
-  const base = `${window.location.origin}${process.env.PUBLIC_URL}/table_migrations`
-  console.debug("Route base", base, process.env)
-
-  const journalPath = `${base}/meta/${isDev ? "_journal.json" : "journal.json"}`
-  const journal: Journal = await fetch(journalPath).then((r) => r.json())
-  console.debug("Migration journal:", journal)
+async function getMigrationFiles(journal: Journal): Promise<MigrationFile[]> {
   return Promise.all(
     journal.entries.map(({ tag }) =>
-      fetch(`${base}/${tag}.sql`).then(async (r) => ({
+      fetch(`${migBasePath}/${tag}.sql`).then(async (r) => ({
         filename: `${tag}.sql`,
         sqlContent: await r.text(),
       })),

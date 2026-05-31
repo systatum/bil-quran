@@ -23,7 +23,7 @@ export async function seedData() {
 
   const chapters = await seedChapters()
   await seedVerses(chapters)
-  console.debug("Return from seeding: done")
+  LOGGER.debug("Return from seeding: done")
 }
 
 /**
