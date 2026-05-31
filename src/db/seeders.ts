@@ -10,6 +10,7 @@ import { repo } from "@db/repo/index"
 import { unpackIPC } from "@services/Converter"
 import LOGGER from "@services/Logger"
 import { ensureHasTranslation } from "@services/translations"
+import { persistDb } from "./driver"
 
 // This module handle adding data to the database, especially
 // for the very first time. This should only be called after
@@ -23,6 +24,8 @@ export async function seedData() {
 
   const chapters = await seedChapters()
   await seedVerses(chapters)
+  await seedWordTranslations()
+  await persistDb()
   LOGGER.debug("Return from seeding: done")
 }
 
@@ -117,6 +120,7 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
     if (rootCache[root] == null) missingRoots.push({ root })
 
   // create the root words in bulk
+  LOGGER.debug(`${missingRoots.length} root words to create in batch`)
   for (let i = 0; i < missingRoots.length; i += BATCH_SIZE) {
     const batch = missingRoots.slice(i, i + BATCH_SIZE)
     const created = unpackIPC(await repo.roots.createBulk(batch))

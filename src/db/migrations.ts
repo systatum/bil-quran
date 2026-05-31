@@ -58,7 +58,7 @@ export async function applyMigrations() {
       }
     }
 
-    persistDb()
+    await persistDb()
   } catch (e) {
     console.error("Failed applying migrations", e)
     throw e

@@ -25,6 +25,9 @@ export async function getClient(): Promise<Database> {
   if (client) return client
   const SQL = await initDbDriver()
   const snapshot = await get<Uint8Array>(DATABASE_KEY)
+  LOGGER.debug(
+    "Database snapshot size: " + String(snapshot?.byteLength ?? 0) + " bytes",
+  )
   client = snapshot != null ? new SQL.Database(snapshot) : new SQL.Database()
   return client
 }
