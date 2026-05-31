@@ -1,67 +1,65 @@
 import { ChapterPartDivision } from "@constants/records/ChapterRecord"
 import { Locale } from "@constants/settings"
 import {
-  bigint,
-  boolean,
   integer,
-  jsonb,
-  pgTable,
-  timestamp,
+  sqliteTable as table,
+  text,
   unique,
-  varchar,
-} from "drizzle-orm/pg-core"
+} from "drizzle-orm/sqlite-core"
 
-export const chapters = pgTable("chapters", {
+export const chapters = table("chapters", {
   // starts from 1, the number of the surat
-  id: bigint({ mode: "number" }).primaryKey(),
-  isMeccan: boolean().notNull(),
-  partitioning: jsonb().$type<ChapterPartDivision[]>().notNull(),
+  id: integer({ mode: "number" }).primaryKey(),
+  isMeccan: integer({ mode: "boolean" }).notNull(),
+  partitioning: text({ mode: "json" }).$type<ChapterPartDivision[]>().notNull(),
   // name of the chapters in original arabic; mostly the same but some
   // countries might know of a chapter by a different name
-  namings: jsonb().$type<Record<Locale, string>>().notNull(),
-  transliterations: jsonb().$type<Record<Locale, string>>().notNull(),
+  namings: text({ mode: "json" }).$type<Record<Locale, string>>().notNull(),
+  transliterations: text({ mode: "json" })
+    .$type<Record<Locale, string>>()
+    .notNull(),
   // the meaning of the chapter in various locales
-  meanings: jsonb().$type<Record<Locale, string>>().notNull(),
+  meanings: text({ mode: "json" }).$type<Record<Locale, string>>().notNull(),
 })
 
 // quran has some "style" or "font" rendering ie ligatures
 // etc; so we make sure that each entry use proper rendering
 // habit or tradition (ie font size etc)
-export const renderings = pgTable("renderings", {
-  id: bigint({ mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
-  name: varchar({ length: 20 }).notNull().unique(),
-  createdAt: timestamp().notNull(),
-  updatedAt: timestamp().notNull(),
+export const renderings = table("renderings", {
+  id: integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
+  name: text({ length: 20 }).notNull().unique(),
+  createdAt: integer({ mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer({ mode: "timestamp_ms" }).notNull(),
 })
 
-export const roots = pgTable("roots", {
-  id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  root: varchar({ length: 18 }).notNull(),
+export const roots = table("roots", {
+  id: integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
+  root: text({ length: 18 }).notNull(),
 })
 
-export const lexemes = pgTable("lexemes", {
-  id: bigint({ mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
+export const lexemes = table("lexemes", {
+  id: integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
   rootId: integer()
     .notNull()
     .references(() => roots.id, { onDelete: "cascade" }),
-  token: varchar({ length: 25 }).notNull(),
-  readings: jsonb()
+  token: text({ length: 25 }).notNull(),
+  readings: text({ mode: "json" })
     .$type<Partial<Record<Locale, string>>>()
     .notNull()
     .default({}),
 })
 
 // a word that makes up a verse
-export const words = pgTable(
+export const words = table(
   "words",
   {
-    chapterId: bigint({ mode: "number" })
+    chapterId: integer({ mode: "number" })
       .notNull()
       .references(() => chapters.id, { onDelete: "cascade" }),
-    renderingId: bigint({ mode: "number" })
+    renderingId: integer({ mode: "number" })
       .notNull()
       .references(() => renderings.id, { onDelete: "cascade" }),
-    lexemeId: bigint({ mode: "number" })
+    lexemeId: integer({ mode: "number" })
       .notNull()
       .references(() => lexemes.id, { onDelete: "cascade" }),
     verse: integer().notNull(),
@@ -79,14 +77,14 @@ export const words = pgTable(
   ],
 )
 
-export const word_translations = pgTable(
+export const word_translations = table(
   "word_translations",
   {
-    locale: varchar({ length: 6 }).notNull(),
+    locale: text({ length: 6 }).notNull(),
     chapter: integer().notNull(),
     ayat: integer().notNull(),
     word: integer().notNull(),
-    meaning: varchar({ length: 255 }).notNull(),
+    meaning: text({ length: 255 }).notNull(),
   },
   (table) => [
     unique("unique_word_translation").on(
