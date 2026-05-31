@@ -41,6 +41,7 @@ export async function applyMigrations() {
     }
   } catch (e) {
     console.error("Failed applying migrations", e)
+    throw e
   }
 }
 

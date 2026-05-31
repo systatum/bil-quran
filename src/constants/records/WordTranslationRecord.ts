@@ -1,3 +1,5 @@
+import { Locale } from "@constants/settings"
+
 /**
  * A translation for a single word. Each word in each verse in
  * each chapter will have this record.
@@ -23,13 +25,28 @@ export type TranslationCorpus = Record<
 /**
  * Posisble word-by-word translation locales
  */
-export const WordTranslationOption = {
-  AmericanEnglish: "en-US",
-  Indonesian: "id-ID",
-} as const
+export enum WordTranslationOption {
+  AmericanEnglish = "en-US",
+  Indonesian = "id-ID",
+}
 
-export type WordTranslationOption =
-  (typeof WordTranslationOption)[keyof typeof WordTranslationOption]
+/**
+ * Maps application locale to the closest available word-by-word translation.
+ */
+export namespace WordTranslationOption {
+  export function fromLocale(locale: Locale): WordTranslationOption {
+    switch (locale) {
+      case Locale.IntEnglish:
+        return WordTranslationOption.AmericanEnglish
+
+      case Locale.Indonesian:
+        return WordTranslationOption.Indonesian
+
+      default:
+        return WordTranslationOption.AmericanEnglish
+    }
+  }
+}
 
 /**
  * Mapping corpus translation by the locale

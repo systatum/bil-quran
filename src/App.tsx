@@ -42,8 +42,10 @@ function AppRoot() {
       try {
         registerFonts()
 
-        setLoadingText("Seeding verses...")
+        setLoadingText("Setting up local storage...")
         await applyMigrations()
+
+        setLoadingText("Seeding verses...")
         await seedData()
         await loadChapters()
 
@@ -66,7 +68,9 @@ function AppRoot() {
 
   return (
     <>
-      {(!isBootstrapped || !isFullyLoaded) && <LoadingScreen />}
+      {(!isBootstrapped || !isFullyLoaded) && errors.length === 0 && (
+        <LoadingScreen />
+      )}
       {isBootstrapped && errors.length === 0 && (
         <RouterProvider router={router} />
       )}
