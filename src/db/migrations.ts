@@ -1,5 +1,5 @@
 import { PGlite } from "@electric-sql/pglite"
-import { getPostgresDriver } from "./driver"
+import { initDbDriver } from "./driver"
 
 // This module handles database migration, that is,
 // setting up the tables, indexes, and properties
@@ -18,7 +18,7 @@ const RECORD_KEEPER_TABLE_SQL_CREATION_CODE = `
 export async function applyMigrations() {
   try {
     console.debug("Applying migrations...")
-    const client = await getPostgresDriver()
+    const client = await initDbDriver()
     if (!client) throw new Error("Cannot get PGlite client")
 
     // check which migrations have been applied

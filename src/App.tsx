@@ -1,4 +1,5 @@
 import { ArabicFonts } from "@constants/fonts"
+import { initDbDriver } from "@db/driver"
 import { applyMigrations } from "@db/migrations"
 import { seedData, seedWordTranslations } from "@db/seeders"
 import useAppState from "@hooks/states/AppState"
@@ -39,7 +40,11 @@ function AppRoot() {
 
     async function bootstrap() {
       try {
+        setLoadingText("Registering fonts...")
         registerFonts()
+
+        setLoadingText("Init database connection...")
+        await initDbDriver()
 
         setLoadingText("Setting up local storage...")
         await applyMigrations()

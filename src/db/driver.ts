@@ -12,14 +12,16 @@ import { repo } from "./repo"
 const DATA_DIR = `idb://bilquran`
 
 let pgClient: PGlite | null = null
-export async function getPostgresDriver() {
+export async function initDbDriver() {
   if (pgClient != null) return pgClient
 
+  LOGGER.debug("Initializing driver connection")
   try {
     pgClient = await PGlite.create({
       dataDir: DATA_DIR,
       relaxedDurability: true,
     })
+    LOGGER.debug("Connection established")
   } catch (e) {
     LOGGER.error("Error getting PGlite database instance", e)
     throw e
