@@ -13,14 +13,19 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 Scrolling works by using hash router, ie: https://bil-quran.com/#/c/11/12
 
+App unique features:
+
+- Allow you to learn word-by-word
+- Allow you to see tajwid rules and words in the quran exemplify those rules
+- Respect both Sunni and Shi'i perspective of what makes Surat Sajdah
+
 ## If I had more time
 
 - Better scroll preservation (both saving and restoring the position)
-- Better typing (ie for the user settings)
-- Add more word-by-word translation: Indonesian
 - Ability to bookmark any verse and go to that any moment
-- Store number of verses in each chapter, so that the verse lookup component can display verse number rather than making user type
 - Can lookup by: chapter:verse, juz, root word, and verse theme.
+- Normalize such as in baqarah 10: اَلِیْمٌۢ بِمَا the mim at the first word has indicator of mim
+- Make it easy to learn tajwid on the app
 
 ## Stack
 

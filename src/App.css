@@ -309,6 +309,6 @@ video {
   display: none;
 }
 
-* {
+body {
   user-select: none;
 }
