@@ -34,6 +34,12 @@ export enum WordTranslationOption {
  * Maps application locale to the closest available word-by-word translation.
  */
 export namespace WordTranslationOption {
+  export function values(): WordTranslationOption[] {
+    return Object.values(WordTranslationOption).filter(
+      (value): value is WordTranslationOption => typeof value === "string",
+    )
+  }
+
   export function fromLocale(locale: Locale): WordTranslationOption {
     switch (locale) {
       case Locale.IntEnglish:

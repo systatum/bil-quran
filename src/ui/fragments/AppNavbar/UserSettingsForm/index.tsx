@@ -93,7 +93,7 @@ export default function UserSettingsForm() {
       combobox: {
         mobile: true,
         multiple: true,
-        options: Object.values(WordTranslationOption).map((l) => ({
+        options: WordTranslationOption.values().map((l) => ({
           text: formatMessage({ id: messages.locale[l] }),
           value: l,
         })),
