@@ -38,3 +38,4 @@ Scrolling works by using hash router, ie: https://bil-quran.com/#/c/11/12
 - [ ] When hard-pressing each word in the verse, show the paper dialog, with all proper information
 - [ ] Try mock each function in the seeder is throwing an error, should then render the error screen at root-level (otherwise, user will not moving to any page, yet not sure what's happening as error screen not shown)
 - [ ] Try raising error at the translator-level (ie at the i18n's formatMessage) and ensure that we see an error screen; otherwise we miss a locale, and the user is not seeing any error. Another simple way is inject into `WordTranslationOption` some fake value, where there's no corresponding i18n key for that in locale files, and so the lookup will generate a null/undefined, causing error on formatMessage-part automatically.
+- [ ] Add automated test ensuring each word has a meaning.

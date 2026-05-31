@@ -41,10 +41,8 @@ export async function ensureHasTranslation(locale: WordTranslationOption) {
     }
 
     for (const [loc, meaning] of Object.entries(translations)) {
-      const isVerseMarker = // this is just chapter marker ie (1), (2)
-        meaning.length >= 2 &&
-        meaning[0] === "(" &&
-        meaning[meaning.length - 1] === ")"
+      // (1) (2) (3) is a verse marker, but careful not to skip like "2:8:11" "(are) believers (at all)",
+      const isVerseMarker = /^\s*\(\d+\)\s*$/.test(meaning)
       if (isVerseMarker) continue // skip verse markers like "(1)"
 
       const [chapter, verse, word] = loc.split(":")
