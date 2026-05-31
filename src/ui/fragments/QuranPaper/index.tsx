@@ -3,15 +3,14 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { ChapterRecord } from "@constants/records/ChapterRecord"
 import { BasmalaPosition } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
-import { repo } from "@db/repo"
-import { unpackIPC } from "@services/Converter"
+import { useTranslatedWords, useWords } from "@hooks/tools/useWordTranslations"
 import { useVirtualizer, VirtualItem } from "@tanstack/react-virtual"
 import useChaptersState from "../../hooks/states/ChaptersState"
 import useUserSettingsState from "../../hooks/states/UserSettingsState"
-import { Bismillah } from "./Bismillah"
+import BasmalaRow from "./BasmalaRow"
 import ChapterRow from "./ChapterRow"
-import FullblockBasmala from "./FullblockBasmala"
-import VerseRow, { Verse, WordCell } from "./VerseRow"
+import VerseRow, { Verse } from "./VerseRow"
+import { Bismillah } from "./VerseRow/Bismillah"
 
 // This module contains the content browser of the Quran.
 // It includes various components to build the verse, and
@@ -51,10 +50,13 @@ export default function QuranPaper({
   chapterId: requestedChapterId,
   verseNumber: requestedVerseNumber,
 }: QuranBrowserProps) {
-  const { chapters } = useChaptersState()
-  const [words, setWords] = useState<WordCell[]>([])
   const parentRef = useRef<HTMLDivElement>(null)
+
+  const { chapters } = useChaptersState()
   const { setScrollPosition, userSettings } = useUserSettingsState()
+
+  const rawWords = useWords()
+  const words = useTranslatedWords(rawWords, userSettings.wbwTranslations)
 
   // some flags about the rendering
   const [showTransliteration, setShowTransliteration] = useState(false)
@@ -65,24 +67,6 @@ export default function QuranPaper({
    * Virtualizer relies on this for correct positioning.
    */
   const sizeMap = useRef<Map<number, number>>(new Map())
-
-  useEffect(() => {
-    async function load() {
-      // load word-by-word translations and associate to its relevant word in a verse
-      const wbwTranslations = unpackIPC(
-        await repo.wbwTranslations.compile("en-US"),
-      )
-      const words = unpackIPC(await repo.words.findAllBy())
-      const translatedWords = words.map((w) => ({
-        ...w,
-        meaning: wbwTranslations[w.chapterId][w.verse][w.order],
-      }))
-
-      setWords(translatedWords)
-    }
-
-    load().catch(console.error)
-  }, [])
 
   /**
    * Group words into verses.
@@ -335,7 +319,7 @@ export default function QuranPaper({
 
           if (row.type === "basmala") {
             return (
-              <FullblockBasmala
+              <BasmalaRow
                 key={`basmala-${item.index}`}
                 theme={theme}
                 index={item.index}

@@ -20,6 +20,7 @@ Scrolling works by using hash router, ie: https://bil-quran.com/#/c/11/12
 - Add more word-by-word translation: Indonesian
 - Ability to bookmark any verse and go to that any moment
 - Store number of verses in each chapter, so that the verse lookup component can display verse number rather than making user type
+- Can lookup by: chapter:verse, juz, root word, and verse theme.
 
 ## Stack
 
@@ -32,3 +33,8 @@ Scrolling works by using hash router, ie: https://bil-quran.com/#/c/11/12
 - [ ] Can change font, and when changing the font, all the rows are calculated correctly (the distance between one verse row to another is 0, check for all the first 100 rows, and change one by one from one font to another).
   - and when revisiting the page should read/use the same font
 - [ ] Can go to specific chapter and verse of the Quran through the lookup form
+- [ ] Test when user translations has English and Indonesian, both are shown fine on first load (Indonesian is not the default). This is to test first pre-flight translation downloading and insertion works.
+- [ ] Test seeing "Seeding verses..." and "Preparing the layout..." in that sequence
+- [ ] When hard-pressing each word in the verse, show the paper dialog, with all proper information
+- [ ] Try mock each function in the seeder is throwing an error, should then render the error screen at root-level (otherwise, user will not moving to any page, yet not sure what's happening as error screen not shown)
+- [ ] Try raising error at the translator-level (ie at the i18n's formatMessage) and ensure that we see an error screen; otherwise we miss a locale, and the user is not seeing any error. Another simple way is inject into `WordTranslationOption` some fake value, where there's no corresponding i18n key for that in locale files, and so the lookup will generate a null/undefined, causing error on formatMessage-part automatically.

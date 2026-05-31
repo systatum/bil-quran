@@ -41,11 +41,11 @@ export default function ChapterRow({
       ref={ref}
       theme={theme}
       style={{ transform: style.transform }}
-      basmalaPosition={basmalaPosition}
+      $basmalaPosition={basmalaPosition}
     >
-      <ChapterPanel theme={theme} basmalaPosition={basmalaPosition}>
-        <SideOrnament side="left" />
-        <ChapterGlowLine side="left" theme={theme} />
+      <ChapterPanel theme={theme} $basmalaPosition={basmalaPosition}>
+        <SideOrnament $side="left" />
+        <ChapterGlowLine $side="left" $theme={theme} />
 
         <ChapterCenter>
           <ChapterName>{chapter.namings[DEFAULT_LOCALE]}</ChapterName>
@@ -57,8 +57,8 @@ export default function ChapterRow({
           </ChapterDescription>
         </ChapterCenter>
 
-        <ChapterGlowLine side="right" theme={theme} />
-        <SideOrnament side="right" />
+        <ChapterGlowLine $side="right" $theme={theme} />
+        <SideOrnament $side="right" />
       </ChapterPanel>
     </ChapterHeaderContainer>
   )
@@ -66,7 +66,7 @@ export default function ChapterRow({
 
 const ChapterHeaderContainer = styled.div<{
   theme: ThemeMode
-  basmalaPosition: BasmalaPosition
+  $basmalaPosition: BasmalaPosition
 }>`
   --bg: ${({ theme }) => (theme === "dark" ? "#181818" : "#f6f1e7")};
   --panel-top: ${({ theme }) => (theme === "dark" ? "#26231d" : "#f4ede0")};
@@ -83,8 +83,8 @@ const ChapterHeaderContainer = styled.div<{
   left: 0;
   width: 100%;
   box-sizing: border-box;
-  padding: ${({ basmalaPosition }) =>
-    basmalaPosition === BasmalaPosition.Detached
+  padding: ${({ $basmalaPosition }) =>
+    $basmalaPosition === BasmalaPosition.Detached
       ? "10px 18px 0"
       : "6px 18px 0"};
   background: var(--bg);
@@ -93,13 +93,13 @@ const ChapterHeaderContainer = styled.div<{
 
 const ChapterPanel = styled.div<{
   theme: ThemeMode
-  basmalaPosition: BasmalaPosition
+  $basmalaPosition: BasmalaPosition
 }>`
   position: relative;
   width: 100%;
   box-sizing: border-box;
-  padding: ${({ basmalaPosition }) =>
-    basmalaPosition === BasmalaPosition.Detached
+  padding: ${({ $basmalaPosition }) =>
+    $basmalaPosition === BasmalaPosition.Detached
       ? "18px 88px"
       : "12px 88px 10px"};
   background: linear-gradient(180deg, var(--panel-top), var(--panel-bottom));
@@ -160,9 +160,9 @@ const ChapterDescription = styled.div`
   font-family: "Ubuntu", "Noto Naskh Arabic", serif;
 `
 
-const SideOrnament = ({ side }: { side: "left" | "right" }) => {
+const SideOrnament = ({ $side }: { $side: "left" | "right" }) => {
   return (
-    <SideOrnamentWrapper side={side}>
+    <SideOrnamentWrapper $side={$side}>
       <svg viewBox="0 0 100 100" fill="none">
         <path
           d="
@@ -184,10 +184,10 @@ const SideOrnament = ({ side }: { side: "left" | "right" }) => {
 }
 
 const SideOrnamentWrapper = styled.div<{
-  side: "left" | "right"
+  $side: "left" | "right"
 }>`
   position: absolute;
-  ${({ side }) => side}: 22px;
+  ${({ $side }) => $side}: 22px;
   top: 50%;
   transform: translateY(-50%);
   width: 44px;
@@ -211,12 +211,12 @@ const ChapterCenter = styled.div`
 `
 
 const ChapterGlowLine = styled.div<{
-  side: "left" | "right"
-  theme: ThemeMode
+  $side: "left" | "right"
+  $theme: ThemeMode
 }>`
   position: absolute;
 
-  ${({ side }) => side}: 74px;
+  ${({ $side }) => $side}: 74px;
 
   top: 50%;
   transform: translateY(-50%);
@@ -241,13 +241,17 @@ const ChapterGlowLine = styled.div<{
     transform: translateY(-50%);
 
     background: linear-gradient(
-      ${({ side }) => (side === "left" ? "to left" : "to right")},
-      ${({ theme }) =>
-          theme === "dark" ? "rgba(216,204,176,0.58)" : "rgba(127,103,64,0.42)"}
+      ${({ $side }) => ($side === "left" ? "to left" : "to right")},
+      ${({ $theme }) =>
+          $theme === "dark"
+            ? "rgba(216,204,176,0.58)"
+            : "rgba(127,103,64,0.42)"}
         0%,
 
-      ${({ theme }) =>
-          theme === "dark" ? "rgba(216,204,176,0.20)" : "rgba(127,103,64,0.16)"}
+      ${({ $theme }) =>
+          $theme === "dark"
+            ? "rgba(216,204,176,0.20)"
+            : "rgba(127,103,64,0.16)"}
         55%,
 
       transparent 100%

@@ -1,4 +1,5 @@
 import { PGlite } from "@electric-sql/pglite"
+import LOGGER from "@services/Logger"
 import { drizzle } from "drizzle-orm/pglite"
 import { repo } from "./repo"
 
@@ -11,16 +12,19 @@ import { repo } from "./repo"
 const DATA_DIR = `idb://bilquran`
 
 let pgClient: PGlite | null = null
-export async function getPostgresDriver() {
+export async function initDbDriver() {
   if (pgClient != null) return pgClient
 
+  LOGGER.debug("Initializing driver connection")
   try {
     pgClient = await PGlite.create({
       dataDir: DATA_DIR,
       relaxedDurability: true,
     })
+    LOGGER.debug("Connection established")
   } catch (e) {
-    console.error("Error getting PGlite database instance", e)
+    LOGGER.error("Error getting PGlite database instance", e)
+    throw e
   }
 
   return pgClient

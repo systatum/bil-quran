@@ -2,7 +2,9 @@ import {
   getAllPossibleFontOptions,
   getAllPossibleFontSizeOptions,
 } from "@constants/fonts"
+import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
 import { BasmalaPosition, Locale } from "@constants/settings"
+import { ThemeMode } from "@constants/theme"
 import { isProperThemeValue, messages } from "@i18n/message"
 import { ComboboxOption } from "@systatum/coneto/combobox"
 import { FormFieldGroup, StatefulForm } from "@systatum/coneto/stateful-form"
@@ -13,15 +15,22 @@ import useUserSettingsState from "../../../hooks/states/UserSettingsState"
 export default function UserSettingsForm() {
   const { formatMessage } = useIntl()
   const { mode } = useTheme()
-  const { setTheme, setFont, setLocale, setBasmalaPosition, userSettings } =
-    useUserSettingsState()
+  const {
+    setTheme,
+    setFont,
+    setLocale,
+    setBasmalaPosition,
+    setWordByWordTranslations,
+    userSettings,
+  } = useUserSettingsState()
 
-  const [formValues, setFormValues] = useState({
+  const [formValues, setFormValues] = useState<FormState>({
     theme: userSettings.theme ?? mode,
     arabicFontFamily: userSettings.font.arabic.family,
     arabicFontSize: String(userSettings.font.arabic.size),
     locale: userSettings.locale,
     basmalaPosition: userSettings.basmalaPosition,
+    wbwTranslations: userSettings.wbwTranslations,
   })
 
   const arabicFontOptions = useMemo(getAllPossibleFontOptions, [])
@@ -33,6 +42,7 @@ export default function UserSettingsForm() {
       title: formatMessage({ id: messages.theme.title }),
       type: "combo",
       combobox: {
+        mobile: true,
         options: ["light", "dark"]
           .filter((t) => isProperThemeValue(t))
           .map(
@@ -52,14 +62,14 @@ export default function UserSettingsForm() {
         name: "arabicFontFamily",
         title: formatMessage({ id: messages.font }),
         type: "combo",
-        combobox: { options: arabicFontOptions },
+        combobox: { mobile: true, options: arabicFontOptions },
       },
       {
         name: "arabicFontSize",
         type: "combo",
         placeholder: "Size of the font",
         width: "50%",
-        combobox: { options: arabicFontSizeOptions },
+        combobox: { mobile: true, options: arabicFontSizeOptions },
       },
     ],
 
@@ -68,7 +78,22 @@ export default function UserSettingsForm() {
       title: formatMessage({ id: messages.lang }),
       type: "combo",
       combobox: {
+        mobile: true,
         options: Object.values(Locale).map((l) => ({
+          text: formatMessage({ id: messages.locale[l] }),
+          value: l,
+        })),
+      },
+    },
+
+    {
+      name: "wbwTranslations",
+      title: "Word-by-word translations",
+      type: "combo",
+      combobox: {
+        mobile: true,
+        multiple: true,
+        options: WordTranslationOption.values().map((l) => ({
           text: formatMessage({ id: messages.locale[l] }),
           value: l,
         })),
@@ -80,6 +105,7 @@ export default function UserSettingsForm() {
       title: formatMessage({ id: messages.basmalaPosition.title }),
       type: "combo",
       combobox: {
+        mobile: true,
         options: Object.values(BasmalaPosition).map((p) => ({
           text: formatMessage({ id: messages.basmalaPosition[p] }),
           value: p,
@@ -93,16 +119,18 @@ export default function UserSettingsForm() {
       fields={FIELDS}
       formValues={formValues}
       onChange={({ currentState }) => {
-        if ("theme" in currentState) {
+        if (FormState.Theme in currentState) {
           setTheme(currentState.theme)
-        } else if ("arabicFontFamily" in currentState) {
+        } else if (FormState.ArabicFontFamily in currentState) {
           setFont({ arabic: { family: currentState.arabicFontFamily } })
-        } else if ("arabicFontSize" in currentState) {
+        } else if (FormState.ArabicFontSize in currentState) {
           setFont({ arabic: { size: Number(currentState.arabicFontSize) } })
-        } else if ("locale" in currentState) {
+        } else if (FormState.Locale in currentState) {
           setLocale(currentState.locale)
-        } else if ("basmalaPosition" in currentState) {
+        } else if (FormState.BasmalaPosition in currentState) {
           setBasmalaPosition(currentState.basmalaPosition)
+        } else if (FormState.WordByWordTranslations) {
+          setWordByWordTranslations(currentState.wbwTranslations)
         }
 
         setFormValues((s) => ({
@@ -112,4 +140,22 @@ export default function UserSettingsForm() {
       }}
     />
   )
+}
+
+export const FormState = {
+  Theme: "theme",
+  ArabicFontFamily: "arabicFontFamily",
+  ArabicFontSize: "arabicFontSize",
+  Locale: "locale",
+  BasmalaPosition: "basmalaPosition",
+  WordByWordTranslations: "wbwTranslations",
+} as const
+
+type FormState = {
+  [FormState.Theme]: ThemeMode
+  [FormState.ArabicFontFamily]: string
+  [FormState.ArabicFontSize]: string
+  [FormState.Locale]: string
+  [FormState.BasmalaPosition]: BasmalaPosition
+  [FormState.WordByWordTranslations]: WordTranslationOption[]
 }

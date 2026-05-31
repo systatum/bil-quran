@@ -29,6 +29,9 @@ export const Asset: Asset = {
       [Locale.IntEnglish]: {
         path: `${basePath}/quran/wbw_translations/en-US.json`,
       },
+      [Locale.Indonesian]: {
+        path: `${basePath}/quran/wbw_translations/id-ID.json`,
+      },
     },
   },
 }

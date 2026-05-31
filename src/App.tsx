@@ -1,23 +1,33 @@
 import { ArabicFonts } from "@constants/fonts"
+import { initDbDriver } from "@db/driver"
 import { applyMigrations } from "@db/migrations"
-import { seedData } from "@db/seeders"
+import { seedData, seedWordTranslations } from "@db/seeders"
+import useAppState from "@hooks/states/AppState"
 import { loadMessages, resolveLocale } from "@i18n"
 import { I18nProvider } from "@i18n/provider"
 import { RouterProvider } from "@tanstack/react-router"
 import { JSX, useEffect, useRef, useState } from "react"
 import "./App.css"
 import ErrorRescuer from "./ErrorRescuer"
-import logo from "./logo.svg"
+import ErrorScreen from "./ui/fragments/ErrorScreen"
+import LoadingScreen from "./ui/fragments/LoadingScreen"
 import useChaptersState from "./ui/hooks/states/ChaptersState"
 import useUserSettingsState from "./ui/hooks/states/UserSettingsState"
 import { router } from "./ui/router"
 
 function AppRoot() {
-  const boostrappedRef = useRef(false)
-  const [isReady, setIsReady] = useState<boolean>(false)
-  const [isError, setIsError] = useState<boolean>(false)
   const { loadChapters } = useChaptersState()
   const { restoreState } = useUserSettingsState()
+  const {
+    setLoadingText,
+    isVersesLoaded: isFullyLoaded,
+    pushError,
+    errors,
+  } = useAppState()
+
+  // ensure the minimum data is in the database
+  const boostrappedRef = useRef(false)
+  const [isBootstrapped, setIsBootstrapped] = useState<boolean>(false)
 
   useEffect(() => {
     // the code in this effect is very sensistive and must only be run once
@@ -30,37 +40,47 @@ function AppRoot() {
 
     async function bootstrap() {
       try {
+        setLoadingText("Registering fonts...")
         registerFonts()
-        await applyMigrations()
-        await seedData()
-        await loadChapters()
-        restoreState()
 
-        setIsReady(true)
+        setLoadingText("Init database connection...")
+        await initDbDriver()
+
+        setLoadingText("Setting up local storage...")
+        await applyMigrations()
+
+        setLoadingText("Seeding verses...")
+        await seedData()
+        setLoadingText("Loading chapters...")
+        loadChapters()
+
+        setLoadingText("Seeding translations...")
+        await seedWordTranslations()
+
+        setLoadingText("Preparing the layout...")
+
+        restoreState()
+        setIsBootstrapped(true)
       } catch (e) {
         console.error("Error preparing application", e)
-        throw e
+        pushError(e)
       }
     }
 
-    bootstrap().catch((e) => {
-      console.log("CATCHING", e)
-      throw e
-    })
+    bootstrap()
   }, [])
 
-  if (isReady) {
-    return <RouterProvider router={router} />
-  } else {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>Loading...</p>
-        </header>
-      </div>
-    )
-  }
+  return (
+    <>
+      {(!isBootstrapped || !isFullyLoaded) && errors.length === 0 && (
+        <LoadingScreen />
+      )}
+      {isBootstrapped && errors.length === 0 && (
+        <RouterProvider router={router} />
+      )}
+      {errors.length > 0 && <ErrorScreen />}
+    </>
+  )
 }
 
 /**

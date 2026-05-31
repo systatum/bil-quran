@@ -2,7 +2,7 @@ import { ThemeMode } from "@constants/theme"
 import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
 import styled from "styled-components"
 
-export default function FullblockBasmala({
+export default function BasmalaRow({
   index,
   style,
   sizeMap,

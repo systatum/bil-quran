@@ -1,4 +1,5 @@
 import { Locale } from "@constants/settings"
+import { RootRecord } from "./RootRecord"
 
 /**
  * Representing a word in a verse by binding a specific lexeme to
@@ -45,6 +46,6 @@ export interface WordWithLexemeRecord {
   renderingId: number
 
   token: string
-  root: string
-  readings: Record<Locale, string>
+  root: RootRecord
+  readings: Partial<Record<Locale, string>>
 }

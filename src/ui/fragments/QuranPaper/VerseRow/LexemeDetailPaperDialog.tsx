@@ -1,0 +1,151 @@
+import { ArabicFontFamily } from "@constants/fonts"
+import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
+import { ThemeMode } from "@constants/theme"
+import useUserSettingsState from "@hooks/states/UserSettingsState"
+import { Grid } from "@systatum/coneto/grid"
+import { useCallback, useRef, useState } from "react"
+import styled from "styled-components"
+import { Transliteration, WordCell } from "."
+import InfoTile from "./InfoTile"
+
+interface LexemeDetailPaperDialogProps {
+  content: WordCell
+  arabicFont: string
+  theme: ThemeMode
+}
+
+export function LexemeDetailPaperDialog({
+  content,
+  arabicFont,
+  theme,
+}: LexemeDetailPaperDialogProps) {
+  const {
+    userSettings: { locale },
+  } = useUserSettingsState()
+  const rootLetters = content.root.root ?? "—"
+  const transliteration = content.readings[locale]
+
+  const [scrolled, setScrolled] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    setScrolled(e.currentTarget.scrollTop > 10)
+  }, [])
+
+  const meaning = content.meanings[WordTranslationOption.fromLocale(locale)]
+  console.log(content)
+
+  return (
+    <>
+      <TokenSection $theme={theme} $scrolled={scrolled}>
+        <ArabicToken $font={arabicFont} $theme={theme} $scrolled={scrolled}>
+          {content.token}
+        </ArabicToken>
+        {transliteration && (
+          <TransliterationCollapsible $scrolled={scrolled}>
+            <Transliteration>{transliteration}</Transliteration>
+          </TransliterationCollapsible>
+        )}
+      </TokenSection>
+
+      <ScrollContainer ref={scrollRef} onScroll={handleScroll}>
+        <Grid preset="2-col">
+          <InfoTile theme={theme} label="Meaning" value={meaning ?? "?"} />
+          <InfoTile
+            theme={theme}
+            label="Root"
+            value={rootLetters}
+            arabic
+            arabicFont={arabicFont}
+          />
+          <InfoTile
+            theme={theme}
+            label="Position"
+            value={`${content.chapterId}:${content.verse} · Word ${content.order}`}
+          />
+          <InfoTile
+            theme={theme}
+            label="Chapter"
+            value={String(content.chapterId)}
+          />
+        </Grid>
+        {Array.from({ length: 25 }).map((_, key) => (
+          <span key={key}>asdkaksdmkasdkas dsakdmkasmdkamskdmasd</span>
+        ))}
+      </ScrollContainer>
+    </>
+  )
+}
+
+const ScrollContainer = styled.div`
+  overflow-y: auto;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+
+  scrollbar-width: thin;
+  scrollbar-color: rgba(150, 150, 150, 0.5) transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(150, 150, 150, 0.5);
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(150, 150, 150, 0.7);
+  }
+`
+
+const TokenSection = styled.div<{ $theme: ThemeMode; $scrolled: boolean }>`
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border-bottom: 1px solid
+    ${({ $theme }) => ($theme === "dark" ? "#303030" : "#e2d6c3")};
+  background-color: inherit;
+  z-index: 99929999;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: ${({ $scrolled }) => ($scrolled ? "4px 24px" : "24px 24px 20px")};
+`
+
+const ArabicToken = styled.span<{
+  $font: string
+  $theme: ThemeMode
+  $scrolled: boolean
+}>`
+  font-family:
+    ${({ $font }) => `"${$font}"`},
+    "${"NotoNaskhArabic" satisfies ArabicFontFamily}", serif;
+  direction: rtl;
+  color: ${({ $theme }) => ($theme === "dark" ? "#d8c7a3" : "#1f1f1f")};
+  transition:
+    font-size 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    line-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: ${({ $scrolled }) => ($scrolled ? "32px" : "52px")};
+  line-height: ${({ $scrolled }) => ($scrolled ? "1.2" : "1.4")};
+  user-select: all;
+`
+
+const TransliterationCollapsible = styled.div<{ $scrolled: boolean }>`
+  overflow: hidden;
+  transition:
+    max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.25s ease;
+  max-height: ${({ $scrolled }) => ($scrolled ? "0px" : "32px")};
+  opacity: ${({ $scrolled }) => ($scrolled ? 0 : 1)};
+`
