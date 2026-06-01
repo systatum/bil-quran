@@ -26,6 +26,7 @@ App unique features:
 - Can lookup by: chapter:verse, juz, root word, and verse theme.
 - Normalize such as in baqarah 10: اَلِیْمٌۢ بِمَا the mim at the first word has indicator of mim
 - Make it easy to learn tajwid on the app
+- Add a feature to report an issue
 
 ## Stack
 
@@ -44,3 +45,7 @@ App unique features:
 - [ ] Try mock each function in the seeder is throwing an error, should then render the error screen at root-level (otherwise, user will not moving to any page, yet not sure what's happening as error screen not shown)
 - [ ] Try raising error at the translator-level (ie at the i18n's formatMessage) and ensure that we see an error screen; otherwise we miss a locale, and the user is not seeing any error. Another simple way is inject into `WordTranslationOption` some fake value, where there's no corresponding i18n key for that in locale files, and so the lookup will generate a null/undefined, causing error on formatMessage-part automatically.
 - [ ] Add automated test ensuring each word has a meaning.
+
+ءَا
+لْإِ
+"\w+/
