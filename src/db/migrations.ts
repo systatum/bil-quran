@@ -19,7 +19,7 @@ export async function applyMigrations() {
   try {
     console.debug("Applying migrations...")
     const client = await getClient()
-    if (!client) throw new Error("Cannot get PGlite client")
+    if (!client) throw new Error("Cannot get database client")
 
     // check which migrations have been applied
     createRecordKeepingTable(client)
