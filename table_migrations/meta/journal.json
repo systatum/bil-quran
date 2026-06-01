@@ -1,7 +1,22 @@
 {
   "entries": [
     {
-      "tag": "0000_create_chapters_lexemes_verses_wordtranslations_and_renderings_tables"
+      "tag": "0000_create_word_by_word_translations_table"
+    },
+    {
+      "tag": "0001_create_quran_chapters_verses_words_table"
+    },
+    {
+      "tag": "0002_enrich_chapter_and_word_with_reveal_loc_and_part_number"
+    },
+    {
+      "tag": "0003_create_lexemes_table"
+    },
+    {
+      "tag": "0004_unify_and_simplify_labelings"
+    },
+    {
+      "tag": "0005_create_roots_table"
     }
   ]
 }

@@ -1,0 +1,1 @@
+(self.webpackChunkbil_quran=self.webpackChunkbil_quran||[]).push([[577],{577(){}}]);
