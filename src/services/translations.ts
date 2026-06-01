@@ -1,10 +1,12 @@
-import { Asset } from "@constants/assets"
 import {
   WordTranslationOption,
   WordTranslationRecord,
 } from "@constants/records/WordTranslationRecord"
+import { persistDb } from "@db/driver"
 import { repo } from "@db/repo"
 import { unpackIPC } from "./Converter"
+import { FingerprintedAsset, saveFingerprints } from "./fingerprinter"
+import LOGGER from "./Logger"
 
 /**
  * Promises by locale. This record keeping is to de-duplicate
@@ -26,13 +28,12 @@ export async function ensureHasTranslation(locale: WordTranslationOption) {
     const locales = unpackIPC(await repo.wbwTranslations.findAllBy({ locale }))
 
     if (locales.length > 0) return
-    console.debug("Seeding word-by-word translations")
+    LOGGER.debug("Seeding word-by-word trans for", locale)
 
-    const translations: Record<string, string> = await (
-      await fetch(Asset.translations.wordByWord[locale].path, {
-        cache: "no-cache",
-      })
-    ).json()
+    const translations =
+      await FingerprintedAsset.Quran.getLexemeTranslation<
+        Record<string, string>
+      >(locale)
 
     const BATCH_SIZE = 1200
     let batch: Partial<WordTranslationRecord>[] = []
@@ -60,6 +61,8 @@ export async function ensureHasTranslation(locale: WordTranslationOption) {
     }
 
     await flushBatch()
+    await persistDb()
+    saveFingerprints({ merge: true })
   })()
 
   insertionPromises[locale] = promise

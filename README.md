@@ -44,7 +44,8 @@ App unique features:
 - [ ] When hard-pressing each word in the verse, show the paper dialog, with all proper information
 - [ ] Try mock each function in the seeder is throwing an error, should then render the error screen at root-level (otherwise, user will not moving to any page, yet not sure what's happening as error screen not shown)
 - [ ] Try raising error at the translator-level (ie at the i18n's formatMessage) and ensure that we see an error screen; otherwise we miss a locale, and the user is not seeing any error. Another simple way is inject into `WordTranslationOption` some fake value, where there's no corresponding i18n key for that in locale files, and so the lookup will generate a null/undefined, causing error on formatMessage-part automatically.
-- [ ] Add automated test ensuring each word has a meaning.
+- [ ] Add automated test ensuring each word has a meaning (in the quran paper, each arabic word must have below it some translation).
+- [ ] If we add another locale, and then refresh the page, we should not redownload the locale (this proves that database persisting works for all new-locale)
 
 ءَا
 لْإِ

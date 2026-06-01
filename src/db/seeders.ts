@@ -1,4 +1,3 @@
-import { Asset } from "@constants/assets"
 import { ChapterRecord } from "@constants/records/ChapterRecord"
 import { LexemeRecord, NewLexemeRecord } from "@constants/records/LexemeRecord"
 import { Rendering } from "@constants/records/RenderingRecord"
@@ -8,6 +7,7 @@ import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
 import { Locale } from "@constants/settings"
 import { repo } from "@db/repo/index"
 import { unpackIPC } from "@services/Converter"
+import { FingerprintedAsset, saveFingerprints } from "@services/fingerprinter"
 import LOGGER from "@services/Logger"
 import { ensureHasTranslation } from "@services/translations"
 import { persistDb } from "./driver"
@@ -26,6 +26,7 @@ export async function seedData() {
   await seedVerses(chapters)
   await seedWordTranslations()
   await persistDb()
+  saveFingerprints()
   LOGGER.debug("Return from seeding: done")
 }
 
@@ -41,9 +42,10 @@ async function seedChapters(): Promise<Record<number, ChapterRecord>> {
   if (existingChapters.length > 0) return asDict(existingChapters)
 
   console.debug("Seeding chapters")
-  const chaptersMetadata: ChapterRecord[] = await (
-    await fetch(Asset.chaptersMetadata, { cache: "no-cache" })
-  ).json()
+  const chaptersMetadata =
+    await FingerprintedAsset.Quran.getChaptersMetadata<
+      Record<string, Omit<ChapterRecord, "id">>
+    >()
   const newChapters: ChapterRecord[] = Object.entries(chaptersMetadata).map(
     ([number, detail]) => ({ ...detail, id: parseInt(number) }),
   )
@@ -69,9 +71,9 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
 
   const rendering = unpackIPC(await repo.renderings.create({ name }))
 
-  const verseWords: VerseWord[] = await (
-    await fetch(Asset.renderings[rendering.name], { cache: "no-cache" })
-  ).json()
+  const verseWords = await FingerprintedAsset.Quran.getVerseRendering<
+    VerseWord[]
+  >(rendering.name)
 
   // ------------------------------------------------------------
   // PASS 1

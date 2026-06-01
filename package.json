@@ -7,7 +7,7 @@
     "start": "craco start",
     "build": "craco build",
     "test": "craco test",
-    "fingerprint": "node scripts/fingerprint.js",
+    "fingerprint": "node scripts/fingerprinter.js",
     "predeploy": "pnpm run fingerprint && pnpm run build && node scripts/pre-deploy.js",
     "deploy": "gh-pages -d build",
     "db:generate": "drizzle-kit generate"
