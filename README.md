@@ -21,6 +21,7 @@ Scrolling works by using hash router, ie: https://bil-quran.com/#/c/11/12
 - Ability to bookmark any verse and go to that any moment
 - Store number of verses in each chapter, so that the verse lookup component can display verse number rather than making user type
 - Can lookup by: chapter:verse, juz, root word, and verse theme.
+- Add a feature to report an issue
 
 ## Stack
 

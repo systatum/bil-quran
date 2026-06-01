@@ -23,3 +23,8 @@ yarn-debug.log*
 yarn-error.log*
 
 /public/table_migrations/meta/journal.json
+
+scripts/**/.wrangler
+scripts/quran_audio_uploader/**/ayats/**/*.mp3
+scripts/quran_audio_uploader/**/ayats/**/*
+scripts/quran_audio_uploader/**/except_*.txt
