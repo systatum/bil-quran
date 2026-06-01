@@ -29,7 +29,9 @@ export async function ensureHasTranslation(locale: WordTranslationOption) {
     console.debug("Seeding word-by-word translations")
 
     const translations: Record<string, string> = await (
-      await fetch(Asset.translations.wordByWord[locale].path)
+      await fetch(Asset.translations.wordByWord[locale].path, {
+        cache: "no-cache",
+      })
     ).json()
 
     const BATCH_SIZE = 1200

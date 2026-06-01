@@ -1,3 +1,4 @@
+import LOGGER from "@services/Logger"
 import { Database } from "sql.js"
 import { getClient, persistDb } from "./driver"
 
@@ -104,7 +105,10 @@ const migBasePath = `${window.location.origin}${process.env.PUBLIC_URL}/table_mi
 
 async function getMigrationJournal(): Promise<Journal> {
   const journalPath = `${migBasePath}/meta/${isDev ? "_journal.json" : "journal.json"}`
-  const journal: Journal = await fetch(journalPath).then((r) => r.json())
+  LOGGER.debug("Journal from: " + journalPath)
+  const journal: Journal = await fetch(journalPath, { cache: "no-cache" }).then(
+    (r) => r.json(),
+  )
   console.debug("Migration journal:", journal)
   return journal
 }
@@ -115,10 +119,12 @@ async function getMigrationJournal(): Promise<Journal> {
 async function getMigrationFiles(journal: Journal): Promise<MigrationFile[]> {
   return Promise.all(
     journal.entries.map(({ tag }) =>
-      fetch(`${migBasePath}/${tag}.sql`).then(async (r) => ({
-        filename: `${tag}.sql`,
-        sqlContent: await r.text(),
-      })),
+      fetch(`${migBasePath}/${tag}.sql`, { cache: "no-cache" }).then(
+        async (r) => ({
+          filename: `${tag}.sql`,
+          sqlContent: await r.text(),
+        }),
+      ),
     ),
   )
 }

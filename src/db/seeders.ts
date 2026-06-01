@@ -42,7 +42,7 @@ async function seedChapters(): Promise<Record<number, ChapterRecord>> {
 
   console.debug("Seeding chapters")
   const chaptersMetadata: ChapterRecord[] = await (
-    await fetch(Asset.chaptersMetadata)
+    await fetch(Asset.chaptersMetadata, { cache: "no-cache" })
   ).json()
   const newChapters: ChapterRecord[] = Object.entries(chaptersMetadata).map(
     ([number, detail]) => ({ ...detail, id: parseInt(number) }),
@@ -70,7 +70,7 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
   const rendering = unpackIPC(await repo.renderings.create({ name }))
 
   const verseWords: VerseWord[] = await (
-    await fetch(Asset.renderings[rendering.name])
+    await fetch(Asset.renderings[rendering.name], { cache: "no-cache" })
   ).json()
 
   // ------------------------------------------------------------
