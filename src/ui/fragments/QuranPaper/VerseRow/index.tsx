@@ -10,10 +10,12 @@ import useUserSettingsState, {
 import useAligner from "@hooks/tools/useAligner"
 import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
 import { PaperDialog, PaperDialogRef } from "@systatum/coneto/paper-dialog"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import styled, { css } from "styled-components"
 import { Bismillah } from "./Bismillah"
 import { LexemeDetailPaperDialog } from "./LexemeDetailPaperDialog"
+import { Button } from "@systatum/coneto/button"
+import { RiBookMarkedFill, RiPencilAi2Line } from "@remixicon/react"
 
 export type Verse = {
   id: string
@@ -73,16 +75,100 @@ export default function VerseRow({
     ],
   })
 
+  const markerColumnRef = useRef<HTMLDivElement>(null)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const scrollEl = virtualizer.scrollElement as HTMLElement
+    if (!scrollEl) return
+
+    const update = () => {
+      const marker = markerColumnRef.current
+      const wrapper = wrapperRef.current
+      if (!marker || !wrapper) return
+
+      if (wrapper.getBoundingClientRect().height < 300) {
+        marker.style.transform = ""
+        return
+      }
+
+      const wrapperRect = wrapper.getBoundingClientRect()
+      const scrollRect = scrollEl.getBoundingClientRect()
+      const isClippedAtTop = wrapperRect.top < scrollRect.top
+      const isStillVisible = wrapperRect.bottom > scrollRect.top
+
+      if (isClippedAtTop && isStillVisible) {
+        const overscroll = scrollRect.top - wrapperRect.top
+        const maxTranslate = wrapperRect.height - 120
+        const translate = Math.max(0, Math.min(overscroll, maxTranslate))
+        marker.style.transform = `translateY(${translate}px)`
+      } else {
+        marker.style.transform = ""
+      }
+    }
+
+    // sync to the same rAF loop as the virtualizer
+    let rafId: number
+    const onScroll = () => {
+      cancelAnimationFrame(rafId)
+      rafId = requestAnimationFrame(update)
+    }
+
+    scrollEl.addEventListener("scroll", onScroll, { passive: true })
+    update()
+    return () => {
+      cancelAnimationFrame(rafId)
+      scrollEl.removeEventListener("scroll", onScroll)
+    }
+  }, [virtualizer.scrollElement])
+
   const { refs: meaningRefs, layerHeights } = useAligner({ key: verse.id })
 
   return (
     <>
       <VerseRowWrapper
-        ref={ref}
+        ref={(el) => {
+          ;(ref as React.MutableRefObject<HTMLDivElement | null>).current = el
+          wrapperRef.current = el
+        }}
         $theme={theme}
         style={{ transform: style.transform }}
       >
-        <VerseMarker $theme={theme}>{verse.number}</VerseMarker>
+        <VerseMarkerColumn ref={markerColumnRef}>
+          <Button
+            subMenu={({ list }) =>
+              list?.([
+                {
+                  caption: "Bookmark",
+                  icon: { image: RiBookMarkedFill },
+                  onClick: () => {},
+                },
+                {
+                  caption: "Note",
+                  icon: { image: RiPencilAi2Line },
+                  onClick: () => {},
+                },
+              ])
+            }
+            showSubMenuOn="self"
+            styles={{
+              containerStyle: css`
+                padding: 0;
+                margin-top: 12px;
+              `,
+              self: css`
+                padding: 0;
+                height: fit-content;
+                width: fit-content;
+                border-radius: 9999px;
+              `,
+            }}
+            variant="ghost"
+          >
+            <VerseMarker $theme={theme}>{verse.number}</VerseMarker>
+          </Button>
+        </VerseMarkerColumn>
+
         <VerseText $font={userSettings.font.arabic}>
           {basmalaPosition === BasmalaPosition.Embedded &&
             Bismillah.isRenderableHere(verse.number, verse.chapter.id) && (
@@ -249,6 +335,11 @@ const VerseRowWrapper = styled.div<{ $theme: ThemeMode }>`
     ${({ $theme }) => ($theme === "dark" ? "#303030" : "#bfbfbf")};
 `
 
+const VerseMarkerColumn = styled.div`
+  align-self: start;
+  z-index: 1;
+`
+
 const VerseMarker = styled.div<{ $theme: ThemeMode }>`
   --text: ${({ $theme }) => ($theme === "dark" ? "#e5dcc3" : "#755f4d")};
   --border: ${({ $theme }) => ($theme === "dark" ? "#5f5644" : "#cbb9a1")};
@@ -265,7 +356,6 @@ const VerseMarker = styled.div<{ $theme: ThemeMode }>`
 
   width: 42px;
   height: 42px;
-  margin-top: 15px;
   display: flex;
   align-items: center;
   justify-content: center;
