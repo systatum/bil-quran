@@ -24,8 +24,16 @@ export class FingerprintedAsset {
       return FingerprintedAsset.readJson<T>(Asset.chaptersMetadata)
     },
 
-    getVerseRendering: async <T>(rendering: Rendering): Promise<T> => {
-      return FingerprintedAsset.readJson<T>(Asset.renderings[rendering])
+    /**
+     * Download chapter rendering
+     */
+    getVerseRendering: async <T>(
+      rendering: Rendering,
+      chapterNumber: number,
+    ): Promise<T> => {
+      return FingerprintedAsset.readJson<T>(
+        `${Asset.renderings[rendering]}/${chapterNumber}.json`,
+      )
     },
 
     getLexemeTranslation: async <T>(

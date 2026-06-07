@@ -4,13 +4,16 @@
   "private": true,
   "homepage": "https://bil-quran.com",
   "scripts": {
+    "prestart": "pnpm run split-chapter",
     "start": "craco start",
     "build": "craco build",
     "test": "craco test",
-    "fingerprint": "node scripts/fingerprinter.js",
-    "predeploy": "pnpm run fingerprint && pnpm run build && node scripts/pre-deploy.js",
+    "predeploy": "pnpm run prepare-assets && pnpm run build && node scripts/pre-deploy.js",
     "deploy": "gh-pages -d build",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "prepare-assets": "pnpm run split-chapter && pnpm run fingerprint",
+    "fingerprint": "node scripts/fingerprinter.js",
+    "split-chapter": "node scripts/split-chapter.js"
   },
   "dependencies": {
     "@remixicon/react": "^4.9.0",

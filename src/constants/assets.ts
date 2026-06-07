@@ -22,7 +22,7 @@ const basePath = `${window.location.origin}${process.env.PUBLIC_URL}`
 export const Asset: Asset = {
   chaptersMetadata: `${basePath}/quran/chapters.json`,
   renderings: {
-    [Rendering.Imlaei]: `${basePath}/quran/verses/imlaei.json`,
+    [Rendering.Imlaei]: `${basePath}/quran/verses/imlaei`,
   },
   translations: {
     wordByWord: {
