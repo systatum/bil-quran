@@ -27,6 +27,7 @@ App unique features:
 - Normalize such as in baqarah 10: اَلِیْمٌۢ بِمَا the mim at the first word has indicator of mim
 - Make it easy to learn tajwid on the app
 - Add a feature to report an issue
+- Rate translation feature (this needs Ligo backend).
 
 ## Stack
 
@@ -50,3 +51,7 @@ App unique features:
 ءَا
 لْإِ
 "\w+/
+
+standardize مَنْ in indonesian (like 2:200) so that it reads "barang siapa" (or "yang" better?) rather than "orang" (but must check the English, if it is just whom or who -> yang, if it is (to) whom then (ke) yang, (is he) -> (ialah) yang; other than that put te english word as-is: (english) yang)
+
+good ayat to check: 2:200, 3:26,

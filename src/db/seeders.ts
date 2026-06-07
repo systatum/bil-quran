@@ -63,7 +63,7 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
   }
 
   const BATCH_SIZE = 1000
-  const name = Rendering.Standard
+  const name = Rendering.Imlaei
 
   // if there's already a standard rendering, no need to add verses
   const existing = unpackIPC(await repo.renderings.findAllBy({ name }))

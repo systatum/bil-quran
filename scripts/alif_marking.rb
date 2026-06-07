@@ -32,7 +32,7 @@
 
 require "json"
 
-FILE_TO_READ = "standard.json"
+FILE_TO_READ = "imlaei.json"
 
 content = File.read(FILE_TO_READ, encoding: "UTF-8")
 data = JSON.parse(content)
