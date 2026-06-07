@@ -1,7 +1,7 @@
 import { ArabicFonts } from "@constants/fonts"
 import { initDbDriver } from "@db/driver"
 import { applyMigrations } from "@db/migrations"
-import { seedData, seedWordTranslations } from "@db/seeders"
+import { seedData } from "@db/seeders"
 import useAppState from "@hooks/states/AppState"
 import { loadMessages, resolveLocale } from "@i18n"
 import { I18nProvider } from "@i18n/provider"
@@ -53,9 +53,6 @@ function AppRoot() {
         await seedData()
         setLoadingText("Loading chapters...")
         loadChapters()
-
-        setLoadingText("Seeding translations...")
-        await seedWordTranslations()
 
         setLoadingText("Preparing the layout...")
 

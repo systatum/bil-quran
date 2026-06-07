@@ -5,15 +5,15 @@ import {
 } from "@constants/IPC"
 import { DbConn, withDb } from "@db/driver"
 import { unpackIPC } from "@services/Converter"
-import { asc, count, desc, eq, type SQL } from "drizzle-orm"
-import {
-  type AnyPgColumn,
-  type AnyPgTable,
-  type PgTableWithColumns,
-} from "drizzle-orm/pg-core"
+import { asc, count, desc, eq, getTableColumns, type SQL } from "drizzle-orm"
+import { type AnySQLiteColumn, type SQLiteTable } from "drizzle-orm/sqlite-core"
 
-type SelectOf<T extends AnyPgTable> = T["$inferSelect"]
-type InsertOf<T extends PgTableWithColumns<any>> = T["$inferInsert"]
+type Table = SQLiteTable
+type TableWithColumns<T> = SQLiteTable
+type Column = AnySQLiteColumn
+
+type SelectOf<T extends Table> = T["$inferSelect"]
+type InsertOf<T extends TableWithColumns<any>> = T["$inferInsert"]
 type OrderingMode = "asc" | "desc"
 type OrderDict<T> = {
   [K in keyof T]?: OrderingMode
@@ -24,7 +24,7 @@ type OrderDict<T> = {
  * extended and used by various different table domains.
  */
 export abstract class Repository<
-  T extends PgTableWithColumns<any>,
+  T extends TableWithColumns<any>,
   R extends SelectOf<T> = SelectOf<T>,
 > {
   public readonly schema: T
@@ -44,12 +44,13 @@ export abstract class Repository<
     limit?: number,
   ): Promise<IPCResponse<R[]>> {
     try {
-      const qrySelect = db.select().from(this.schema as AnyPgTable)
+      const columns = getTableColumns(this.schema)
+      const qrySelect = db.select().from(this.schema as Table)
       const qryFilter = clauses ? qrySelect.where(clauses) : qrySelect
       const qryOrder = orderBy
         ? qryFilter.orderBy(
             ...Object.entries(orderBy).map(([col, dir]) => {
-              const column = this.schema[col as keyof typeof this.schema]
+              const column = columns[col as keyof typeof columns]
               return dir === "asc" ? asc(column) : desc(column)
             }),
           )
@@ -76,12 +77,13 @@ export abstract class Repository<
           const row = {
             ...item,
           } satisfies InsertOf<T>
+          const columns = getTableColumns(this.schema)
 
-          if (this.schema["createdAt"]) {
+          if ("createdAt" in columns) {
             ;(row as any)["createdAt"] = now
           }
 
-          if (this.schema["updatedAt"]) {
+          if ("updatedAt" in columns) {
             ;(row as any)["updatedAt"] = now
           }
 
@@ -121,7 +123,7 @@ export abstract class Repository<
   /**
    * Update a data given the column that an update is planned for
    */
-  async updateBy<C extends AnyPgColumn>(
+  async updateBy<C extends Column>(
     keyColumn: C,
     value: C["_"]["data"],
     data: Partial<R>,
@@ -130,14 +132,15 @@ export abstract class Repository<
       const rec = await withDb(async (db: DbConn) => {
         const now = new Date()
         const updateData = { ...data } satisfies InsertOf<T>
+        const columns = getTableColumns(this.schema)
 
-        if (this.schema["updatedAt"]) (updateData as any)["updatedAt"] = now
+        if ("updatedAt" in columns) (updateData as any)["updatedAt"] = now
 
         const rows = (await db
           .update(this.schema)
           .set(updateData as InsertOf<T>)
           .where(eq(keyColumn, value))
-          .returning()) as R[]
+          .returning()) as unknown as R[]
 
         return rows[0]
       })
@@ -156,10 +159,11 @@ export abstract class Repository<
    * @returns full row data
    */
   async update(id: any, data: Partial<R>) {
-    return this.updateBy(this.schema["id"], id, data)
+    const columns = getTableColumns(this.schema)
+    return this.updateBy(columns.id, id, data)
   }
 
-  async deleteBy<C extends AnyPgColumn>(
+  async deleteBy<C extends Column>(
     keyColumn: C,
     value: C["_"]["data"],
   ): Promise<IPCResponse<R>> {
@@ -180,7 +184,8 @@ export abstract class Repository<
   }
 
   async delete(id: any) {
-    return this.deleteBy(this.schema["id"], id)
+    const columns = getTableColumns(this.schema)
+    return this.deleteBy(columns.id, id)
   }
 
   async count(): Promise<IPCResponse<number>> {
@@ -188,7 +193,7 @@ export abstract class Repository<
       return await withDb(async (db: DbConn) => {
         const rows = await db
           .select({ count: count() })
-          .from(this.schema as AnyPgTable)
+          .from(this.schema as Table)
         return newIPCResponse({ data: rows[0]?.count ?? 0 })
       })
     } catch (e) {

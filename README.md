@@ -13,14 +13,21 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 Scrolling works by using hash router, ie: https://bil-quran.com/#/c/11/12
 
+App unique features:
+
+- Allow you to learn word-by-word
+- Allow you to see tajwid rules and words in the quran exemplify those rules
+- Respect both Sunni and Shi'i perspective of what makes Surat Sajdah
+
 ## If I had more time
 
 - Better scroll preservation (both saving and restoring the position)
-- Better typing (ie for the user settings)
-- Add more word-by-word translation: Indonesian
 - Ability to bookmark any verse and go to that any moment
-- Store number of verses in each chapter, so that the verse lookup component can display verse number rather than making user type
 - Can lookup by: chapter:verse, juz, root word, and verse theme.
+- Normalize such as in baqarah 10: اَلِیْمٌۢ بِمَا the mim at the first word has indicator of mim
+- Make it easy to learn tajwid on the app
+- Add a feature to report an issue
+- Rate translation feature (this needs Ligo backend).
 
 ## Stack
 
@@ -38,3 +45,13 @@ Scrolling works by using hash router, ie: https://bil-quran.com/#/c/11/12
 - [ ] When hard-pressing each word in the verse, show the paper dialog, with all proper information
 - [ ] Try mock each function in the seeder is throwing an error, should then render the error screen at root-level (otherwise, user will not moving to any page, yet not sure what's happening as error screen not shown)
 - [ ] Try raising error at the translator-level (ie at the i18n's formatMessage) and ensure that we see an error screen; otherwise we miss a locale, and the user is not seeing any error. Another simple way is inject into `WordTranslationOption` some fake value, where there's no corresponding i18n key for that in locale files, and so the lookup will generate a null/undefined, causing error on formatMessage-part automatically.
+- [ ] Add automated test ensuring each word has a meaning (in the quran paper, each arabic word must have below it some translation).
+- [ ] If we add another locale, and then refresh the page, we should not redownload the locale (this proves that database persisting works for all new-locale)
+
+ءَا
+لْإِ
+"\w+/
+
+standardize مَنْ in indonesian (like 2:200) so that it reads "barang siapa" (or "yang" better?) rather than "orang" (but must check the English, if it is just whom or who -> yang, if it is (to) whom then (ke) yang, (is he) -> (ialah) yang; other than that put te english word as-is: (english) yang)
+
+good ayat to check: 2:200, 3:26,

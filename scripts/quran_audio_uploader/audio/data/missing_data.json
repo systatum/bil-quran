@@ -1,0 +1,108 @@
+{
+    "008_006": {
+        "words": [
+          {
+            "id": "001",
+            "word_ar": "يُجَادِلُونَكَ",
+            "word_en": "They dispute with you",
+            "word_tr": "yujādilūnaka",
+            "audio_word_path": "audio/words/008_006_001.mp3"
+          },
+          {
+            "id": "002",
+            "word_ar": "فِي",
+            "word_en": "concerning",
+            "word_tr": "fī",
+            "audio_word_path": "audio/words/008_006_002.mp3"
+          },
+          {
+            "id": "003",
+            "word_ar": "الْحَقِّ",
+            "word_en": "the truth",
+            "word_tr": "l-ḥaqi",
+            "audio_word_path": "audio/words/008_006_003.mp3"
+          },
+          {
+            "id": "004",
+            "word_ar": "بَعْدَمَا",
+            "word_en": "after what",
+            "word_tr": "baʿda mā",
+            "audio_word_path": "audio/words/008_006_004.mp3"
+          },
+          {
+            "id": "005",
+            "word_ar": "تَبَيَّنَ",
+            "word_en": "was made clear",
+            "word_tr": "tabayyana",
+            "audio_word_path": "audio/words/008_006_005.mp3"
+          },
+          {
+            "id": "006",
+            "word_ar": "كَأَنَّمَا",
+            "word_en": "as if",
+            "word_tr": "ka-annamā",
+            "audio_word_path": "audio/words/008_006_006.mp3"
+          },
+          {
+            "id": "007",
+            "word_ar": "يُسَاقُونَ",
+            "word_en": "they were driven",
+            "word_tr": "yusāqūna",
+            "audio_word_path": "audio/words/008_006_007.mp3"
+          },
+          {
+            "id": "008",
+            "word_ar": "إِلَى",
+            "word_en": "to",
+            "word_tr": "ilā",
+            "audio_word_path": "audio/words/008_006_008.mp3"
+          },
+          {
+            "id": "009",
+            "word_ar": "الْمَوْتِ",
+            "word_en": "[the] death",
+            "word_tr": "l-mawti",
+            "audio_word_path": "audio/words/008_006_009.mp3"
+          },
+          {
+            "id": "010",
+            "word_ar": "وَهُمْ",
+            "word_en": "while they",
+            "word_tr": "wahum",
+            "audio_word_path": "audio/words/008_006_010.mp3"
+          },
+          {
+            "id": "011",
+            "word_ar": "يَنْظُرُونَ",
+            "word_en": "(were) looking",
+            "word_tr": "yanẓurūna",
+            "audio_word_path": "audio/words/008_006_011.mp3"
+          }
+        ]
+    },
+    "037_130": {
+        "words": [
+          {
+            "id": "001",
+            "word_ar": "سَلَامٌ",
+            "word_en": "Peace be",
+            "word_tr": "salāmun",
+            "audio_word_path": "audio/words/037_130_001.mp3"
+          },
+          {
+            "id": "002",
+            "word_ar": "عَلَى",
+            "word_en": "upon",
+            "word_tr": "ʿalā",
+            "audio_word_path": "audio/words/037_130_002.mp3"
+          },
+          {
+            "id": "003",
+            "word_ar": "إِلْ يَاسِينَ",
+            "word_en": "Ilyas",
+            "word_tr": "il yāsīna",
+            "audio_word_path": "audio/words/037_130_003.mp3"
+          }
+        ]
+    }
+}
