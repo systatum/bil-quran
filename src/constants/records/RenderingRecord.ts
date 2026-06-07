@@ -12,6 +12,6 @@ export interface RenderingRecord {
 }
 
 export const Rendering = {
-  Standard: "standard",
+  Imlaei: "imlaei",
 }
 export type Rendering = (typeof Rendering)[keyof typeof Rendering]

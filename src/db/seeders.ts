@@ -1,15 +1,16 @@
-import { Asset } from "@constants/assets"
 import { ChapterRecord } from "@constants/records/ChapterRecord"
 import { LexemeRecord, NewLexemeRecord } from "@constants/records/LexemeRecord"
-import { Rendering } from "@constants/records/RenderingRecord"
+import { Rendering, RenderingRecord } from "@constants/records/RenderingRecord"
 import { NewRootRecord, RootRecord } from "@constants/records/RootRecord"
 import { WordRecord } from "@constants/records/WordRecord"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
 import { Locale } from "@constants/settings"
 import { repo } from "@db/repo/index"
 import { unpackIPC } from "@services/Converter"
+import { FingerprintedAsset, saveFingerprints } from "@services/fingerprinter"
 import LOGGER from "@services/Logger"
 import { ensureHasTranslation } from "@services/translations"
+import { persistDb } from "./driver"
 
 // This module handle adding data to the database, especially
 // for the very first time. This should only be called after
@@ -23,6 +24,9 @@ export async function seedData() {
 
   const chapters = await seedChapters()
   await seedVerses(chapters)
+  await seedWordTranslations()
+  await persistDb()
+  saveFingerprints()
   LOGGER.debug("Return from seeding: done")
 }
 
@@ -38,9 +42,10 @@ async function seedChapters(): Promise<Record<number, ChapterRecord>> {
   if (existingChapters.length > 0) return asDict(existingChapters)
 
   console.debug("Seeding chapters")
-  const chaptersMetadata: ChapterRecord[] = await (
-    await fetch(Asset.chaptersMetadata)
-  ).json()
+  const chaptersMetadata =
+    await FingerprintedAsset.Quran.getChaptersMetadata<
+      Record<string, Omit<ChapterRecord, "id">>
+    >()
   const newChapters: ChapterRecord[] = Object.entries(chaptersMetadata).map(
     ([number, detail]) => ({ ...detail, id: parseInt(number) }),
   )
@@ -58,17 +63,23 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
   }
 
   const BATCH_SIZE = 1000
-  const name = Rendering.Standard
+  const name = Rendering.Imlaei
 
-  // if there's already a standard rendering, no need to add verses
+  // if there's already an Imlaei rendering, no need to add verses
   const existing = unpackIPC(await repo.renderings.findAllBy({ name }))
   if (existing.length === 1) return
 
   const rendering = unpackIPC(await repo.renderings.create({ name }))
 
-  const verseWords: VerseWord[] = await (
-    await fetch(Asset.renderings[rendering.name])
-  ).json()
+  const chapterWords = await Promise.all(
+    Array.from({ length: 114 }, (_, i) =>
+      FingerprintedAsset.Quran.getVerseRendering<VerseWord[]>(
+        rendering.name,
+        i + 1,
+      ),
+    ),
+  )
+  const verseWords = chapterWords.flat()
 
   // ------------------------------------------------------------
   // PASS 1
@@ -117,6 +128,7 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
     if (rootCache[root] == null) missingRoots.push({ root })
 
   // create the root words in bulk
+  LOGGER.debug(`${missingRoots.length} root words to create in batch`)
   for (let i = 0; i < missingRoots.length; i += BATCH_SIZE) {
     const batch = missingRoots.slice(i, i + BATCH_SIZE)
     const created = unpackIPC(await repo.roots.createBulk(batch))
@@ -170,40 +182,52 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
   // insert words
   // ------------------------------------------------------------
 
-  const orderMap: Record<string, number> = {}
-  let wordBatch: Partial<WordRecord>[] = []
+  async function insertChapterWords(
+    verseWords: VerseWord[],
+    chapterId: number,
+    chapters: Record<number, ChapterRecord>,
+    lexemeCache: Record<string, LexemeRecord>,
+    rendering: RenderingRecord,
+  ) {
+    const renderingId = rendering.id
+    let batch: Partial<WordRecord>[] = []
+    async function flush() {
+      if (batch.length === 0) return
+      await repo.words.createBulk(batch)
+      batch = []
+    }
 
-  async function flushWords() {
-    if (wordBatch.length === 0) return
-    unpackIPC(await repo.words.createBulk(wordBatch))
-    wordBatch = []
+    const orderMap: Record<string, number> = {}
+    for (const v of verseWords) {
+      const [, verse] = v.id.split(":").map(Number)
+      const verseKey = v.id
+      const order = (orderMap[verseKey] ?? 0) + 1
+      orderMap[verseKey] = order
+      const chapter = chapters[chapterId]
+      const partNumber = chapter.partitioning.find(
+        (p) => verse >= p.start && verse <= p.end,
+      )!.part
+      batch.push({
+        chapterId,
+        verse,
+        lexemeId: lexemeCache[v.word].id,
+        order,
+        partNumber,
+        renderingId,
+      })
+
+      if (batch.length >= BATCH_SIZE) await flush()
+    }
+
+    await flush()
+    LOGGER.debug(`Done inserting chapter: ${chapterId} (${rendering.name})`)
   }
 
-  for (const v of verseWords) {
-    const verseKey = v.id
-    const [chapterId, verse] = verseKey.split(":").map(Number)
-    const order = (orderMap[verseKey] ?? 0) + 1
-    orderMap[verseKey] = order
-
-    const chapter = chapters[chapterId]
-    const lexeme = lexemeCache[v.word]
-    const partNumber = chapter.partitioning.find(
-      (p) => verse >= p.start && verse <= p.end,
-    )!.part
-
-    wordBatch.push({
-      chapterId: chapterId,
-      verse: verse,
-      lexemeId: lexeme.id,
-      order,
-      partNumber,
-      renderingId: rendering.id,
-    })
-
-    if (wordBatch.length >= BATCH_SIZE) await flushWords()
-  }
-
-  await flushWords()
+  await Promise.all(
+    chapterWords.map((words, index) =>
+      insertChapterWords(words, index + 1, chapters, lexemeCache, rendering),
+    ),
+  )
 }
 
 export async function seedWordTranslations() {

@@ -9,13 +9,13 @@ import useUserSettingsState, {
 } from "@hooks/states/UserSettingsState"
 import useAligner from "@hooks/tools/useAligner"
 import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
+import { RiBookMarkedFill, RiPencilAi2Line } from "@remixicon/react"
+import { Button } from "@systatum/coneto/button"
 import { PaperDialog, PaperDialogRef } from "@systatum/coneto/paper-dialog"
 import { useEffect, useRef, useState } from "react"
 import styled, { css } from "styled-components"
 import { Bismillah } from "./Bismillah"
 import { LexemeDetailPaperDialog } from "./LexemeDetailPaperDialog"
-import { Button } from "@systatum/coneto/button"
-import { RiBookMarkedFill, RiPencilAi2Line } from "@remixicon/react"
 
 export type Verse = {
   id: string
