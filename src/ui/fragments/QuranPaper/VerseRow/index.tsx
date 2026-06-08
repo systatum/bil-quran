@@ -77,6 +77,7 @@ export default function VerseRow({
 
   const markerColumnRef = useRef<HTMLDivElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
+  const lastWordRef = useRef<HTMLSpanElement | null>(null)
 
   useEffect(() => {
     const scrollEl = virtualizer.scrollElement as HTMLElement
@@ -85,9 +86,14 @@ export default function VerseRow({
     const update = () => {
       const marker = markerColumnRef.current
       const wrapper = wrapperRef.current
+      const lastWord = lastWordRef.current
+
       if (!marker || !wrapper) return
 
-      if (wrapper.getBoundingClientRect().height < 300) {
+      const lastWordHeight =
+        (lastWord?.getBoundingClientRect().height ?? 0) + 50
+
+      if (wrapper.getBoundingClientRect().height < 170) {
         marker.style.transform = ""
         return
       }
@@ -99,7 +105,7 @@ export default function VerseRow({
 
       if (isClippedAtTop && isStillVisible) {
         const overscroll = scrollRect.top - wrapperRect.top
-        const maxTranslate = wrapperRect.height - 120
+        const maxTranslate = wrapperRect.height - lastWordHeight
         const translate = Math.max(0, Math.min(overscroll, maxTranslate))
         marker.style.transform = `translateY(${translate}px)`
       } else {
@@ -189,8 +195,12 @@ export default function VerseRow({
               </Word>
             )}
 
-          {verse.words.map((word) => (
-            <Word key={`${word.chapterId}-${word.verse}-${word.order}`}>
+          {verse.words.map((word, i) => (
+            <Word
+              ref={i === verse.words.length - 1 ? lastWordRef : undefined}
+              aria-label="test"
+              key={`${word.chapterId}-${word.verse}-${word.order}`}
+            >
               <Arabic
                 onMouseDown={() => {
                   setContent(word)
