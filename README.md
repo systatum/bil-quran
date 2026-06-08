@@ -26,6 +26,7 @@ App unique features:
 - Better scroll preservation (both saving and restoring the position)
 - Ability to bookmark any verse and go to that any moment
 - Can lookup by: chapter:verse, juz, root word, and verse theme.
+- Store number of verses in each chapter, so that the verse lookup component can display verse number rather than making user type
 - Normalize such as in baqarah 10: اَلِیْمٌۢ بِمَا the mim at the first word has indicator of mim
 - Make it easy to learn tajwid on the app
 - Add a feature to report an issue
@@ -50,6 +51,7 @@ App unique features:
 - [ ] Add automated test ensuring each word has a meaning (in the quran paper, each arabic word must have below it some translation).
 - [ ] If we add another locale, and then refresh the page, we should not redownload the locale (this proves that database persisting works for all new-locale)
 - [ ] Scroll the page, until the last verse, and ensure we see all the verse, and all the word as per the database (ensuring rendering data and database data matches)
+- [ ] Ensure verse marker follows/work even if we change the translations used (add/remove). Make sure it always work on a 2-lines verse, because sometimes it doesn't work.
 
 ءَا
 لْإِ
