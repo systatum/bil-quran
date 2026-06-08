@@ -1,9 +1,10 @@
 import { ThemeMode } from "@constants/theme"
 import { messages } from "@i18n/message"
-import { RiCloseLine, RiMenuLine } from "@remixicon/react"
-import { useState } from "react"
+import { RiMenuLine } from "@remixicon/react"
+import { Title, TitleSection } from "@systatum/coneto/title"
+import { useMemo, useState } from "react"
 import { useIntl } from "react-intl"
-import styled from "styled-components"
+import styled, { css } from "styled-components"
 import UserSettingsForm from "./UserSettingsForm"
 import VerseLookup from "./VerseLookup"
 
@@ -20,16 +21,42 @@ interface AppNavbarProps {
 export default function AppNavbar({ theme, title }: AppNavbarProps) {
   const intl = useIntl()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const BurgerIcon = isSidebarOpen ? RiCloseLine : RiMenuLine
+  const fontColor = theme === "dark" ? "#6e9370" : "#fff0d3"
+  const bgColor = theme === "dark" ? "#22271b" : "rgb(117 95 77)"
+
+  const actions: TitleSection[] = useMemo(
+    () => [
+      {
+        type: "actions",
+        actions: [
+          {
+            icon: { image: RiMenuLine, color: fontColor },
+            onClick: () => setIsSidebarOpen((x) => !x),
+          },
+        ],
+      },
+    ],
+    [],
+  )
 
   return (
     <>
-      <NavbarContainer theme={theme}>
-        <ChapterLabel theme={theme}>{title}</ChapterLabel>
-        <BurgerButton theme={theme} onClick={() => setIsSidebarOpen((x) => !x)}>
-          <BurgerIcon size={24} />
-        </BurgerButton>
-      </NavbarContainer>
+      <Title
+        size="sm"
+        text={title}
+        styles={{
+          containerStyle: css`
+            padding: 10px;
+            background-color: ${bgColor};
+            color: ${fontColor};
+            align-items: center;
+          `,
+          titleStyle: css`
+            color: ${fontColor};
+          `,
+        }}
+        rightSection={actions}
+      />
 
       <SidebarOverlay
         $visible={isSidebarOpen}
@@ -47,46 +74,6 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
     </>
   )
 }
-
-const NavbarContainer = styled.header<{ theme: ThemeMode }>`
-  top: 0;
-  position: sticky;
-  z-index: 1000;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  background: ${({ theme }) =>
-    theme === "dark" ? "#22271b" : "rgb(117 95 77)"};
-  border-bottom: 1px solid
-    ${({ theme }) => (theme === "dark" ? "#455230" : "#ececec")};
-  backdrop-filter: blur(12px);
-`
-
-const ChapterLabel = styled.div<{ theme: ThemeMode }>`
-  font-size: 18px;
-  font-weight: 600;
-  color: ${({ theme }) => (theme === "dark" ? "#6e9370" : "#fff0d3")};
-`
-
-const BurgerButton = styled.button<{ theme: ThemeMode }>`
-  display: flex;
-  color: ${({ theme }) => (theme === "dark" ? "#475848" : "#fff0d3")};
-  width: 42px;
-  height: 42px;
-  border: none;
-  background: transparent;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: background 0.15s ease;
-
-  &:hover {
-    background: rgba(0, 0, 0, 0.08);
-  }
-`
 
 const SidebarOverlay = styled.div<{
   $visible: boolean
