@@ -442,4 +442,8 @@ const Meaning = styled.div<{
   direction: ltr;
   text-align: center;
   max-width: 120px;
+
+  /* allows breaking anywhere when necessary, including around long text */
+  word-break: break-word;
+  overflow-wrap: anywhere;
 `
