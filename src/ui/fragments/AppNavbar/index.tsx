@@ -1,8 +1,10 @@
 import { ThemeMode } from "@constants/theme"
+import usePositioningObserver from "@hooks/tools/usePositioningObserver"
 import { messages } from "@i18n/message"
-import { RiMenuLine } from "@remixicon/react"
+import { RiMenuLine, RiSearchLine } from "@remixicon/react"
+import { OverlayBlocker } from "@systatum/coneto/overlay-blocker"
 import { Title, TitleSection } from "@systatum/coneto/title"
-import { useMemo, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { useIntl } from "react-intl"
 import styled, { css } from "styled-components"
 import UserSettingsForm from "./UserSettingsForm"
@@ -21,8 +23,12 @@ interface AppNavbarProps {
 export default function AppNavbar({ theme, title }: AppNavbarProps) {
   const intl = useIntl()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
   const fontColor = theme === "dark" ? "#6e9370" : "#fff0d3"
   const bgColor = theme === "dark" ? "#22271b" : "rgb(117 95 77)"
+
+  const titleRef = useRef<HTMLDivElement>(null)
+  const navbarPositioning = usePositioningObserver(titleRef)
 
   const actions: TitleSection[] = useMemo(
     () => [
@@ -30,61 +36,95 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
         type: "actions",
         actions: [
           {
+            icon: { image: RiSearchLine, color: fontColor },
+            onClick: () => setIsSearchOpen((x) => !x),
+          },
+          {
             icon: { image: RiMenuLine, color: fontColor },
             onClick: () => setIsSidebarOpen((x) => !x),
           },
         ],
       },
     ],
-    [],
+    [theme],
   )
 
   return (
     <>
-      <Title
-        size="sm"
-        text={title}
-        styles={{
-          containerStyle: css`
-            padding: 10px;
-            background-color: ${bgColor};
-            color: ${fontColor};
-            align-items: center;
-          `,
-          titleStyle: css`
-            color: ${fontColor};
-          `,
-        }}
-        rightSection={actions}
-      />
+      <div ref={titleRef}>
+        <Title
+          size="sm"
+          text={title}
+          styles={{
+            containerStyle: css`
+              padding: 10px;
+              background-color: ${bgColor};
+              color: ${fontColor};
+              align-items: center;
+            `,
+            titleStyle: css`
+              color: ${fontColor};
+            `,
+          }}
+          rightSection={actions}
+        />
+      </div>
 
-      <SidebarOverlay
-        $visible={isSidebarOpen}
-        onClick={() => setIsSidebarOpen(false)}
-      />
+      {(isSidebarOpen || isSearchOpen) && (
+        <OverlayBlocker
+          show={isSidebarOpen || isSearchOpen}
+          onClick={({ close }) => {
+            setIsSidebarOpen(false)
+            setIsSearchOpen(false)
+            close()
+          }}
+        />
+      )}
 
       <SidebarContainer theme={theme} $visible={isSidebarOpen}>
         <SidebarItem>
           {intl.formatMessage({ id: messages.lookup.title })}
         </SidebarItem>
-        <VerseLookup />
 
         <UserSettingsForm />
       </SidebarContainer>
+
+      <SearchSheet
+        theme={theme}
+        $visible={isSearchOpen}
+        $top={navbarPositioning?.height}
+      >
+        <VerseLookup />
+      </SearchSheet>
     </>
   )
 }
 
-const SidebarOverlay = styled.div<{
+const SearchSheet = styled.div<{
+  theme: ThemeMode
   $visible: boolean
+  $top: number | undefined
 }>`
   position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.35);
-  opacity: ${(p) => (p.$visible ? 1 : 0)};
-  pointer-events: ${(p) => (p.$visible ? "auto" : "none")};
-  transition: opacity 0.2s ease;
-  z-index: 1100;
+  top: ${({ $top }) => `${$top ?? 0}px`};
+  left: 0;
+  right: 0;
+
+  background: ${({ theme }) => (theme === "dark" ? "#22271b" : "#f6f1e7")};
+
+  padding: 16px;
+
+  transform-origin: top center;
+  transform: scaleY(${({ $visible }) => ($visible ? 1 : 0)});
+
+  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
+  pointer-events: ${({ $visible }) => ($visible ? "auto" : "none")};
+
+  transition:
+    transform 220ms ease,
+    opacity 220ms ease;
+
+  z-index: 9992999;
 `
 
 const SidebarContainer = styled.aside<{
@@ -102,7 +142,7 @@ const SidebarContainer = styled.aside<{
   box-shadow: -4px 0 24px rgba(0, 0, 0, 0.08);
   transform: translateX(${(p) => (p.$visible ? "0%" : "100%")});
   transition: transform 0.22s ease;
-  z-index: 1200;
+  z-index: 9992999;
 `
 
 const SidebarItem = styled.button`

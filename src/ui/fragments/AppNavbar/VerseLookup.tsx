@@ -1,9 +1,8 @@
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import LOGGER from "@services/Logger"
-import { Button } from "@systatum/coneto/button"
 import { Combobox, ComboboxOption } from "@systatum/coneto/combobox"
 import { useNavigate } from "@tanstack/react-router"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import useChaptersState from "../../hooks/states/ChaptersState"
 import { FlexContainer } from "./Container"
 
@@ -36,6 +35,10 @@ export default function VerseLookup() {
       },
     })
   }
+
+  useEffect(() => {
+    goToVerse()
+  }, [verseNumber, selectedChapterId])
 
   /**
    * Range of verses of all the chapters
@@ -118,28 +121,17 @@ export default function VerseLookup() {
 
   return (
     <FlexContainer direction="column">
-      <FlexContainer direction="row">
-        <Combobox
-          clearable
-          mobile={{ drawerHeight: "60dvh" }}
-          onChange={(selectionOption) => {
-            const value = selectionOption as string
-            const [chapterId, verseId] = value.split("-")
-            setSelectedChapterId(chapterId)
-            setVerseNumber(verseId)
-          }}
-          options={chaptersList}
-        />
-
-        <Button
-          onClick={(e) => {
-            e.preventDefault()
-            goToVerse()
-          }}
-        >
-          Go
-        </Button>
-      </FlexContainer>
+      <Combobox
+        clearable
+        mobile={{ drawerHeight: "60dvh" }}
+        onChange={(selectionOption) => {
+          const value = selectionOption as string
+          const [chapterId, verseId] = value.split("-")
+          setSelectedChapterId(chapterId)
+          setVerseNumber(verseId)
+        }}
+        options={chaptersList}
+      />
     </FlexContainer>
   )
 }
