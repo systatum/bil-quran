@@ -49,10 +49,12 @@ App unique features:
 - [ ] Try raising error at the translator-level (ie at the i18n's formatMessage) and ensure that we see an error screen; otherwise we miss a locale, and the user is not seeing any error. Another simple way is inject into `WordTranslationOption` some fake value, where there's no corresponding i18n key for that in locale files, and so the lookup will generate a null/undefined, causing error on formatMessage-part automatically.
 - [ ] Add automated test ensuring each word has a meaning (in the quran paper, each arabic word must have below it some translation).
 - [ ] If we add another locale, and then refresh the page, we should not redownload the locale (this proves that database persisting works for all new-locale)
+- [ ] Scroll the page, until the last verse, and ensure we see all the verse, and all the word as per the database (ensuring rendering data and database data matches)
 
 ءَا
 لْإِ
 "\w+/
+sedikit/[\w\-\s]+"
 
 standardize مَنْ in indonesian (like 2:200) so that it reads "barang siapa" (or "yang" better?) rather than "orang" (but must check the English, if it is just whom or who -> yang, if it is (to) whom then (ke) yang, (is he) -> (ialah) yang; other than that put te english word as-is: (english) yang)
 
