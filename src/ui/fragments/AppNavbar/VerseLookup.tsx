@@ -1,3 +1,4 @@
+import useUserSettingsState from "@hooks/states/UserSettingsState"
 import LOGGER from "@services/Logger"
 import { Button } from "@systatum/coneto/button"
 import { Combobox, ComboboxOption } from "@systatum/coneto/combobox"
@@ -10,6 +11,9 @@ export default function VerseLookup() {
   const navigate = useNavigate()
   const [selectedChapterId, setSelectedChapterId] = useState<string>("1")
   const [verseNumber, setVerseNumber] = useState<string>("1")
+  const {
+    userSettings: { locale },
+  } = useUserSettingsState()
 
   // make sure Quranic chapters are loaded
   const {
@@ -110,7 +114,7 @@ export default function VerseLookup() {
         } satisfies ComboboxOption
       }
     })
-  }, [chapters])
+  }, [chapters, locale])
 
   return (
     <FlexContainer direction="column">

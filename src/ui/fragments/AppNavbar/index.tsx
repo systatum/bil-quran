@@ -1,10 +1,9 @@
 import { ThemeMode } from "@constants/theme"
 import { messages } from "@i18n/message"
 import { RiCloseLine, RiMenuLine } from "@remixicon/react"
-import { useCallback, useState } from "react"
+import { useState } from "react"
 import { useIntl } from "react-intl"
 import styled from "styled-components"
-import useUserSettingsState from "../../hooks/states/UserSettingsState"
 import UserSettingsForm from "./UserSettingsForm"
 import VerseLookup from "./VerseLookup"
 
@@ -22,16 +21,6 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
   const intl = useIntl()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const BurgerIcon = isSidebarOpen ? RiCloseLine : RiMenuLine
-  const { setTheme, setLocale, userSettings } = useUserSettingsState()
-
-  const changeLocale = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      e.preventDefault()
-      const value = e.target.value
-      setLocale(value)
-    },
-    [],
-  )
 
   return (
     <>
