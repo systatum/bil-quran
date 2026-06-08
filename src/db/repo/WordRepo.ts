@@ -1,7 +1,7 @@
 import { IPCResponse, newErrIPCResponse, newIPCResponse } from "@constants/IPC"
 import { WordRecord, WordWithLexemeRecord } from "@constants/records/WordRecord"
 import { withDb } from "@db/driver"
-import { and, eq } from "drizzle-orm"
+import { and, asc, eq } from "drizzle-orm"
 import { conditional, Repository } from "./Repository"
 import { lexemes, roots, words as schema } from "./tables"
 
@@ -40,6 +40,7 @@ class WordRepo extends Repository<typeof schema, WordRecord> {
               ...conditional(chapterId, eq(schema.chapterId, chapterId ?? -1)),
             ),
           )
+          .orderBy(asc(schema.chapterId), asc(schema.verse), asc(schema.order))
       })
 
       return newIPCResponse({
