@@ -1,5 +1,7 @@
 # bil-quran
 
+Bil-Quran is an Qur'an app where translation is provided interlinear (or word-by-word/verse-by-verse) to aid with understanding the Qur'an for those who want to read the Qur'an not just at the Qira'ah/recitation level.
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 - `pnpm start`: Starts the development server.
