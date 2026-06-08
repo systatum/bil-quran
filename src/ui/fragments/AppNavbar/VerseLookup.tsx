@@ -117,7 +117,7 @@ export default function VerseLookup() {
       <FlexContainer direction="row">
         <Combobox
           clearable
-          mobile
+          mobile={{ drawerHeight: "60dvh" }}
           onChange={(selectionOption) => {
             const value = selectionOption as string
             const [chapterId, verseId] = value.split("-")
