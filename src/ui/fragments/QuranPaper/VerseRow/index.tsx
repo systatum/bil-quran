@@ -198,7 +198,6 @@ export default function VerseRow({
           {verse.words.map((word, i) => (
             <Word
               ref={i === verse.words.length - 1 ? lastWordRef : undefined}
-              aria-label="test"
               key={`${word.chapterId}-${word.verse}-${word.order}`}
             >
               <Arabic
