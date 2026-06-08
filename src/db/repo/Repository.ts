@@ -3,7 +3,7 @@ import {
   newIPCResponse,
   type IPCResponse,
 } from "@constants/IPC"
-import { DbConn, withDb } from "@db/driver"
+import { DbConn, getClient, withDb } from "@db/driver"
 import { unpackIPC } from "@services/Converter"
 import { asc, count, desc, eq, getTableColumns, type SQL } from "drizzle-orm"
 import { type AnySQLiteColumn, type SQLiteTable } from "drizzle-orm/sqlite-core"
@@ -31,6 +31,35 @@ export abstract class Repository<
 
   constructor(schema: T) {
     this.schema = schema
+  }
+  async raw<T = Record<string, unknown>>(
+    query: string,
+  ): Promise<IPCResponse<T[]>> {
+    try {
+      const client = await getClient()
+      const result = client.exec(query)
+
+      if (result.length === 0) {
+        return newIPCResponse({
+          data: [],
+        })
+      }
+
+      const rows = result.flatMap((table) =>
+        table.values.map((valueRow) =>
+          Object.fromEntries(
+            table.columns.map((column, i) => [column, valueRow[i]]),
+          ),
+        ),
+      ) as T[]
+
+      return newIPCResponse({
+        data: rows,
+      })
+    } catch (e) {
+      console.error("Raw query failed", e)
+      return newErrIPCResponse(e)
+    }
   }
 
   /**
