@@ -6,7 +6,11 @@ import { useEffect, useMemo, useState } from "react"
 import useChaptersState from "../../hooks/states/ChaptersState"
 import { FlexContainer } from "./Container"
 
-export default function VerseLookup() {
+interface VerseLookupProps {
+  onChange?: () => void
+}
+
+export default function VerseLookup({ onChange }: VerseLookupProps) {
   const navigate = useNavigate()
   const [selectedChapterId, setSelectedChapterId] = useState<string>("1")
   const [verseNumber, setVerseNumber] = useState<string>("1")
@@ -129,6 +133,7 @@ export default function VerseLookup() {
           const [chapterId, verseId] = value.split("-")
           setSelectedChapterId(chapterId)
           setVerseNumber(verseId)
+          if (onChange) onChange()
         }}
         options={chaptersList}
       />

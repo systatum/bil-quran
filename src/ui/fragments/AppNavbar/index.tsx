@@ -95,7 +95,7 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
         $visible={isSearchOpen}
         $top={navbarPositioning?.height}
       >
-        <VerseLookup />
+        <VerseLookup onChange={() => setIsSearchOpen(false)} />
       </SearchSheet>
     </>
   )
