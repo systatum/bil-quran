@@ -1,5 +1,4 @@
 import { ThemeMode } from "@constants/theme"
-import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
 import styled from "styled-components"
 
 export default function BasmalaRow({
@@ -17,33 +16,31 @@ export default function BasmalaRow({
   theme: ThemeMode
   hidden: boolean
 }) {
-  const ref = useVirtualRowMeasurer({
-    index,
-    sizeMap,
-    virtualizer,
-    deps: [hidden],
-  })
-
   return (
     <BasmalaContainer
-      ref={ref}
+      data-index={index}
+      ref={(el) => {
+        if (!el) return
+        const height = el.offsetHeight
+        if (sizeMap.current.get(index) !== height) {
+          sizeMap.current.set(index, height)
+          virtualizer.resizeItem(index, height)
+        }
+      }}
       theme={theme}
+      $hidden={hidden}
       style={{ transform: style.transform }}
     >
-      {hidden ? (
-        <></>
-      ) : (
-        <BasmalaFrame theme={theme}>
-          <BasmalaText theme={theme} lang="ar">
-            ﷽
-          </BasmalaText>
-        </BasmalaFrame>
-      )}
+      <BasmalaFrame theme={theme}>
+        <BasmalaText theme={theme} lang="ar">
+          ﷽
+        </BasmalaText>
+      </BasmalaFrame>
     </BasmalaContainer>
   )
 }
 
-const BasmalaContainer = styled.div<{ theme: ThemeMode }>`
+const BasmalaContainer = styled.div<{ theme: ThemeMode; $hidden?: boolean }>`
   --bg: ${({ theme }) => (theme === "dark" ? "#181818" : "#f6f1e7")};
   --panel-top: ${({ theme }) => (theme === "dark" ? "#211f1a" : "#f3ecdf")};
   --panel-bottom: ${({ theme }) => (theme === "dark" ? "#191714" : "#ebe0cb")};
@@ -60,6 +57,9 @@ const BasmalaContainer = styled.div<{ theme: ThemeMode }>`
   background: var(--bg);
   display: flex;
   justify-content: center;
+
+  padding: ${({ $hidden }) => ($hidden ? "0" : "0 18px 10px")};
+  min-height: ${({ $hidden }) => ($hidden ? "0" : "auto")};
 `
 
 const BasmalaFrame = styled.div<{ theme: ThemeMode }>`
