@@ -8,7 +8,6 @@ import useUserSettingsState, {
   FontSetting,
 } from "@hooks/states/UserSettingsState"
 import useAligner from "@hooks/tools/useAligner"
-import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
 import { RiBookMarkedFill, RiPencilAi2Line } from "@remixicon/react"
 import { Button } from "@systatum/coneto/button"
 import { PaperDialog, PaperDialogRef } from "@systatum/coneto/paper-dialog"
@@ -62,18 +61,6 @@ export default function VerseRow({
 
   const paperDialogRef = useRef<PaperDialogRef>(null)
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-
-  const ref = useVirtualRowMeasurer({
-    index,
-    sizeMap,
-    virtualizer,
-    deps: [
-      basmalaPosition,
-      showMeaning,
-      showTransliteration,
-      userSettings.font.arabic,
-    ],
-  })
 
   const markerColumnRef = useRef<HTMLDivElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -133,9 +120,15 @@ export default function VerseRow({
   return (
     <>
       <VerseRowWrapper
+        data-index={index}
         ref={(el) => {
-          ;(ref as React.MutableRefObject<HTMLDivElement | null>).current = el
+          if (!el) return
           wrapperRef.current = el
+          const height = el.offsetHeight
+          if (sizeMap.current.get(index) !== height) {
+            sizeMap.current.set(index, height)
+            virtualizer.resizeItem(index, height)
+          }
         }}
         $theme={theme}
         style={{ transform: style.transform }}
