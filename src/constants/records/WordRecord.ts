@@ -49,3 +49,10 @@ export interface WordWithLexemeRecord {
   root: RootRecord
   readings: Partial<Record<Locale, string>>
 }
+
+export interface WordOccurrence {
+  chapterId: number
+  verse: number
+  targetOrder: number
+  words: WordWithLexemeRecord[]
+}

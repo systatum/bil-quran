@@ -1,12 +1,20 @@
 import { ArabicFontFamily } from "@constants/fonts"
+import { WordOccurrence } from "@constants/records/WordRecord"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
 import { ThemeMode } from "@constants/theme"
-import useUserSettingsState from "@hooks/states/UserSettingsState"
+import { repo } from "@db/repo"
+import useUserSettingsState, {
+  FontSetting,
+} from "@hooks/states/UserSettingsState"
+import { useWordTranslations } from "@hooks/tools/useWordTranslations"
+import { unpackIPC } from "@services/Converter"
+import LOGGER from "@services/Logger"
 import { Grid } from "@systatum/coneto/grid"
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import styled from "styled-components"
 import { Transliteration, WordCell } from "."
 import InfoTile from "./InfoTile"
+import InterlinearText from "./InterlinearText"
 
 interface LexemeDetailPaperDialogProps {
   content: WordCell
@@ -20,10 +28,48 @@ export function LexemeDetailPaperDialog({
   theme,
 }: LexemeDetailPaperDialogProps) {
   const {
-    userSettings: { locale },
+    userSettings: { locale, wbwTranslations, font },
   } = useUserSettingsState()
+  const corpora = useWordTranslations(wbwTranslations)
+
+  const [occurrences, setOccurrences] = useState<
+    Record<string, WordOccurrence>
+  >({})
+  useEffect(() => {
+    repo.words
+      .findOccurrences(content.lexemeId)
+      .then((ipcResp) => {
+        const rawVerses = unpackIPC(ipcResp)
+        const verses = rawVerses.map((v) => ({
+          ...v,
+          words: v.words.map((word) => ({
+            ...word,
+            meanings: Object.fromEntries(
+              wbwTranslations.map((locale) => [
+                locale,
+                corpora[locale]?.[word.chapterId]?.[word.verse]?.[word.order],
+              ]),
+            ),
+          })),
+        }))
+        const obj: Record<string, WordOccurrence> = {}
+        verses.forEach((v) => {
+          const key = `${v.chapterId}:${v.verse}`
+          obj[key] = v
+        })
+        setOccurrences(obj)
+      })
+      .catch((e) => LOGGER.error("Failed getting occurrences data", e))
+  }, [content.lexemeId])
+
+  const isTranslated =
+    Array.isArray(wbwTranslations) && wbwTranslations.length > 0
   const rootLetters = content.root.root ?? "—"
-  const transliteration = content.readings[locale]
+  const localeBasedTransliteration = content.readings[locale]
+  const wbwBasedTransliteration = isTranslated
+    ? wbwTranslations.map((x) => content.readings[x]).find((x) => x != null)
+    : undefined
+  const transliteration = localeBasedTransliteration || wbwBasedTransliteration
 
   const [scrolled, setScrolled] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -32,8 +78,15 @@ export function LexemeDetailPaperDialog({
     setScrolled(e.currentTarget.scrollTop > 10)
   }, [])
 
-  const meaning = content.meanings[WordTranslationOption.fromLocale(locale)]
-  console.log(content)
+  const localeBasedMeaning =
+    content.meanings[WordTranslationOption.fromLocale(locale)]
+  const wbwBasedMeaning = isTranslated
+    ? wbwTranslations.map((l) => content.meanings[l]).join("; ")
+    : undefined
+  const anyMeaning = Object.values(content.meanings)[0]
+  const meaning = wbwBasedMeaning ?? localeBasedMeaning ?? anyMeaning
+
+  const fontArabic: FontSetting = { ...font.arabic, size: 30 }
 
   return (
     <>
@@ -69,9 +122,28 @@ export function LexemeDetailPaperDialog({
             value={String(content.chapterId)}
           />
         </Grid>
-        {Array.from({ length: 25 }).map((_, key) => (
-          <span key={key}>asdkaksdmkasdkas dsakdmkasmdkamskdmasd</span>
-        ))}
+
+        {Object.values(occurrences)
+          .slice(0, 20)
+          .map((o) => {
+            // shorter verses to show proportionally more context,
+            // and longer verses proportionally less, a square-root
+            // scaling works nicely:
+            const count = Math.ceil(Math.sqrt(o.words.length) * 2)
+            return (
+              <VerseWrapper>
+                <InterlinearText
+                  showMeaning
+                  key={`${o.chapterId}:${o.verse}`}
+                  arabicFont={fontArabic}
+                  theme={theme}
+                  words={o.words.slice(0, count)}
+                  shownTranslations={wbwTranslations}
+                  highlightOn={[o.targetOrder]}
+                />
+              </VerseWrapper>
+            )
+          })}
       </ScrollContainer>
     </>
   )
@@ -149,4 +221,10 @@ const TransliterationCollapsible = styled.div<{ $scrolled: boolean }>`
     opacity 0.25s ease;
   max-height: ${({ $scrolled }) => ($scrolled ? "0px" : "32px")};
   opacity: ${({ $scrolled }) => ($scrolled ? 0 : 1)};
+`
+
+const VerseWrapper = styled.div`
+  padding: 10px 15px;
+  background: #f6f2f0;
+  border-radius: 8px;
 `

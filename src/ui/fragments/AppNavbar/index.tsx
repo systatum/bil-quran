@@ -1,6 +1,5 @@
 import { ThemeMode } from "@constants/theme"
 import usePositioningObserver from "@hooks/tools/usePositioningObserver"
-import { messages } from "@i18n/message"
 import { RiMenuLine, RiSearchLine } from "@remixicon/react"
 import { OverlayBlocker } from "@systatum/coneto/overlay-blocker"
 import { Title, TitleSection } from "@systatum/coneto/title"
@@ -83,10 +82,6 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
       )}
 
       <SidebarContainer theme={theme} $visible={isSidebarOpen}>
-        <SidebarItem>
-          {intl.formatMessage({ id: messages.lookup.title })}
-        </SidebarItem>
-
         <UserSettingsForm />
       </SidebarContainer>
 
