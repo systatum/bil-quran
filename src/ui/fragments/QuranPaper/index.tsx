@@ -105,7 +105,7 @@ export default function QuranPaper({
     count: renderRows.length,
     getScrollElement: () => parentRef.current,
     estimateSize: (i) => sizeMap.current.get(i) ?? 140,
-    overscan: 8,
+    overscan: 15,
   })
 
   const items = virtualizer.getVirtualItems()
@@ -170,6 +170,30 @@ export default function QuranPaper({
       el.removeEventListener("scroll", recordScrolling)
     }
   }, [renderRows])
+
+  async function waitForMeasurements() {
+    return new Promise<void>((resolve) => {
+      let lastSize = virtualizer.getTotalSize()
+      let stableCount = 0
+
+      const check = () => {
+        const currentSize = virtualizer.getTotalSize()
+        if (currentSize === lastSize) {
+          stableCount++
+          if (stableCount >= 3) {
+            resolve()
+            return
+          }
+        } else {
+          stableCount = 0
+          lastSize = currentSize
+        }
+        requestAnimationFrame(check)
+      }
+
+      requestAnimationFrame(check)
+    })
+  }
 
   async function scrollToVerse(chapterId: number, verse: number) {
     const targetIndex = renderRows.findIndex((row) => {
@@ -241,8 +265,10 @@ export default function QuranPaper({
 
     async function restoreScroll() {
       const { lastScroll } = userSettings
-      if (lastScroll.chapterId > 0)
+      if (lastScroll.chapterId > 0) {
+        await waitForMeasurements()
         await scrollToVerse(lastScroll.chapterId, lastScroll.verse)
+      }
       hasRestoredScrollRef.current = true
     }
 
@@ -256,33 +282,6 @@ export default function QuranPaper({
     if (!requestedChapterId || !requestedVerseNumber) return
     scrollToVerse(requestedChapterId, requestedVerseNumber)
   }, [requestedChapterId, requestedVerseNumber, renderRows])
-
-  // global resize/orientation observer that invalidates every cached measurement
-  // which then would force the virtualizer to recompute
-  useEffect(() => {
-    function remeasureAll() {
-      // clear all cached heights
-      sizeMap.current.clear()
-
-      // force virtualizer recalculation
-      virtualizer.measure()
-
-      // resize observer/layout might still settle
-      requestAnimationFrame(() => {
-        virtualizer.measure()
-      })
-    }
-
-    const media = window.matchMedia("(orientation: portrait)")
-
-    window.addEventListener("resize", remeasureAll)
-    media.addEventListener("change", remeasureAll)
-
-    return () => {
-      window.removeEventListener("resize", remeasureAll)
-      media.removeEventListener("change", remeasureAll)
-    }
-  }, [virtualizer])
 
   return (
     <div
@@ -306,7 +305,7 @@ export default function QuranPaper({
           if (row.type === "chapter") {
             return (
               <ChapterRow
-                key={`ch-${row.chapter.id}`}
+                key={item.index}
                 theme={theme}
                 index={item.index}
                 chapter={row.chapter}
@@ -320,7 +319,7 @@ export default function QuranPaper({
           if (row.type === "basmala") {
             return (
               <BasmalaRow
-                key={`basmala-${item.index}`}
+                key={item.index}
                 theme={theme}
                 index={item.index}
                 style={{ transform: `translateY(${item.start}px)` }}
