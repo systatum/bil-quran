@@ -9,6 +9,7 @@ import useUserSettingsState, {
 import { useWordTranslations } from "@hooks/tools/useWordTranslations"
 import { unpackIPC } from "@services/Converter"
 import LOGGER from "@services/Logger"
+import { makeSnippet } from "@services/mutator"
 import { Grid } from "@systatum/coneto/grid"
 import { useCallback, useEffect, useRef, useState } from "react"
 import styled from "styled-components"
@@ -35,31 +36,57 @@ export function LexemeDetailPaperDialog({
   const [occurrences, setOccurrences] = useState<
     Record<string, WordOccurrence>
   >({})
+  requestAnimationFrame(() => {})
   useEffect(() => {
-    repo.words
-      .findOccurrences(content.lexemeId)
-      .then((ipcResp) => {
-        const rawVerses = unpackIPC(ipcResp)
-        const verses = rawVerses.map((v) => ({
-          ...v,
-          words: v.words.map((word) => ({
-            ...word,
-            meanings: Object.fromEntries(
-              wbwTranslations.map((locale) => [
-                locale,
-                corpora[locale]?.[word.chapterId]?.[word.verse]?.[word.order],
-              ]),
-            ),
-          })),
-        }))
-        const obj: Record<string, WordOccurrence> = {}
-        verses.forEach((v) => {
-          const key = `${v.chapterId}:${v.verse}`
-          obj[key] = v
+    const findWordsOccurrences = () => {
+      repo.words
+        .findOccurrences(content.lexemeId)
+        .then((ipcResp) => {
+          const rawVerses = unpackIPC(ipcResp)
+          const verses = rawVerses.map((v) => {
+            const targetIndex = v.words.findIndex(
+              (w) => w.order === v.targetOrder,
+            )
+
+            // use a deterministic "random" based on the verse so same
+            // occurrence to always display identically instead of
+            // changing on every render
+            const deterministicCounter = () =>
+              ((v.chapterId * 31 + v.verse * 17 + v.targetOrder) % 5) + 1
+
+            const shownWords = makeSnippet(
+              v.words,
+              targetIndex,
+              deterministicCounter,
+            ).map((word) => ({
+              ...word,
+              meanings: Object.fromEntries(
+                wbwTranslations.map((locale) => [
+                  locale,
+                  corpora[locale]?.[word.chapterId]?.[word.verse]?.[word.order],
+                ]),
+              ),
+            }))
+
+            console.log(shownWords)
+
+            return {
+              ...v,
+              words: shownWords,
+            }
+          })
+          const obj: Record<string, WordOccurrence> = {}
+          verses.forEach((v) => {
+            const key = `${v.chapterId}:${v.verse}`
+            obj[key] = v
+          })
+          setOccurrences(obj)
         })
-        setOccurrences(obj)
-      })
-      .catch((e) => LOGGER.error("Failed getting occurrences data", e))
+        .catch((e) => LOGGER.error("Failed getting occurrences data", e))
+    }
+
+    const requestId = setTimeout(findWordsOccurrences, 700)
+    return () => clearTimeout(requestId)
   }, [content.lexemeId])
 
   const isTranslated =
@@ -126,18 +153,14 @@ export function LexemeDetailPaperDialog({
         {Object.values(occurrences)
           .slice(0, 20)
           .map((o) => {
-            // shorter verses to show proportionally more context,
-            // and longer verses proportionally less, a square-root
-            // scaling works nicely:
-            const count = Math.ceil(Math.sqrt(o.words.length) * 2)
             return (
               <VerseWrapper>
                 <InterlinearText
                   showMeaning
-                  key={`${o.chapterId}:${o.verse}`}
+                  key={`${o.chapterId}:${o.verse}:${o.chapterId}`}
                   arabicFont={fontArabic}
                   theme={theme}
-                  words={o.words.slice(0, count)}
+                  words={o.words}
                   shownTranslations={wbwTranslations}
                   highlightOn={[o.targetOrder]}
                 />

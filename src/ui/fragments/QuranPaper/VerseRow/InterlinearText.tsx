@@ -134,7 +134,7 @@ const Arabic = styled.span<{ $highlighted: boolean }>`
   cursor: pointer;
   ${({ $highlighted }) =>
     $highlighted
-      ? "border-radius: 8px; padding: 0 15px; color: #4e4e32; background: #c0bf75;"
+      ? "border-radius: 8px; padding: 0 15px; color: #4e4e32; background: #e7e7b4;"
       : ""}
 `
 

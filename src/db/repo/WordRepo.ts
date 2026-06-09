@@ -47,7 +47,7 @@ class WordRepo extends Repository<typeof schema, WordRecord> {
             and(
               eq(contexts.chapterId, targets.chapterId),
               eq(contexts.verse, targets.verse),
-              gte(contexts.order, sql<number>`${targets.order} - 2`),
+              gte(contexts.order, sql<number>`${targets.order} - 7`), // start from 7 words before
             ),
           )
           .innerJoin(lexemes, eq(contexts.lexemeId, lexemes.id))
