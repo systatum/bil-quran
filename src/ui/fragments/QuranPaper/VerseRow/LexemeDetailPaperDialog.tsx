@@ -69,9 +69,6 @@ export function LexemeDetailPaperDialog({
             value={String(content.chapterId)}
           />
         </Grid>
-        {Array.from({ length: 25 }).map((_, key) => (
-          <span key={key}>asdkaksdmkasdkas dsakdmkasmdkamskdmasd</span>
-        ))}
       </ScrollContainer>
     </>
   )
