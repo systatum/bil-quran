@@ -1,4 +1,5 @@
 import { ThemeMode } from "@constants/theme"
+import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
 import styled from "styled-components"
 
 export default function BasmalaRow({
@@ -16,17 +17,16 @@ export default function BasmalaRow({
   theme: ThemeMode
   hidden: boolean
 }) {
+  const ref = useVirtualRowMeasurer({
+    index,
+    sizeMap,
+    virtualizer,
+  })
+
   return (
     <BasmalaContainer
       data-index={index}
-      ref={(el) => {
-        if (!el) return
-        const height = el.offsetHeight
-        if (sizeMap.current.get(index) !== height) {
-          sizeMap.current.set(index, height)
-          virtualizer.resizeItem(index, height)
-        }
-      }}
+      ref={ref}
       theme={theme}
       $hidden={hidden}
       style={{ transform: style.transform }}

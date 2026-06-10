@@ -15,6 +15,7 @@ import { useEffect, useRef, useState } from "react"
 import styled, { css } from "styled-components"
 import { Bismillah } from "./Bismillah"
 import { LexemeDetailPaperDialog } from "./LexemeDetailPaperDialog"
+import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
 
 export type Verse = {
   id: string
@@ -117,6 +118,12 @@ export default function VerseRow({
 
   const { refs: meaningRefs, layerHeights } = useAligner({ key: verse.id })
 
+  const ref = useVirtualRowMeasurer({
+    index,
+    sizeMap,
+    virtualizer,
+  })
+
   return (
     <>
       <VerseRowWrapper
@@ -124,11 +131,7 @@ export default function VerseRow({
         ref={(el) => {
           if (!el) return
           wrapperRef.current = el
-          const height = el.offsetHeight
-          if (sizeMap.current.get(index) !== height) {
-            sizeMap.current.set(index, height)
-            virtualizer.resizeItem(index, height)
-          }
+          ref(el)
         }}
         $theme={theme}
         style={{ transform: style.transform }}
@@ -330,6 +333,7 @@ const VerseRowWrapper = styled.div<{ $theme: ThemeMode }>`
   grid-template-columns: 72px 1fr;
   direction: rtl;
   align-items: start;
+  overflow: clip;
 
   color: ${({ $theme }) => ($theme === "dark" ? "#d8c7a3" : "#1f1f1f")};
   background: ${({ $theme }) => ($theme === "dark" ? "#181818" : "#f6f1e7")};

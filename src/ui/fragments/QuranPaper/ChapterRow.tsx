@@ -3,6 +3,7 @@ import { BasmalaPosition, DEFAULT_LOCALE } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import styled from "styled-components"
 import useUserSettingsState from "../../hooks/states/UserSettingsState"
+import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
 
 /**
  * Row for each chapter. Because it is a virtualized row, we still need
@@ -28,17 +29,16 @@ export default function ChapterRow({
     userSettings: { basmalaPosition },
   } = useUserSettingsState()
 
+  const ref = useVirtualRowMeasurer({
+    index,
+    sizeMap,
+    virtualizer,
+  })
+
   return (
     <ChapterHeaderContainer
       data-index={index}
-      ref={(el) => {
-        if (!el) return
-        const height = el.offsetHeight
-        if (sizeMap.current.get(index) !== height) {
-          sizeMap.current.set(index, height)
-          virtualizer.resizeItem(index, height)
-        }
-      }}
+      ref={ref}
       theme={theme}
       style={{ transform: style.transform }}
       $basmalaPosition={basmalaPosition}
