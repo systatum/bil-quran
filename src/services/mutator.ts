@@ -37,6 +37,35 @@ export function mergeKnownKeys(target: Dict, source: Dict): Dict {
   return result
 }
 
+export function makeSnippet<T>(
+  words: T[],
+  targetIndex: number,
+  preCounter?: (words: T[], targetIndex: number) => number,
+): T[] {
+  const length = words.length
+  // shorter verses show more context, longer verses proportionally less
+  const count = Math.ceil(Math.sqrt(length) * 2)
+
+  // random 1–5 words before the target, or calculate using
+  // custom logic, if provided
+  const preTarget = preCounter
+    ? preCounter(words, targetIndex)
+    : Math.floor(Math.random() * 5) + 1
+
+  // how many words exist after the target?
+  const remainingAfter = length - targetIndex - 1
+
+  const afterCount: number =
+    remainingAfter <= 3
+      ? remainingAfter // show everything if only a few words remain
+      : Math.min(remainingAfter, ((preTarget * 7 + 2) % 5) + 4) // deterministic, but never exceed what exists
+
+  const start = Math.max(0, targetIndex - preTarget)
+  const end = Math.min(length, targetIndex + afterCount + 1)
+
+  return words.slice(start, end)
+}
+
 /**
  * Create a pause that must be awaited before some
  * other action can be done

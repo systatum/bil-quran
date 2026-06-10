@@ -261,6 +261,7 @@ export default function VerseRow({
         height="55dvh"
         controls={[]}
         closable
+        resizable
         styles={{
           indicatorStyle: css`
             height: 40px;

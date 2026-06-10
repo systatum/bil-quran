@@ -1,12 +1,22 @@
 import { ArabicFontFamily } from "@constants/fonts"
+import { WordOccurrence } from "@constants/records/WordRecord"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
 import { ThemeMode } from "@constants/theme"
-import useUserSettingsState from "@hooks/states/UserSettingsState"
+import { repo } from "@db/repo"
+import useChaptersState from "@hooks/states/ChaptersState"
+import useUserSettingsState, {
+  FontSetting,
+} from "@hooks/states/UserSettingsState"
+import { useWordTranslations } from "@hooks/tools/useWordTranslations"
+import { unpackIPC } from "@services/Converter"
+import LOGGER from "@services/Logger"
+import { makeSnippet } from "@services/mutator"
 import { Grid } from "@systatum/coneto/grid"
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import styled from "styled-components"
 import { Transliteration, WordCell } from "."
 import InfoTile from "./InfoTile"
+import InterlinearText from "./InterlinearText"
 
 interface LexemeDetailPaperDialogProps {
   content: WordCell
@@ -20,10 +30,73 @@ export function LexemeDetailPaperDialog({
   theme,
 }: LexemeDetailPaperDialogProps) {
   const {
-    userSettings: { locale },
+    userSettings: { locale, wbwTranslations, font },
   } = useUserSettingsState()
+  const corpora = useWordTranslations(wbwTranslations)
+  const { getChapterTransliteratedName, getChapterMeaning } = useChaptersState()
+
+  const [occurrences, setOccurrences] = useState<
+    Record<string, WordOccurrence>
+  >({})
+
+  useEffect(() => {
+    const findWordsOccurrences = () => {
+      repo.words
+        .findOccurrences(content.lexemeId)
+        .then((ipcResp) => {
+          const rawVerses = unpackIPC(ipcResp)
+          const verses = rawVerses.map((v) => {
+            const targetIndex = v.words.findIndex(
+              (w) => w.order === v.targetOrder,
+            )
+
+            // use a deterministic "random" based on the verse so same
+            // occurrence to always display identically instead of
+            // changing on every render
+            const deterministicCounter = () =>
+              ((v.chapterId * 31 + v.verse * 17 + v.targetOrder) % 5) + 1
+
+            const shownWords: WordCell[] = makeSnippet(
+              v.words,
+              targetIndex,
+              deterministicCounter,
+            ).map((word) => ({
+              ...word,
+              meanings: Object.fromEntries(
+                wbwTranslations.map((locale) => [
+                  locale,
+                  corpora[locale]?.[word.chapterId]?.[word.verse]?.[word.order],
+                ]),
+              ),
+            }))
+
+            return {
+              ...v,
+              words: shownWords,
+            }
+          })
+          const obj: Record<string, WordOccurrence> = {}
+          verses.forEach((v) => {
+            const key = `${v.chapterId}:${v.verse}`
+            obj[key] = v
+          })
+          setOccurrences(obj)
+        })
+        .catch((e) => LOGGER.error("Failed getting occurrences data", e))
+    }
+
+    const requestId = setTimeout(findWordsOccurrences, 700)
+    return () => clearTimeout(requestId)
+  }, [content.lexemeId])
+
+  const isTranslated =
+    Array.isArray(wbwTranslations) && wbwTranslations.length > 0
   const rootLetters = content.root.root ?? "—"
-  const transliteration = content.readings[locale]
+  const localeBasedTransliteration = content.readings[locale]
+  const wbwBasedTransliteration = isTranslated
+    ? wbwTranslations.map((x) => content.readings[x]).find((x) => x != null)
+    : undefined
+  const transliteration = localeBasedTransliteration || wbwBasedTransliteration
 
   const [scrolled, setScrolled] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -32,8 +105,15 @@ export function LexemeDetailPaperDialog({
     setScrolled(e.currentTarget.scrollTop > 10)
   }, [])
 
-  const meaning = content.meanings[WordTranslationOption.fromLocale(locale)]
-  console.log(content)
+  const localeBasedMeaning =
+    content.meanings[WordTranslationOption.fromLocale(locale)]
+  const wbwBasedMeaning = isTranslated
+    ? wbwTranslations.map((l) => content.meanings[l]).join("; ")
+    : undefined
+  const anyMeaning = Object.values(content.meanings)[0]
+  const meaning = wbwBasedMeaning ?? localeBasedMeaning ?? anyMeaning
+
+  const fontArabic: FontSetting = { ...font.arabic, size: 30 }
 
   return (
     <>
@@ -69,6 +149,29 @@ export function LexemeDetailPaperDialog({
             value={String(content.chapterId)}
           />
         </Grid>
+
+        {Object.values(occurrences)
+          .slice(0, 20)
+          .map((o) => {
+            return (
+              <VerseWrapper $theme={theme}>
+                <VerseLabel $theme={theme}>
+                  {o.chapterId} ({getChapterTransliteratedName(o.chapterId)}/{" "}
+                  {getChapterMeaning(o.chapterId)}) :&nbsp; {o.verse}
+                </VerseLabel>
+
+                <InterlinearText
+                  showMeaning
+                  key={`${o.chapterId}:${o.verse}:${o.chapterId}`}
+                  arabicFont={fontArabic}
+                  theme={theme}
+                  words={o.words}
+                  shownTranslations={wbwTranslations}
+                  highlightOn={[o.targetOrder]}
+                />
+              </VerseWrapper>
+            )
+          })}
       </ScrollContainer>
     </>
   )
@@ -146,4 +249,38 @@ const TransliterationCollapsible = styled.div<{ $scrolled: boolean }>`
     opacity 0.25s ease;
   max-height: ${({ $scrolled }) => ($scrolled ? "0px" : "32px")};
   opacity: ${({ $scrolled }) => ($scrolled ? 0 : 1)};
+`
+
+const VerseWrapper = styled.div<{ $theme: ThemeMode }>`
+  position: relative;
+  padding: 28px 15px 12px 15px; /* reserve space for badge */
+  background: ${({ $theme }) => ($theme === "dark" ? "#263832" : "#e2d6c3")};
+  border-radius: 8px;
+`
+
+const VerseLabel = styled.div<{ $theme: ThemeMode }>`
+  position: absolute;
+  top: 1px;
+  left: 1px;
+
+  padding: 4px 10px;
+  font-size: 12px;
+  line-height: 1;
+
+  background: ${({ $theme }) => ($theme === "dark" ? "#445445" : "#e7e7e7")};
+  color: ${({ $theme }) => ($theme === "dark" ? "#bababa" : "#5d3c2c")};
+
+  border-right: 1px solid;
+  border-bottom: 1px solid;
+  border-color: ${({ $theme }) => ($theme === "dark" ? "#40573b" : "#e3e3e3")};
+
+  border-top-right-radius: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 10px;
+
+  /* prevents visual jitter at corner join */
+  transform: translateY(-1px);
+
+  font-size: 0.8em;
 `

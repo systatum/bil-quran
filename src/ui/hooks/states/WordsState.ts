@@ -7,7 +7,7 @@ const useWordsState = create<WordsState>((set, get) => ({
   words: [],
 
   async loadWords() {
-    const words = unpackIPC(await repo.words.findAllBy())
+    const words = unpackIPC(await repo.words.all())
     set({ words })
   },
 }))
