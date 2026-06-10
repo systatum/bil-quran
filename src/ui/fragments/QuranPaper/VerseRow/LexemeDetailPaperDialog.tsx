@@ -198,12 +198,13 @@ const VerseWrapper = styled.div<{ $theme: ThemeMode }>`
   padding: 28px 15px 12px 15px; /* reserve space for badge */
   background: ${({ $theme }) => ($theme === "dark" ? "#263832" : "#e2d6c3")};
   border-radius: 8px;
+  overflow: clip;
 `
 
 const VerseLabel = styled.div<{ $theme: ThemeMode }>`
   position: absolute;
   top: 1px;
-  left: 1px;
+  left: 0px;
 
   padding: 4px 10px;
   font-size: 12px;
