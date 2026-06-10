@@ -2,17 +2,12 @@ import { ArabicFontFamily } from "@constants/fonts"
 import { WordOccurrence } from "@constants/records/WordRecord"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
 import { ThemeMode } from "@constants/theme"
-import { repo } from "@db/repo"
 import useChaptersState from "@hooks/states/ChaptersState"
 import useUserSettingsState, {
   FontSetting,
 } from "@hooks/states/UserSettingsState"
-import { useWordTranslations } from "@hooks/tools/useWordTranslations"
-import { unpackIPC } from "@services/Converter"
-import LOGGER from "@services/Logger"
-import { makeSnippet } from "@services/mutator"
 import { Grid } from "@systatum/coneto/grid"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useRef, useState } from "react"
 import styled from "styled-components"
 import { Transliteration, WordCell } from "."
 import InfoTile from "./InfoTile"
@@ -22,72 +17,19 @@ interface LexemeDetailPaperDialogProps {
   content: WordCell
   arabicFont: string
   theme: ThemeMode
+  occurrences: Record<string, WordOccurrence>
 }
 
 export function LexemeDetailPaperDialog({
   content,
   arabicFont,
   theme,
+  occurrences,
 }: LexemeDetailPaperDialogProps) {
   const {
     userSettings: { locale, wbwTranslations, font },
   } = useUserSettingsState()
-  const corpora = useWordTranslations(wbwTranslations)
   const { getChapterTransliteratedName, getChapterMeaning } = useChaptersState()
-
-  const [occurrences, setOccurrences] = useState<
-    Record<string, WordOccurrence>
-  >({})
-
-  useEffect(() => {
-    const findWordsOccurrences = () => {
-      repo.words
-        .findOccurrences(content.lexemeId)
-        .then((ipcResp) => {
-          const rawVerses = unpackIPC(ipcResp)
-          const verses = rawVerses.map((v) => {
-            const targetIndex = v.words.findIndex(
-              (w) => w.order === v.targetOrder,
-            )
-
-            // use a deterministic "random" based on the verse so same
-            // occurrence to always display identically instead of
-            // changing on every render
-            const deterministicCounter = () =>
-              ((v.chapterId * 31 + v.verse * 17 + v.targetOrder) % 5) + 1
-
-            const shownWords: WordCell[] = makeSnippet(
-              v.words,
-              targetIndex,
-              deterministicCounter,
-            ).map((word) => ({
-              ...word,
-              meanings: Object.fromEntries(
-                wbwTranslations.map((locale) => [
-                  locale,
-                  corpora[locale]?.[word.chapterId]?.[word.verse]?.[word.order],
-                ]),
-              ),
-            }))
-
-            return {
-              ...v,
-              words: shownWords,
-            }
-          })
-          const obj: Record<string, WordOccurrence> = {}
-          verses.forEach((v) => {
-            const key = `${v.chapterId}:${v.verse}`
-            obj[key] = v
-          })
-          setOccurrences(obj)
-        })
-        .catch((e) => LOGGER.error("Failed getting occurrences data", e))
-    }
-
-    const requestId = setTimeout(findWordsOccurrences, 700)
-    return () => clearTimeout(requestId)
-  }, [content.lexemeId])
 
   const isTranslated =
     Array.isArray(wbwTranslations) && wbwTranslations.length > 0
@@ -256,12 +198,13 @@ const VerseWrapper = styled.div<{ $theme: ThemeMode }>`
   padding: 28px 15px 12px 15px; /* reserve space for badge */
   background: ${({ $theme }) => ($theme === "dark" ? "#263832" : "#e2d6c3")};
   border-radius: 8px;
+  overflow: clip;
 `
 
 const VerseLabel = styled.div<{ $theme: ThemeMode }>`
   position: absolute;
   top: 1px;
-  left: 1px;
+  left: 0px;
 
   padding: 4px 10px;
   font-size: 12px;
