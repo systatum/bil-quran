@@ -283,6 +283,24 @@ export default function QuranPaper({
     scrollToVerse(requestedChapterId, requestedVerseNumber)
   }, [requestedChapterId, requestedVerseNumber, renderRows])
 
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>
+
+    const onResize = () => {
+      clearTimeout(timer)
+      timer = setTimeout(() => {
+        sizeMap.current.clear()
+        virtualizer.measure()
+      }, 200)
+    }
+
+    window.addEventListener("resize", onResize)
+    return () => {
+      clearTimeout(timer)
+      window.removeEventListener("resize", onResize)
+    }
+  }, [])
+
   return (
     <div
       ref={parentRef}
