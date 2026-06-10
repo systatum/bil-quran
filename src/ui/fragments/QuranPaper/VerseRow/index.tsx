@@ -1,6 +1,9 @@
 import { ArabicFontFamily } from "@constants/fonts"
 import { ChapterRecord } from "@constants/records/ChapterRecord"
-import { WordWithLexemeRecord } from "@constants/records/WordRecord"
+import {
+  WordOccurrence,
+  WordWithLexemeRecord,
+} from "@constants/records/WordRecord"
 import { TranslatedWord } from "@constants/records/WordTranslationRecord"
 import { BasmalaPosition, DEFAULT_LOCALE } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
@@ -16,6 +19,11 @@ import styled, { css } from "styled-components"
 import { Bismillah } from "./Bismillah"
 import { LexemeDetailPaperDialog } from "./LexemeDetailPaperDialog"
 import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
+import { repo } from "@db/repo"
+import { unpackIPC } from "@services/Converter"
+import { makeSnippet } from "@services/mutator"
+import { useWordTranslations } from "@hooks/tools/useWordTranslations"
+import LOGGER from "@services/Logger"
 
 export type Verse = {
   id: string
@@ -56,6 +64,15 @@ export default function VerseRow({
   theme: ThemeMode
 }) {
   const [content, setContent] = useState<WordCell | undefined>(undefined)
+  const [occurrences, setOccurrences] = useState<
+    Record<string, WordOccurrence>
+  >({})
+
+  const {
+    userSettings: { wbwTranslations },
+  } = useUserSettingsState()
+
+  const corpora = useWordTranslations(wbwTranslations)
 
   const { userSettings } = useUserSettingsState()
   const { basmalaPosition } = userSettings
@@ -199,9 +216,63 @@ export default function VerseRow({
               <Arabic
                 onMouseDown={() => {
                   setContent(word)
+
+                  const findWordsOccurrences = () => {
+                    repo.words
+                      .findOccurrences(word.lexemeId)
+                      .then((ipcResp) => {
+                        const rawVerses = unpackIPC(ipcResp)
+                        const verses = rawVerses.map((v) => {
+                          const targetIndex = v.words.findIndex(
+                            (w) => w.order === v.targetOrder,
+                          )
+
+                          // use a deterministic "random" based on the verse so same
+                          // occurrence to always display identically instead of
+                          // changing on every render
+                          const deterministicCounter = () =>
+                            ((v.chapterId * 31 + v.verse * 17 + v.targetOrder) %
+                              5) +
+                            1
+
+                          const shownWords: WordCell[] = makeSnippet(
+                            v.words,
+                            targetIndex,
+                            deterministicCounter,
+                          ).map((word) => ({
+                            ...word,
+                            meanings: Object.fromEntries(
+                              wbwTranslations.map((locale) => [
+                                locale,
+                                corpora[locale]?.[word.chapterId]?.[
+                                  word.verse
+                                ]?.[word.order],
+                              ]),
+                            ),
+                          }))
+
+                          return {
+                            ...v,
+                            words: shownWords,
+                          }
+                        })
+                        const obj: Record<string, WordOccurrence> = {}
+                        verses.forEach((v) => {
+                          const key = `${v.chapterId}:${v.verse}`
+                          obj[key] = v
+                        })
+                        setOccurrences(obj)
+                      })
+                      .catch((e) =>
+                        LOGGER.error("Failed getting occurrences data", e),
+                      )
+                  }
+
+                  findWordsOccurrences()
                 }}
                 onPointerDown={() => {
                   setContent(word)
+
                   hoverTimeoutRef.current = setTimeout(() => {
                     paperDialogRef.current?.openDialog()
                   }, 500)
@@ -279,6 +350,7 @@ export default function VerseRow({
       >
         {content && (
           <LexemeDetailPaperDialog
+            occurrences={occurrences}
             content={content}
             arabicFont={userSettings.font.arabic.family}
             theme={theme}
