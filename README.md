@@ -55,6 +55,7 @@ App unique features:
 - [ ] Ensure when changing language, the "Lompat ke ayat" dropdown, and displayed chapter at the header, is using local language
 - [ ] Check overlay behavior: if sidebar is opened, has overlay, and clicking overlay close the sidebar. Same expected behavior with search bar.
 - [ ] Make sure pressing on the word show the occurrences across different verses
+- [ ] Fix 2:204 word 16 buggy cannot scroll down
 
 ءَا
 لْإِ
