@@ -50,6 +50,9 @@ importers:
       idb-keyval:
         specifier: ^6.2.4
         version: 6.2.4
+      ios-haptics:
+        specifier: ^0.1.5
+        version: 0.1.5
       react:
         specifier: ^19.2.6
         version: 19.2.6
@@ -4050,6 +4053,9 @@ packages:
 
   intl-messageformat@11.2.7:
     resolution: {integrity: sha512-+q6Ktg119nULZEpZ8YTuGOst9MyEzFtjD63FTGBlN1mLz0Z/MOUYDIvnpVKwq17eezIEh+cfJIebfJoCetpiNw==}
+
+  ios-haptics@0.1.5:
+    resolution: {integrity: sha512-quSSgC4pKFkXV0SzKPRB8jOh7GYl9nYvgIYYcmFMqOkk2WSJ/ocfN5O0F/w8cqzUxKP2z+4tiJRO3eGE3qU05g==}
 
   ipaddr.js@1.9.1:
     resolution: {integrity: sha512-0KI/607xoxSToH7GjN1FfSbLoU0+btTicjsQSWQlh/hZykN8KpmMf7uYwPW3R+akZ6R/w18ZlXSHBYXiYUPO3g==}
@@ -11051,6 +11057,8 @@ snapshots:
     dependencies:
       '@formatjs/fast-memoize': 3.1.5
       '@formatjs/icu-messageformat-parser': 3.5.10
+
+  ios-haptics@0.1.5: {}
 
   ipaddr.js@1.9.1: {}
 

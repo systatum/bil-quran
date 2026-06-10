@@ -12,6 +12,7 @@ import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
 import { RiBookMarkedFill, RiPencilAi2Line } from "@remixicon/react"
 import { Button } from "@systatum/coneto/button"
 import { PaperDialog, PaperDialogRef } from "@systatum/coneto/paper-dialog"
+import { haptic } from "ios-haptics"
 import { useEffect, useRef, useState } from "react"
 import styled, { css } from "styled-components"
 import { Bismillah } from "./Bismillah"
@@ -207,6 +208,7 @@ export default function VerseRow({
                 onPointerDown={() => {
                   setContent(word)
                   hoverTimeoutRef.current = setTimeout(() => {
+                    haptic()
                     paperDialogRef.current?.openDialog()
                   }, 500)
                 }}
