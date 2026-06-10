@@ -3,6 +3,7 @@ import { WordOccurrence } from "@constants/records/WordRecord"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
 import { ThemeMode } from "@constants/theme"
 import { repo } from "@db/repo"
+import useChaptersState from "@hooks/states/ChaptersState"
 import useUserSettingsState, {
   FontSetting,
 } from "@hooks/states/UserSettingsState"
@@ -32,11 +33,12 @@ export function LexemeDetailPaperDialog({
     userSettings: { locale, wbwTranslations, font },
   } = useUserSettingsState()
   const corpora = useWordTranslations(wbwTranslations)
+  const { getChapterTransliteratedName, getChapterMeaning } = useChaptersState()
 
   const [occurrences, setOccurrences] = useState<
     Record<string, WordOccurrence>
   >({})
-  requestAnimationFrame(() => {})
+
   useEffect(() => {
     const findWordsOccurrences = () => {
       repo.words
@@ -54,7 +56,7 @@ export function LexemeDetailPaperDialog({
             const deterministicCounter = () =>
               ((v.chapterId * 31 + v.verse * 17 + v.targetOrder) % 5) + 1
 
-            const shownWords = makeSnippet(
+            const shownWords: WordCell[] = makeSnippet(
               v.words,
               targetIndex,
               deterministicCounter,
@@ -67,8 +69,6 @@ export function LexemeDetailPaperDialog({
                 ]),
               ),
             }))
-
-            console.log(shownWords)
 
             return {
               ...v,
@@ -155,6 +155,11 @@ export function LexemeDetailPaperDialog({
           .map((o) => {
             return (
               <VerseWrapper>
+                <VerseLabel>
+                  {o.chapterId} ({getChapterTransliteratedName(o.chapterId)}/{" "}
+                  {getChapterMeaning(o.chapterId)}) :&nbsp; {o.verse}
+                </VerseLabel>
+
                 <InterlinearText
                   showMeaning
                   key={`${o.chapterId}:${o.verse}:${o.chapterId}`}
@@ -247,7 +252,34 @@ const TransliterationCollapsible = styled.div<{ $scrolled: boolean }>`
 `
 
 const VerseWrapper = styled.div`
-  padding: 10px 15px;
+  position: relative;
+  padding: 28px 15px 12px 15px; /* reserve space for badge */
   background: #f6f2f0;
   border-radius: 8px;
+`
+
+const VerseLabel = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  padding: 4px 10px;
+  font-size: 12px;
+  line-height: 1;
+
+  background: #e7e7e7;
+  color: #5d3c2c;
+
+  border-right: 1px solid #e3e3e3;
+  border-bottom: 1px solid #e3e3e3;
+
+  border-top-right-radius: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 10px;
+
+  /* prevents visual jitter at corner join */
+  transform: translateY(-1px);
+
+  font-size: 0.8em;
 `

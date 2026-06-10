@@ -1,4 +1,5 @@
 import { Locale } from "@constants/settings"
+import { WordCell } from "../../ui/fragments/QuranPaper/VerseRow"
 import { RootRecord } from "./RootRecord"
 
 /**
@@ -54,5 +55,5 @@ export interface WordOccurrence {
   chapterId: number
   verse: number
   targetOrder: number
-  words: WordWithLexemeRecord[]
+  words: WordCell[]
 }
