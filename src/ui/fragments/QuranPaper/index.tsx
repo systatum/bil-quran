@@ -283,6 +283,8 @@ export default function QuranPaper({
     scrollToVerse(requestedChapterId, requestedVerseNumber)
   }, [requestedChapterId, requestedVerseNumber, renderRows])
 
+  // global resize/orientation observer that invalidates every cached measurement
+  // which then would force the virtualizer to recompute
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>
 
