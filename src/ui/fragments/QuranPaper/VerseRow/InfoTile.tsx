@@ -22,7 +22,7 @@ export default function InfoTile({
     <Grid.Card
       styles={{
         self: css`
-          background: ${theme === "dark" ? "#1f1e1b" : "#ede6d9"};
+          background: ${theme === "dark" ? "#353f34" : "#ede6d9"};
           border-radius: 8px;
           padding: 10px 12px;
           display: flex;
@@ -41,7 +41,7 @@ export default function InfoTile({
 
 const TileLabel = styled.p<{ $theme: ThemeMode }>`
   font-size: 11px;
-  color: ${({ $theme }) => ($theme === "dark" ? "#7b715b" : "#a09083")};
+  color: ${({ $theme }) => ($theme === "dark" ? "#8f938f" : "#a09083")};
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.06em;

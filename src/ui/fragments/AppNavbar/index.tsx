@@ -127,7 +127,7 @@ const SidebarContainer = styled.aside<{
   theme: ThemeMode
   $visible: boolean
 }>`
-  background: ${({ theme }) => (theme === "dark" ? "#9fae81" : "#e1dfda")};
+  background: ${({ theme }) => (theme === "dark" ? "#202b24" : "#e1dfda")};
   position: fixed;
   top: 0;
   right: 0;
@@ -139,20 +139,4 @@ const SidebarContainer = styled.aside<{
   transform: translateX(${(p) => (p.$visible ? "0%" : "100%")});
   transition: transform 0.22s ease;
   z-index: 9992999;
-`
-
-const SidebarItem = styled.button`
-  width: 100%;
-  border: none;
-  background: transparent;
-  text-align: left;
-  padding: 14px 0;
-  font-size: 16px;
-  color: #333;
-  cursor: pointer;
-  transition: color 0.15s ease;
-
-  &:hover {
-    color: #000;
-  }
 `

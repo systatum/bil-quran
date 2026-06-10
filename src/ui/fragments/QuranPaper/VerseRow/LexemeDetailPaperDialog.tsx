@@ -154,8 +154,8 @@ export function LexemeDetailPaperDialog({
           .slice(0, 20)
           .map((o) => {
             return (
-              <VerseWrapper>
-                <VerseLabel>
+              <VerseWrapper $theme={theme}>
+                <VerseLabel $theme={theme}>
                   {o.chapterId} ({getChapterTransliteratedName(o.chapterId)}/{" "}
                   {getChapterMeaning(o.chapterId)}) :&nbsp; {o.verse}
                 </VerseLabel>
@@ -251,27 +251,28 @@ const TransliterationCollapsible = styled.div<{ $scrolled: boolean }>`
   opacity: ${({ $scrolled }) => ($scrolled ? 0 : 1)};
 `
 
-const VerseWrapper = styled.div`
+const VerseWrapper = styled.div<{ $theme: ThemeMode }>`
   position: relative;
   padding: 28px 15px 12px 15px; /* reserve space for badge */
-  background: #f6f2f0;
+  background: ${({ $theme }) => ($theme === "dark" ? "#263832" : "#e2d6c3")};
   border-radius: 8px;
 `
 
-const VerseLabel = styled.div`
+const VerseLabel = styled.div<{ $theme: ThemeMode }>`
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 1px;
+  left: 1px;
 
   padding: 4px 10px;
   font-size: 12px;
   line-height: 1;
 
-  background: #e7e7e7;
-  color: #5d3c2c;
+  background: ${({ $theme }) => ($theme === "dark" ? "#445445" : "#e7e7e7")};
+  color: ${({ $theme }) => ($theme === "dark" ? "#bababa" : "#5d3c2c")};
 
-  border-right: 1px solid #e3e3e3;
-  border-bottom: 1px solid #e3e3e3;
+  border-right: 1px solid;
+  border-bottom: 1px solid;
+  border-color: ${({ $theme }) => ($theme === "dark" ? "#40573b" : "#e3e3e3")};
 
   border-top-right-radius: 0;
   border-top-left-radius: 0;
