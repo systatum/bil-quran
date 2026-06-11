@@ -25,8 +25,7 @@ App unique features:
 
 - Better scroll preservation (both saving and restoring the position)
 - Ability to bookmark any verse and go to that any moment
-- Can lookup by: chapter:verse, juz, root word, and verse theme.
-- Store number of verses in each chapter, so that the verse lookup component can display verse number rather than making user type
+- Can lookup by: juz, root word, and verse theme.
 - Normalize such as in baqarah 10: اَلِیْمٌۢ بِمَا the mim at the first word has indicator of mim
 - Make it easy to learn tajwid on the app
 - Add a feature to report an issue
