@@ -270,10 +270,6 @@ export default function VerseRow({
               key={`${word.chapterId}-${word.verse}-${word.order}`}
             >
               <Arabic
-                onMouseDown={() => {
-                  setContent(word)
-                  findWordsOccurrences(word)
-                }}
                 onPointerDown={() => {
                   setContent(word)
                   findWordsOccurrences(word)
