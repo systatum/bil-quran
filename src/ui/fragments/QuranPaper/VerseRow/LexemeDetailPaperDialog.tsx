@@ -198,7 +198,6 @@ const VerseWrapper = styled.div<{ $theme: ThemeMode }>`
   padding: 28px 15px 12px 15px; /* reserve space for badge */
   background: ${({ $theme }) => ($theme === "dark" ? "#263832" : "#e2d6c3")};
   border-radius: 8px;
-  overflow: clip;
 `
 
 const VerseLabel = styled.div<{ $theme: ThemeMode }>`
@@ -218,7 +217,7 @@ const VerseLabel = styled.div<{ $theme: ThemeMode }>`
   border-color: ${({ $theme }) => ($theme === "dark" ? "#40573b" : "#e3e3e3")};
 
   border-top-right-radius: 0;
-  border-top-left-radius: 0;
+  border-top-left-radius: 8px;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 10px;
 
