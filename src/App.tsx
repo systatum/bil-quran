@@ -5,6 +5,7 @@ import { seedData } from "@db/seeders"
 import useAppState from "@hooks/states/AppState"
 import { loadMessages, resolveLocale } from "@i18n"
 import { I18nProvider } from "@i18n/provider"
+import { Theme } from "@systatum/coneto/theme"
 import { RouterProvider } from "@tanstack/react-router"
 import { JSX, useEffect, useRef, useState } from "react"
 import "./App.css"
@@ -24,6 +25,9 @@ function AppRoot() {
     pushError,
     errors,
   } = useAppState()
+  const {
+    userSettings: { theme },
+  } = useUserSettingsState()
 
   // ensure the minimum data is in the database
   const boostrappedRef = useRef(false)
@@ -68,7 +72,7 @@ function AppRoot() {
   }, [])
 
   return (
-    <>
+    <Theme mode={theme}>
       {(!isBootstrapped || !isFullyLoaded) && errors.length === 0 && (
         <LoadingScreen />
       )}
@@ -76,7 +80,7 @@ function AppRoot() {
         <RouterProvider router={router} />
       )}
       {errors.length > 0 && <ErrorScreen />}
-    </>
+    </Theme>
   )
 }
 

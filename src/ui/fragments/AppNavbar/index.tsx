@@ -1,10 +1,11 @@
 import { ThemeMode } from "@constants/theme"
-import { messages } from "@i18n/message"
-import { RiCloseLine, RiMenuLine } from "@remixicon/react"
-import { useCallback, useState } from "react"
+import usePositioningObserver from "@hooks/tools/usePositioningObserver"
+import { RiMenuLine, RiSearchLine } from "@remixicon/react"
+import { OverlayBlocker } from "@systatum/coneto/overlay-blocker"
+import { Title, TitleSection } from "@systatum/coneto/title"
+import { useMemo, useRef, useState } from "react"
 import { useIntl } from "react-intl"
-import styled from "styled-components"
-import useUserSettingsState from "../../hooks/states/UserSettingsState"
+import styled, { css } from "styled-components"
 import UserSettingsForm from "./UserSettingsForm"
 import VerseLookup from "./VerseLookup"
 
@@ -21,101 +22,112 @@ interface AppNavbarProps {
 export default function AppNavbar({ theme, title }: AppNavbarProps) {
   const intl = useIntl()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const BurgerIcon = isSidebarOpen ? RiCloseLine : RiMenuLine
-  const { setTheme, setLocale, userSettings } = useUserSettingsState()
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const fontColor = theme === "dark" ? "#6e9370" : "#fff0d3"
+  const bgColor = theme === "dark" ? "#22271b" : "rgb(117 95 77)"
 
-  const changeLocale = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      e.preventDefault()
-      const value = e.target.value
-      setLocale(value)
-    },
-    [],
+  const titleRef = useRef<HTMLDivElement>(null)
+  const navbarPositioning = usePositioningObserver(titleRef)
+
+  const actions: TitleSection[] = useMemo(
+    () => [
+      {
+        type: "actions",
+        actions: [
+          {
+            icon: { image: RiSearchLine, color: fontColor },
+            onClick: () => setIsSearchOpen((x) => !x),
+          },
+          {
+            icon: { image: RiMenuLine, color: fontColor },
+            onClick: () => setIsSidebarOpen((x) => !x),
+          },
+        ],
+      },
+    ],
+    [theme],
   )
 
   return (
     <>
-      <NavbarContainer theme={theme}>
-        <ChapterLabel theme={theme}>{title}</ChapterLabel>
-        <BurgerButton theme={theme} onClick={() => setIsSidebarOpen((x) => !x)}>
-          <BurgerIcon size={24} />
-        </BurgerButton>
-      </NavbarContainer>
+      <div ref={titleRef}>
+        <Title
+          size="sm"
+          text={title}
+          styles={{
+            containerStyle: css`
+              padding: 10px;
+              background-color: ${bgColor};
+              color: ${fontColor};
+              align-items: center;
+            `,
+            titleStyle: css`
+              color: ${fontColor};
+            `,
+          }}
+          rightSection={actions}
+        />
+      </div>
 
-      <SidebarOverlay
-        $visible={isSidebarOpen}
-        onClick={() => setIsSidebarOpen(false)}
-      />
+      {(isSidebarOpen || isSearchOpen) && (
+        <OverlayBlocker
+          exemptRegions={["#combo-list"]}
+          show={isSidebarOpen || isSearchOpen}
+          onClick={({ close }) => {
+            setIsSidebarOpen(false)
+            setIsSearchOpen(false)
+            close()
+          }}
+        />
+      )}
 
       <SidebarContainer theme={theme} $visible={isSidebarOpen}>
-        <SidebarItem>
-          {intl.formatMessage({ id: messages.lookup.title })}
-        </SidebarItem>
-        <VerseLookup />
-
         <UserSettingsForm />
       </SidebarContainer>
+
+      <SearchSheet
+        theme={theme}
+        $visible={isSearchOpen}
+        $top={navbarPositioning?.height}
+      >
+        <VerseLookup onChange={() => setIsSearchOpen(false)} />
+      </SearchSheet>
     </>
   )
 }
 
-const NavbarContainer = styled.header<{ theme: ThemeMode }>`
-  top: 0;
-  position: sticky;
-  z-index: 1000;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  background: ${({ theme }) =>
-    theme === "dark" ? "#22271b" : "rgb(117 95 77)"};
-  border-bottom: 1px solid
-    ${({ theme }) => (theme === "dark" ? "#455230" : "#ececec")};
-  backdrop-filter: blur(12px);
-`
-
-const ChapterLabel = styled.div<{ theme: ThemeMode }>`
-  font-size: 18px;
-  font-weight: 600;
-  color: ${({ theme }) => (theme === "dark" ? "#6e9370" : "#fff0d3")};
-`
-
-const BurgerButton = styled.button<{ theme: ThemeMode }>`
-  display: flex;
-  color: ${({ theme }) => (theme === "dark" ? "#475848" : "#fff0d3")};
-  width: 42px;
-  height: 42px;
-  border: none;
-  background: transparent;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: background 0.15s ease;
-
-  &:hover {
-    background: rgba(0, 0, 0, 0.08);
-  }
-`
-
-const SidebarOverlay = styled.div<{
+const SearchSheet = styled.div<{
+  theme: ThemeMode
   $visible: boolean
+  $top: number | undefined
 }>`
   position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.35);
-  opacity: ${(p) => (p.$visible ? 1 : 0)};
-  pointer-events: ${(p) => (p.$visible ? "auto" : "none")};
-  transition: opacity 0.2s ease;
-  z-index: 1100;
+  top: ${({ $top }) => `${$top ?? 0}px`};
+  left: 0;
+  right: 0;
+
+  background: ${({ theme }) => (theme === "dark" ? "#22271b" : "#f6f1e7")};
+
+  padding: 16px;
+
+  transform-origin: top center;
+  transform: scaleY(${({ $visible }) => ($visible ? 1 : 0)});
+
+  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
+  pointer-events: ${({ $visible }) => ($visible ? "auto" : "none")};
+
+  transition:
+    transform 220ms ease,
+    opacity 220ms ease;
+
+  z-index: 9992999;
 `
 
 const SidebarContainer = styled.aside<{
   theme: ThemeMode
   $visible: boolean
 }>`
-  background: ${({ theme }) => (theme === "dark" ? "#9fae81" : "#e1dfda")};
+  background: ${({ theme }) => (theme === "dark" ? "#202b24" : "#e1dfda")};
   position: fixed;
   top: 0;
   right: 0;
@@ -126,21 +138,5 @@ const SidebarContainer = styled.aside<{
   box-shadow: -4px 0 24px rgba(0, 0, 0, 0.08);
   transform: translateX(${(p) => (p.$visible ? "0%" : "100%")});
   transition: transform 0.22s ease;
-  z-index: 1200;
-`
-
-const SidebarItem = styled.button`
-  width: 100%;
-  border: none;
-  background: transparent;
-  text-align: left;
-  padding: 14px 0;
-  font-size: 16px;
-  color: #333;
-  cursor: pointer;
-  transition: color 0.15s ease;
-
-  &:hover {
-    color: #000;
-  }
+  z-index: 9992999;
 `
