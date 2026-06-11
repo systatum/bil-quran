@@ -1,21 +1,31 @@
 import { ArabicFontFamily } from "@constants/fonts"
 import { ChapterRecord } from "@constants/records/ChapterRecord"
-import { WordWithLexemeRecord } from "@constants/records/WordRecord"
+import {
+  WordOccurrence,
+  WordWithLexemeRecord,
+} from "@constants/records/WordRecord"
 import { TranslatedWord } from "@constants/records/WordTranslationRecord"
 import { BasmalaPosition, DEFAULT_LOCALE } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
+import { repo } from "@db/repo"
 import useUserSettingsState, {
   FontSetting,
 } from "@hooks/states/UserSettingsState"
 import useAligner from "@hooks/tools/useAligner"
 import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
+import { useWordTranslations } from "@hooks/tools/useWordTranslations"
 import { RiBookMarkedFill, RiPencilAi2Line } from "@remixicon/react"
+import { unpackIPC } from "@services/Converter"
+import LOGGER from "@services/Logger"
+import { makeSnippet } from "@services/mutator"
 import { Button } from "@systatum/coneto/button"
 import { PaperDialog, PaperDialogRef } from "@systatum/coneto/paper-dialog"
+import { haptic } from "ios-haptics"
 import { useEffect, useRef, useState } from "react"
 import styled, { css } from "styled-components"
 import { Bismillah } from "./Bismillah"
 import { LexemeDetailPaperDialog } from "./LexemeDetailPaperDialog"
+import NoteVerseDialog from "./NoteDialog"
 
 export type Verse = {
   id: string
@@ -56,8 +66,19 @@ export default function VerseRow({
   theme: ThemeMode
 }) {
   const [content, setContent] = useState<WordCell | undefined>(undefined)
+  const [showNoteVerseDialog, setShowNoteVerseDialog] = useState<boolean>(false)
+  const [verseKey, setVerseKey] = useState<string>("")
+  const [occurrences, setOccurrences] = useState<
+    Record<string, WordOccurrence>
+  >({})
 
-  const { userSettings } = useUserSettingsState()
+  const {
+    userSettings: { wbwTranslations },
+  } = useUserSettingsState()
+
+  const corpora = useWordTranslations(wbwTranslations)
+
+  const { userSettings, bookmarkVerse } = useUserSettingsState()
   const { basmalaPosition } = userSettings
 
   const paperDialogRef = useRef<PaperDialogRef>(null)
@@ -147,12 +168,19 @@ export default function VerseRow({
                 {
                   caption: "Bookmark",
                   icon: { image: RiBookMarkedFill },
-                  onClick: () => {},
+                  onClick: () => {
+                    const verseKey = `${verse.chapter.id}:${verse.number}`
+                    setVerseKey(verseKey)
+                    bookmarkVerse({ verseKey })
+                  },
                 },
                 {
                   caption: "Note",
                   icon: { image: RiPencilAi2Line },
-                  onClick: () => {},
+                  onClick: () => {
+                    setVerseKey(`${verse.chapter.id}:${verse.number}`)
+                    setShowNoteVerseDialog(true)
+                  },
                 },
               ])
             }
@@ -203,10 +231,65 @@ export default function VerseRow({
               <Arabic
                 onMouseDown={() => {
                   setContent(word)
+
+                  const findWordsOccurrences = () => {
+                    repo.words
+                      .findOccurrences(word.lexemeId)
+                      .then((ipcResp) => {
+                        const rawVerses = unpackIPC(ipcResp)
+                        const verses = rawVerses.map((v) => {
+                          const targetIndex = v.words.findIndex(
+                            (w) => w.order === v.targetOrder,
+                          )
+
+                          // use a deterministic "random" based on the verse so same
+                          // occurrence to always display identically instead of
+                          // changing on every render
+                          const deterministicCounter = () =>
+                            ((v.chapterId * 31 + v.verse * 17 + v.targetOrder) %
+                              5) +
+                            1
+
+                          const shownWords: WordCell[] = makeSnippet(
+                            v.words,
+                            targetIndex,
+                            deterministicCounter,
+                          ).map((word) => ({
+                            ...word,
+                            meanings: Object.fromEntries(
+                              wbwTranslations.map((locale) => [
+                                locale,
+                                corpora[locale]?.[word.chapterId]?.[
+                                  word.verse
+                                ]?.[word.order],
+                              ]),
+                            ),
+                          }))
+
+                          return {
+                            ...v,
+                            words: shownWords,
+                          }
+                        })
+                        const obj: Record<string, WordOccurrence> = {}
+                        verses.forEach((v) => {
+                          const key = `${v.chapterId}:${v.verse}`
+                          obj[key] = v
+                        })
+                        setOccurrences(obj)
+                      })
+                      .catch((e) =>
+                        LOGGER.error("Failed getting occurrences data", e),
+                      )
+                  }
+
+                  findWordsOccurrences()
                 }}
                 onPointerDown={() => {
                   setContent(word)
+
                   hoverTimeoutRef.current = setTimeout(() => {
+                    haptic()
                     paperDialogRef.current?.openDialog()
                   }, 500)
                 }}
@@ -259,12 +342,19 @@ export default function VerseRow({
         </VerseText>
       </VerseRowWrapper>
 
+      <NoteVerseDialog
+        isOpen={showNoteVerseDialog}
+        verseKey={verseKey}
+        onVisibilityChange={(s) => setShowNoteVerseDialog(!!s)}
+      />
+
       <PaperDialog
         mobile
         ref={paperDialogRef}
         height="55dvh"
         controls={[]}
         closable
+        resizable
         styles={{
           indicatorStyle: css`
             height: 40px;
@@ -282,6 +372,7 @@ export default function VerseRow({
       >
         {content && (
           <LexemeDetailPaperDialog
+            occurrences={occurrences}
             content={content}
             arabicFont={userSettings.font.arabic.family}
             theme={theme}
@@ -442,4 +533,8 @@ const Meaning = styled.div<{
   direction: ltr;
   text-align: center;
   max-width: 120px;
+
+  /* allows breaking anywhere when necessary, including around long text */
+  word-break: break-word;
+  overflow-wrap: anywhere;
 `

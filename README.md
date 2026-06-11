@@ -25,8 +25,7 @@ App unique features:
 
 - Better scroll preservation (both saving and restoring the position)
 - Ability to bookmark any verse and go to that any moment
-- Can lookup by: chapter:verse, juz, root word, and verse theme.
-- Store number of verses in each chapter, so that the verse lookup component can display verse number rather than making user type
+- Can lookup by: juz, root word, and verse theme.
 - Normalize such as in baqarah 10: اَلِیْمٌۢ بِمَا the mim at the first word has indicator of mim
 - Make it easy to learn tajwid on the app
 - Add a feature to report an issue
@@ -52,11 +51,16 @@ App unique features:
 - [ ] If we add another locale, and then refresh the page, we should not redownload the locale (this proves that database persisting works for all new-locale)
 - [ ] Scroll the page, until the last verse, and ensure we see all the verse, and all the word as per the database (ensuring rendering data and database data matches)
 - [ ] Ensure verse marker follows/work even if we change the translations used (add/remove). Make sure it always work on a 2-lines verse, because sometimes it doesn't work.
+- [ ] Ensure when changing language, the "Lompat ke ayat" dropdown, and displayed chapter at the header, is using local language
+- [ ] Check overlay behavior: if sidebar is opened, has overlay, and clicking overlay close the sidebar. Same expected behavior with search bar.
+- [ ] Make sure pressing on the word show the occurrences across different verses
+- [ ] Fix 2:204 word 16 buggy cannot scroll down
+- [ ] Add a new bookmark note. And if adding on a bookmarked verse, will edit instead of insert. Also check that each bookmark, whenever not specified, will add to default (but the localstorage should always have 1 default category)
 
 ءَا
 لْإِ
 "\w+/
-sedikit/[\w\-\s]+"
+sedikit/([\w\-\s]+")
 
 standardize مَنْ in indonesian (like 2:200) so that it reads "barang siapa" (or "yang" better?) rather than "orang" (but must check the English, if it is just whom or who -> yang, if it is (to) whom then (ke) yang, (is he) -> (ialah) yang; other than that put te english word as-is: (english) yang)
 
