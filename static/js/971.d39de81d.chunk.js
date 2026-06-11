@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkbil_quran=self.webpackChunkbil_quran||[]).push([[971],{971(a){a.exports=JSON.parse('{"font":"Font","lang":"Bahasa","lookup":{"title":"Lompat ke ayat","go":"Tuju"},"locale":{"ar-IQ":"Bahasa Arab (Iraq)","en-US":"Bahasa Inggris (Amerika)","id-ID":"Bahasa Indonesia"},"theme":{"title":"Pewarnaan","light":"Cerah","dark":"Gelap"}}')}}]);
