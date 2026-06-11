@@ -30,11 +30,18 @@ const useChaptersState = create<ChaptersState>((set, get) => ({
       })
   },
 
+  getChapter(arg) {
+    const chapterNumber = Number(String(arg))
+    const chapter = get().chapters[chapterNumber]
+    if (chapter == null) throw new Error(`Chapter '${chapterNumber}' not found`)
+    return chapter
+  },
+
   getChapterMeaning(chapterNumber: number) {
     const { userSettings } = useUserSettingsState.getState()
     const { locale } = userSettings
     LOGGER.debug("User selected locale is", locale)
-    const chapter = get().chapters[chapterNumber]
+    const chapter = get().getChapter(chapterNumber)
     if (chapter == null) return null
     return chapter.meanings[locale] || chapter.meanings[DEFAULT_LOCALE]
   },
@@ -43,7 +50,7 @@ const useChaptersState = create<ChaptersState>((set, get) => ({
     const { userSettings } = useUserSettingsState.getState()
     const { locale } = userSettings
     LOGGER.debug("User selected locale is", locale)
-    const chapter = get().chapters[chapterNumber]
+    const chapter = get().getChapter(chapterNumber)
     if (chapter == null) return null
     return chapter.namings[locale] || chapter.namings[DEFAULT_LOCALE]
   },
@@ -52,7 +59,7 @@ const useChaptersState = create<ChaptersState>((set, get) => ({
     const { userSettings } = useUserSettingsState.getState()
     const { locale } = userSettings
     LOGGER.debug("User selected locale is", locale)
-    const chapter = get().chapters[chapterNumber]
+    const chapter = get().getChapter(chapterNumber)
     if (chapter == null) return null
     return (
       chapter.transliterations[locale] ||
@@ -64,6 +71,7 @@ const useChaptersState = create<ChaptersState>((set, get) => ({
 export interface ChaptersState {
   chapters: Record<number, ChapterRecord>
   loadChapters: () => void
+  getChapter: (chapterNumber: number | string) => ChapterRecord
   getChapterMeaning: (chapterNumber: number) => string | null
   getChapterArabicName: (chapterNumber: number) => string | null
   getChapterTransliteratedName: (chapterNumber: number) => string | null

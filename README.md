@@ -25,8 +25,7 @@ App unique features:
 
 - Better scroll preservation (both saving and restoring the position)
 - Ability to bookmark any verse and go to that any moment
-- Can lookup by: chapter:verse, juz, root word, and verse theme.
-- Store number of verses in each chapter, so that the verse lookup component can display verse number rather than making user type
+- Can lookup by: juz, root word, and verse theme.
 - Normalize such as in baqarah 10: اَلِیْمٌۢ بِمَا the mim at the first word has indicator of mim
 - Make it easy to learn tajwid on the app
 - Add a feature to report an issue
@@ -56,6 +55,7 @@ App unique features:
 - [ ] Check overlay behavior: if sidebar is opened, has overlay, and clicking overlay close the sidebar. Same expected behavior with search bar.
 - [ ] Make sure pressing on the word show the occurrences across different verses
 - [ ] Fix 2:204 word 16 buggy cannot scroll down
+- [ ] Add a new bookmark note. And if adding on a bookmarked verse, will edit instead of insert. Also check that each bookmark, whenever not specified, will add to default (but the localstorage should always have 1 default category)
 
 ءَا
 لْإِ
