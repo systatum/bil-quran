@@ -31,6 +31,7 @@
     "drizzle-orm": "^0.45.2",
     "idb-keyval": "^6.2.4",
     "ios-haptics": "^0.1.5",
+    "nanoid": "^5.1.11",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-hot-toast": "^2.6.0",

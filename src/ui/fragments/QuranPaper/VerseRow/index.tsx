@@ -7,12 +7,17 @@ import {
 import { TranslatedWord } from "@constants/records/WordTranslationRecord"
 import { BasmalaPosition, DEFAULT_LOCALE } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
+import { repo } from "@db/repo"
 import useUserSettingsState, {
   FontSetting,
 } from "@hooks/states/UserSettingsState"
 import useAligner from "@hooks/tools/useAligner"
 import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
+import { useWordTranslations } from "@hooks/tools/useWordTranslations"
 import { RiBookMarkedFill, RiPencilAi2Line } from "@remixicon/react"
+import { unpackIPC } from "@services/Converter"
+import LOGGER from "@services/Logger"
+import { makeSnippet } from "@services/mutator"
 import { Button } from "@systatum/coneto/button"
 import { PaperDialog, PaperDialogRef } from "@systatum/coneto/paper-dialog"
 import { haptic } from "ios-haptics"
@@ -20,11 +25,7 @@ import { useEffect, useRef, useState } from "react"
 import styled, { css } from "styled-components"
 import { Bismillah } from "./Bismillah"
 import { LexemeDetailPaperDialog } from "./LexemeDetailPaperDialog"
-import { repo } from "@db/repo"
-import { unpackIPC } from "@services/Converter"
-import { makeSnippet } from "@services/mutator"
-import { useWordTranslations } from "@hooks/tools/useWordTranslations"
-import LOGGER from "@services/Logger"
+import NoteVerseDialog from "./NoteDialog"
 
 export type Verse = {
   id: string
@@ -65,6 +66,8 @@ export default function VerseRow({
   theme: ThemeMode
 }) {
   const [content, setContent] = useState<WordCell | undefined>(undefined)
+  const [showNoteVerseDialog, setShowNoteVerseDialog] = useState<boolean>(false)
+  const [verseKey, setVerseKey] = useState<string>("")
   const [occurrences, setOccurrences] = useState<
     Record<string, WordOccurrence>
   >({})
@@ -75,7 +78,7 @@ export default function VerseRow({
 
   const corpora = useWordTranslations(wbwTranslations)
 
-  const { userSettings } = useUserSettingsState()
+  const { userSettings, bookmarkVerse } = useUserSettingsState()
   const { basmalaPosition } = userSettings
 
   const paperDialogRef = useRef<PaperDialogRef>(null)
@@ -165,12 +168,19 @@ export default function VerseRow({
                 {
                   caption: "Bookmark",
                   icon: { image: RiBookMarkedFill },
-                  onClick: () => {},
+                  onClick: () => {
+                    const verseKey = `${verse.chapter.id}:${verse.number}`
+                    setVerseKey(verseKey)
+                    bookmarkVerse({ verseKey })
+                  },
                 },
                 {
                   caption: "Note",
                   icon: { image: RiPencilAi2Line },
-                  onClick: () => {},
+                  onClick: () => {
+                    setVerseKey(`${verse.chapter.id}:${verse.number}`)
+                    setShowNoteVerseDialog(true)
+                  },
                 },
               ])
             }
@@ -331,6 +341,12 @@ export default function VerseRow({
           ))}
         </VerseText>
       </VerseRowWrapper>
+
+      <NoteVerseDialog
+        isOpen={showNoteVerseDialog}
+        verseKey={verseKey}
+        onVisibilityChange={(s) => setShowNoteVerseDialog(!!s)}
+      />
 
       <PaperDialog
         mobile

@@ -56,6 +56,7 @@ App unique features:
 - [ ] Check overlay behavior: if sidebar is opened, has overlay, and clicking overlay close the sidebar. Same expected behavior with search bar.
 - [ ] Make sure pressing on the word show the occurrences across different verses
 - [ ] Fix 2:204 word 16 buggy cannot scroll down
+- [ ] Add a new bookmark note. And if adding on a bookmarked verse, will edit instead of insert. Also check that each bookmark, whenever not specified, will add to default (but the localstorage should always have 1 default category)
 
 ءَا
 لْإِ

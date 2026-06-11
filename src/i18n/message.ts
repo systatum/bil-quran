@@ -5,6 +5,8 @@
 export const messages = {
   font: "font",
   lang: "lang",
+  add: "add",
+  cancel: "cancel",
   lookup: {
     title: "lookup.title",
     go: "lookup.go",
@@ -23,6 +25,14 @@ export const messages = {
     title: "basmalaPosition.title",
     "0": "basmalaPosition.0",
     "1": "basmalaPosition.1",
+  },
+  dialog: {
+    noteVerse: {
+      title: "dialog.noteVerse.title",
+      input: {
+        placeholder: "dialog.noteVerse.input.placeholder",
+      },
+    },
   },
 } as const
 

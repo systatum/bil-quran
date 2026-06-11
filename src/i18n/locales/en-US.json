@@ -1,6 +1,8 @@
 {
   "font": "Font",
   "lang": "Language",
+  "add": "Add",
+  "cancel": "Cancel",
   "lookup": {
     "title": "Verse lookup",
     "go": "Go"
@@ -19,5 +21,13 @@
     "title": "Basmala position",
     "0": "Embedded",
     "1": "Detached"
+  },
+  "dialog": {
+    "noteVerse": {
+      "title": "Note this verse",
+      "input": {
+        "placeholder": "Optionally add some note..."
+      }
+    }
   }
 }
