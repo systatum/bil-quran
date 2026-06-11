@@ -145,6 +145,51 @@ export default function VerseRow({
     virtualizer,
   })
 
+  const findWordsOccurrences = (word: WordCell) => {
+    repo.words
+      .findOccurrences(word.lexemeId)
+      .then((ipcResp) => {
+        const rawVerses = unpackIPC(ipcResp)
+        const verses = rawVerses.map((v) => {
+          const targetIndex = v.words.findIndex(
+            (w) => w.order === v.targetOrder,
+          )
+
+          // use a deterministic "random" based on the verse so same
+          // occurrence to always display identically instead of
+          // changing on every render
+          const deterministicCounter = () =>
+            ((v.chapterId * 31 + v.verse * 17 + v.targetOrder) % 5) + 1
+
+          const shownWords: WordCell[] = makeSnippet(
+            v.words,
+            targetIndex,
+            deterministicCounter,
+          ).map((word) => ({
+            ...word,
+            meanings: Object.fromEntries(
+              wbwTranslations.map((locale) => [
+                locale,
+                corpora[locale]?.[word.chapterId]?.[word.verse]?.[word.order],
+              ]),
+            ),
+          }))
+
+          return {
+            ...v,
+            words: shownWords,
+          }
+        })
+        const obj: Record<string, WordOccurrence> = {}
+        verses.forEach((v) => {
+          const key = `${v.chapterId}:${v.verse}`
+          obj[key] = v
+        })
+        setOccurrences(obj)
+      })
+      .catch((e) => LOGGER.error("Failed getting occurrences data", e))
+  }
+
   return (
     <>
       <VerseRowWrapper
@@ -227,62 +272,11 @@ export default function VerseRow({
               <Arabic
                 onMouseDown={() => {
                   setContent(word)
-
-                  const findWordsOccurrences = () => {
-                    repo.words
-                      .findOccurrences(word.lexemeId)
-                      .then((ipcResp) => {
-                        const rawVerses = unpackIPC(ipcResp)
-                        const verses = rawVerses.map((v) => {
-                          const targetIndex = v.words.findIndex(
-                            (w) => w.order === v.targetOrder,
-                          )
-
-                          // use a deterministic "random" based on the verse so same
-                          // occurrence to always display identically instead of
-                          // changing on every render
-                          const deterministicCounter = () =>
-                            ((v.chapterId * 31 + v.verse * 17 + v.targetOrder) %
-                              5) +
-                            1
-
-                          const shownWords: WordCell[] = makeSnippet(
-                            v.words,
-                            targetIndex,
-                            deterministicCounter,
-                          ).map((word) => ({
-                            ...word,
-                            meanings: Object.fromEntries(
-                              wbwTranslations.map((locale) => [
-                                locale,
-                                corpora[locale]?.[word.chapterId]?.[
-                                  word.verse
-                                ]?.[word.order],
-                              ]),
-                            ),
-                          }))
-
-                          return {
-                            ...v,
-                            words: shownWords,
-                          }
-                        })
-                        const obj: Record<string, WordOccurrence> = {}
-                        verses.forEach((v) => {
-                          const key = `${v.chapterId}:${v.verse}`
-                          obj[key] = v
-                        })
-                        setOccurrences(obj)
-                      })
-                      .catch((e) =>
-                        LOGGER.error("Failed getting occurrences data", e),
-                      )
-                  }
-
-                  findWordsOccurrences()
+                  findWordsOccurrences(word)
                 }}
                 onPointerDown={() => {
                   setContent(word)
+                  findWordsOccurrences(word)
 
                   hoverTimeoutRef.current = setTimeout(() => {
                     haptic()
@@ -424,7 +418,7 @@ const VerseRowWrapper = styled.div<{ $theme: ThemeMode }>`
   grid-template-columns: 72px 1fr;
   direction: rtl;
   align-items: start;
-  overflow: clip;
+  overflow: hidden;
 
   color: ${({ $theme }) => ($theme === "dark" ? "#d8c7a3" : "#1f1f1f")};
   background: ${({ $theme }) => ($theme === "dark" ? "#181818" : "#f6f1e7")};
