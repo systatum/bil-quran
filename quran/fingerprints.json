@@ -1,5 +1,6 @@
 {
   "chapters.json": "c7ac85c88ac05daa337c15cc5844901c",
+  "commentaries/aliquli/README.md": "955c6a690ac7ad1d392b6af2bd545a50",
   "verses/imlaei/1.json": "f80a87edd1d77a9017866ccfcb1a2cc9",
   "verses/imlaei/10.json": "f8308c0edea422d24e521fb1fae7c8b1",
   "verses/imlaei/100.json": "a42ee46df8ec0b97413553154d5df8ab",
@@ -116,6 +117,6 @@
   "verses/imlaei/99.json": "c4daddba498ee654a5d9badc43259072",
   "verses/imlaei.json": "d0f90152383e75a4a34b13a47cd4aaf7",
   "verses/readme.txt": "cc404532e0e95208b2386f217c21fc22",
-  "wbw_translations/en-US.json": "fa40a408f0e0752701cf453015903294",
-  "wbw_translations/id-ID.json": "c3e58956586ba24cd063fe0084b6b7f3"
+  "wbw_translations/en-US.json": "e2e5c8d1fb33096f11eb737b0fea2dd4",
+  "wbw_translations/id-ID.json": "ca27ed140e49fc7cb4d85e5fa14ad24f"
 }
