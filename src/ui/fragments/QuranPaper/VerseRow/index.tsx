@@ -286,6 +286,7 @@ export default function VerseRow({
                   border-radius: 50%;
                   border: 1px dashed var(--dashed);
                   opacity: var(--dashed-opacity);
+                  cursor: pointer;
                 }
               `,
             }}
