@@ -296,9 +296,8 @@ export default function VerseRow({
                 ${isTipMenuOpen &&
                 css`
                   box-shadow:
-                    inset 0 2px 5px rgba(117, 95, 77, 0.35),
-                    inset 0 1px 2px rgba(0, 0, 0, 0.12),
-                    0 0.5px 1px rgba(0, 0, 0, 0.08);
+                    inset 0 0 5px rgba(117, 95, 77, 0.35),
+                    inset 0 0 2px rgba(0, 0, 0, 0.12);
                   background: radial-gradient(
                     circle,
                     var(--bg-start) 40%,
