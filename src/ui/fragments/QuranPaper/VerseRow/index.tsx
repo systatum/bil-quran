@@ -76,6 +76,8 @@ export default function VerseRow({
     userSettings: { wbwTranslations },
   } = useUserSettingsState()
 
+  const [isTipMenuOpen, setIsTipMenuOpen] = useState(false)
+
   const corpora = useWordTranslations(wbwTranslations)
 
   const { userSettings, bookmarkVerse } = useUserSettingsState()
@@ -226,6 +228,8 @@ export default function VerseRow({
               ])
             }
             showSubMenuOn="self"
+            onOpen={(isOpen) => setIsTipMenuOpen(isOpen)}
+            open={isTipMenuOpen}
             styles={{
               containerStyle: css`
                 padding: 0;
@@ -288,6 +292,19 @@ export default function VerseRow({
                   opacity: var(--dashed-opacity);
                   cursor: pointer;
                 }
+
+                ${isTipMenuOpen &&
+                css`
+                  box-shadow:
+                    inset 0 2px 5px rgba(117, 95, 77, 0.35),
+                    inset 0 1px 2px rgba(0, 0, 0, 0.12),
+                    0 0.5px 1px rgba(0, 0, 0, 0.08);
+                  background: radial-gradient(
+                    circle,
+                    var(--bg-start) 40%,
+                    var(--bg-end) 100%
+                  );
+                `}
               `,
             }}
           >
