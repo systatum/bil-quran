@@ -139,8 +139,9 @@ export default function VerseRow({
     }
   }, [virtualizer.scrollElement])
 
-  const { refs: meaningRefs, layerHeights } = useAligner({ key: verse.id })
-
+  const { wordRefs, wordRows, rowLayerHeights } = useAligner({
+    key: verse.id,
+  })
   const ref = useVirtualRowMeasurer({
     index,
     sizeMap,
@@ -333,8 +334,12 @@ export default function VerseRow({
 
           {verse.words.map((word, i) => (
             <Word
-              ref={i === verse.words.length - 1 ? lastWordRef : undefined}
               key={`${word.chapterId}-${word.verse}-${word.order}`}
+              data-word-index={i}
+              ref={(el) => {
+                if (!el) return
+                wordRefs.current[i] = el
+              }}
             >
               <Arabic
                 onPointerDown={() => {
@@ -377,13 +382,8 @@ export default function VerseRow({
                     <Meaning
                       key={t}
                       $theme={theme}
-                      ref={(el) => {
-                        if (!el) return
-
-                        meaningRefs.current[layer] ??= []
-                        meaningRefs.current[layer].push(el)
-                      }}
-                      $minHeight={layerHeights[layer]}
+                      data-layer={layer}
+                      $minHeight={rowLayerHeights[wordRows[i]]?.[layer]}
                     >
                       {word.meanings[t]}
                     </Meaning>
