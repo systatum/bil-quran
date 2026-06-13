@@ -57,9 +57,11 @@ export default function InterlinearText({
           )}
 
           {showMeaning && (
-            <Meaning $theme={theme} $marginTop="57px">
-              In the name of Allah, the Most Gracious, the Most Merciful
-            </Meaning>
+            <Meanings>
+              <Meaning $theme={theme} $marginTop="57px">
+                In the name of Allah, the Most Gracious, the Most Merciful
+              </Meaning>
+            </Meanings>
           )}
         </Word>
       )}
@@ -139,7 +141,7 @@ const Arabic = styled.span<{ $highlighted?: boolean }>`
       : ""}
 `
 
-export const Transliteration = styled.span`
+const Transliteration = styled.span`
   font-size: 14px;
   color: #666;
   margin-top: 4px;
