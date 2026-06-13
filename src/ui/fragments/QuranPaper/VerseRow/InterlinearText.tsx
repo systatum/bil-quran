@@ -13,7 +13,7 @@ interface InterlinearTextProps {
   /**
    * Signifying the chapter and verse
    */
-  key: string
+  id: string
   arabicFont: FontSetting
   withBasmala?: boolean
   showTransliteration?: boolean
@@ -31,7 +31,7 @@ interface InterlinearTextProps {
 }
 
 export default function InterlinearText({
-  key,
+  id,
   arabicFont: font,
   withBasmala = false,
   showTransliteration,
@@ -42,7 +42,7 @@ export default function InterlinearText({
   shownTranslations,
   ...props
 }: InterlinearTextProps) {
-  const { refs: meaningRefs, layerHeights } = useAligner({ key })
+  const { refs: meaningRefs, layerHeights } = useAligner({ key: id })
 
   return (
     <VerseText $font={font}>
@@ -86,7 +86,7 @@ export default function InterlinearText({
 
           {showMeaning && (
             <Meanings>
-              {shownTranslations.map((t, layer) => (
+              {shownTranslations?.map((t, layer) => (
                 <Meaning
                   key={t}
                   $theme={theme}
@@ -129,7 +129,7 @@ const Word = styled.span`
   user-select: none;
 `
 
-const Arabic = styled.span<{ $highlighted: boolean }>`
+const Arabic = styled.span<{ $highlighted?: boolean }>`
   line-height: 1.6;
   cursor: pointer;
   ${({ $highlighted }) =>

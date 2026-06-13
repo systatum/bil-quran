@@ -76,6 +76,8 @@ export default function VerseRow({
     userSettings: { wbwTranslations },
   } = useUserSettingsState()
 
+  const [isTipMenuOpen, setIsTipMenuOpen] = useState(false)
+
   const corpora = useWordTranslations(wbwTranslations)
 
   const { userSettings, bookmarkVerse } = useUserSettingsState()
@@ -83,18 +85,6 @@ export default function VerseRow({
 
   const paperDialogRef = useRef<PaperDialogRef>(null)
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-
-  const ref = useVirtualRowMeasurer({
-    index,
-    sizeMap,
-    virtualizer,
-    deps: [
-      basmalaPosition,
-      showMeaning,
-      showTransliteration,
-      userSettings.font.arabic,
-    ],
-  })
 
   const markerColumnRef = useRef<HTMLDivElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -151,12 +141,65 @@ export default function VerseRow({
 
   const { refs: meaningRefs, layerHeights } = useAligner({ key: verse.id })
 
+  const ref = useVirtualRowMeasurer({
+    index,
+    sizeMap,
+    virtualizer,
+  })
+
+  const findWordsOccurrences = (word: WordCell) => {
+    repo.words
+      .findOccurrences(word.lexemeId)
+      .then((ipcResp) => {
+        const rawVerses = unpackIPC(ipcResp)
+        const verses = rawVerses.map((v) => {
+          const targetIndex = v.words.findIndex(
+            (w) => w.order === v.targetOrder,
+          )
+
+          // use a deterministic "random" based on the verse so same
+          // occurrence to always display identically instead of
+          // changing on every render
+          const deterministicCounter = () =>
+            ((v.chapterId * 31 + v.verse * 17 + v.targetOrder) % 5) + 1
+
+          const shownWords: WordCell[] = makeSnippet(
+            v.words,
+            targetIndex,
+            deterministicCounter,
+          ).map((word) => ({
+            ...word,
+            meanings: Object.fromEntries(
+              wbwTranslations.map((locale) => [
+                locale,
+                corpora[locale]?.[word.chapterId]?.[word.verse]?.[word.order],
+              ]),
+            ),
+          }))
+
+          return {
+            ...v,
+            words: shownWords,
+          }
+        })
+        const obj: Record<string, WordOccurrence> = {}
+        verses.forEach((v) => {
+          const key = `${v.chapterId}:${v.verse}`
+          obj[key] = v
+        })
+        setOccurrences(obj)
+      })
+      .catch((e) => LOGGER.error("Failed getting occurrences data", e))
+  }
+
   return (
     <>
       <VerseRowWrapper
+        data-index={index}
         ref={(el) => {
-          ;(ref as React.MutableRefObject<HTMLDivElement | null>).current = el
+          if (!el) return
           wrapperRef.current = el
+          ref(el)
         }}
         $theme={theme}
         style={{ transform: style.transform }}
@@ -185,6 +228,8 @@ export default function VerseRow({
               ])
             }
             showSubMenuOn="self"
+            onOpen={(isOpen) => setIsTipMenuOpen(isOpen)}
+            open={isTipMenuOpen}
             styles={{
               containerStyle: css`
                 padding: 0;
@@ -195,11 +240,74 @@ export default function VerseRow({
                 height: fit-content;
                 width: fit-content;
                 border-radius: 9999px;
+
+                --text: ${theme === "dark" ? "#e5dcc3" : "#755f4d"};
+                --border: ${theme === "dark" ? "#5f5644" : "#cbb9a1"};
+                --bg-start: ${theme === "dark" ? "#2b2a26" : "#efe6d8"};
+                --bg-end: ${theme === "dark" ? "#1c1b18" : "#e2d6c3"};
+                --inset: ${theme === "dark" ? "#3b372f" : "#f4ede2"};
+                --shadow: ${theme === "dark"
+                  ? "rgba(0,0,0,0.45)"
+                  : "rgba(117,95,77,0.08)"};
+                --text-shadow: ${theme === "dark"
+                  ? "rgba(0,0,0,0.35)"
+                  : "rgba(255,255,255,0.30)"};
+                --dashed: ${theme === "dark"
+                  ? "#7b715b"
+                  : "rgba(117,95,77,0.26)"};
+                --dashed-opacity: ${theme === "dark" ? 0.4 : 0.5};
+
+                &:hover {
+                  --shadow: none;
+                }
+
+                width: 42px;
+                height: 42px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+                position: relative;
+                border-radius: 50%;
+                font-size: 18px;
+                color: var(--text);
+                border: 1.5px solid var(--border);
+
+                background: radial-gradient(
+                  circle,
+                  var(--bg-start) 40%,
+                  var(--bg-end) 100%
+                );
+                box-shadow:
+                  inset 0 0 0 2px var(--inset),
+                  0 1px 3px var(--shadow);
+                text-shadow: 0 1px 0 var(--text-shadow);
+
+                &::after {
+                  content: "";
+                  position: absolute;
+                  inset: 4px;
+                  border-radius: 50%;
+                  border: 1px dashed var(--dashed);
+                  opacity: var(--dashed-opacity);
+                  cursor: pointer;
+                }
+
+                ${isTipMenuOpen &&
+                css`
+                  box-shadow:
+                    inset 0 0 5px rgba(117, 95, 77, 0.35),
+                    inset 0 0 2px rgba(0, 0, 0, 0.12);
+                  background: radial-gradient(
+                    circle,
+                    var(--bg-start) 40%,
+                    var(--bg-end) 100%
+                  );
+                `}
               `,
             }}
-            variant="ghost"
           >
-            <VerseMarker $theme={theme}>{verse.number}</VerseMarker>
+            {verse.number}
           </Button>
         </VerseMarkerColumn>
 
@@ -229,64 +337,9 @@ export default function VerseRow({
               key={`${word.chapterId}-${word.verse}-${word.order}`}
             >
               <Arabic
-                onMouseDown={() => {
-                  setContent(word)
-
-                  const findWordsOccurrences = () => {
-                    repo.words
-                      .findOccurrences(word.lexemeId)
-                      .then((ipcResp) => {
-                        const rawVerses = unpackIPC(ipcResp)
-                        const verses = rawVerses.map((v) => {
-                          const targetIndex = v.words.findIndex(
-                            (w) => w.order === v.targetOrder,
-                          )
-
-                          // use a deterministic "random" based on the verse so same
-                          // occurrence to always display identically instead of
-                          // changing on every render
-                          const deterministicCounter = () =>
-                            ((v.chapterId * 31 + v.verse * 17 + v.targetOrder) %
-                              5) +
-                            1
-
-                          const shownWords: WordCell[] = makeSnippet(
-                            v.words,
-                            targetIndex,
-                            deterministicCounter,
-                          ).map((word) => ({
-                            ...word,
-                            meanings: Object.fromEntries(
-                              wbwTranslations.map((locale) => [
-                                locale,
-                                corpora[locale]?.[word.chapterId]?.[
-                                  word.verse
-                                ]?.[word.order],
-                              ]),
-                            ),
-                          }))
-
-                          return {
-                            ...v,
-                            words: shownWords,
-                          }
-                        })
-                        const obj: Record<string, WordOccurrence> = {}
-                        verses.forEach((v) => {
-                          const key = `${v.chapterId}:${v.verse}`
-                          obj[key] = v
-                        })
-                        setOccurrences(obj)
-                      })
-                      .catch((e) =>
-                        LOGGER.error("Failed getting occurrences data", e),
-                      )
-                  }
-
-                  findWordsOccurrences()
-                }}
                 onPointerDown={() => {
                   setContent(word)
+                  findWordsOccurrences(word)
 
                   hoverTimeoutRef.current = setTimeout(() => {
                     haptic()
@@ -428,6 +481,7 @@ const VerseRowWrapper = styled.div<{ $theme: ThemeMode }>`
   grid-template-columns: 72px 1fr;
   direction: rtl;
   align-items: start;
+  overflow: hidden;
 
   color: ${({ $theme }) => ($theme === "dark" ? "#d8c7a3" : "#1f1f1f")};
   background: ${({ $theme }) => ($theme === "dark" ? "#181818" : "#f6f1e7")};
@@ -438,48 +492,6 @@ const VerseRowWrapper = styled.div<{ $theme: ThemeMode }>`
 const VerseMarkerColumn = styled.div`
   align-self: start;
   z-index: 1;
-`
-
-const VerseMarker = styled.div<{ $theme: ThemeMode }>`
-  --text: ${({ $theme }) => ($theme === "dark" ? "#e5dcc3" : "#755f4d")};
-  --border: ${({ $theme }) => ($theme === "dark" ? "#5f5644" : "#cbb9a1")};
-  --bg-start: ${({ $theme }) => ($theme === "dark" ? "#2b2a26" : "#efe6d8")};
-  --bg-end: ${({ $theme }) => ($theme === "dark" ? "#1c1b18" : "#e2d6c3")};
-  --inset: ${({ $theme }) => ($theme === "dark" ? "#3b372f" : "#f4ede2")};
-  --shadow: ${({ $theme }) =>
-    $theme === "dark" ? "rgba(0,0,0,0.45)" : "rgba(117,95,77,0.08)"};
-  --text-shadow: ${({ $theme }) =>
-    $theme === "dark" ? "rgba(0,0,0,0.35)" : "rgba(255,255,255,0.30)"};
-  --dashed: ${({ $theme }) =>
-    $theme === "dark" ? "#7b715b" : "rgba(117,95,77,0.26)"};
-  --dashed-opacity: ${({ $theme }) => ($theme === "dark" ? 0.4 : 0.5)};
-
-  width: 42px;
-  height: 42px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  position: relative;
-  border-radius: 50%;
-  font-size: 18px;
-  color: var(--text);
-  border: 1.5px solid var(--border);
-
-  background: radial-gradient(circle, var(--bg-start) 40%, var(--bg-end) 100%);
-  box-shadow:
-    inset 0 0 0 2px var(--inset),
-    0 1px 3px var(--shadow);
-  text-shadow: 0 1px 0 var(--text-shadow);
-
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 4px;
-    border-radius: 50%;
-    border: 1px dashed var(--dashed);
-    opacity: var(--dashed-opacity);
-  }
 `
 
 const VerseText = styled.div<{ $font: FontSetting }>`

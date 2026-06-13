@@ -21,29 +21,26 @@ export default function BasmalaRow({
     index,
     sizeMap,
     virtualizer,
-    deps: [hidden],
   })
 
   return (
     <BasmalaContainer
+      data-index={index}
       ref={ref}
       theme={theme}
+      $hidden={hidden}
       style={{ transform: style.transform }}
     >
-      {hidden ? (
-        <></>
-      ) : (
-        <BasmalaFrame theme={theme}>
-          <BasmalaText theme={theme} lang="ar">
-            ﷽
-          </BasmalaText>
-        </BasmalaFrame>
-      )}
+      <BasmalaFrame theme={theme}>
+        <BasmalaText theme={theme} lang="ar">
+          ﷽
+        </BasmalaText>
+      </BasmalaFrame>
     </BasmalaContainer>
   )
 }
 
-const BasmalaContainer = styled.div<{ theme: ThemeMode }>`
+const BasmalaContainer = styled.div<{ theme: ThemeMode; $hidden?: boolean }>`
   --bg: ${({ theme }) => (theme === "dark" ? "#181818" : "#f6f1e7")};
   --panel-top: ${({ theme }) => (theme === "dark" ? "#211f1a" : "#f3ecdf")};
   --panel-bottom: ${({ theme }) => (theme === "dark" ? "#191714" : "#ebe0cb")};
@@ -60,6 +57,9 @@ const BasmalaContainer = styled.div<{ theme: ThemeMode }>`
   background: var(--bg);
   display: flex;
   justify-content: center;
+
+  padding: ${({ $hidden }) => ($hidden ? "0" : "0 18px 10px")};
+  min-height: ${({ $hidden }) => ($hidden ? "0" : "auto")};
 `
 
 const BasmalaFrame = styled.div<{ theme: ThemeMode }>`
