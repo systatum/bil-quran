@@ -17,6 +17,7 @@ export default function BasmalaRow({
   theme: ThemeMode
   hidden: boolean
 }) {
+  if (hidden) return <></>
   const ref = useVirtualRowMeasurer({
     index,
     sizeMap,
@@ -55,11 +56,8 @@ const BasmalaContainer = styled.div<{ theme: ThemeMode; $hidden?: boolean }>`
   box-sizing: border-box;
   padding: 0 18px 10px;
   background: var(--bg);
-  display: flex;
+  display: "flex";
   justify-content: center;
-
-  padding: ${({ $hidden }) => ($hidden ? "0" : "0 18px 10px")};
-  min-height: ${({ $hidden }) => ($hidden ? "0" : "auto")};
 `
 
 const BasmalaFrame = styled.div<{ theme: ThemeMode }>`

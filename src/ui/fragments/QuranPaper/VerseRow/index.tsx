@@ -1,16 +1,13 @@
-import { ArabicFontFamily } from "@constants/fonts"
 import { ChapterRecord } from "@constants/records/ChapterRecord"
 import {
   WordOccurrence,
   WordWithLexemeRecord,
 } from "@constants/records/WordRecord"
 import { TranslatedWord } from "@constants/records/WordTranslationRecord"
-import { BasmalaPosition, DEFAULT_LOCALE } from "@constants/settings"
+import { BasmalaPosition } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import { repo } from "@db/repo"
-import useUserSettingsState, {
-  FontSetting,
-} from "@hooks/states/UserSettingsState"
+import useUserSettingsState from "@hooks/states/UserSettingsState"
 import useAligner from "@hooks/tools/useAligner"
 import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
 import { useWordTranslations } from "@hooks/tools/useWordTranslations"
@@ -24,6 +21,7 @@ import { haptic } from "ios-haptics"
 import { useEffect, useRef, useState } from "react"
 import styled, { css } from "styled-components"
 import { Bismillah } from "./Bismillah"
+import InterlinearText from "./InterlinearText"
 import { LexemeDetailPaperDialog } from "./LexemeDetailPaperDialog"
 import NoteVerseDialog from "./NoteDialog"
 
@@ -312,87 +310,36 @@ export default function VerseRow({
           </Button>
         </VerseMarkerColumn>
 
-        <VerseText $font={userSettings.font.arabic}>
-          {basmalaPosition === BasmalaPosition.Embedded &&
-            Bismillah.isRenderableHere(verse.number, verse.chapter.id) && (
-              <Word>
-                <Bismillah />
+        <InterlinearText
+          showMeaning={showMeaning}
+          id={`${verse.chapter.id}-${verse.id}`}
+          arabicFont={userSettings.font.arabic}
+          theme={theme}
+          words={verse.words}
+          shownTranslations={wbwTranslations}
+          withBasmala={
+            basmalaPosition === BasmalaPosition.Embedded &&
+            Bismillah.isRenderableHere(verse.number, verse.chapter.id)
+          }
+          onPointerDown={(word) => {
+            setContent(word)
+            findWordsOccurrences(word)
 
-                {showTransliteration && (
-                  <Transliteration>
-                    Bismillah hir-Rahman nir-Rahim
-                  </Transliteration>
-                )}
-
-                {showMeaning && (
-                  <Meaning $theme={theme} $marginTop="57px">
-                    In the name of Allah, the Most Gracious, the Most Merciful
-                  </Meaning>
-                )}
-              </Word>
-            )}
-
-          {verse.words.map((word, i) => (
-            <Word
-              key={`${word.chapterId}-${word.verse}-${word.order}`}
-              data-word-index={i}
-              ref={(el) => {
-                if (!el) return
-                wordRefs.current[i] = el
-              }}
-            >
-              <Arabic
-                onPointerDown={() => {
-                  setContent(word)
-                  findWordsOccurrences(word)
-
-                  hoverTimeoutRef.current = setTimeout(() => {
-                    haptic()
-                    paperDialogRef.current?.openDialog()
-                  }, 500)
-                }}
-                onPointerUp={() => {
-                  if (hoverTimeoutRef.current) {
-                    clearTimeout(hoverTimeoutRef.current)
-                  }
-                }}
-                onPointerLeave={() => {
-                  if (hoverTimeoutRef.current) {
-                    clearTimeout(hoverTimeoutRef.current)
-                  }
-                }}
-                onPointerCancel={() => {
-                  if (hoverTimeoutRef.current) {
-                    clearTimeout(hoverTimeoutRef.current)
-                  }
-                }}
-              >
-                {word.token}
-              </Arabic>
-
-              {showTransliteration && (
-                <Transliteration>
-                  {word.readings[DEFAULT_LOCALE]}
-                </Transliteration>
-              )}
-
-              {showMeaning && (
-                <Meanings>
-                  {userSettings.wbwTranslations.map((t, layer) => (
-                    <Meaning
-                      key={t}
-                      $theme={theme}
-                      data-layer={layer}
-                      $minHeight={rowLayerHeights[wordRows[i]]?.[layer]}
-                    >
-                      {word.meanings[t]}
-                    </Meaning>
-                  ))}
-                </Meanings>
-              )}
-            </Word>
-          ))}
-        </VerseText>
+            hoverTimeoutRef.current = setTimeout(() => {
+              haptic()
+              paperDialogRef.current?.openDialog()
+            }, 500)
+          }}
+          onPointerUp={(word) => {
+            if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
+          }}
+          onPointerLeave={(word) => {
+            if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
+          }}
+          onPointerCancel={(word) => {
+            if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
+          }}
+        />
       </VerseRowWrapper>
 
       <NoteVerseDialog
@@ -494,59 +441,10 @@ const VerseMarkerColumn = styled.div`
   z-index: 1;
 `
 
-const VerseText = styled.div<{ $font: FontSetting }>`
-  text-align: right;
-  font-size: ${({ $font }) => `${$font.size}px`};
-  line-height: 2.4;
-  font-family:
-    ${({ $font }) => `"${$font.family}"`},
-    "${"NotoNaskhArabic" satisfies ArabicFontFamily}", serif;
-  white-space: normal;
-`
-
-const Word = styled.span`
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 0 6px;
-  vertical-align: top;
-  user-select: none;
-`
-
-const Arabic = styled.span`
-  line-height: 1.6;
-  cursor: pointer;
-`
-
 export const Transliteration = styled.span`
   font-size: 14px;
   color: #666;
   margin-top: 4px;
   direction: ltr;
   text-align: center;
-`
-
-const Meanings = styled.span`
-  line-height: 16px;
-  margin-top: 3px;
-`
-
-const Meaning = styled.div<{
-  $theme: ThemeMode
-  $minHeight?: number
-  $marginTop?: string
-}>`
-  min-height: ${({ $minHeight }) => ($minHeight ? `${$minHeight}px` : "auto")};
-  font-size: 14px;
-  display: block;
-  color: ${({ $theme }) => ($theme === "dark" ? "#bebebe" : "#a09083")};
-  font-family: "${"NotoNaskhArabic" satisfies ArabicFontFamily}", serif;
-  margin-top: ${({ $marginTop }) => $marginTop ?? "8px"};
-  direction: ltr;
-  text-align: center;
-  max-width: 120px;
-
-  /* allows breaking anywhere when necessary, including around long text */
-  word-break: break-word;
-  overflow-wrap: anywhere;
 `

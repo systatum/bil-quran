@@ -4,7 +4,7 @@ import { DEFAULT_LOCALE } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import { FontSetting } from "@hooks/states/UserSettingsState"
 import useAligner from "@hooks/tools/useAligner"
-import { MouseEventHandler, RefObject } from "react"
+import { RefObject } from "react"
 import styled from "styled-components"
 import { WordCell } from "."
 import { Bismillah } from "./Bismillah"
@@ -21,11 +21,11 @@ interface InterlinearTextProps {
   theme: ThemeMode
   words: WordCell[]
   lastWordRef?: RefObject<HTMLSpanElement>
-  onMouseDown?: MouseEventHandler
-  onPointerDown?: MouseEventHandler
-  onPointerUp?: MouseEventHandler
-  onPointerLeave?: MouseEventHandler
-  onPointerCancel?: MouseEventHandler
+  onMouseDown?: (w: WordCell) => void
+  onPointerDown?: (w: WordCell) => void
+  onPointerUp?: (w: WordCell) => void
+  onPointerLeave?: (w: WordCell) => void
+  onPointerCancel?: (w: WordCell) => void
   shownTranslations?: WordTranslationOption[]
   highlightOn?: number[]
 }
@@ -42,7 +42,9 @@ export default function InterlinearText({
   shownTranslations,
   ...props
 }: InterlinearTextProps) {
-  const { refs: meaningRefs, layerHeights } = useAligner({ key: id })
+  const { wordRefs, wordRows, rowLayerHeights } = useAligner({
+    key: id,
+  })
 
   return (
     <VerseText $font={font}>
@@ -64,18 +66,22 @@ export default function InterlinearText({
 
       {words.map((word, i) => (
         <Word
-          ref={i === words.length - 1 ? lastWordRef : undefined}
           key={`${word.chapterId}-${word.verse}-${word.order}`}
+          data-word-index={i}
+          ref={(el) => {
+            if (!el) return
+            wordRefs.current[i] = el
+          }}
         >
           <Arabic
             $highlighted={
               props.highlightOn && props.highlightOn.includes(word.order)
             }
-            onMouseDown={props.onMouseDown}
-            onPointerDown={props.onPointerDown}
-            onPointerUp={props.onPointerUp}
-            onPointerLeave={props.onPointerLeave}
-            onPointerCancel={props.onPointerCancel}
+            onMouseDown={() => props.onMouseDown?.(word)}
+            onPointerDown={() => props.onPointerDown?.(word)}
+            onPointerUp={() => props.onPointerUp?.(word)}
+            onPointerLeave={() => props.onPointerLeave?.(word)}
+            onPointerCancel={() => props.onPointerCancel?.(word)}
           >
             {word.token}
           </Arabic>
@@ -90,13 +96,8 @@ export default function InterlinearText({
                 <Meaning
                   key={t}
                   $theme={theme}
-                  ref={(el) => {
-                    if (!el) return
-
-                    meaningRefs.current[layer] ??= []
-                    meaningRefs.current[layer].push(el)
-                  }}
-                  $minHeight={layerHeights[layer]}
+                  data-layer={layer}
+                  $minHeight={rowLayerHeights[wordRows[i]]?.[layer]}
                 >
                   {word.meanings[t]}
                 </Meaning>
