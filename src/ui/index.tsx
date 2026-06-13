@@ -1,6 +1,4 @@
 import { ChapterRecord } from "@constants/records/ChapterRecord"
-import { DEFAULT_LOCALE } from "@constants/settings"
-import { ThemeMode } from "@constants/theme"
 import { useParams } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 import AppNavbar from "./fragments/AppNavbar"
@@ -9,16 +7,17 @@ import useUserSettingsState from "./hooks/states/UserSettingsState"
 
 export default function UIIndex() {
   const [chapter, setChapter] = useState<ChapterRecord | null>(null)
-  const { userSettings } = useUserSettingsState()
-  const theme: ThemeMode = userSettings.theme
+  const {
+    userSettings: { theme, locale },
+  } = useUserSettingsState()
 
   const navbarTitle = useMemo(() => {
     if (chapter == null) return "bil-Qur'an"
 
     const chapterNo = chapter.id
-    const chapterName = chapter.transliterations[DEFAULT_LOCALE]
-    const chapterMeaningInDefaultLocale = chapter.meanings[DEFAULT_LOCALE]
-    const chapterMeaningInCurrentLocale = chapter.meanings[DEFAULT_LOCALE]
+    const chapterName = chapter.transliterations[locale]
+    const chapterMeaningInDefaultLocale = chapter.meanings[locale]
+    const chapterMeaningInCurrentLocale = chapter.meanings[locale]
     const chapterMeaning =
       chapterMeaningInCurrentLocale ?? chapterMeaningInDefaultLocale
 

@@ -1,6 +1,8 @@
 {
   "font": "Font",
   "lang": "Bahasa",
+  "add": "Tambah",
+  "cancel": "Batal",
   "lookup": {
     "title": "Lompat ke ayat",
     "go": "Tuju"
@@ -14,5 +16,13 @@
     "title": "Pewarnaan",
     "light": "Cerah",
     "dark": "Gelap"
+  },
+  "dialog": {
+    "noteVerse": {
+      "title": "Masukkan dalam daftar ayat",
+      "input": {
+        "placeholder": "Bebas tambahkan pesan di sini jika diinginkan..."
+      }
+    }
   }
 }

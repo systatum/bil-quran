@@ -1,9 +1,9 @@
 import { ChapterRecord } from "@constants/records/ChapterRecord"
 import { BasmalaPosition, DEFAULT_LOCALE } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
-import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
 import styled from "styled-components"
 import useUserSettingsState from "../../hooks/states/UserSettingsState"
+import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
 
 /**
  * Row for each chapter. Because it is a virtualized row, we still need
@@ -33,11 +33,11 @@ export default function ChapterRow({
     index,
     sizeMap,
     virtualizer,
-    deps: [chapter, basmalaPosition],
   })
 
   return (
     <ChapterHeaderContainer
+      data-index={index}
       ref={ref}
       theme={theme}
       style={{ transform: style.transform }}
