@@ -228,6 +228,10 @@ const SideOrnamentWrapper = styled.div<{
     height: 100%;
     display: block;
   }
+
+  @media (max-width: 430px) {
+    display: none;
+  }
 `
 
 const ChapterCenter = styled.div`
