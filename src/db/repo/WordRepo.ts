@@ -83,6 +83,7 @@ class WordRepo extends Repository<typeof schema, WordRecord> {
           token: row.token,
           readings: row.readings,
           root: row.root,
+          meanings: {},
         })
       }
 
