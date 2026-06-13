@@ -1,37 +1,9 @@
 import { ThemeMode } from "@constants/theme"
-import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
 import styled from "styled-components"
 
-export default function BasmalaRow({
-  index,
-  style,
-  sizeMap,
-  virtualizer,
-  theme,
-  hidden,
-}: {
-  index: number
-  style: React.CSSProperties
-  sizeMap: React.RefObject<Map<number, number>>
-  virtualizer: any
-  theme: ThemeMode
-  hidden: boolean
-}) {
-  if (hidden) return <></>
-  const ref = useVirtualRowMeasurer({
-    index,
-    sizeMap,
-    virtualizer,
-  })
-
+export default function BasmalaRow({ theme }: { theme: ThemeMode }) {
   return (
-    <BasmalaContainer
-      data-index={index}
-      ref={ref}
-      theme={theme}
-      $hidden={hidden}
-      style={{ transform: style.transform }}
-    >
+    <BasmalaContainer theme={theme}>
       <BasmalaFrame theme={theme}>
         <BasmalaText theme={theme} lang="ar">
           ﷽
@@ -49,14 +21,10 @@ const BasmalaContainer = styled.div<{ theme: ThemeMode; $hidden?: boolean }>`
   --line-soft: ${({ theme }) => (theme === "dark" ? "#3b372f" : "#d8ccb7")};
   --gold-soft: ${({ theme }) => (theme === "dark" ? "#a8956c" : "#9b8157")};
 
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
   box-sizing: border-box;
-  padding: 0 18px 10px;
   background: var(--bg);
-  display: "flex";
+  display: flex;
   justify-content: center;
 `
 

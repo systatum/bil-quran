@@ -1,13 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 
 import { ChapterRecord } from "@constants/records/ChapterRecord"
-import { BasmalaPosition } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import { useTranslatedWords, useWords } from "@hooks/tools/useWordTranslations"
 import { useVirtualizer, VirtualItem } from "@tanstack/react-virtual"
 import useChaptersState from "../../hooks/states/ChaptersState"
 import useUserSettingsState from "../../hooks/states/UserSettingsState"
-import BasmalaRow from "./BasmalaRow"
 import ChapterRow from "./ChapterRow"
 import VerseRow, { Verse } from "./VerseRow"
 import { Bismillah } from "./VerseRow/Bismillah"
@@ -19,13 +17,18 @@ import { Bismillah } from "./VerseRow/Bismillah"
 // a few in the viewport so as not to crumble the device's
 // precious RAM and slowing down the device's processor.
 
-type RenderableChapterRow = { type: "chapter"; chapter: ChapterRecord }
-type RenderableVerseRow = { type: "verse"; verse: Verse }
-type RenderableBasmalaRow = { type: "basmala" }
-type RenderRow =
-  | RenderableChapterRow
-  | RenderableVerseRow
-  | RenderableBasmalaRow
+interface RenderableChapterRow {
+  type: "chapter"
+  chapter: ChapterRecord
+  hasBasmala: boolean
+}
+
+interface RenderableVerseRow {
+  type: "verse"
+  verse: Verse
+}
+
+type RenderRow = RenderableChapterRow | RenderableVerseRow
 
 function isVerseRow(row: RenderRow): row is RenderableVerseRow {
   return row.type === "verse"
@@ -85,9 +88,14 @@ export default function QuranPaper({
     let lastChapterId: number | null = null
     for (const verse of verses) {
       if (verse.chapter.id !== lastChapterId) {
-        rows.push({ type: "chapter", chapter: verse.chapter })
-        if (Bismillah.isRenderableHere(verse.number, verse.chapter.id))
-          rows.push({ type: "basmala" })
+        rows.push({
+          type: "chapter",
+          chapter: verse.chapter,
+          hasBasmala: Bismillah.isRenderableHere(
+            verse.number,
+            verse.chapter.id,
+          ),
+        })
         lastChapterId = verse.chapter.id
       }
 
@@ -329,25 +337,10 @@ export default function QuranPaper({
                 theme={theme}
                 index={item.index}
                 chapter={row.chapter}
+                hasBasmala={row.hasBasmala}
                 style={{ transform: `translateY(${item.start}px)` }}
                 sizeMap={sizeMap}
                 virtualizer={virtualizer}
-              />
-            )
-          }
-
-          if (row.type === "basmala") {
-            return (
-              <BasmalaRow
-                key={item.index}
-                theme={theme}
-                index={item.index}
-                style={{ transform: `translateY(${item.start}px)` }}
-                sizeMap={sizeMap}
-                virtualizer={virtualizer}
-                hidden={
-                  userSettings.basmalaPosition === BasmalaPosition.Embedded
-                }
               />
             )
           }
