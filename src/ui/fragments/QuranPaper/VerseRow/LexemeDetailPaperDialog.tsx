@@ -1,4 +1,8 @@
-import { ArabicFontFamily } from "@constants/fonts"
+import {
+  ArabicFontFamily,
+  ArabicFontId,
+  isLearningFont,
+} from "@constants/fonts"
 import { WordOccurrence } from "@constants/records/WordRecord"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
 import { ThemeMode } from "@constants/theme"
@@ -56,19 +60,17 @@ export function LexemeDetailPaperDialog({
   const meaning = wbwBasedMeaning ?? localeBasedMeaning ?? anyMeaning
 
   const fontArabic: FontSetting = { ...font.arabic, size: 30 }
+  const isForLearningFont = font.arabic.family === ArabicFontId.MeQuranFull
 
   return (
     <>
-      <TokenSection $theme={theme} $scrolled={scrolled}>
-        <ArabicToken $font={arabicFont} $theme={theme} $scrolled={scrolled}>
-          {content.token}
-        </ArabicToken>
-        {transliteration && (
-          <TransliterationCollapsible $scrolled={scrolled}>
-            <Transliteration>{transliteration}</Transliteration>
-          </TransliterationCollapsible>
-        )}
-      </TokenSection>
+      <Lexeme
+        font={arabicFont}
+        theme={theme}
+        scrolled={scrolled}
+        token={content.token}
+        transliteration={transliteration}
+      />
 
       <ScrollContainer ref={scrollRef} onScroll={handleScroll}>
         <Grid preset="2-col">
@@ -104,8 +106,8 @@ export function LexemeDetailPaperDialog({
 
                 <InterlinearText
                   showMeaning
-                  key={`${o.chapterId}:${o.verse}:${o.chapterId}`}
-                  id={`${o.chapterId}:${o.verse}:${o.chapterId}`}
+                  key={`${o.chapterId}:${o.verse}`}
+                  id={`${o.chapterId}:${o.verse}`}
                   arabicFont={fontArabic}
                   theme={theme}
                   words={o.words}
@@ -117,6 +119,64 @@ export function LexemeDetailPaperDialog({
           })}
       </ScrollContainer>
     </>
+  )
+}
+
+/**
+ * Component to render the token word. If the font chosen is "for-learning" type
+ * of font, we render the token twice side-by-side: in the original font vs in
+ * the standard arabic.
+ */
+function Lexeme({
+  token,
+  transliteration,
+  theme,
+  scrolled,
+  font,
+}: {
+  token: string
+  transliteration: string | undefined
+  theme: ThemeMode
+  scrolled: boolean
+  font: string
+}) {
+  const forLearningFont = isLearningFont(font)
+
+  return (
+    <TokenSection $theme={theme} $scrolled={scrolled}>
+      <div style={{ display: "flex", flexDirection: "row", gap: "3px" }}>
+        <ArabicToken $font={font} $theme={theme} $scrolled={scrolled}>
+          {token}
+        </ArabicToken>
+        {forLearningFont && (
+          <>
+            <span
+              style={{
+                color: theme === "dark" ? "#3c3c4d" : "rgb(164 150 124)",
+                fontSize: scrolled ? "2em" : "4em",
+                lineHeight: scrolled ? "7vh" : "12vh",
+                marginRight: "10px",
+                marginLeft: "10px",
+              }}
+            >
+              ·
+            </span>
+            <ArabicToken
+              $font={ArabicFontId.DroidNaskh}
+              $theme={theme}
+              $scrolled={scrolled}
+            >
+              {token}
+            </ArabicToken>
+          </>
+        )}
+      </div>
+      {transliteration && (
+        <TransliterationCollapsible $scrolled={scrolled}>
+          <Transliteration>{transliteration}</Transliteration>
+        </TransliterationCollapsible>
+      )}
+    </TokenSection>
   )
 }
 
