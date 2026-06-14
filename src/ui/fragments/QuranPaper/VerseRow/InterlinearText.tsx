@@ -1,4 +1,4 @@
-import { ArabicFontFamily } from "@constants/fonts"
+import { ArabicFontFamily, isLearningFont } from "@constants/fonts"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
 import { DEFAULT_LOCALE } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
@@ -45,6 +45,7 @@ export default function InterlinearText({
   const { wordRefs, wordRows, rowLayerHeights } = useAligner({
     key: id,
   })
+  const isForLearningFont = isLearningFont(font.family)
 
   return (
     <VerseText $font={font}>
@@ -74,6 +75,7 @@ export default function InterlinearText({
             if (!el) return
             wordRefs.current[i] = el
           }}
+          $usingLearningFont={isForLearningFont}
         >
           <Arabic
             $highlighted={
@@ -123,11 +125,12 @@ const VerseText = styled.div<{ $font: FontSetting }>`
   direction: rtl;
 `
 
-const Word = styled.span`
+const Word = styled.span<{ $usingLearningFont?: boolean }>`
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  margin: 0 6px;
+  margin: ${({ $usingLearningFont }) =>
+    `0 ${$usingLearningFont ? "25" : "6"}px`};
   vertical-align: top;
   user-select: none;
 `
