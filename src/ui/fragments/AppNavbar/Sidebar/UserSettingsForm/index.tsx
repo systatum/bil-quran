@@ -126,10 +126,13 @@ export default function UserSettingsForm() {
         if (currentState[key] == "") return
         console.log(currentState)
 
+        // note: do not forget to return early if value is invalid,
+        // so that we are not updating the form's state.
         if (FormState.Theme in currentState) {
           const value: ThemeMode = currentState.theme
           if (value === "dark" || value === "light")
             setTheme(currentState.theme)
+          else return
         } else if (FormState.ArabicFontFamily in currentState) {
           const value: string = currentState.arabicFontFamily
           if (!Object.keys(ArabicFonts).includes(value)) return
@@ -157,6 +160,7 @@ export default function UserSettingsForm() {
           setWordByWordTranslations(currentState.wbwTranslations)
         }
 
+        // update the form state
         setFormValues((s) => ({
           ...s,
           ...currentState,
