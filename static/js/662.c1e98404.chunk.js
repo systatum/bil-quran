@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkbil_quran=self.webpackChunkbil_quran||[]).push([[662],{662(e){e.exports={}}}]);
