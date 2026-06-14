@@ -126,10 +126,14 @@ export default function InterlinearText({
   )
 }
 
+/**
+ * Verse line. Do not introduce line height, unless you do other things.
+ * Visually, each verse should be separated by a "line" (or border-bottom gap)
+ * between verses; that gap will disappear if we introduce line height.
+ */
 const VerseText = styled.div<{ $font: FontSetting }>`
   text-align: right;
   font-size: ${({ $font }) => `${$font.size}px`};
-  line-height: 2.4;
   font-family:
     ${({ $font }) => `"${$font.family}"`},
     "${"NotoNaskhArabic" satisfies ArabicFontFamily}", serif;
@@ -142,7 +146,7 @@ const Word = styled.span<{ $usingLearningFont?: boolean }>`
   flex-direction: column;
   align-items: center;
   margin: ${({ $usingLearningFont }) =>
-    `0 ${$usingLearningFont ? "25" : "6"}px`};
+    `10px ${$usingLearningFont ? "25" : "6"}px`};
   vertical-align: top;
   user-select: none;
 `
