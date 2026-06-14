@@ -103,6 +103,7 @@ export default function BookmarkList({ height }: { height: number }) {
               showMeaning={false}
               isForLearning={false}
               words={verseWords}
+              compact={true}
             />
           </ClippedContent>
         )

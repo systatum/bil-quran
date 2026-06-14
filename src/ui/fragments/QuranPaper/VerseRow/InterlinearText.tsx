@@ -29,6 +29,10 @@ interface InterlinearTextProps {
   onPointerCancel?: (w: WordCell) => void
   shownTranslations?: WordTranslationOption[]
   highlightOn?: number[]
+  /**
+   * If compact, text is shown more closer to each other
+   */
+  compact?: boolean
 
   /**
    * If undefined, will detect whether the showing is for learning or not
@@ -48,6 +52,7 @@ export default function InterlinearText({
   lastWordRef,
   shownTranslations,
   isForLearning,
+  compact,
   ...props
 }: InterlinearTextProps) {
   const {
@@ -88,6 +93,7 @@ export default function InterlinearText({
             wordRefs.current[i] = el
           }}
           $usingLearningFont={isForLearningFont}
+          $compact={compact}
         >
           <Arabic
             $highlighted={
@@ -141,12 +147,12 @@ const VerseText = styled.div<{ $font: FontSetting }>`
   direction: rtl;
 `
 
-const Word = styled.span<{ $usingLearningFont?: boolean }>`
+const Word = styled.span<{ $usingLearningFont?: boolean; $compact?: boolean }>`
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  margin: ${({ $usingLearningFont }) =>
-    `10px ${$usingLearningFont ? "25" : "6"}px`};
+  margin: ${({ $usingLearningFont, $compact }) =>
+    `${$compact ? "3px" : "10px"} ${$usingLearningFont ? "25" : "6"}px`};
   vertical-align: top;
   user-select: none;
 `
