@@ -61,7 +61,10 @@ export default function UserSettingsForm() {
         title: formatMessage({ id: messages.font }),
         helper: formatMessage({ id: messages.fontCategory.helper }),
         type: "combo",
-        combobox: { mobile: true, options: arabicFontOptions },
+        combobox: {
+          mobile: { drawerHeight: "70dvh" },
+          options: arabicFontOptions,
+        },
       },
       {
         name: "arabicFontSize",
