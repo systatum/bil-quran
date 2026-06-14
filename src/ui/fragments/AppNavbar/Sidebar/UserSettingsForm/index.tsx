@@ -9,7 +9,7 @@ import { FormFieldGroup, StatefulForm } from "@systatum/coneto/stateful-form"
 import { useTheme } from "@systatum/coneto/theme"
 import { useMemo, useState } from "react"
 import { useIntl } from "react-intl"
-import useUserSettingsState from "../../../hooks/states/UserSettingsState"
+import useUserSettingsState from "../../../../hooks/states/UserSettingsState"
 export default function UserSettingsForm() {
   const { formatMessage } = useIntl()
   const { mode } = useTheme()

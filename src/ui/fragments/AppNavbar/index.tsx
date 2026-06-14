@@ -1,12 +1,15 @@
 import { ThemeMode } from "@constants/theme"
 import usePositioningObserver from "@hooks/tools/usePositioningObserver"
 import { RiMenuLine, RiSearchLine } from "@remixicon/react"
-import { OverlayBlocker } from "@systatum/coneto/overlay-blocker"
+import {
+  OverlayBlocker,
+  OverlayBlockerRef,
+} from "@systatum/coneto/overlay-blocker"
 import { Title, TitleSection } from "@systatum/coneto/title"
-import { useMemo, useRef, useState } from "react"
+import { Ref, useMemo, useRef, useState } from "react"
 import { useIntl } from "react-intl"
 import styled, { css } from "styled-components"
-import UserSettingsForm from "./UserSettingsForm"
+import Sidebar from "./Sidebar"
 import VerseLookup from "./VerseLookup"
 
 interface AppNavbarProps {
@@ -27,6 +30,7 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
   const bgColor = theme === "dark" ? "#22271b" : "rgb(117 95 77)"
 
   const titleRef = useRef<HTMLDivElement>(null)
+  const overlayBlockerRef: Ref<OverlayBlockerRef> = useRef(null)
   const navbarPositioning = usePositioningObserver(titleRef)
 
   const actions: TitleSection[] = useMemo(
@@ -71,6 +75,7 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
 
       {(isSidebarOpen || isSearchOpen) && (
         <OverlayBlocker
+          ref={overlayBlockerRef}
           exemptRegions={["#combo-list"]}
           show={isSidebarOpen || isSearchOpen}
           onClick={({ close }) => {
@@ -81,9 +86,15 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
         />
       )}
 
-      <SidebarContainer theme={theme} $visible={isSidebarOpen}>
-        <UserSettingsForm />
-      </SidebarContainer>
+      <Sidebar
+        theme={theme}
+        visible={isSidebarOpen}
+        onClosingSidebarRequested={() => {
+          overlayBlockerRef?.current?.close()
+          setIsSidebarOpen(false)
+          setIsSearchOpen(false)
+        }}
+      />
 
       <SearchSheet
         theme={theme}
@@ -120,23 +131,5 @@ const SearchSheet = styled.div<{
     transform 220ms ease,
     opacity 220ms ease;
 
-  z-index: 9992999;
-`
-
-const SidebarContainer = styled.aside<{
-  theme: ThemeMode
-  $visible: boolean
-}>`
-  background: ${({ theme }) => (theme === "dark" ? "#202b24" : "#e1dfda")};
-  position: fixed;
-  top: 0;
-  right: 0;
-  height: 100vh;
-  width: 300px;
-  max-width: 300px;
-  padding: 24px;
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.08);
-  transform: translateX(${(p) => (p.$visible ? "0%" : "100%")});
-  transition: transform 0.22s ease;
   z-index: 9992999;
 `
