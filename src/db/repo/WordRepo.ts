@@ -99,7 +99,13 @@ class WordRepo extends Repository<typeof schema, WordRecord> {
   /**
    * Efficiently get all words data.
    */
-  async all(chapterId?: number): Promise<IPCResponse<WordWithLexemeRecord[]>> {
+  async all({
+    chapterId,
+    verseId,
+  }: {
+    chapterId?: number
+    verseId?: number
+  }): Promise<IPCResponse<WordWithLexemeRecord[]>> {
     try {
       const rows = await withDb(async (db) => {
         return await db
@@ -123,6 +129,7 @@ class WordRepo extends Repository<typeof schema, WordRecord> {
           .where(
             and(
               ...conditional(chapterId, eq(schema.chapterId, chapterId ?? -1)),
+              ...conditional(verseId, eq(schema.verse, verseId ?? -1)),
             ),
           )
           .orderBy(asc(schema.chapterId), asc(schema.verse), asc(schema.order))

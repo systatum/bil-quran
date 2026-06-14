@@ -2,7 +2,9 @@ import { ArabicFontFamily, isLearningFont } from "@constants/fonts"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
 import { DEFAULT_LOCALE } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
-import { FontSetting } from "@hooks/states/UserSettingsState"
+import useUserSettingsState, {
+  FontSetting,
+} from "@hooks/states/UserSettingsState"
 import useAligner from "@hooks/tools/useAligner"
 import { RefObject } from "react"
 import styled from "styled-components"
@@ -18,7 +20,6 @@ interface InterlinearTextProps {
   withBasmala?: boolean
   showTransliteration?: boolean
   showMeaning?: boolean
-  theme: ThemeMode
   words: WordCell[]
   lastWordRef?: RefObject<HTMLSpanElement>
   onMouseDown?: (w: WordCell) => void
@@ -28,6 +29,13 @@ interface InterlinearTextProps {
   onPointerCancel?: (w: WordCell) => void
   shownTranslations?: WordTranslationOption[]
   highlightOn?: number[]
+
+  /**
+   * If undefined, will detect whether the showing is for learning or not
+   * based on the font type. Text for learning is displayed with more
+   * margins in-between of the words.
+   */
+  isForLearning?: boolean | undefined
 }
 
 export default function InterlinearText({
@@ -36,16 +44,20 @@ export default function InterlinearText({
   withBasmala = false,
   showTransliteration,
   showMeaning,
-  theme,
   words,
   lastWordRef,
   shownTranslations,
+  isForLearning,
   ...props
 }: InterlinearTextProps) {
+  const {
+    userSettings: { theme },
+  } = useUserSettingsState()
   const { wordRefs, wordRows, rowLayerHeights } = useAligner({
     key: id,
   })
-  const isForLearningFont = isLearningFont(font.family)
+  const isForLearningFont: boolean =
+    isForLearning === undefined ? isLearningFont(font.family) : !!isForLearning
 
   return (
     <VerseText $font={font}>

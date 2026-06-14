@@ -33,6 +33,7 @@
   "fontOptions": {
     "meQuranLearner": "MeQuran (for Learner)"
   },
+
   "dialog": {
     "noteVerse": {
       "title": "Note this verse",
@@ -40,5 +41,22 @@
         "placeholder": "Optionally add some note..."
       }
     }
+  },
+
+  "tipMenu": {
+    "verseMarker": {
+      "bookmark": "Bookmark",
+      "note": "Note"
+    }
+  },
+
+  "notice": {
+    "bookmark": {
+      "noDataYet": "No bookmarks yet. Click a verse number to bookmark it or add a note."
+    }
+  },
+
+  "error": {
+    "bookmarkDataNotFound": "Bookmark data not found"
   }
 }

@@ -44,6 +44,20 @@ export const messages = {
       },
     },
   },
+  notice: {
+    bookmark: {
+      noDataYet: "notice.bookmark.noDataYet",
+    },
+  },
+  tipMenu: {
+    verseMarker: {
+      bookmark: "tipMenu.verseMarker.bookmark",
+      note: "tipMenu.verseMarker.note",
+    },
+  },
+  errors: {
+    bookmarkDataNotFound: "errors.bookmarkDataNotFound",
+  },
 } as const
 
 export function isProperThemeValue(

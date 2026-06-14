@@ -11,7 +11,8 @@ import useUserSettingsState from "@hooks/states/UserSettingsState"
 import useAligner from "@hooks/tools/useAligner"
 import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
 import { useWordTranslations } from "@hooks/tools/useWordTranslations"
-import { RiBookMarkedFill, RiPencilAi2Line } from "@remixicon/react"
+import { messages } from "@i18n/message"
+import { RiFileMarkedLine, RiPencilAi2Line } from "@remixicon/react"
 import { unpackIPC } from "@services/Converter"
 import LOGGER from "@services/Logger"
 import { makeSnippet } from "@services/mutator"
@@ -19,6 +20,7 @@ import { Button } from "@systatum/coneto/button"
 import { PaperDialog, PaperDialogRef } from "@systatum/coneto/paper-dialog"
 import { haptic } from "ios-haptics"
 import { useEffect, useRef, useState } from "react"
+import { useIntl } from "react-intl"
 import styled, { css } from "styled-components"
 import { Bismillah } from "./Bismillah"
 import InterlinearText from "./InterlinearText"
@@ -87,6 +89,8 @@ export default function VerseRow({
   const markerColumnRef = useRef<HTMLDivElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const lastWordRef = useRef<HTMLSpanElement | null>(null)
+
+  const { formatMessage } = useIntl()
 
   useEffect(() => {
     const scrollEl = virtualizer.scrollElement as HTMLElement
@@ -208,8 +212,10 @@ export default function VerseRow({
             subMenu={({ list }) =>
               list?.([
                 {
-                  caption: "Bookmark",
-                  icon: { image: RiBookMarkedFill },
+                  caption: formatMessage({
+                    id: messages.tipMenu.verseMarker.bookmark,
+                  }),
+                  icon: { image: RiFileMarkedLine },
                   onClick: () => {
                     const verseKey = `${verse.chapter.id}:${verse.number}`
                     setVerseKey(verseKey)
@@ -217,7 +223,9 @@ export default function VerseRow({
                   },
                 },
                 {
-                  caption: "Note",
+                  caption: formatMessage({
+                    id: messages.tipMenu.verseMarker.note,
+                  }),
                   icon: { image: RiPencilAi2Line },
                   onClick: () => {
                     setVerseKey(`${verse.chapter.id}:${verse.number}`)
@@ -314,7 +322,6 @@ export default function VerseRow({
           showMeaning={showMeaning}
           id={`${verse.chapter.id}-${verse.id}`}
           arabicFont={userSettings.font.arabic}
-          theme={theme}
           words={verse.words}
           shownTranslations={wbwTranslations}
           withBasmala={

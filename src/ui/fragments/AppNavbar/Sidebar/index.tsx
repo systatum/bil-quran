@@ -6,8 +6,9 @@
 //       <Coneto.Sidebar.Spacer />
 
 import { ThemeMode } from "@constants/theme"
-import { useState } from "react"
+import { useLayoutEffect, useRef, useState } from "react"
 import styled from "styled-components"
+import BookmarkList from "./BookmarkList"
 import Title from "./Title"
 import UserSettingsForm from "./UserSettingsForm"
 
@@ -40,19 +41,41 @@ export default function Sidebar({
   visible,
   onClosingSidebarRequested,
 }: SidebarProps) {
+  const titleRef = useRef<HTMLDivElement>(null)
+  const [contentHeight, setContentHeight] = useState(0)
   const [contentType, setContentType] = useState<ContentType>(
     ContentType.Settings,
   )
 
+  useLayoutEffect(() => {
+    const updateHeight = () => {
+      const titleHeight = titleRef.current?.offsetHeight ?? 0
+      setContentHeight(window.innerHeight - titleHeight)
+    }
+
+    updateHeight()
+    window.addEventListener("resize", updateHeight)
+
+    return () => {
+      window.removeEventListener("resize", updateHeight)
+    }
+  }, [])
+
   return (
     <SidebarContainer theme={theme} $visible={visible}>
-      <Title
-        contentType={contentType}
-        onClosingSidebarRequested={onClosingSidebarRequested}
-        onActionClicked={(c) => setContentType(c)}
-      />
-      <div style={{ padding: "24px" }}>
+      <div ref={titleRef}>
+        <Title
+          contentType={contentType}
+          onClosingSidebarRequested={onClosingSidebarRequested}
+          onActionClicked={(c) => setContentType(c)}
+        />
+      </div>
+
+      <div>
         {contentType === ContentType.Settings && <UserSettingsForm />}
+        {contentType === ContentType.Bookmarks && (
+          <BookmarkList height={contentHeight} />
+        )}
       </div>
     </SidebarContainer>
   )

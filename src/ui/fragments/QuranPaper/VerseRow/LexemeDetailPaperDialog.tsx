@@ -14,6 +14,7 @@ import { Grid } from "@systatum/coneto/grid"
 import { useCallback, useRef, useState } from "react"
 import styled from "styled-components"
 import { Transliteration, WordCell } from "."
+import ClippedContent from "../../ClippedContent"
 import InfoTile from "./InfoTile"
 import InterlinearText from "./InterlinearText"
 
@@ -60,7 +61,6 @@ export function LexemeDetailPaperDialog({
   const meaning = wbwBasedMeaning ?? localeBasedMeaning ?? anyMeaning
 
   const fontArabic: FontSetting = { ...font.arabic, size: 30 }
-  const isForLearningFont = font.arabic.family === ArabicFontId.MeQuranFull
 
   return (
     <>
@@ -96,27 +96,22 @@ export function LexemeDetailPaperDialog({
 
         {Object.values(occurrences)
           .slice(0, 20)
-          .map((o, i) => {
-            return (
-              <VerseWrapper key={i} $theme={theme}>
-                <VerseLabel $theme={theme}>
-                  {o.chapterId} ({getChapterTransliteratedName(o.chapterId)}/{" "}
-                  {getChapterMeaning(o.chapterId)}) :&nbsp; {o.verse}
-                </VerseLabel>
-
-                <InterlinearText
-                  showMeaning
-                  key={`${o.chapterId}:${o.verse}`}
-                  id={`${o.chapterId}:${o.verse}`}
-                  arabicFont={fontArabic}
-                  theme={theme}
-                  words={o.words}
-                  shownTranslations={wbwTranslations}
-                  highlightOn={[o.targetOrder]}
-                />
-              </VerseWrapper>
-            )
-          })}
+          .map((o, i) => (
+            <ClippedContent
+              key={i}
+              label={`${o.chapterId} (${getChapterTransliteratedName(o.chapterId)} / ${getChapterMeaning(o.chapterId)}) : ${o.verse}`}
+            >
+              <InterlinearText
+                showMeaning
+                key={`${o.chapterId}:${o.verse}`}
+                id={`${o.chapterId}:${o.verse}`}
+                arabicFont={fontArabic}
+                words={o.words}
+                shownTranslations={wbwTranslations}
+                highlightOn={[o.targetOrder]}
+              />
+            </ClippedContent>
+          ))}
       </ScrollContainer>
     </>
   )
@@ -252,38 +247,4 @@ const TransliterationCollapsible = styled.div<{ $scrolled: boolean }>`
     opacity 0.25s ease;
   max-height: ${({ $scrolled }) => ($scrolled ? "0px" : "32px")};
   opacity: ${({ $scrolled }) => ($scrolled ? 0 : 1)};
-`
-
-const VerseWrapper = styled.div<{ $theme: ThemeMode }>`
-  position: relative;
-  padding: 28px 15px 12px 15px; /* reserve space for badge */
-  background: ${({ $theme }) => ($theme === "dark" ? "#263832" : "#e2d6c3")};
-  border-radius: 8px;
-`
-
-const VerseLabel = styled.div<{ $theme: ThemeMode }>`
-  position: absolute;
-  top: 1px;
-  left: 0px;
-
-  padding: 4px 10px;
-  font-size: 12px;
-  line-height: 1;
-
-  background: ${({ $theme }) => ($theme === "dark" ? "#445445" : "#e7e7e7")};
-  color: ${({ $theme }) => ($theme === "dark" ? "#bababa" : "#5d3c2c")};
-
-  border-right: 1px solid;
-  border-bottom: 1px solid;
-  border-color: ${({ $theme }) => ($theme === "dark" ? "#40573b" : "#e3e3e3")};
-
-  border-top-right-radius: 0;
-  border-top-left-radius: 8px;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 10px;
-
-  /* prevents visual jitter at corner join */
-  transform: translateY(-1px);
-
-  font-size: 0.8em;
 `

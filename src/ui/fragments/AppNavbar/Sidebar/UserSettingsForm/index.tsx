@@ -9,6 +9,7 @@ import { FormFieldGroup, StatefulForm } from "@systatum/coneto/stateful-form"
 import { useTheme } from "@systatum/coneto/theme"
 import { useMemo, useState } from "react"
 import { useIntl } from "react-intl"
+import { css } from "styled-components"
 import useUserSettingsState from "../../../../hooks/states/UserSettingsState"
 export default function UserSettingsForm() {
   const { formatMessage } = useIntl()
@@ -120,6 +121,11 @@ export default function UserSettingsForm() {
     <StatefulForm
       fields={FIELDS}
       formValues={formValues}
+      styles={{
+        containerStyle: css`
+          padding: 24px;
+        `,
+      }}
       onChange={({ currentState }) => {
         if (currentState == null) return
         const key = Object.keys(currentState)[0]

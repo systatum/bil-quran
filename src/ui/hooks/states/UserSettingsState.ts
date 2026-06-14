@@ -171,13 +171,19 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
 
       // add bookmark
       if (!isPlainObject(bookmarks.list)) bookmarks.list = {}
-      bookmarks.list[verseKey] = {
-        type: BookmarkType.Verse,
-        key: verseKey,
-        addedAt: Date.now(),
-        category: usedCategory.id,
-        note: note ? String(note) : undefined,
-        color: color ? Number(color) : BookmarkColor.Gray,
+      bookmarks = {
+        ...bookmarks,
+        list: {
+          ...bookmarks.list,
+          [verseKey]: {
+            type: BookmarkType.Verse,
+            key: verseKey,
+            addedAt: Date.now(),
+            category: usedCategory.id,
+            note: note ? String(note) : undefined,
+            color: color ? Number(color) : BookmarkColor.Gray,
+          },
+        },
       }
 
       get().partialUpdate({ bookmarks })

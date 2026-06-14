@@ -76,7 +76,7 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
       {(isSidebarOpen || isSearchOpen) && (
         <OverlayBlocker
           ref={overlayBlockerRef}
-          exemptRegions={["#combo-list"]}
+          exemptRegions={["#combo-list", "#bookmark-list"]}
           show={isSidebarOpen || isSearchOpen}
           onClick={({ close }) => {
             setIsSidebarOpen(false)

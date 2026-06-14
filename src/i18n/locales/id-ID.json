@@ -5,6 +5,7 @@
   "cancel": "Batal",
   "settings": "Pengaturan",
   "bookmarks_and_notes": "Markah dan Catatan",
+
   "lookup": {
     "title": "Lompat ke ayat",
     "go": "Tuju"
@@ -32,12 +33,30 @@
   "fontOptions": {
     "meQuranLearner": "MeQuran (Pelajar)"
   },
+
   "dialog": {
     "noteVerse": {
-      "title": "Masukkan dalam daftar ayat",
+      "title": "Beri markah pada ayat",
       "input": {
-        "placeholder": "Bebas tambahkan pesan di sini jika diinginkan..."
+        "placeholder": "Tambahkan pesan di sini jika perlu..."
       }
     }
+  },
+
+  "tipMenu": {
+    "verseMarker": {
+      "bookmark": "Tandai ayat ini",
+      "note": "Beri catatan"
+    }
+  },
+
+  "notice": {
+    "bookmark": {
+      "noDataYet": "Belum ada ayat yang ditambahkan. Ketuk nomor ayat untuk lalu dapat menandai ayat-ayat tertentu."
+    }
+  },
+
+  "error": {
+    "bookmarkDataNotFound": "Data bookmark tidak ditemukan"
   }
 }

@@ -19,6 +19,10 @@ export const BookmarkColor = {
 
 export type BookmarkColor = (typeof BookmarkColor)[keyof typeof BookmarkColor]
 
+/**
+ * Bookmark record as persisted into the local storage. Please do not
+ * add any unnecessary data here that should not be persisted.
+ */
 export interface Bookmark {
   type: BookmarkType
   color: BookmarkColor
