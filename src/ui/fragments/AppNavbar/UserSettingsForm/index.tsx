@@ -1,10 +1,8 @@
-import {
-  getAllPossibleFontOptions,
-  getAllPossibleFontSizeOptions,
-} from "@constants/fonts"
+import { ArabicFonts, getAllPossibleFontSizeOptions } from "@constants/fonts"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
 import { BasmalaPosition, Locale } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
+import useFonts from "@hooks/tools/useFonts"
 import { isProperThemeValue, messages } from "@i18n/message"
 import { ComboboxOption } from "@systatum/coneto/combobox"
 import { FormFieldGroup, StatefulForm } from "@systatum/coneto/stateful-form"
@@ -33,7 +31,7 @@ export default function UserSettingsForm() {
     wbwTranslations: userSettings.wbwTranslations,
   })
 
-  const arabicFontOptions = useMemo(getAllPossibleFontOptions, [])
+  const { arabicFontOptions } = useFonts()
   const arabicFontSizeOptions = useMemo(getAllPossibleFontSizeOptions, [])
 
   const FIELDS: FormFieldGroup[] = [
@@ -61,6 +59,7 @@ export default function UserSettingsForm() {
       {
         name: "arabicFontFamily",
         title: formatMessage({ id: messages.font }),
+        helper: formatMessage({ id: messages.fontCategory.helper }),
         type: "combo",
         combobox: { mobile: true, options: arabicFontOptions },
       },

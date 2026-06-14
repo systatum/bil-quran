@@ -26,6 +26,14 @@ export const messages = {
     "0": "basmalaPosition.0",
     "1": "basmalaPosition.1",
   },
+  fontCategory: {
+    shaddaStacked: "fontCategory.shaddaStacked",
+    shaddaSeparable: "fontCategory.shaddaSeparable",
+    helper: "fontCategory.helper",
+  },
+  fontOptions: {
+    meQuranLearner: "fontOptions.meQuranLearner",
+  },
   dialog: {
     noteVerse: {
       title: "dialog.noteVerse.title",

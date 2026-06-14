@@ -22,6 +22,14 @@
     "0": "Embedded",
     "1": "Detached"
   },
+  "fontCategory": {
+    "shaddaStacked": "Shadda-stacked",
+    "shaddaSeparable": "Allow diacritics separation",
+    "helper": "Some fonts keep kasrah below when combined with shaddah"
+  },
+  "fontOptions": {
+    "meQuranLearner": "MeQuran (for Learner)"
+  },
   "dialog": {
     "noteVerse": {
       "title": "Note this verse",
