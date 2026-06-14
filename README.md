@@ -57,7 +57,7 @@ App unique features:
 - [ ] Fix 2:204 word 16 buggy cannot scroll down
 - [ ] Add a new bookmark note. And if adding on a bookmarked verse, will edit instead of insert. Also check that each bookmark, whenever not specified, will add to default (but the localstorage should always have 1 default category)
 - [ ] If using learning font ("ie MeQuran for learner") the gap between word is wider, and when we want to see the lexeme detail, it shows both the unified and the word separated character-by-character.
-- [ ] Can change and update setting and ensure it makes effect
+- [ ] Can change and update setting and ensure it makes effect (test one by one, ie adding and removing word transation option also one by one)
 - [ ] Test bookmark. Ensure local storage empty. Even if empty, can still see bookmark tab, although nothing is shown of course. When not empty, show all the bookmark, and can click and go to that verse.
 - [ ] When having bookmark data, ensure that scrollbar is shown and user can scroll when there are a lot of bookmark.
 

@@ -160,8 +160,11 @@ export default function UserSettingsForm() {
 
           setBasmalaPosition(currentState.basmalaPosition)
         } else if (FormState.WordByWordTranslations) {
-          const value = currentState.wbwTranslations
-          if (!Object.values(WordTranslationOption).includes(value)) return
+          const values: WordTranslationOption[] = currentState.wbwTranslations
+
+          if (!Array.isArray(values)) return
+          const validValues = WordTranslationOption.values()
+          const allValidValues = values.map((v) => validValues.includes(v))
 
           setWordByWordTranslations(currentState.wbwTranslations)
         }
