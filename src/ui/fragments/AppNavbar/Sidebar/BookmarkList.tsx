@@ -49,7 +49,6 @@ export default function BookmarkList({ height }: { height: number }) {
             return [verseKeys[idx], wordCell]
           }),
         )
-        console.log("IPC", versesIPC)
         setVerses(verses)
       } catch (e) {
         toast.error("Failed getting all the bookmarked verses")
@@ -70,7 +69,7 @@ export default function BookmarkList({ height }: { height: number }) {
       id="bookmark-list"
       style={{
         padding: "10px 15px",
-        overflowY: "scroll",
+        overflowY: "auto",
         maxHeight: `${height}px`,
       }}
     >

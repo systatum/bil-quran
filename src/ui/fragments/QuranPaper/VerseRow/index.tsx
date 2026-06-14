@@ -20,6 +20,7 @@ import { Button } from "@systatum/coneto/button"
 import { PaperDialog, PaperDialogRef } from "@systatum/coneto/paper-dialog"
 import { haptic } from "ios-haptics"
 import { useEffect, useRef, useState } from "react"
+import toast from "react-hot-toast"
 import { useIntl } from "react-intl"
 import styled, { css } from "styled-components"
 import { Bismillah } from "./Bismillah"
@@ -219,7 +220,8 @@ export default function VerseRow({
                   onClick: () => {
                     const verseKey = `${verse.chapter.id}:${verse.number}`
                     setVerseKey(verseKey)
-                    bookmarkVerse({ verseKey })
+                    if (!bookmarkVerse({ verseKey }))
+                      toast.error("Failed bookmarking")
                   },
                 },
                 {
@@ -374,6 +376,7 @@ export default function VerseRow({
             overflow-y: auto;
             gap: 0px;
             padding: 0px;
+            margin-top: 0px;
           `,
         }}
       >

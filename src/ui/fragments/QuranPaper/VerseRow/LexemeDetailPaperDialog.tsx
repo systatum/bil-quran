@@ -217,7 +217,8 @@ const TokenSection = styled.div<{ $theme: ThemeMode; $scrolled: boolean }>`
   background-color: inherit;
   z-index: 99929999;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: ${({ $scrolled }) => ($scrolled ? "4px 24px" : "24px 24px 20px")};
+  padding: ${({ $scrolled }) =>
+    $scrolled ? "0px 4px 24px" : "0 24px 24px 20px"};
 `
 
 const ArabicToken = styled.span<{
