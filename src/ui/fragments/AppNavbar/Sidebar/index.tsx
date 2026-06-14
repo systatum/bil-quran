@@ -6,6 +6,7 @@
 //       <Coneto.Sidebar.Spacer />
 
 import { ThemeMode } from "@constants/theme"
+import { useState } from "react"
 import styled from "styled-components"
 import Title from "./Title"
 import UserSettingsForm from "./UserSettingsForm"
@@ -39,11 +40,19 @@ export default function Sidebar({
   visible,
   onClosingSidebarRequested,
 }: SidebarProps) {
+  const [contentType, setContentType] = useState<ContentType>(
+    ContentType.Settings,
+  )
+
   return (
     <SidebarContainer theme={theme} $visible={visible}>
-      <Title onClosingSidebarRequested={onClosingSidebarRequested} />
+      <Title
+        contentType={contentType}
+        onClosingSidebarRequested={onClosingSidebarRequested}
+        onActionClicked={(c) => setContentType(c)}
+      />
       <div style={{ padding: "24px" }}>
-        <UserSettingsForm />
+        {contentType === ContentType.Settings && <UserSettingsForm />}
       </div>
     </SidebarContainer>
   )
@@ -78,3 +87,10 @@ const SidebarContainer = styled.aside<{
     max-width: 350px;
   }
 `
+
+export const ContentType = {
+  Settings: "settings",
+  Bookmarks: "bookmarks",
+} as const
+
+export type ContentType = (typeof ContentType)[keyof typeof ContentType]

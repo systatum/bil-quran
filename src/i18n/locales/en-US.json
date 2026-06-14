@@ -3,6 +3,9 @@
   "lang": "Language",
   "add": "Add",
   "cancel": "Cancel",
+  "settings": "Settings",
+  "bookmarks_and_notes": "Bookmarks and Notes",
+
   "lookup": {
     "title": "Verse lookup",
     "go": "Go"

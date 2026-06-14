@@ -7,6 +7,8 @@ export const messages = {
   lang: "lang",
   add: "add",
   cancel: "cancel",
+  settings: "settings",
+  bookmarks_and_notes: "bookmarks_and_notes",
   lookup: {
     title: "lookup.title",
     go: "lookup.go",
