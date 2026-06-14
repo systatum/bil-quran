@@ -119,17 +119,39 @@ export default function UserSettingsForm() {
       fields={FIELDS}
       formValues={formValues}
       onChange={({ currentState }) => {
+        if (currentState == null) return
+        const key = Object.keys(currentState)[0]
+        if (currentState[key] == "") return
+        console.log(currentState)
+
         if (FormState.Theme in currentState) {
-          setTheme(currentState.theme)
+          const value: ThemeMode = currentState.theme
+          if (value === "dark" || value === "light")
+            setTheme(currentState.theme)
         } else if (FormState.ArabicFontFamily in currentState) {
+          const value: string = currentState.arabicFontFamily
+          if (!Object.keys(ArabicFonts).includes(value)) return
+
           setFont({ arabic: { family: currentState.arabicFontFamily } })
         } else if (FormState.ArabicFontSize in currentState) {
+          const value = currentState.arabicFontSize
+          if (Number.isNaN(value)) return
+
           setFont({ arabic: { size: Number(currentState.arabicFontSize) } })
         } else if (FormState.Locale in currentState) {
+          const value = currentState.locale
+          if (!Object.values(Locale).includes(value)) return
+
           setLocale(currentState.locale)
         } else if (FormState.BasmalaPosition in currentState) {
+          const value = currentState.basmalaPosition
+          if (!Object.values(BasmalaPosition).includes(value)) return
+
           setBasmalaPosition(currentState.basmalaPosition)
         } else if (FormState.WordByWordTranslations) {
+          const value = currentState.wbwTranslations
+          if (!Object.values(WordTranslationOption).includes(value)) return
+
           setWordByWordTranslations(currentState.wbwTranslations)
         }
 
