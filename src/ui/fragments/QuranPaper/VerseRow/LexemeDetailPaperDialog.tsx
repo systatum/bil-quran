@@ -12,7 +12,7 @@ import useUserSettingsState, {
 } from "@hooks/states/UserSettingsState"
 import { Grid } from "@systatum/coneto/grid"
 import { useCallback, useRef, useState } from "react"
-import styled from "styled-components"
+import styled, { css } from "styled-components"
 import { Transliteration, WordCell } from "."
 import ClippedContent from "../../ClippedContent"
 import InfoTile from "./InfoTile"
@@ -138,8 +138,21 @@ function Lexeme({
   const forLearningFont = isLearningFont(font)
 
   return (
-    <TokenSection $theme={theme} $scrolled={scrolled}>
-      <div style={{ display: "flex", flexDirection: "row", gap: "3px" }}>
+    <TokenSection
+      $theme={theme}
+      $scrolled={scrolled}
+      $forLearningFont={forLearningFont}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          gap: "3px",
+          textAlign: "center",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         <ArabicToken $font={font} $theme={theme} $scrolled={scrolled}>
           {token}
         </ArabicToken>
@@ -149,9 +162,9 @@ function Lexeme({
               style={{
                 color: theme === "dark" ? "#3c3c4d" : "rgb(164 150 124)",
                 fontSize: scrolled ? "2em" : "4em",
-                lineHeight: scrolled ? "7vh" : "12vh",
                 marginRight: "10px",
                 marginLeft: "10px",
+                transform: scrolled ? "translateY(0px)" : "translateY(-8px)",
               }}
             >
               ·
@@ -204,7 +217,11 @@ const ScrollContainer = styled.div`
   }
 `
 
-const TokenSection = styled.div<{ $theme: ThemeMode; $scrolled: boolean }>`
+const TokenSection = styled.div<{
+  $theme: ThemeMode
+  $scrolled: boolean
+  $forLearningFont?: boolean
+}>`
   position: sticky;
   top: 0;
   z-index: 1;
@@ -219,6 +236,12 @@ const TokenSection = styled.div<{ $theme: ThemeMode; $scrolled: boolean }>`
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   padding: ${({ $scrolled }) =>
     $scrolled ? "0px 4px 24px" : "0 24px 24px 20px"};
+
+  ${({ $forLearningFont }) =>
+    $forLearningFont &&
+    css`
+      margin-top: 20px;
+    `}
 `
 
 const ArabicToken = styled.span<{
