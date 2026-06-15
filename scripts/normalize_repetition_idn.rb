@@ -151,12 +151,36 @@ end
   prev_last = prev_words.last
   curr_first = first_word_ignoring_parentheses(curr_text)
 
+  # --------------------------------------------------------------
+  # Case 2:
+  #
+  #   A adalah
+  #   A B...
+  #
+  # =>
+  #
+  #   A adalah
+  #   B...
+  #
+  # Never perform this transformation if it would make the
+  # current entry empty.
+  # --------------------------------------------------------------
+  if prev_words.length == 2 &&
+     prev_words.last.casecmp?("adalah") &&
+     prev_words.first.casecmp?(curr_first)
+
+    next if curr_words.length == 1
+
+    data[curr_key] = remove_first_word(curr_text)
+    next
+  end
+
   # No overlap between the end of the previous entry and the
   # beginning of the current entry.
   next unless prev_last.casecmp?(curr_first)
 
   # --------------------------------------------------------------
-  # Case 2:
+  # Case 3:
   #
   #   sesungguhnya B
   #   B
@@ -184,7 +208,7 @@ end
   end
 
   # --------------------------------------------------------------
-  # Case 3:
+  # Case 4:
   #
   #   A B
   #   B
@@ -200,7 +224,7 @@ end
   end
 
   # --------------------------------------------------------------
-  # Case 4:
+  # Case 5:
   #
   #   adalah B
   #   B C...
@@ -224,7 +248,7 @@ end
   end
 
   # --------------------------------------------------------------
-  # Case 5 (default):
+  # Case 6 (default):
   #
   #   A B
   #   B C...
