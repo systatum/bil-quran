@@ -19,6 +19,7 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
   theme: "light",
   basmalaPosition: BasmalaPosition.Detached,
   wbwTranslations: [WordTranslationOption.AmericanEnglish],
+  showPageIndicator: false,
   font: {
     arabic: {
       family: "NotoNaskhArabic",
@@ -248,12 +249,30 @@ export interface UserSettings {
   locale: Locale
   theme: ThemeMode
   font: UserFontSettings
+
+  /**
+   * Whether to show page indicator so user knows which part and page they are in
+   */
+  showPageIndicator: boolean
+
+  /**
+   * To record bookmarks
+   */
   bookmarks: {
     categories: Record<string, BookmarkCategory>
     list: Record<string, Bookmark>
   }
+
   basmalaPosition: BasmalaPosition
+
+  /**
+   * Which language is going to be used for showing word-by-word translation
+   */
   wbwTranslations: WordTranslationOption[]
+
+  /**
+   * To restore to last scroll position
+   */
   lastScroll: {
     chapterId: number
     verse: number
