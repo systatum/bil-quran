@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "homepage": "https://bil-quran.com",
-  "type": "module",
   "scripts": {
     "prestart": "pnpm run split-chapter",
     "start": "craco start",
