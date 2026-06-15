@@ -235,7 +235,7 @@ async function generateRSS() {
         const verseNumber = Number(verseId.split(":")[1])
         addItem(
           `${chapterName}:${verseNumber}`,
-          `${SITE_URL}/#/v/${chapterId}/${verseNumber}?locale=${localeCode}`,
+          `${SITE_URL}/#/c/${chapterId}/${verseNumber}?locale=${localeCode}`,
           `${chapterName}:${verseNumber} - ${v.arabic}\n\n${v.transliteration}\n\n${v.translation}`.trim(),
         )
       }
