@@ -1,5 +1,5 @@
 {
-  "chapters.json": "c7ac85c88ac05daa337c15cc5844901c",
+  "chapters.json": "8acb659a8582c1e214010bcfbde592d4",
   "commentaries/aliquli/1.json": "1eaa72954c5132a672b092c2e771d82c",
   "commentaries/aliquli/10.json": "2b4852a0c0e48a42edd65705ef619ab0",
   "commentaries/aliquli/100.json": "1899eb6962d155020add22aaac69e12a",
@@ -116,6 +116,7 @@
   "commentaries/aliquli/99.json": "16c2e990d47f4d88a841bbdbb9346c3d",
   "commentaries/aliquli/about.json": "ca23c30e18796d38aad08b1f57a60dd8",
   "commentaries/aliquli/README.md": "955c6a690ac7ad1d392b6af2bd545a50",
+  "paginations.json": "15b3a7a52bf23f09ea79e767ed5fc95f",
   "verses/imlaei/1.json": "f80a87edd1d77a9017866ccfcb1a2cc9",
   "verses/imlaei/10.json": "f8308c0edea422d24e521fb1fae7c8b1",
   "verses/imlaei/100.json": "a42ee46df8ec0b97413553154d5df8ab",
@@ -233,5 +234,8 @@
   "verses/imlaei.json": "d0f90152383e75a4a34b13a47cd4aaf7",
   "verses/readme.txt": "cc404532e0e95208b2386f217c21fc22",
   "wbw_translations/en-US.json": "e2e5c8d1fb33096f11eb737b0fea2dd4",
-  "wbw_translations/id-ID.json": "ca27ed140e49fc7cb4d85e5fa14ad24f"
+  "wbw_translations/id-ID.json": "95e328abb7406709cb8cb00bc03e712b",
+  "wbw_translations/page_combiner.rb": "d41d8cd98f00b204e9800998ecf8427e",
+  "wbw_translations/rank.json": "8395b924766d9aaebdcf5fb12b687579",
+  "wbw_translations/ranker.rb": "f480aecd5cff2f3fc56dcc0585620ab9"
 }
