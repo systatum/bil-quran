@@ -1,5 +1,5 @@
 {
-  "chapters.json": "3bcc8861e12946149e9fe9a9dd3cb6a0",
+  "chapters.json": "e05cec8d10f02cfb708a81b63b8eb4fc",
   "verses/imlaei/1.json": "f80a87edd1d77a9017866ccfcb1a2cc9",
   "verses/imlaei/10.json": "f8308c0edea422d24e521fb1fae7c8b1",
   "verses/imlaei/100.json": "a42ee46df8ec0b97413553154d5df8ab",
@@ -116,6 +116,6 @@
   "verses/imlaei/99.json": "c4daddba498ee654a5d9badc43259072",
   "verses/imlaei.json": "d0f90152383e75a4a34b13a47cd4aaf7",
   "verses/readme.txt": "cc404532e0e95208b2386f217c21fc22",
-  "wbw_translations/en-US.json": "fa40a408f0e0752701cf453015903294",
-  "wbw_translations/id-ID.json": "e36e76082e0f05fa0308a0d8c03ad397"
+  "wbw_translations/en-US.json": "b29a44a989747cb6b0147c374d8db30b",
+  "wbw_translations/id-ID.json": "6105e909cd1b2cc5b7505a8c8005addf"
 }
