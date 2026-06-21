@@ -5,42 +5,46 @@ import {
   findVisibleTarget,
   scrollDown,
   selectComboBox,
+  waitUntilVisible,
 } from "./tools/interactivity"
 import {
   getPageLuminance,
+  getWordFontFamily,
   openSidebar,
   untilUsable,
   visitFresh,
 } from "./tools/state"
 
-test.describe.only("User settings", () => {
+test.describe("User settings", () => {
   test.beforeEach(async ({ page }) => await visitFresh(page))
 
-  test("selected theme persists after page refresh", async ({ page }) => {
-    const luminanceLight = await getPageLuminance(page)
+  test.describe("theme", () => {
+    test("selected theme persists after page refresh", async ({ page }) => {
+      const luminanceLight = await getPageLuminance(page)
 
-    await openSidebar(page)
-    await selectComboBox("Dark", page, { formLabel: "Theme" })
+      await openSidebar(page)
+      await selectComboBox("Dark", page, { formLabel: "Theme" })
 
-    // Poll until the page visually darkens — React re-render may be async
-    await expect
-      .poll(() => getPageLuminance(page), { timeout: 5000 })
-      .toBeLessThan(luminanceLight)
+      // Poll until the page visually darkens — React re-render may be async
+      await expect
+        .poll(() => getPageLuminance(page), { timeout: 5000 })
+        .toBeLessThan(luminanceLight)
 
-    // Reload and verify the dark theme still applies
-    await page.reload()
-    await untilUsable(page)
+      // Reload and verify the dark theme still applies
+      await page.reload()
+      await untilUsable(page)
 
-    await expect
-      .poll(() => getPageLuminance(page), { timeout: 5000 })
-      .toBeLessThan(luminanceLight)
+      await expect
+        .poll(() => getPageLuminance(page), { timeout: 5000 })
+        .toBeLessThan(luminanceLight)
 
-    // Re-open sidebar and confirm the combobox still reads "Dark"
-    await openSidebar(page)
-    await expect(page.getByLabel("Theme")).toHaveValue("Dark")
+      // Re-open sidebar and confirm the combobox still reads "Dark"
+      await openSidebar(page)
+      await expect(page.getByLabel("Theme")).toHaveValue("Dark")
+    })
   })
 
-  test.describe("font settings", () => {
+  test.describe("font", () => {
     // Font display names as they appear in the settings dropdown.
     const FONT_DISPLAY_NAMES: string[] = [
       ...Object.entries(ArabicFonts)
@@ -116,6 +120,25 @@ test.describe.only("User settings", () => {
         return gaps
       })
     }
+
+    test("selected font persists after page reload", async ({ page }) => {
+      const FONT_NAME = ArabicFonts.Amiri.name
+      const FONT_ID = ArabicFontId.Amiri
+
+      await openSidebar(page)
+      await selectFont(FONT_NAME, page)
+      await page.waitForTimeout(300)
+
+      await page.reload()
+      await untilUsable(page)
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const fontFamily = await getWordFontFamily(page)
+      expect(fontFamily).not.toBeNull()
+      expect(fontFamily).toContain(FONT_ID)
+    })
 
     test("recalculates verse row without gaps", async ({ page }) => {
       const VERSE_TARGET = 50

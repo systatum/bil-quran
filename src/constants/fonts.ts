@@ -16,6 +16,7 @@ export interface FontAsset {
 
 export const ArabicFontId = {
   AdwaAssalaf: "AdwaAssalaf",
+  Amiri: "Amiri",
   DroidNaskh: "DroidNaskh",
   MeQuranFull: "MeQuranFull",
 } as const
@@ -61,7 +62,7 @@ export const ArabicFonts = {
   //   name: "Amiri Color",
   //   relativePath: "amiri-color/amiri-quran-colored",
   // },
-  Amiri: {
+  [ArabicFontId.Amiri]: {
     name: "Amiri",
     relativePath: "amiri/amiri_arabic-400-normal",
     shaddaStyle: ShaddaStyle.AllowSeparation,

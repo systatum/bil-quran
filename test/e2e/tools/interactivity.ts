@@ -408,30 +408,20 @@ export async function pause(ms: number) {
 
 // ==== QURAN ======================================================
 
-/**
- * For each currently-visible verse row, return every word that has no
- * translation span rendered beneath it.
- */
+/** Returns words missing a translation span in the currently-visible verse rows. */
 export async function checkVisibleVerseWords(page: Page): Promise<string[]> {
   return page.evaluate(() => {
     const missing: string[] = []
-
     for (const row of document.querySelectorAll<HTMLElement>("[data-index]")) {
-      // Arabic words are the only spans in a verse row with cursor:pointer
-      const arabicWords = Array.from(row.querySelectorAll("span")).filter(
-        (s) =>
-          window.getComputedStyle(s).cursor === "pointer" &&
-          s.textContent?.trim(),
-      )
+      const arabicWords = Array.from(row.querySelectorAll("span")).filter(window.__isArabicWord)
 
-      // No cursor:pointer spans = chapter header or standalone Basmala — skip
+      // rows with no .arabic-lex spans are headers / standalone Basmala
       if (arabicWords.length === 0) continue
 
       for (const word of arabicWords) {
         const container = word.parentElement
         if (!container) continue
 
-        // The meanings wrapper is the sibling span next to the Arabic span
         const meanings = Array.from(container.children).find(
           (c) => c !== word && c.tagName === "SPAN",
         )
@@ -450,10 +440,7 @@ export async function checkVisibleVerseWords(page: Page): Promise<string[]> {
   })
 }
 
-/**
- * Scroll the virtual-scroll container down by certain pixels.
- * @returns true when the bottom of the content has been reached
- */
+/** @returns true when the scroll container has reached the bottom. */
 export async function scrollDown(page: Page, px: number): Promise<boolean> {
   return page.evaluate((amount) => {
     const row = document.querySelector("[data-index]")

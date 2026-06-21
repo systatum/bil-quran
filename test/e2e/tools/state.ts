@@ -1,25 +1,42 @@
 import type { Locator, Page } from "playwright-core"
 
 export async function visitFresh(page: Page) {
+  // addInitScript runs before every navigation, making __isArabicWord available
+  // in all page.evaluate callbacks without duplicating the predicate.
+  await page.addInitScript(() => {
+    ;(window as any).__isArabicWord = (s: Element): boolean =>
+      s.classList.contains("arabic-lex")
+  })
   await page.goto("/")
   await page.evaluate(() => localStorage.removeItem("userSettings"))
   await page.reload()
   await untilUsable(page)
 }
 
-// Wait for full app bootstrap — the action-buttons only appear after
-// RouterProvider renders, which requires setIsBootstrapped(true), which
-// is called right after restoreState(). This guarantees the stored theme
-// is applied before any assertions run.
+export async function openSidebar(page: Page) {
+  await page.locator('[aria-label="action-button"]:not(aside *)').last().click()
+  await page.waitForTimeout(300) // sidebar CSS transition is 220ms
+}
+
+/** Waits until the app has fully bootstrapped (stored settings applied). */
 export async function untilUsable(page: Page | Locator) {
-  await page.getByRole("button", { name: "action-button" }).last().waitFor({
-    state: "visible",
-    timeout: 30_000,
+  await page
+    .getByRole("button", { name: "action-button" })
+    .first()
+    .waitFor({ state: "visible", timeout: 30_000 })
+}
+
+/** Returns the computed `font-family` of the first `.arabic-lex` span in the first `[data-verse]` row. */
+export async function getWordFontFamily(page: Page): Promise<string | null> {
+  return page.evaluate(() => {
+    const row = document.querySelector<HTMLElement>("[data-verse]")
+    if (!row) return null
+    const word = Array.from(row.querySelectorAll("span")).find(window.__isArabicWord)
+    return word ? window.getComputedStyle(word).fontFamily : null
   })
 }
 
-// Returns perceived luminance (0–255) of the first solid background found
-// depth-first in the DOM — reliable proxy for light vs dark theme.
+/** Returns perceived luminance (0–255) — reliable proxy for light vs dark theme. */
 export async function getPageLuminance(page: Page): Promise<number> {
   return page.evaluate(() => {
     const walk = (el: Element): string | null => {

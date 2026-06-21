@@ -244,7 +244,7 @@ const TokenSection = styled.div<{
     `}
 `
 
-const ArabicToken = styled.span<{
+const ArabicToken = styled.span.attrs({ className: "arabic-lex" })<{
   $font: string
   $theme: ThemeMode
   $scrolled: boolean
