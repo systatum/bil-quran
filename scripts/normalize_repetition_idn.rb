@@ -45,6 +45,14 @@ SPECIAL_LEADING_WORDS = %w[
   sungguh
 ].freeze
 
+PRONOUNS = %w[
+  aku
+  kamu
+  mereka
+  dia
+  kalian
+].freeze
+
 # Returns the first word of a string.
 #
 # If the first token is wrapped in parentheses, the parentheses
@@ -78,9 +86,9 @@ def remove_first_word(text)
   words.join(" ")
 end
 
-# If the current entry starts with a parenthesized word and that
-# word already appears among the last two words of the previous
-# entry, remove the parenthesized word.
+# If the current entry starts with a parenthesized pronoun and that
+# pronoun already appears anywhere in the previous entry, remove the
+# parenthesized pronoun.
 #
 # Examples:
 #
@@ -101,19 +109,18 @@ end
 #   "D"
 #
 def remove_leading_parenthesized_repetition(prev_text, curr_text)
-  match = curr_text.match(/^\(([^)]+)\)\s+(.*)$/)
+  match = curr_text.match(/^\(([^)]+)\)\s*(.*)$/)
   return curr_text unless match
 
   repeated_word = match[1]
   remainder = match[2]
 
+  return curr_text unless PRONOUNS.any? { |word| word.casecmp?(repeated_word) }
+
   prev_words = prev_text.strip.split(/\s+/)
-  return curr_text if prev_words.empty?
 
-  last_two_words = prev_words.last(2)
-
-  if last_two_words.any? { |word| word.casecmp?(repeated_word) }
-    remainder
+  if prev_words.any? { |word| word.casecmp?(repeated_word) }
+    remainder.lstrip
   else
     curr_text
   end
