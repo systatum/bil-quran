@@ -19,4 +19,18 @@ module.exports = {
       "@services": path.resolve(__dirname, "src/services"),
     },
   },
+
+  jest: {
+    configure: (jestConfig) => {
+      jestConfig.moduleNameMapper = {
+        ...jestConfig.moduleNameMapper,
+        "^@constants(.*)$": "<rootDir>/src/constants$1",
+        "^@db(.*)$": "<rootDir>/src/db$1",
+        "^@hooks(.*)$": "<rootDir>/src/ui/hooks$1",
+        "^@i18n(.*)$": "<rootDir>/src/i18n$1",
+        "^@services(.*)$": "<rootDir>/src/services$1",
+      }
+      return jestConfig
+    },
+  },
 }
