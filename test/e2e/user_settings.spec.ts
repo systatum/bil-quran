@@ -5,9 +5,11 @@ import {
   findVisibleTarget,
   scrollDown,
   selectComboBox,
+  waitUntilVisible,
 } from "./tools/interactivity"
 import {
   getPageLuminance,
+  getWordFontFamily,
   openSidebar,
   untilUsable,
   visitFresh,
@@ -116,6 +118,26 @@ test.describe.only("User settings", () => {
         return gaps
       })
     }
+
+    test("selected font persists after page reload", async ({ page }) => {
+      const FONT_NAME = ArabicFonts.Amiri.name
+      const FONT_ID = ArabicFontId.Amiri
+
+      await openSidebar(page)
+      await selectFont(FONT_NAME, page)
+      await page.waitForTimeout(300)
+
+      await page.reload()
+      await untilUsable(page)
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const fontFamily = await getWordFontFamily(page)
+
+      expect(fontFamily, "arabic word font-family after reload").not.toBeNull()
+      expect(fontFamily).toContain(FONT_ID)
+    })
 
     test("recalculates verse row without gaps", async ({ page }) => {
       const VERSE_TARGET = 50

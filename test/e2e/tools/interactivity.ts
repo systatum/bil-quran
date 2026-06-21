@@ -409,20 +409,29 @@ export async function pause(ms: number) {
 // ==== QURAN ======================================================
 
 /**
+ * Browser-side predicate — a span is an Arabic word if it has cursor:pointer
+ * and non-empty text. Exported as a regular function so its source can be
+ * passed into page.evaluate via .toString() — the only way to share logic
+ * across the Node.js / browser context boundary without polluting window.
+ *
+ * Do not call this from Node.js code; it references window.
+ */
+export const isArabicWord = (s: Element): boolean =>
+  window.getComputedStyle(s).cursor === "pointer" && !!s.textContent?.trim()
+
+/**
  * For each currently-visible verse row, return every word that has no
  * translation span rendered beneath it.
  */
 export async function checkVisibleVerseWords(page: Page): Promise<string[]> {
-  return page.evaluate(() => {
+  return page.evaluate((isArabicWordSrc) => {
+    const isArabicWord = new Function(
+      `return (${isArabicWordSrc})`,
+    )() as (s: Element) => boolean
     const missing: string[] = []
 
     for (const row of document.querySelectorAll<HTMLElement>("[data-index]")) {
-      // Arabic words are the only spans in a verse row with cursor:pointer
-      const arabicWords = Array.from(row.querySelectorAll("span")).filter(
-        (s) =>
-          window.getComputedStyle(s).cursor === "pointer" &&
-          s.textContent?.trim(),
-      )
+      const arabicWords = Array.from(row.querySelectorAll("span")).filter(isArabicWord)
 
       // No cursor:pointer spans = chapter header or standalone Basmala — skip
       if (arabicWords.length === 0) continue
@@ -447,7 +456,7 @@ export async function checkVisibleVerseWords(page: Page): Promise<string[]> {
     }
 
     return missing
-  })
+  }, isArabicWord.toString())
 }
 
 /**
