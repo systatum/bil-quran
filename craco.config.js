@@ -23,6 +23,14 @@ module.exports = {
 
   jest: {
     configure: (jestConfig) => {
+      jestConfig.roots = [
+        ...(jestConfig.roots ?? ["<rootDir>/src"]),
+        "<rootDir>/test/unit",
+      ]
+      jestConfig.testMatch = [
+        ...(jestConfig.testMatch ?? []),
+        "<rootDir>/test/unit/**/*.{spec,test}.{js,jsx,ts,tsx}",
+      ]
       jestConfig.moduleNameMapper = {
         ...jestConfig.moduleNameMapper,
         "^@constants(.*)$": "<rootDir>/src/constants$1",

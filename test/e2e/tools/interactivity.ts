@@ -133,6 +133,7 @@ export async function getFieldByLabel(
   if (semanticField) return semanticField
 
   // fallback: find nearest form field near label
+  if (!label) return undefined
   const wrapper = label.locator(
     `xpath=ancestor-or-self::*[
       .//input or .//textarea or .//*[@role="textbox"]
@@ -403,4 +404,75 @@ export const ONE_MINUTE = 60 * 1000
  */
 export async function pause(ms: number) {
   return new Promise((f) => setTimeout(f, ms))
+}
+
+// ==== QURAN ======================================================
+
+/**
+ * For each currently-visible verse row, return every word that has no
+ * translation span rendered beneath it.
+ */
+export async function checkVisibleVerseWords(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const missing: string[] = []
+
+    for (const row of document.querySelectorAll<HTMLElement>("[data-index]")) {
+      // Arabic words are the only spans in a verse row with cursor:pointer
+      const arabicWords = Array.from(row.querySelectorAll("span")).filter(
+        (s) =>
+          window.getComputedStyle(s).cursor === "pointer" &&
+          s.textContent?.trim(),
+      )
+
+      // No cursor:pointer spans = chapter header or standalone Basmala — skip
+      if (arabicWords.length === 0) continue
+
+      for (const word of arabicWords) {
+        const container = word.parentElement
+        if (!container) continue
+
+        // The meanings wrapper is the sibling span next to the Arabic span
+        const meanings = Array.from(container.children).find(
+          (c) => c !== word && c.tagName === "SPAN",
+        )
+
+        if (!meanings || !meanings.textContent?.trim()) {
+          const verse =
+            row.getAttribute("data-verse") ??
+            row.getAttribute("data-index") ??
+            "?"
+          missing.push(`verse ${verse}: "${word.textContent?.trim()}"`)
+        }
+      }
+    }
+
+    return missing
+  })
+}
+
+/**
+ * Scroll the virtual-scroll container down by certain pixels.
+ * @returns true when the bottom of the content has been reached
+ */
+export async function scrollDown(page: Page, px: number): Promise<boolean> {
+  return page.evaluate((amount) => {
+    const row = document.querySelector("[data-index]")
+    if (!row) return true
+
+    let el: Element | null = row.parentElement
+    while (el) {
+      const style = window.getComputedStyle(el as HTMLElement)
+      if (style.overflow === "auto" || style.overflowY === "auto") {
+        const container = el as HTMLElement
+        container.scrollTop += amount
+        return (
+          container.scrollTop + container.clientHeight >=
+          container.scrollHeight - 10
+        )
+      }
+      el = el.parentElement
+    }
+
+    return true
+  }, px)
 }
