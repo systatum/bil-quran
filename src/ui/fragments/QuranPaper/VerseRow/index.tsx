@@ -196,6 +196,7 @@ export default function VerseRow({
     <>
       <VerseRowWrapper
         data-index={index}
+        data-verse={verse.id}
         ref={(el) => {
           if (!el) return
           wrapperRef.current = el
