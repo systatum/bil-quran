@@ -7,7 +7,9 @@
     "prestart": "pnpm run split-chapter",
     "start": "craco start",
     "build": "craco build",
-    "test": "craco test",
+    "test": "pnpm run test:unit && pnpm run test:e2e",
+    "test:unit": "craco test --watchAll=false --passWithNoTests",
+    "test:e2e": "playwright test",
     "predeploy": "pnpm run prepare-assets && pnpm run build && node scripts/pre-deploy.js",
     "deploy": "gh-pages -d build",
     "db:generate": "drizzle-kit generate",
@@ -45,11 +47,14 @@
   },
   "devDependencies": {
     "@craco/craco": "^7.1.0",
+    "@playwright/test": "^1.61.0",
     "@types/pg": "^8.20.0",
     "@types/sql.js": "^1.4.11",
     "drizzle-kit": "^0.31.10",
     "gh-pages": "^6.3.0",
-    "oxfmt": "^0.48.0"
+    "oxfmt": "^0.48.0",
+    "playwright": "^1.61.0",
+    "playwright-core": "^1.61.0"
   },
   "browserslist": {
     "production": [
