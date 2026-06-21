@@ -115,9 +115,6 @@
   "commentaries/aliquli/98.json": "ef98d8c64c3d4e09bcdaa470404f1344",
   "commentaries/aliquli/99.json": "16c2e990d47f4d88a841bbdbb9346c3d",
   "commentaries/aliquli/about.json": "ca23c30e18796d38aad08b1f57a60dd8",
-  "commentaries/aliquli/README.md": "955c6a690ac7ad1d392b6af2bd545a50",
-  "page_combiner.rb": "d41d8cd98f00b204e9800998ecf8427e",
-  "paginations.json": "15b3a7a52bf23f09ea79e767ed5fc95f",
   "verses/imlaei/1.json": "f80a87edd1d77a9017866ccfcb1a2cc9",
   "verses/imlaei/10.json": "f8308c0edea422d24e521fb1fae7c8b1",
   "verses/imlaei/100.json": "a42ee46df8ec0b97413553154d5df8ab",
@@ -163,7 +160,7 @@
   "verses/imlaei/34.json": "5037aae76e60fa3d4a73671e8df2cbe9",
   "verses/imlaei/35.json": "b5f92f467d7ca7d3a6cab03b19d45768",
   "verses/imlaei/36.json": "0c122a3fc5619dfce6adc213a33f1da6",
-  "verses/imlaei/37.json": "0480f69246378e42bd4ae916d67e8587",
+  "verses/imlaei/37.json": "df585d1326913ef9d58d135edd88e962",
   "verses/imlaei/38.json": "05f46211c335bf32dcf3282d38dfaad4",
   "verses/imlaei/39.json": "50fe7d8a24e115369b9f15dc8f1c381c",
   "verses/imlaei/4.json": "3ccfe259a50e27d99b981fcef86437d1",
@@ -232,10 +229,8 @@
   "verses/imlaei/97.json": "655bb8dc367b54d350037448d9a1c693",
   "verses/imlaei/98.json": "fccba719b65e9069810b1285d38c64d5",
   "verses/imlaei/99.json": "c4daddba498ee654a5d9badc43259072",
-  "verses/imlaei.json": "d0f90152383e75a4a34b13a47cd4aaf7",
+  "verses/imlaei.json": "974a1e6eedcc8cc7427146cfb05b807e",
   "verses/readme.txt": "cc404532e0e95208b2386f217c21fc22",
-  "wbw_translations/en-US.json": "e2e5c8d1fb33096f11eb737b0fea2dd4",
-  "wbw_translations/id-ID.json": "16665bbeea811796afe7c6950163f7a4",
-  "wbw_translations/rank.json": "663af0a43a9dc60388ff20efba3707e6",
-  "wbw_translations/ranker.rb": "f480aecd5cff2f3fc56dcc0585620ab9"
+  "wbw_translations/en-US.json": "b29a44a989747cb6b0147c374d8db30b",
+  "wbw_translations/id-ID.json": "430a7cb2d83bedc86e23032b2bf1254c"
 }
