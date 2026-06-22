@@ -1,7 +1,7 @@
 require "json"
 
 # Read id-ID.json
-data = JSON.parse(File.read("id-ID.json"))
+data = JSON.parse(File.read("../public/quran/wbw_translations/id-ID.json"))
 
 counts = Hash.new(0)
 

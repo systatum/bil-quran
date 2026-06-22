@@ -48,6 +48,9 @@
 # "25:40:13": "mereka",
 # "25:40:14": "tidak",
 # "25:40:15": "mereka mengharapkan",
+# how about:
+# "12:97:6": "sesungguhnya kami",
+# "12:97:7": "kami",
 
 
 require "json"
