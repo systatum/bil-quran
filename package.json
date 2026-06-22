@@ -12,6 +12,7 @@
     "test:e2e": "playwright test",
     "predeploy": "pnpm run prepare-assets && pnpm run build && node scripts/pre-deploy.js",
     "deploy": "gh-pages -d build",
+    "deploy:staging": "",
     "db:generate": "drizzle-kit generate",
     "prepare-assets": "pnpm run split-chapter && pnpm run fingerprint",
     "fingerprint": "node scripts/fingerprinter.js",
