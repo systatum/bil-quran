@@ -413,7 +413,7 @@ export async function openSidebar(page: Page) {
   await page.waitForTimeout(300) // sidebar CSS transition is 220ms
 }
 
-/** Returns words missing a translation span in the currently-visible verse rows. */
+/** @returns words missing a translation span in the currently-visible verse rows. */
 export async function checkVisibleVerseWords(page: Page): Promise<string[]> {
   return page.evaluate(() => {
     const missing: string[] = []

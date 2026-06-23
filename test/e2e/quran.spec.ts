@@ -146,6 +146,7 @@ export async function getClippedMarkers(page: Page): Promise<string[]> {
       )
       if (!isMultiRow) continue
 
+      // may return null if it's mid-render, ie not fully-mounted
       const marker = row.querySelector("[data-vmark]")
       if (!marker) continue
 
