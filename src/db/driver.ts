@@ -11,7 +11,7 @@ import { repo } from "./repo"
 /**
  * Where shall the data be stored
  */
-const DATABASE_KEY = `bilquran.systatum`
+export const DATABASE_KEY = `bilquran.systatum`
 
 let SQL: SqlJsStatic | null = null
 let client: Database | null = null

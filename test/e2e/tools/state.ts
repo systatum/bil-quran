@@ -1,3 +1,4 @@
+import { DATABASE_KEY } from "@db/driver"
 import type { Locator, Page } from "playwright-core"
 
 export async function visitFresh(page: Page) {
@@ -16,6 +17,37 @@ export async function visitFresh(page: Page) {
 export async function openSidebar(page: Page) {
   await page.locator('[aria-label="action-button"]:not(aside *)').last().click()
   await page.waitForTimeout(300) // sidebar CSS transition is 220ms
+}
+
+/** Clears localStorage and the indexed DB, ie deletes the SQLite snapshot. */
+export async function clearBrowserStorage(page: Page) {
+  await page.evaluate(async () => {
+    localStorage.clear()
+    await new Promise<void>((resolve) => {
+      const req = indexedDB.open("keyval-store")
+      req.onerror = () => resolve()
+      req.onsuccess = () => {
+        const db = req.result
+        try {
+          const tx = db.transaction("keyval", "readwrite")
+          // delete the key rather than the whole database because `deleteDatabase`
+          // blocks while the app holds an open IDB connection, causing hang.
+          tx.objectStore("keyval").delete(DATABASE_KEY)
+          tx.oncomplete = () => {
+            db.close()
+            resolve()
+          }
+          tx.onerror = () => {
+            db.close()
+            resolve()
+          }
+        } catch {
+          db.close()
+          resolve()
+        }
+      }
+    })
+  })
 }
 
 /** Waits until the app has fully bootstrapped (stored settings applied). */
