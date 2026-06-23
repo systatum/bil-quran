@@ -408,12 +408,19 @@ export async function pause(ms: number) {
 
 // ==== QURAN ======================================================
 
+export async function openSidebar(page: Page) {
+  await page.locator('[aria-label="action-button"]:not(aside *)').last().click()
+  await page.waitForTimeout(300) // sidebar CSS transition is 220ms
+}
+
 /** Returns words missing a translation span in the currently-visible verse rows. */
 export async function checkVisibleVerseWords(page: Page): Promise<string[]> {
   return page.evaluate(() => {
     const missing: string[] = []
     for (const row of document.querySelectorAll<HTMLElement>("[data-index]")) {
-      const arabicWords = Array.from(row.querySelectorAll("span")).filter(window.__isArabicWord)
+      const arabicWords = Array.from(row.querySelectorAll("span")).filter(
+        window.__isArabicWord,
+      )
 
       // rows with no .arabic-lex spans are headers / standalone Basmala
       if (arabicWords.length === 0) continue
@@ -438,6 +445,56 @@ export async function checkVisibleVerseWords(page: Page): Promise<string[]> {
 
     return missing
   })
+}
+
+/** Opens the sidebar and toggles a word-by-word translation option. */
+export async function toggleWbwTranslation(label: string, page: Page) {
+  await openSidebar(page)
+
+  const input = await findVisibleTarget(undefined, page, {
+    formLabel: "Word-by-word translations",
+  })
+  await input.click()
+
+  const drawer = page
+    .locator('[aria-label="combobox-drawer"]')
+    .filter({ visible: true })
+  await expect(drawer).toBeVisible({ timeout: 5000 })
+
+  const item = drawer.getByRole("option").filter({ hasText: label }).first()
+  await expect(item).toBeVisible({ timeout: 5000 })
+  await item.click()
+
+  await page.keyboard.press("Escape") // close drawer
+  await page.waitForTimeout(150)
+  // dispatchEvent fires directly on the DOM node, bypassing the aside overlay
+  // that intercepts physical mouse clicks at the same screen coordinates.
+  await page
+    .locator('[aria-label="action-button"]:not(aside *)')
+    .last()
+    .dispatchEvent("click")
+  await page.waitForTimeout(300)
+}
+
+/** @returns true when the scroll container has reached the top. */
+export async function scrollUp(page: Page, px: number): Promise<boolean> {
+  return page.evaluate((amount) => {
+    const row = document.querySelector("[data-index]")
+    if (!row) return true
+
+    let el: Element | null = row.parentElement
+    while (el) {
+      const style = window.getComputedStyle(el as HTMLElement)
+      if (style.overflow === "auto" || style.overflowY === "auto") {
+        const container = el as HTMLElement
+        container.scrollTop -= amount
+        return container.scrollTop <= 0
+      }
+      el = el.parentElement
+    }
+
+    return true
+  }, px)
 }
 
 /** @returns true when the scroll container has reached the bottom. */

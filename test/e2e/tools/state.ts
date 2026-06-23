@@ -14,11 +14,6 @@ export async function visitFresh(page: Page) {
   await untilUsable(page)
 }
 
-export async function openSidebar(page: Page) {
-  await page.locator('[aria-label="action-button"]:not(aside *)').last().click()
-  await page.waitForTimeout(300) // sidebar CSS transition is 220ms
-}
-
 /** Clears localStorage and the indexed DB, ie deletes the SQLite snapshot. */
 export async function clearBrowserStorage(page: Page) {
   await page.evaluate(async () => {
@@ -63,7 +58,9 @@ export async function getWordFontFamily(page: Page): Promise<string | null> {
   return page.evaluate(() => {
     const row = document.querySelector<HTMLElement>("[data-verse]")
     if (!row) return null
-    const word = Array.from(row.querySelectorAll("span")).find(window.__isArabicWord)
+    const word = Array.from(row.querySelectorAll("span")).find(
+      window.__isArabicWord,
+    )
     return word ? window.getComputedStyle(word).fontFamily : null
   })
 }

@@ -3,6 +3,7 @@ import { ArabicFontId, ArabicFonts } from "../../src/constants/fonts"
 import enUS from "../../src/i18n/locales/en-US.json"
 import {
   findVisibleTarget,
+  openSidebar,
   scrollDown,
   selectComboBox,
   waitUntilVisible,
@@ -10,7 +11,6 @@ import {
 import {
   getPageLuminance,
   getWordFontFamily,
-  openSidebar,
   untilUsable,
   visitFresh,
 } from "./tools/state"
