@@ -291,6 +291,19 @@ export default function QuranPaper({
     scrollToVerse(requestedChapterId, requestedVerseNumber)
   }, [requestedChapterId, requestedVerseNumber, renderRows])
 
+  // Always points at the latest restore-to-last-position logic so the
+  // resize effect (empty deps, no re-registration) can call it.
+  const scrollRestoreRef = useRef<(() => Promise<void>) | null>(null)
+  scrollRestoreRef.current = async () => {
+    const { chapterId, verse } = userSettings.lastScroll
+    if (chapterId > 0) {
+      await waitForMeasurements()
+      await scrollToVerse(chapterId, verse)
+    } else {
+      isRestoringScrollRef.current = false
+    }
+  }
+
   // global resize/orientation observer that invalidates every cached measurement
   // which then would force the virtualizer to recompute
   useEffect(() => {
@@ -298,9 +311,13 @@ export default function QuranPaper({
 
     const onResize = () => {
       clearTimeout(timer)
+      // Block scroll recording immediately so drift during remeasurement
+      // doesn't overwrite the last known good position.
+      isRestoringScrollRef.current = true
       timer = setTimeout(() => {
         sizeMap.current.clear()
         virtualizer.measure()
+        scrollRestoreRef.current?.()
       }, 200)
     }
 
