@@ -1,4 +1,7 @@
+import { Rendering } from "@constants/records/RenderingRecord"
 import { DATABASE_KEY } from "@db/driver"
+import fs from "fs"
+import path from "path"
 import type { Locator, Page } from "playwright-core"
 
 export async function visitFresh(page: Page) {
@@ -81,4 +84,20 @@ export async function getPageLuminance(page: Page): Promise<number> {
     const [r, g, b] = (bg.match(/\d+/g) ?? ["128", "128", "128"]).map(Number)
     return (r * 299 + g * 587 + b * 114) / 1000
   })
+}
+
+/** Build a verseId → ordered arabic tokens map from the per-chapter. */
+export function loadQuranWords(rendering: Rendering): Record<string, string[]> {
+  const dir = path.join(__dirname, "../../../public/quran/verses/", rendering)
+  const map: Record<string, string[]> = {}
+  for (let chapter = 1; chapter <= 114; chapter++) {
+    const entries = JSON.parse(
+      fs.readFileSync(path.join(dir, `${chapter}.json`), "utf-8"),
+    ) as Array<{ id: string; word: string }>
+    for (const { id, word } of entries) {
+      if (!map[id]) map[id] = []
+      map[id].push(word)
+    }
+  }
+  return map
 }

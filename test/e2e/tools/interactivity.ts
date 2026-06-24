@@ -413,40 +413,6 @@ export async function openSidebar(page: Page) {
   await page.waitForTimeout(300) // sidebar CSS transition is 220ms
 }
 
-/** @returns words missing a translation span in the currently-visible verse rows. */
-export async function checkVisibleVerseWords(page: Page): Promise<string[]> {
-  return page.evaluate(() => {
-    const missing: string[] = []
-    for (const row of document.querySelectorAll<HTMLElement>("[data-index]")) {
-      const arabicWords = Array.from(row.querySelectorAll("span")).filter(
-        window.__isArabicWord,
-      )
-
-      // rows with no .arabic-lex spans are headers / standalone Basmala
-      if (arabicWords.length === 0) continue
-
-      for (const word of arabicWords) {
-        const container = word.parentElement
-        if (!container) continue
-
-        const meanings = Array.from(container.children).find(
-          (c) => c !== word && c.tagName === "SPAN",
-        )
-
-        if (!meanings || !meanings.textContent?.trim()) {
-          const verse =
-            row.getAttribute("data-verse") ??
-            row.getAttribute("data-index") ??
-            "?"
-          missing.push(`verse ${verse}: "${word.textContent?.trim()}"`)
-        }
-      }
-    }
-
-    return missing
-  })
-}
-
 /** Opens the sidebar and toggles a word-by-word translation option. */
 export async function toggleWbwTranslation(label: string, page: Page) {
   await openSidebar(page)

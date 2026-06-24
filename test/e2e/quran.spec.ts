@@ -1,35 +1,99 @@
+import { Rendering } from "@constants/records/RenderingRecord"
 import { expect, Page, test } from "@playwright/test"
 import {
-  checkVisibleVerseWords,
   scrollDown,
   scrollUp,
   toggleWbwTranslation,
   waitUntilVisible,
 } from "./tools/interactivity"
-import { untilUsable, visitFresh } from "./tools/state"
+import { loadQuranWords, untilUsable, visitFresh } from "./tools/state"
 
 test.describe("Quran paper", () => {
   test.beforeEach(async ({ page }) => await visitFresh(page))
 
-  test("every arabic word has a translation rendered beneath it", async ({
-    page,
-  }) => {
+  test("correct arabic word sequence with translations", async ({ page }) => {
     test.setTimeout(10 * 60_000)
 
     const SCROLL_AMOUNT = 600 // px per step — covers ~4 verses each
+    const expectedWords = loadQuranWords(Rendering.Imlaei)
 
-    // Check the initial viewport (Al-Fatiha and surrounding rows)
-    const initialMissing = await checkVisibleVerseWords(page)
-    expect(initialMissing).toEqual([])
+    // Inject once — avoids re-serializing the entire ~77k-entry map on every
+    // page.evaluate call, which would exhaust the Node.js heap over a full run.
+    await page.evaluate((words) => {
+      ;(window as any).__expectedWords = words
+    }, expectedWords)
 
-    // Scroll all the way to the bottom, checking every viewport along the way
+    /** @returns failure descriptions for any missing translations or sequence mismatches. */
+    const checkVisibleVerseWords = async (page: Page): Promise<string[]> => {
+      return page.evaluate(() => {
+        const expected: Record<string, string[]> | undefined = (window as any)
+          .__expectedWords
+        if (!expected || Object.keys(expected).length <= 0)
+          throw new Error("Expected words cannot be empty")
+
+        const failures: string[] = []
+        const getElements = (query: string) =>
+          document.querySelectorAll<HTMLElement>(query)
+        const visibleVerses = getElements("[data-index]")
+        for (const row of visibleVerses) {
+          const arabicWords = Array.from(getElements(".arabic-lex"))
+          // rows with no .arabic-lex spans are headers / standalone Basmala
+          if (arabicWords.length === 0) continue
+
+          const verseId = row.getAttribute("data-index")
+          if (!verseId) throw new Error("Unknown verse ID")
+
+          for (const word of arabicWords) {
+            const container = word.parentElement
+            if (!container) continue
+
+            const meanings = Array.from(container.children).find(
+              (c) => c !== word && c.tagName === "SPAN",
+            )
+
+            if (!meanings || !meanings.textContent?.trim()) {
+              failures.push(
+                `verse ${verseId}: "${word.textContent?.trim()}" has no translation`,
+              )
+            }
+          }
+
+          const expectedSeq = expected[verseId]
+          if (!expectedSeq) continue
+
+          const actualSeq = arabicWords.map((w) => w.textContent?.trim() ?? "")
+
+          // make sure same number of expected words
+          if (actualSeq.length !== expectedSeq.length) {
+            failures.push(
+              `verse ${verseId}: expected ${expectedSeq.length} words, got ${actualSeq.length}`,
+            )
+            continue
+          }
+
+          for (let i = 0; i < expectedSeq.length; i++) {
+            if (actualSeq[i] !== expectedSeq[i]) {
+              failures.push(
+                `verse ${verseId} word ${i + 1}: expected "${expectedSeq[i]}", got "${actualSeq[i]}"`,
+              )
+            }
+          }
+        }
+
+        return failures
+      })
+    }
+
+    const initialFailures = await checkVisibleVerseWords(page)
+    expect(initialFailures).toEqual([])
+
     let atEnd = false
     while (!atEnd) {
       atEnd = await scrollDown(page, SCROLL_AMOUNT)
       await page.waitForTimeout(100) // virtualizer renders newly visible rows
 
-      const missing = await checkVisibleVerseWords(page)
-      expect(missing).toEqual([])
+      const failures = await checkVisibleVerseWords(page)
+      expect(failures).toEqual([])
     }
   })
 })
