@@ -96,59 +96,105 @@ test.describe("Quran paper", () => {
       expect(failures).toEqual([])
     }
   })
-})
 
-test.describe("Verse marker", () => {
-  /** Navigate to a random chapter 1–10 and wait for verses to render. */
-  async function goToRandomChapter(page: Page) {
-    const chapter = Math.floor(Math.random() * 10) + 1
-    await page.goto(`/#/c/${chapter}/1`)
-    await untilUsable(page)
-    await waitUntilVisible(page.locator("[data-verse]").first(), {
-      timeout: 15_000,
+  test.describe("scroll", () => {
+    test("Position preserved after orientation change", async ({ page }) => {
+      // Use a long chapter so there is enough content to scroll
+      await page.goto("/#/c/2/1")
+      await untilUsable(page)
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+      await page.waitForTimeout(300)
+
+      // Scroll to a non-trivial position (5 × 600px ≈ verse 10–15 of Al-Baqara)
+      for (let i = 0; i < 5; i++) {
+        await scrollDown(page, 600)
+        await page.waitForTimeout(150)
+      }
+
+      // Let the 120ms scroll-recording debounce fire and flush to localStorage
+      await page.waitForTimeout(300)
+
+      // Capture what the app persisted as lastScroll
+      const savedScroll = await page.evaluate(() => {
+        const raw = localStorage.getItem("userSettings")
+        return raw
+          ? (JSON.parse(raw).lastScroll as { chapterId: number; verse: number })
+          : null
+      })
+      expect(savedScroll?.chapterId).toBeGreaterThan(0)
+
+      // Simulate orientation change by swapping viewport dimensions
+      const { width, height } = page.viewportSize()!
+      await page.setViewportSize({ width: height, height: width })
+
+      // Wait for the full restoration cycle:
+      // - onResize debounce: 200ms
+      // - waitForMeasurements (3 stable rAF frames): ~300ms
+      // - scrollToVerse (2 rAF + fine-tune + 300ms stability): ~400ms
+      await page.waitForTimeout(2000)
+
+      // The saved verse must be visible in the viewport after restoration
+      const verseLocator = page.locator(
+        `[data-verse="${savedScroll!.chapterId}:${savedScroll!.verse}"]`,
+      )
+      await expect(verseLocator).toBeVisible({ timeout: 3000 })
     })
-    await page.waitForTimeout(300)
-  }
 
-  test.beforeEach(async ({ page }) => {
-    await visitFresh(page)
-  })
+    test.describe("Verse marker", () => {
+      /** Navigate to a random chapter 1–10 and wait for verses to render. */
+      async function goToRandomChapter(page: Page) {
+        const chapter = Math.floor(Math.random() * 10) + 1
+        await page.goto(`/#/c/${chapter}/1`)
+        await untilUsable(page)
+        await waitUntilVisible(page.locator("[data-verse]").first(), {
+          timeout: 15_000,
+        })
+        await page.waitForTimeout(300)
+      }
 
-  test("marker follows when scrolling down", async ({ page }) => {
-    await goToRandomChapter(page)
-    await scrollDownCheckingMarkers(page, 20)
-  })
+      test.beforeEach(async ({ page }) => {
+        await visitFresh(page)
+      })
 
-  test("marker follows when scrolling up", async ({ page }) => {
-    await goToRandomChapter(page)
+      test("marker follows when scrolling down", async ({ page }) => {
+        await goToRandomChapter(page)
+        await scrollDownCheckingMarkers(page, 20)
+      })
 
-    // reach the ~30-verse mark before scrolling back
-    for (let i = 0; i < 10; i++) {
-      await scrollDown(page, 600)
-      await page.waitForTimeout(50)
-    }
+      test("marker follows when scrolling up", async ({ page }) => {
+        await goToRandomChapter(page)
 
-    await scrollUpCheckingMarkers(page, 20)
-  })
+        // reach the ~30-verse mark before scrolling back
+        for (let i = 0; i < 10; i++) {
+          await scrollDown(page, 600)
+          await page.waitForTimeout(50)
+        }
 
-  test("marker follows after adding and removing a translation language", async ({
-    page,
-  }) => {
-    await goToRandomChapter(page)
+        await scrollUpCheckingMarkers(page, 20)
+      })
 
-    // add Indonesian translation
-    await toggleWbwTranslation("Indonesian", page)
-    await page.waitForTimeout(400) // virtualizer re-measures rows
+      test("marker follows after adding and removing a translation language", async ({
+        page,
+      }) => {
+        await goToRandomChapter(page)
 
-    await scrollDownCheckingMarkers(page, 10)
-    await scrollUpCheckingMarkers(page, 10)
+        // add Indonesian translation
+        await toggleWbwTranslation("Indonesian", page)
+        await page.waitForTimeout(400) // virtualizer re-measures rows
 
-    // remove Indonesian translation
-    await toggleWbwTranslation("Indonesian", page)
-    await page.waitForTimeout(400)
+        await scrollDownCheckingMarkers(page, 10)
+        await scrollUpCheckingMarkers(page, 10)
 
-    await scrollDownCheckingMarkers(page, 10)
-    await scrollUpCheckingMarkers(page, 10)
+        // remove Indonesian translation
+        await toggleWbwTranslation("Indonesian", page)
+        await page.waitForTimeout(400)
+
+        await scrollDownCheckingMarkers(page, 10)
+        await scrollUpCheckingMarkers(page, 10)
+      })
+    })
   })
 })
 
