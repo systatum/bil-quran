@@ -422,6 +422,14 @@ export async function openSidebar(page: Page) {
   await page.waitForTimeout(300) // sidebar CSS transition is 220ms
 }
 
+export async function closeSidebar(page: Page) {
+  await page
+    .locator('[aria-label="action-button"]:not(aside *)')
+    .last()
+    .dispatchEvent("click")
+  await page.waitForTimeout(300) // sidebar CSS transition is 220ms
+}
+
 /** Opens the sidebar and toggles a word-by-word translation option. */
 export async function toggleWbwTranslation(label: string, page: Page) {
   await openSidebar(page)

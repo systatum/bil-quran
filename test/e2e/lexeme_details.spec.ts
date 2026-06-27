@@ -1,7 +1,11 @@
 import { expect, Page, test } from "@playwright/test"
 import {
+  clickOn,
+  closeSidebar,
+  findVisibleTarget,
   getPaperDialog,
   longPress,
+  openSidebar,
   waitUntilVisible,
 } from "./tools/interactivity"
 import { visitFresh } from "./tools/state"
@@ -98,6 +102,68 @@ test.describe("Lexeme details", () => {
       }),
     )
     expect(hasHighlight).toBe(true)
+  })
+
+  test.describe("with MeQuran learner font", () => {
+    test.beforeEach(async ({ page }) => {
+      await openSidebar(page)
+
+      // Open the Font combobox, expand groups, pick the learner font.
+      const fontInput = await findVisibleTarget(undefined, page, {
+        formLabel: "Font",
+      })
+      await fontInput.click()
+
+      const drawer = page
+        .locator('[aria-label="combobox-drawer"]')
+        .filter({ visible: true })
+      await expect(drawer).toBeVisible({ timeout: 5000 })
+
+      // close headers
+      const groupHeaders = drawer.locator(
+        '[aria-label="tree-list-group-title"][data-has-options="true"]',
+      )
+      for (let i = 0; i < (await groupHeaders.count()); i++) {
+        await groupHeaders.nth(i).click()
+      }
+      await page.waitForTimeout(250)
+      await clickOn("MeQuran (for Learner)", drawer)
+
+      // Close sidebar so the QuranPaper is interactive again.
+      await closeSidebar(page)
+      await page.waitForTimeout(500) // let virtualizer re-measure rows after font swap
+    })
+
+    test("wider word spacing", async ({ page }) => {
+      const marginLeft = await page.evaluate(() => {
+        const word = document.querySelector<HTMLElement>("[data-word-index]")
+        return word ? window.getComputedStyle(word).marginLeft : null
+      })
+      expect(marginLeft).toBe("25px")
+    })
+
+    test("shows unified and character-by-character token", async ({ page }) => {
+      await longPress(page, firstVerseWord(page))
+
+      const dialog = await getPaperDialog(page)
+      await expect(dialog).toBeVisible({ timeout: 5000 })
+
+      // The TokenSection (first direct child of paper-dialog-content) renders
+      // two ArabicToken spans with the learner font:
+      //   1st — word in MeQuranFull  (unified ligatures, as displayed in the verse)
+      //   2nd — same word in DroidNaskh  (isolated characters, for learning)
+      const fonts = await page.evaluate(() =>
+        Array.from(
+          document.querySelectorAll<HTMLElement>(
+            '[aria-label="paper-dialog-content"] > div:first-child .arabic-lex',
+          ),
+        ).map((el) => window.getComputedStyle(el).fontFamily),
+      )
+
+      expect(fonts).toHaveLength(2)
+      expect(fonts[0]).toContain("MeQuranFull")
+      expect(fonts[1]).toContain("DroidNaskh")
+    })
   })
 })
 
