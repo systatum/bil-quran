@@ -76,6 +76,15 @@ export async function clickOn(
   await target.first().click()
 }
 
+export async function longPress(page: Page, element: Locator) {
+  await element.dispatchEvent("pointerdown", {
+    bubbles: true,
+    cancelable: true,
+  })
+  await page.waitForTimeout(600) // > 500ms threshold before pointerup clears the timer
+  await element.dispatchEvent("pointerup", { bubbles: true, cancelable: true })
+}
+
 /**
  * Hover over a visible element within a container.
  */

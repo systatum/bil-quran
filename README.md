@@ -39,11 +39,8 @@ App unique features:
 ## Test to be made
 
 - [ ] Test when user translations has English and Indonesian, both are shown fine on first load (Indonesian is not the default). This is to test first pre-flight translation downloading and insertion works.
-- [ ] Test seeing "Seeding verses..." and "Preparing the layout..." in that sequence
-- [ ] When hard-pressing each word in the verse, show the paper dialog, with all proper information
 - [ ] Try raising error at the translator-level (ie at the i18n's formatMessage) and ensure that we see an error screen; otherwise we miss a locale, and the user is not seeing any error. Another simple way is inject into `WordTranslationOption` some fake value, where there's no corresponding i18n key for that in locale files, and so the lookup will generate a null/undefined, causing error on formatMessage-part automatically.
 - [ ] If we add another locale, and then refresh the page, we should not redownload the locale (this proves that database persisting works for all new-locale)
-- [ ] Scroll the page, until the last verse, and ensure we see all the verse, and all the word as per the database (ensuring rendering data and database data matches)
 - [ ] Ensure when changing language, the "Lompat ke ayat" dropdown, and displayed chapter at the header, is using local language
 - [ ] Check overlay behavior: if sidebar is opened, has overlay, and clicking overlay close the sidebar. Same expected behavior with search bar.
 - [ ] Make sure pressing on the word show the occurrences across different verses
