@@ -8,6 +8,13 @@
       "when": 1780222556492,
       "tag": "0000_create_chapters_lexemes_verses_wordtranslations_and_renderings_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1782634923060,
+      "tag": "0001_create_paginations_table",
+      "breakpoints": true
     }
   ]
 }

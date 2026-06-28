@@ -1,4 +1,5 @@
 import { ChapterPartDivision } from "@constants/records/ChapterRecord"
+import { QuranPage } from "@constants/records/Pagination"
 import { Locale } from "@constants/settings"
 import {
   integer,
@@ -30,6 +31,12 @@ export const renderings = table("renderings", {
   name: text({ length: 20 }).notNull().unique(),
   createdAt: integer({ mode: "timestamp_ms" }).notNull(),
   updatedAt: integer({ mode: "timestamp_ms" }).notNull(),
+})
+
+export const paginations = table("paginations", {
+  id: integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
+  name: text({ length: 20 }).notNull().unique(),
+  pages: text({ mode: "json" }).$type<Array<QuranPage>>().notNull().default([]),
 })
 
 export const roots = table("roots", {

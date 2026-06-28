@@ -1,3 +1,4 @@
+import { Asset, PaginationStyle } from "@constants/assets"
 import { ChapterRecord } from "@constants/records/ChapterRecord"
 import { LexemeRecord, NewLexemeRecord } from "@constants/records/LexemeRecord"
 import { Rendering, RenderingRecord } from "@constants/records/RenderingRecord"
@@ -20,11 +21,13 @@ import { persistDb } from "./driver"
 // seed the app with minimal data so that it can work
 export async function seedData() {
   const hasAnyChapter = unpackIPC(await repo.chapters.count()) > 0
-  if (hasAnyChapter) return LOGGER.debug("Skip seeding, chapters exist")
+  if (!hasAnyChapter) {
+    const chapters = await seedChapters()
+    await seedVerses(chapters)
+    await seedWordTranslations()
+  }
 
-  const chapters = await seedChapters()
-  await seedVerses(chapters)
-  await seedWordTranslations()
+  await seedPaginations()
   await persistDb()
   saveFingerprints()
   LOGGER.debug("Return from seeding: done")
@@ -260,4 +263,19 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
 
 export async function seedWordTranslations() {
   await ensureHasTranslation(WordTranslationOption.AmericanEnglish)
+}
+
+async function seedPaginations() {
+  LOGGER.debug("Seeding paginations")
+  const pgStyles: PaginationStyle[] = Object.keys(Asset.paginationStyles)
+
+  for (const style of pgStyles) {
+    const existings = unpackIPC(
+      await repo.paginations.findAllBy({ name: style }),
+    )
+    if (existings.length > 0) continue
+
+    const pages = await FingerprintedAsset.Quran.getPaginationStyle(style)
+    await repo.paginations.create({ name: style, pages })
+  }
 }

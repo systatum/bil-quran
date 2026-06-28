@@ -1,3 +1,4 @@
+import { PaginationStyle } from "./records/Pagination"
 import { Rendering } from "./records/RenderingRecord"
 import { Locale } from "./settings"
 
@@ -14,13 +15,20 @@ export interface Asset {
    * Metadata for each of the Quranic chapters
    */
   chaptersMetadata: string
-
+  /** Which style of Quranic pagination to use */
+  paginationStyles: Record<PaginationStyle, string>
   renderings: Record<Rendering, string>
   translations: Translation
 }
+
 export const basePath = `${typeof window !== "undefined" ? window.location.origin : ""}${process.env.PUBLIC_URL}`
+export const assetPath = `${basePath}/quran`
+export const paginationPath = `${assetPath}/paginations`
 export const Asset: Asset = {
   chaptersMetadata: `${basePath}/quran/chapters.json`,
+  paginationStyles: {
+    madinah: `${paginationPath}/madinah.json`,
+  },
   renderings: {
     [Rendering.Imlaei]: `${basePath}/quran/verses/imlaei`,
   },

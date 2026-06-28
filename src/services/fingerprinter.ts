@@ -1,4 +1,5 @@
 import { Asset, basePath } from "@constants/assets"
+import { QuranPage } from "@constants/records/Pagination"
 import { Rendering } from "@constants/records/RenderingRecord"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
 import LOGGER from "./Logger"
@@ -35,6 +36,14 @@ export class FingerprintedAsset {
       )
     },
 
+    getPaginationStyle: async (
+      style: keyof typeof Asset.paginationStyles,
+    ): Promise<Array<QuranPage>> => {
+      return FingerprintedAsset.readJson<Array<QuranPage>>(
+        Asset.paginationStyles[style],
+      )
+    },
+
     getLexemeTranslation: async <T>(
       locale: WordTranslationOption,
     ): Promise<T> => {
@@ -44,6 +53,10 @@ export class FingerprintedAsset {
     },
   }
 
+  /**
+   * Read a JSON asset and record its fingerprint. If the fingerprint drifted from previous
+   * read, we may do something, but that something is "context-specific"
+   */
   static async readJson<T>(assetPath: string): Promise<T> {
     await recordRead(assetPath)
 

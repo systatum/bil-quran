@@ -1,11 +1,11 @@
 import { IPCResponse } from "@constants/IPC"
-import { RenderingRecord } from "@constants/records/RenderingRecord"
+import { PaginationRecord } from "@constants/records/Pagination"
 import { withDb } from "@db/driver"
 import { and, eq } from "drizzle-orm"
 import { conditional, Repository } from "./Repository"
-import { renderings as schema } from "./tables"
+import { paginations as schema } from "./tables"
 
-class RenderingRepo extends Repository<typeof schema, RenderingRecord> {
+class PaginationRepo extends Repository<typeof schema, PaginationRecord> {
   constructor() {
     super(schema)
   }
@@ -13,8 +13,8 @@ class RenderingRepo extends Repository<typeof schema, RenderingRecord> {
   async findAllBy({
     name,
   }: {
-    name: string
-  }): Promise<IPCResponse<RenderingRecord[]>> {
+    name?: string
+  }): Promise<IPCResponse<PaginationRecord[]>> {
     return withDb(
       async (db) =>
         await this.findBy(
@@ -25,4 +25,4 @@ class RenderingRepo extends Repository<typeof schema, RenderingRecord> {
   }
 }
 
-export const renderings = new RenderingRepo()
+export const paginations = new PaginationRepo()
