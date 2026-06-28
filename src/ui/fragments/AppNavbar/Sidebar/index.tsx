@@ -1,35 +1,9 @@
-// import * as Coneto from "@systatum/coneto/sidebar"
-// import { css } from "styled-components"
-// export default function Sidebar() {
-//   return (
-//     <>
-//       <Coneto.Sidebar.Spacer />
-
 import { ThemeMode } from "@constants/theme"
 import { useLayoutEffect, useRef, useState } from "react"
 import styled from "styled-components"
 import BookmarkList from "./BookmarkList"
 import Title from "./Title"
 import UserSettingsForm from "./UserSettingsForm"
-
-//       <Coneto.Sidebar
-//         position="right"
-//         styles={{
-//           mobileStyle: css`
-//             min-width: 80vw;
-//           `,
-//           desktopStyle: css`
-//             min-width: 60vw;
-//           `,
-//         }}
-//       >
-//         <Coneto.Sidebar.Item isFixed>
-//           <div>Fixed content</div>
-//         </Coneto.Sidebar.Item>
-//       </Coneto.Sidebar>
-//     </>
-//   )
-// }
 
 interface SidebarProps {
   theme: ThemeMode
