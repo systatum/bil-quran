@@ -34,6 +34,13 @@
     "meQuranLearner": "MeQuran (Pelajar)"
   },
 
+  "searchSheet": {
+    "byChapter": "Berdasarkan surat",
+    "byJuz": "Berdasarkan juz (bagian)",
+    "juz": "Juz",
+    "pageAbbreviation": "hal."
+  },
+
   "dialog": {
     "noteVerse": {
       "title": "Beri markah pada ayat",

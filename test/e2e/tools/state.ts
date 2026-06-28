@@ -1,5 +1,6 @@
 import { DATABASE_KEY } from "@db/driver"
 import type { Locator, Page } from "playwright-core"
+import { waitUntilVisible } from "./interactivity"
 
 export async function visitFresh(page: Page) {
   // addInitScript runs before every navigation, making __isArabicWord available
@@ -51,6 +52,9 @@ export async function untilUsable(page: Page | Locator) {
     .getByRole("button", { name: "action-button" })
     .first()
     .waitFor({ state: "visible", timeout: 30_000 })
+  await waitUntilVisible(page.locator("[data-verse]").first(), {
+    timeout: 15_000,
+  })
 }
 
 /** Returns the computed `font-family` of the first `.arabic-lex` span in the first `[data-verse]` row. */

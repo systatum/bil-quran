@@ -1,5 +1,7 @@
+import { messages } from "@i18n/message"
 import { ThemeMode, useThemeMode } from "@systatum/coneto/theme"
 import { Separator } from "@ui/fragments/AppNavbar/SearchSheet/Separator"
+import { useIntl } from "react-intl"
 import styled from "styled-components"
 import JuzLookup from "./JuzLookup"
 import VerseLookup from "./VerseLookup"
@@ -16,12 +18,15 @@ export function SearchSheet({
   onAfterSearch,
 }: SearchSheetProps) {
   const { mode: theme } = useThemeMode()
+  const { formatMessage } = useIntl()
 
   return (
     <Wrapper theme={theme} $visible={isOpen} $top={navbarPositioning?.height}>
-      <Separator title="By verse" />
+      <Separator
+        title={formatMessage({ id: messages.searchSheet.byChapter })}
+      />
       <VerseLookup onChange={() => onAfterSearch?.()} />
-      <Separator title="By part (Juz)" />
+      <Separator title={formatMessage({ id: messages.searchSheet.byJuz })} />
       <JuzLookup onChange={() => onAfterSearch?.()} />
     </Wrapper>
   )

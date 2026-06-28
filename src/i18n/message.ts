@@ -36,6 +36,12 @@ export const messages = {
   fontOptions: {
     meQuranLearner: "fontOptions.meQuranLearner",
   },
+  searchSheet: {
+    byChapter: "searchSheet.byChapter",
+    byJuz: "searchSheet.byJuz",
+    juz: "searchSheet.juz",
+    pageAbbreviation: "searchSheet.pageAbbreviation",
+  },
   dialog: {
     noteVerse: {
       title: "dialog.noteVerse.title",

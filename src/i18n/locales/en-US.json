@@ -34,6 +34,13 @@
     "meQuranLearner": "MeQuran (for Learner)"
   },
 
+  "searchSheet": {
+    "byChapter": "By chapter",
+    "byJuz": "By juz (part)",
+    "juz": "Juz",
+    "pageAbbreviation": "pg."
+  },
+
   "dialog": {
     "noteVerse": {
       "title": "Note this verse",
