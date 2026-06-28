@@ -10,22 +10,18 @@ import { repo } from "@db/repo"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
 import { useWordTranslations } from "@hooks/tools/useWordTranslations"
-import { messages } from "@i18n/message"
-import { RiFileMarkedLine, RiPencilAi2Line } from "@remixicon/react"
 import { unpackIPC } from "@services/Converter"
 import LOGGER from "@services/Logger"
 import { makeSnippet } from "@services/mutator"
-import { Button } from "@systatum/coneto/button"
 import { PaperDialog, PaperDialogRef } from "@systatum/coneto/paper-dialog"
 import { haptic } from "ios-haptics"
 import { useEffect, useRef, useState } from "react"
-import toast from "react-hot-toast"
 import { useIntl } from "react-intl"
 import styled, { css } from "styled-components"
 import { Bismillah } from "./Bismillah"
 import InterlinearText from "./InterlinearText"
 import { LexemeDetailPaperDialog } from "./LexemeDetailPaperDialog"
-import NoteVerseDialog from "./NoteDialog"
+import { VerseMarker } from "./VerseMarker"
 
 export type Verse = {
   id: string
@@ -67,7 +63,6 @@ export default function VerseRow({
 }) {
   const [content, setContent] = useState<WordCell | undefined>(undefined)
   const [showNoteVerseDialog, setShowNoteVerseDialog] = useState<boolean>(false)
-  const [verseKey, setVerseKey] = useState<string>("")
   const [occurrences, setOccurrences] = useState<
     Record<string, WordOccurrence>
   >({})
@@ -75,8 +70,6 @@ export default function VerseRow({
   const {
     userSettings: { wbwTranslations },
   } = useUserSettingsState()
-
-  const [isTipMenuOpen, setIsTipMenuOpen] = useState(false)
 
   const corpora = useWordTranslations(wbwTranslations)
 
@@ -211,118 +204,7 @@ export default function VerseRow({
         $theme={theme}
         style={{ transform: style.transform }}
       >
-        <VerseMarkerColumn data-vmark ref={markerColumnRef}>
-          <Button
-            subMenu={({ list }) =>
-              list?.([
-                {
-                  caption: formatMessage({
-                    id: messages.tipMenu.verseMarker.bookmark,
-                  }),
-                  icon: { image: RiFileMarkedLine },
-                  onClick: () => {
-                    const verseKey = `${verse.chapter.id}:${verse.number}`
-                    setVerseKey(verseKey)
-                    if (!bookmarkVerse({ verseKey }))
-                      toast.error("Failed bookmarking")
-                  },
-                },
-                {
-                  caption: formatMessage({
-                    id: messages.tipMenu.verseMarker.note,
-                  }),
-                  icon: { image: RiPencilAi2Line },
-                  onClick: () => {
-                    setVerseKey(`${verse.chapter.id}:${verse.number}`)
-                    setShowNoteVerseDialog(true)
-                  },
-                },
-              ])
-            }
-            showSubMenuOn="self"
-            onOpen={(isOpen) => setIsTipMenuOpen(isOpen)}
-            open={isTipMenuOpen}
-            styles={{
-              containerStyle: css`
-                padding: 0;
-                margin-top: 12px;
-              `,
-              self: css`
-                padding: 0;
-                height: fit-content;
-                width: fit-content;
-                border-radius: 9999px;
-
-                --text: ${theme === "dark" ? "#e5dcc3" : "#755f4d"};
-                --border: ${theme === "dark" ? "#5f5644" : "#cbb9a1"};
-                --bg-start: ${theme === "dark" ? "#2b2a26" : "#efe6d8"};
-                --bg-end: ${theme === "dark" ? "#1c1b18" : "#e2d6c3"};
-                --inset: ${theme === "dark" ? "#3b372f" : "#f4ede2"};
-                --shadow: ${theme === "dark"
-                  ? "rgba(0,0,0,0.45)"
-                  : "rgba(117,95,77,0.08)"};
-                --text-shadow: ${theme === "dark"
-                  ? "rgba(0,0,0,0.35)"
-                  : "rgba(255,255,255,0.30)"};
-                --dashed: ${theme === "dark"
-                  ? "#7b715b"
-                  : "rgba(117,95,77,0.26)"};
-                --dashed-opacity: ${theme === "dark" ? 0.4 : 0.5};
-
-                &:hover {
-                  --shadow: none;
-                }
-
-                width: 42px;
-                height: 42px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                flex-shrink: 0;
-                position: relative;
-                border-radius: 50%;
-                font-size: 18px;
-                color: var(--text);
-                border: 1.5px solid var(--border);
-
-                background: radial-gradient(
-                  circle,
-                  var(--bg-start) 40%,
-                  var(--bg-end) 100%
-                );
-                box-shadow:
-                  inset 0 0 0 2px var(--inset),
-                  0 1px 3px var(--shadow);
-                text-shadow: 0 1px 0 var(--text-shadow);
-
-                &::after {
-                  content: "";
-                  position: absolute;
-                  inset: 4px;
-                  border-radius: 50%;
-                  border: 1px dashed var(--dashed);
-                  opacity: var(--dashed-opacity);
-                  cursor: pointer;
-                }
-
-                ${isTipMenuOpen &&
-                css`
-                  box-shadow:
-                    inset 0 0 5px rgba(117, 95, 77, 0.35),
-                    inset 0 0 2px rgba(0, 0, 0, 0.12);
-                  background: radial-gradient(
-                    circle,
-                    var(--bg-start) 40%,
-                    var(--bg-end) 100%
-                  );
-                `}
-              `,
-            }}
-          >
-            {verse.number}
-          </Button>
-        </VerseMarkerColumn>
-
+        <VerseMarker ref={markerColumnRef} verse={verse} />
         <InterlinearText
           showMeaning={showMeaning}
           id={`${verse.chapter.id}-${verse.id}`}
@@ -354,12 +236,7 @@ export default function VerseRow({
         />
       </VerseRowWrapper>
 
-      <NoteVerseDialog
-        isOpen={showNoteVerseDialog}
-        verseKey={verseKey}
-        onVisibilityChange={(s) => setShowNoteVerseDialog(!!s)}
-      />
-
+      {/* TODO: refactor so we only have paper dialog in the whole system rather than rendering one by one */}
       <PaperDialog
         mobile
         ref={paperDialogRef}
@@ -447,11 +324,6 @@ const VerseRowWrapper = styled.div<{ $theme: ThemeMode }>`
   background: ${({ $theme }) => ($theme === "dark" ? "#181818" : "#f6f1e7")};
   border-bottom: 1px solid
     ${({ $theme }) => ($theme === "dark" ? "#303030" : "#bfbfbf")};
-`
-
-const VerseMarkerColumn = styled.div`
-  align-self: start;
-  z-index: 1;
 `
 
 export const Transliteration = styled.span`

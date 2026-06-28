@@ -150,7 +150,7 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
       let usedCategory: BookmarkCategory | undefined = category
       if (usedCategory == null) {
         // the category at index 0 is the default
-        usedCategory = userSettings.bookmarks.categories["default"]
+        usedCategory = bookmarks.categories["default"]
         if (usedCategory == null) {
           usedCategory = {
             id: "default",

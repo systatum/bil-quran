@@ -9,6 +9,7 @@ import useUserSettingsState from "../../hooks/states/UserSettingsState"
 import ChapterRow from "./ChapterRow"
 import VerseRow, { Verse } from "./VerseRow"
 import { Bismillah } from "./VerseRow/Bismillah"
+import NoteVerseDialog from "./VerseRow/NoteDialog"
 
 // This module contains the content browser of the Quran.
 // It includes various components to build the verse, and
@@ -344,6 +345,8 @@ export default function QuranPaper({
           position: "relative",
         }}
       >
+        <NoteVerseDialog />
+
         {items.map((item) => {
           const row = renderRows[item.index]
 

@@ -480,6 +480,24 @@ export async function scrollUp(page: Page, px: number): Promise<boolean> {
   }, px)
 }
 
+/** Scroll up/down N steps, asserting markers stay visible at each step. */
+export async function scrollCertainPixels(
+  page: Page,
+  direction: "up" | "down",
+  steps: number,
+  callback?: () => void,
+) {
+  const px = 400
+  const scrollerFunc = direction === "up" ? scrollUp : scrollDown
+
+  for (let i = 0; i < steps; i++) {
+    await page.waitForTimeout(80)
+    if (callback) callback()
+    const atPeak = await scrollerFunc(page, px)
+    if (atPeak) break
+  }
+}
+
 /** @returns true when the scroll container has reached the bottom. */
 export async function scrollDown(page: Page, px: number): Promise<boolean> {
   return page.evaluate((amount) => {
