@@ -1,6 +1,7 @@
-import { Asset, PaginationStyle } from "@constants/assets"
+import { Asset } from "@constants/assets"
 import { ChapterRecord } from "@constants/records/ChapterRecord"
 import { LexemeRecord, NewLexemeRecord } from "@constants/records/LexemeRecord"
+import { PaginationStyle } from "@constants/records/Pagination"
 import { Rendering, RenderingRecord } from "@constants/records/RenderingRecord"
 import { NewRootRecord, RootRecord } from "@constants/records/RootRecord"
 import { WordRecord } from "@constants/records/WordRecord"
@@ -21,6 +22,7 @@ import { persistDb } from "./driver"
 // seed the app with minimal data so that it can work
 export async function seedData() {
   const hasAnyChapter = unpackIPC(await repo.chapters.count()) > 0
+  LOGGER.debug("Has any chapter?", hasAnyChapter)
   if (!hasAnyChapter) {
     const chapters = await seedChapters()
     await seedVerses(chapters)

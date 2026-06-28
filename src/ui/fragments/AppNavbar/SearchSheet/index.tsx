@@ -1,6 +1,7 @@
 import { ThemeMode, useThemeMode } from "@systatum/coneto/theme"
-import { Separator } from "@ui/fragments/Separator"
+import { Separator } from "@ui/fragments/AppNavbar/SearchSheet/Separator"
 import styled from "styled-components"
+import JuzLookup from "./JuzLookup"
 import VerseLookup from "./VerseLookup"
 
 interface SearchSheetProps {
@@ -20,6 +21,8 @@ export function SearchSheet({
     <Wrapper theme={theme} $visible={isOpen} $top={navbarPositioning?.height}>
       <Separator title="By verse" />
       <VerseLookup onChange={() => onAfterSearch?.()} />
+      <Separator title="By part (Juz)" />
+      <JuzLookup onChange={() => onAfterSearch?.()} />
     </Wrapper>
   )
 }
@@ -37,6 +40,7 @@ const Wrapper = styled.div<{
   background: ${({ theme }) => (theme === "dark" ? "#22271b" : "#f6f1e7")};
 
   padding: 16px;
+  padding-top: 0px;
 
   transform-origin: top center;
   transform: scaleY(${({ $visible }) => ($visible ? 1 : 0)});

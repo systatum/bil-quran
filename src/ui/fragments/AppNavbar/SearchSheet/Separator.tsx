@@ -16,6 +16,7 @@ export function Separator({ title }: SeparatorProps) {
           background: ${theme === "dark" ? "#22271b" : "#f6f1e7"};
         `,
         containerStyle: css`
+          margin-top: 10px;
           margin-bottom: 10px;
         `,
       }}
