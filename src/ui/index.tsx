@@ -21,8 +21,12 @@ export default function UIIndex() {
     const chapterMeaning =
       chapterMeaningInCurrentLocale ?? chapterMeaningInDefaultLocale
 
-    return `${chapterNo}. ${chapterName} (${chapterMeaning})`
-  }, [chapter])
+    if (locale === "ar-IQ") {
+      return `${chapterNo}. ${chapterName} (${chapter.transliterations["en-US"]})`
+    } else {
+      return `${chapterNo}. ${chapterName} (${chapterMeaning})`
+    }
+  }, [chapter, locale])
 
   // read params
   const params = useParams({ strict: false })

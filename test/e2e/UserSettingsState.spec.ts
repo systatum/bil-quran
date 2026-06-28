@@ -1,7 +1,16 @@
+import { Locale } from "@constants/settings"
 import { expect, Page, test } from "@playwright/test"
 import { ArabicFontId, ArabicFonts } from "../../src/constants/fonts"
 import enUS from "../../src/i18n/locales/en-US.json"
 import {
+  CHAPTERS,
+  ENGLISH_LOCALE_NAMES,
+  getArabicName,
+  getMeaning,
+  getTransliteration,
+} from "./tools/data"
+import {
+  closeSidebar,
   findVisibleTarget,
   openSidebar,
   scrollDown,
@@ -180,5 +189,134 @@ test.describe("UserSettingsState", () => {
         }
       }
     })
+  })
+
+  test.describe("locale", () => {
+    const allLocales = Object.entries(ENGLISH_LOCALE_NAMES)
+    for (const [locale, displayName] of allLocales) {
+      test.describe(`with ${locale}`, () => {
+        test("persist locale after reload", async ({ page }) => {
+          await openSidebar(page)
+          await selectComboBox(displayName, page, { formLabel: "Language" })
+          await closeSidebar(page)
+          await page.waitForTimeout(400)
+
+          // Verify locale is active — chapter 1 header shows locale-specific text
+          const transliteration = getTransliteration("1", locale as Locale)
+          const meaning = getMeaning("1", locale as Locale)
+          await expect(
+            page.getByText(`${transliteration} · ${meaning}`, { exact: true }),
+          ).toBeVisible({ timeout: 5000 })
+
+          // Reload — userSettings (including locale) is persisted in localStorage
+          await page.reload()
+          await untilUsable(page)
+          await waitUntilVisible(page.locator("[data-verse]").first(), {
+            timeout: 15_000,
+          })
+
+          // Chapter 1 header must still render in the selected locale
+          await expect(
+            page.getByText(`${transliteration} · ${meaning}`, { exact: true }),
+          ).toBeVisible({ timeout: 5000 })
+        })
+
+        test("properly translated chapter names", async ({ page }) => {
+          // 114 chapters × ~2 s each ≈ 4 min; 3 locales run in parallel so wall-clock ≈ 4 min
+          test.setTimeout(10 * 60_000)
+
+          await visitFresh(page)
+          await waitUntilVisible(page.locator("[data-verse]").first(), {
+            timeout: 15_000,
+          })
+
+          // Change language to the target locale via sidebar
+          await openSidebar(page)
+          await selectComboBox(displayName, page, { formLabel: "Language" })
+          await closeSidebar(page)
+          await page.waitForTimeout(400)
+
+          // === VerseLookup dropdown: verify all 114 chapter option texts at once ===
+          // The coneto Combobox renders all 114 chapter group-titles in the DOM simultaneously
+          // (no virtual scrolling inside the drawer), so allTextContents() is a single O(n) pass.
+          await page
+            .locator('[aria-label="action-button"]:not(aside *)')
+            .first()
+            .click()
+          await page.waitForTimeout(300)
+
+          const combobox = page
+            .locator('[role="combobox"]:not(aside *)')
+            .filter({ visible: true })
+            .first()
+          await expect(combobox).toBeVisible({ timeout: 3000 })
+          await combobox.click()
+
+          const drawer = page
+            .locator('[aria-label="combobox-drawer"]')
+            .filter({ visible: true })
+          await expect(drawer).toBeVisible({ timeout: 5000 })
+
+          const optionItems = drawer.locator(
+            '[aria-label="tree-list-group-title"]',
+          )
+          await expect(optionItems.first()).toBeVisible({ timeout: 3000 })
+          const allOptionTexts = new Set(
+            (await optionItems.allTextContents()).map((t) => t.trim()),
+          )
+
+          for (const [chapterId] of Object.entries(CHAPTERS)) {
+            const transliteration = getTransliteration(
+              chapterId,
+              locale as Locale,
+            )
+            const meaning = getMeaning(chapterId, locale as Locale)
+            const arabicName = getArabicName(chapterId, locale as Locale)
+            const expectedText = `${chapterId}. ${transliteration} (${arabicName}) - ${meaning}`
+            expect(
+              allOptionTexts.has(expectedText),
+              `Chapter ${chapterId} option should read: "${expectedText}"`,
+            ).toBe(true)
+          }
+
+          // === Chapter headers: navigate to all 114 chapters and verify ChapterRow ===
+          // page.goto("/#/c/N/1") is a hash navigation — TanStack Router handles it as an
+          // in-app route change (same as what VerseLookup calls internally), so the locale
+          // stored in localStorage is preserved across every navigation.
+          //
+          // ar-IQ note: meanings["ar-IQ"] is null for all chapters. getMeaning() falls back
+          // to the en-US value, so ChapterDescription reads "<Arabic translit> · <English meaning>".
+          await page.keyboard.press("Escape") // close combobox drawer
+          await page.waitForTimeout(200)
+
+          const sortedChapterIds = Object.keys(CHAPTERS).sort(
+            (a, b) => parseInt(a) - parseInt(b),
+          )
+          for (const chapterId of sortedChapterIds) {
+            await page.goto(`/#/c/${chapterId}/1`)
+            // Wait for a verse from this specific chapter — ensures the virtualizer has
+            // scrolled to the target position before we read the chapter header.
+            // Using "^=" so "1:" matches ch 1 only, not ch 10, 11, etc.
+            await waitUntilVisible(
+              page.locator(`[data-verse^="${chapterId}:"]`).first(),
+              { timeout: 10_000 },
+            )
+
+            const transliteration = getTransliteration(
+              chapterId,
+              locale as Locale,
+            )
+            const meaning = getMeaning(chapterId, locale as Locale)
+
+            // ChapterDescription renders "transliteration · meaning"
+            await expect(
+              page.getByText(`${transliteration} · ${meaning}`, {
+                exact: true,
+              }),
+            ).toBeVisible({ timeout: 5000 })
+          }
+        })
+      })
+    }
   })
 })

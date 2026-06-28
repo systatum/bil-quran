@@ -1,9 +1,10 @@
 import { ArabicFonts } from "@constants/fonts"
 import { ChapterRecord } from "@constants/records/ChapterRecord"
-import { BasmalaPosition, DEFAULT_LOCALE } from "@constants/settings"
+import { BasmalaPosition } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
 import styled from "styled-components"
+import useChaptersState from "../../hooks/states/ChaptersState"
 import useUserSettingsState from "../../hooks/states/UserSettingsState"
 import BasmalaRow from "./BasmalaRow"
 
@@ -32,6 +33,9 @@ export default function ChapterRow({
   const {
     userSettings: { basmalaPosition },
   } = useUserSettingsState()
+
+  const { getChapterTransliteratedName, getChapterMeaning, getChapterArabicName } =
+    useChaptersState()
 
   const ref = useVirtualRowMeasurer({
     index,
@@ -70,13 +74,13 @@ export default function ChapterRow({
 
           <ChapterCenter>
             <ChapterName $hasBasmala={hasBasmala}>
-              {chapter.namings[DEFAULT_LOCALE]}
+              {getChapterArabicName(chapter.id)}
             </ChapterName>
 
             <ChapterDescription $hasBasmala={hasBasmala}>
-              {chapter.transliterations[DEFAULT_LOCALE]}
+              {getChapterTransliteratedName(chapter.id)}
               {" · "}
-              {chapter.meanings[DEFAULT_LOCALE]}
+              {getChapterMeaning(chapter.id)}
             </ChapterDescription>
           </ChapterCenter>
 
