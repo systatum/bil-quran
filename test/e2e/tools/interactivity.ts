@@ -76,6 +76,15 @@ export async function clickOn(
   await target.first().click()
 }
 
+export async function longPress(page: Page, element: Locator) {
+  await element.dispatchEvent("pointerdown", {
+    bubbles: true,
+    cancelable: true,
+  })
+  await page.waitForTimeout(600) // > 500ms threshold before pointerup clears the timer
+  await element.dispatchEvent("pointerup", { bubbles: true, cancelable: true })
+}
+
 /**
  * Hover over a visible element within a container.
  */
@@ -408,61 +417,62 @@ export async function pause(ms: number) {
 
 // ==== QURAN ======================================================
 
-/**
- * Browser-side predicate — a span is an Arabic word if it has cursor:pointer
- * and non-empty text. Exported as a regular function so its source can be
- * passed into page.evaluate via .toString() — the only way to share logic
- * across the Node.js / browser context boundary without polluting window.
- *
- * Do not call this from Node.js code; it references window.
- */
-export const isArabicWord = (s: Element): boolean =>
-  window.getComputedStyle(s).cursor === "pointer" && !!s.textContent?.trim()
-
-/**
- * For each currently-visible verse row, return every word that has no
- * translation span rendered beneath it.
- */
-export async function checkVisibleVerseWords(page: Page): Promise<string[]> {
-  return page.evaluate((isArabicWordSrc) => {
-    const isArabicWord = new Function(
-      `return (${isArabicWordSrc})`,
-    )() as (s: Element) => boolean
-    const missing: string[] = []
-
-    for (const row of document.querySelectorAll<HTMLElement>("[data-index]")) {
-      const arabicWords = Array.from(row.querySelectorAll("span")).filter(isArabicWord)
-
-      // No cursor:pointer spans = chapter header or standalone Basmala — skip
-      if (arabicWords.length === 0) continue
-
-      for (const word of arabicWords) {
-        const container = word.parentElement
-        if (!container) continue
-
-        // The meanings wrapper is the sibling span next to the Arabic span
-        const meanings = Array.from(container.children).find(
-          (c) => c !== word && c.tagName === "SPAN",
-        )
-
-        if (!meanings || !meanings.textContent?.trim()) {
-          const verse =
-            row.getAttribute("data-verse") ??
-            row.getAttribute("data-index") ??
-            "?"
-          missing.push(`verse ${verse}: "${word.textContent?.trim()}"`)
-        }
-      }
-    }
-
-    return missing
-  }, isArabicWord.toString())
+export async function openSidebar(page: Page) {
+  await page.locator('[aria-label="action-button"]:not(aside *)').last().click()
+  await page.waitForTimeout(300) // sidebar CSS transition is 220ms
 }
 
-/**
- * Scroll the virtual-scroll container down by certain pixels.
- * @returns true when the bottom of the content has been reached
- */
+/** Opens the sidebar and toggles a word-by-word translation option. */
+export async function toggleWbwTranslation(label: string, page: Page) {
+  await openSidebar(page)
+
+  const input = await findVisibleTarget(undefined, page, {
+    formLabel: "Word-by-word translations",
+  })
+  await input.click()
+
+  const drawer = page
+    .locator('[aria-label="combobox-drawer"]')
+    .filter({ visible: true })
+  await expect(drawer).toBeVisible({ timeout: 5000 })
+
+  const item = drawer.getByRole("option").filter({ hasText: label }).first()
+  await expect(item).toBeVisible({ timeout: 5000 })
+  await item.click()
+
+  await page.keyboard.press("Escape") // close drawer
+  await page.waitForTimeout(150)
+  // dispatchEvent fires directly on the DOM node, bypassing the aside overlay
+  // that intercepts physical mouse clicks at the same screen coordinates.
+  await page
+    .locator('[aria-label="action-button"]:not(aside *)')
+    .last()
+    .dispatchEvent("click")
+  await page.waitForTimeout(300)
+}
+
+/** @returns true when the scroll container has reached the top. */
+export async function scrollUp(page: Page, px: number): Promise<boolean> {
+  return page.evaluate((amount) => {
+    const row = document.querySelector("[data-index]")
+    if (!row) return true
+
+    let el: Element | null = row.parentElement
+    while (el) {
+      const style = window.getComputedStyle(el as HTMLElement)
+      if (style.overflow === "auto" || style.overflowY === "auto") {
+        const container = el as HTMLElement
+        container.scrollTop -= amount
+        return container.scrollTop <= 0
+      }
+      el = el.parentElement
+    }
+
+    return true
+  }, px)
+}
+
+/** @returns true when the scroll container has reached the bottom. */
 export async function scrollDown(page: Page, px: number): Promise<boolean> {
   return page.evaluate((amount) => {
     const row = document.querySelector("[data-index]")

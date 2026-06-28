@@ -1,4 +1,4 @@
-import { Asset } from "@constants/assets"
+import { Asset, basePath } from "@constants/assets"
 import { Rendering } from "@constants/records/RenderingRecord"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
 import LOGGER from "./Logger"
@@ -11,7 +11,6 @@ type AssetPath = string
 type NotarizedAsset = Record<AssetPath, string>
 
 const KEY = "fprints.systatum"
-const basePath = `${window.location.origin}${process.env.PUBLIC_URL}`
 const quranBasePath = `${basePath}/quran/`
 const fingerprintsPath = `${quranBasePath}fingerprints.json`
 

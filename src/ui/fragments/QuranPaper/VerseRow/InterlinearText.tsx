@@ -157,7 +157,9 @@ const Word = styled.span<{ $usingLearningFont?: boolean; $compact?: boolean }>`
   user-select: none;
 `
 
-const Arabic = styled.span<{ $highlighted?: boolean }>`
+const Arabic = styled.span.attrs({ className: "arabic-lex" })<{
+  $highlighted?: boolean
+}>`
   line-height: 1.6;
   cursor: pointer;
   ${({ $highlighted }) =>

@@ -8,7 +8,6 @@ import { BasmalaPosition } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import { repo } from "@db/repo"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
-import useAligner from "@hooks/tools/useAligner"
 import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
 import { useWordTranslations } from "@hooks/tools/useWordTranslations"
 import { messages } from "@i18n/message"
@@ -89,7 +88,6 @@ export default function VerseRow({
 
   const markerColumnRef = useRef<HTMLDivElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
-  const lastWordRef = useRef<HTMLSpanElement | null>(null)
 
   const { formatMessage } = useIntl()
 
@@ -100,16 +98,22 @@ export default function VerseRow({
     const update = () => {
       const marker = markerColumnRef.current
       const wrapper = wrapperRef.current
-      const lastWord = lastWordRef.current
 
       if (!marker || !wrapper) return
 
-      const lastWordHeight =
-        (lastWord?.getBoundingClientRect().height ?? 0) + 50
-
-      if (wrapper.getBoundingClientRect().height < 170) {
-        marker.style.transform = ""
-        return
+      // Skip for single-row verses — no need for the marker to follow when
+      // all words fit on one horizontal line. Detect by comparing the top
+      // position of each word element: wrapping means at least one differs.
+      const wordEls = wrapper.querySelectorAll<HTMLElement>("[data-word-index]")
+      if (wordEls.length > 0) {
+        const firstTop = wordEls[0].getBoundingClientRect().top
+        const isMultiRow = Array.from(wordEls).some(
+          (el) => Math.abs(el.getBoundingClientRect().top - firstTop) > 1,
+        )
+        if (!isMultiRow) {
+          marker.style.transform = ""
+          return
+        }
       }
 
       const wrapperRect = wrapper.getBoundingClientRect()
@@ -118,10 +122,11 @@ export default function VerseRow({
       const isStillVisible = wrapperRect.bottom > scrollRect.top
 
       if (isClippedAtTop && isStillVisible) {
+        // Translate by exactly overscroll so the marker top sits at the
+        // scroll container's top edge. overflow:hidden on the wrapper clips
+        // the marker's bottom when only a small sliver of the row is visible.
         const overscroll = scrollRect.top - wrapperRect.top
-        const maxTranslate = wrapperRect.height - lastWordHeight
-        const translate = Math.max(0, Math.min(overscroll, maxTranslate))
-        marker.style.transform = `translateY(${translate}px)`
+        marker.style.transform = `translateY(${overscroll}px)`
       } else {
         marker.style.transform = ""
       }
@@ -142,9 +147,6 @@ export default function VerseRow({
     }
   }, [virtualizer.scrollElement])
 
-  const { wordRefs, wordRows, rowLayerHeights } = useAligner({
-    key: verse.id,
-  })
   const ref = useVirtualRowMeasurer({
     index,
     sizeMap,
@@ -209,7 +211,7 @@ export default function VerseRow({
         $theme={theme}
         style={{ transform: style.transform }}
       >
-        <VerseMarkerColumn ref={markerColumnRef}>
+        <VerseMarkerColumn data-vmark ref={markerColumnRef}>
           <Button
             subMenu={({ list }) =>
               list?.([

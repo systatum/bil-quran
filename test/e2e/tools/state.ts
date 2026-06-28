@@ -1,25 +1,74 @@
+import { Rendering } from "@constants/records/RenderingRecord"
+import { DATABASE_KEY } from "@db/driver"
+import fs from "fs"
+import path from "path"
 import type { Locator, Page } from "playwright-core"
 
 export async function visitFresh(page: Page) {
+  // addInitScript runs before every navigation, making __isArabicWord available
+  // in all page.evaluate callbacks without duplicating the predicate.
+  await page.addInitScript(() => {
+    ;(window as any).__isArabicWord = (s: Element): boolean =>
+      s.classList.contains("arabic-lex")
+  })
   await page.goto("/")
   await page.evaluate(() => localStorage.removeItem("userSettings"))
   await page.reload()
   await untilUsable(page)
 }
 
-// Wait for full app bootstrap — the action-buttons only appear after
-// RouterProvider renders, which requires setIsBootstrapped(true), which
-// is called right after restoreState(). This guarantees the stored theme
-// is applied before any assertions run.
-export async function untilUsable(page: Page | Locator) {
-  await page.getByRole("button", { name: "action-button" }).last().waitFor({
-    state: "visible",
-    timeout: 30_000,
+/** Clears localStorage and the indexed DB, ie deletes the SQLite snapshot. */
+export async function clearBrowserStorage(page: Page) {
+  await page.evaluate(async () => {
+    localStorage.clear()
+    await new Promise<void>((resolve) => {
+      const req = indexedDB.open("keyval-store")
+      req.onerror = () => resolve()
+      req.onsuccess = () => {
+        const db = req.result
+        try {
+          const tx = db.transaction("keyval", "readwrite")
+          // delete the key rather than the whole database because `deleteDatabase`
+          // blocks while the app holds an open IDB connection, causing hang.
+          tx.objectStore("keyval").delete(DATABASE_KEY)
+          tx.oncomplete = () => {
+            db.close()
+            resolve()
+          }
+          tx.onerror = () => {
+            db.close()
+            resolve()
+          }
+        } catch {
+          db.close()
+          resolve()
+        }
+      }
+    })
   })
 }
 
-// Returns perceived luminance (0–255) of the first solid background found
-// depth-first in the DOM — reliable proxy for light vs dark theme.
+/** Waits until the app has fully bootstrapped (stored settings applied). */
+export async function untilUsable(page: Page | Locator) {
+  await page
+    .getByRole("button", { name: "action-button" })
+    .first()
+    .waitFor({ state: "visible", timeout: 30_000 })
+}
+
+/** Returns the computed `font-family` of the first `.arabic-lex` span in the first `[data-verse]` row. */
+export async function getWordFontFamily(page: Page): Promise<string | null> {
+  return page.evaluate(() => {
+    const row = document.querySelector<HTMLElement>("[data-verse]")
+    if (!row) return null
+    const word = Array.from(row.querySelectorAll("span")).find(
+      window.__isArabicWord,
+    )
+    return word ? window.getComputedStyle(word).fontFamily : null
+  })
+}
+
+/** Returns perceived luminance (0–255) — reliable proxy for light vs dark theme. */
 export async function getPageLuminance(page: Page): Promise<number> {
   return page.evaluate(() => {
     const walk = (el: Element): string | null => {
@@ -35,4 +84,20 @@ export async function getPageLuminance(page: Page): Promise<number> {
     const [r, g, b] = (bg.match(/\d+/g) ?? ["128", "128", "128"]).map(Number)
     return (r * 299 + g * 587 + b * 114) / 1000
   })
+}
+
+/** Build a verseId → ordered arabic tokens map from the per-chapter. */
+export function loadQuranWords(rendering: Rendering): Record<string, string[]> {
+  const dir = path.join(__dirname, "../../../public/quran/verses/", rendering)
+  const map: Record<string, string[]> = {}
+  for (let chapter = 1; chapter <= 114; chapter++) {
+    const entries = JSON.parse(
+      fs.readFileSync(path.join(dir, `${chapter}.json`), "utf-8"),
+    ) as Array<{ id: string; word: string }>
+    for (const { id, word } of entries) {
+      if (!map[id]) map[id] = []
+      map[id].push(word)
+    }
+  }
+  return map
 }

@@ -18,7 +18,7 @@ export interface Asset {
   renderings: Record<Rendering, string>
   translations: Translation
 }
-const basePath = `${window.location.origin}${process.env.PUBLIC_URL}`
+export const basePath = `${typeof window !== "undefined" ? window.location.origin : ""}${process.env.PUBLIC_URL}`
 export const Asset: Asset = {
   chaptersMetadata: `${basePath}/quran/chapters.json`,
   renderings: {
