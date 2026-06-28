@@ -8,9 +8,9 @@ import {
 import { Title, TitleSection } from "@systatum/coneto/title"
 import { Ref, useMemo, useRef, useState } from "react"
 import { useIntl } from "react-intl"
-import styled, { css } from "styled-components"
+import { css } from "styled-components"
+import { SearchSheet } from "./SearchSheet"
 import Sidebar from "./Sidebar"
-import VerseLookup from "./VerseLookup"
 
 interface AppNavbarProps {
   theme: ThemeMode
@@ -97,39 +97,10 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
       />
 
       <SearchSheet
-        theme={theme}
-        $visible={isSearchOpen}
-        $top={navbarPositioning?.height}
-      >
-        <VerseLookup onChange={() => setIsSearchOpen(false)} />
-      </SearchSheet>
+        isOpen={isSearchOpen}
+        navbarPositioning={navbarPositioning}
+        onAfterSearch={() => setIsSearchOpen(false)}
+      />
     </>
   )
 }
-
-const SearchSheet = styled.div<{
-  theme: ThemeMode
-  $visible: boolean
-  $top: number | undefined
-}>`
-  position: fixed;
-  top: ${({ $top }) => `${$top ?? 0}px`};
-  left: 0;
-  right: 0;
-
-  background: ${({ theme }) => (theme === "dark" ? "#22271b" : "#f6f1e7")};
-
-  padding: 16px;
-
-  transform-origin: top center;
-  transform: scaleY(${({ $visible }) => ($visible ? 1 : 0)});
-
-  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
-  pointer-events: ${({ $visible }) => ($visible ? "auto" : "none")};
-
-  transition:
-    transform 220ms ease,
-    opacity 220ms ease;
-
-  z-index: 9992999;
-`
