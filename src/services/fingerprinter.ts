@@ -11,7 +11,7 @@ type AssetPath = string
  */
 type NotarizedAsset = Record<AssetPath, string>
 
-const KEY = "fprints.systatum"
+export const FINGERPRINT_KEY = "fprints.systatum"
 const quranBasePath = `${basePath}/quran/`
 const fingerprintsPath = `${quranBasePath}fingerprints.json`
 
@@ -132,10 +132,15 @@ export async function isAssetsRecent(): Promise<boolean> {
 }
 
 export function saveFingerprints({ merge = false } = {}): void {
+  // Nothing was read this session and we're not merging — preserve whatever is
+  // already stored rather than overwriting with an empty object, which would
+  // cause isAssetsRecent() to return false on the very next load.
+  if (!merge && Object.keys(readFingerprints).length === 0) return
+
   const existingFingerprints = merge ? loadFingerprints() : null
 
   localStorage.setItem(
-    KEY,
+    FINGERPRINT_KEY,
     JSON.stringify({
       ...existingFingerprints,
       ...readFingerprints,
@@ -144,7 +149,7 @@ export function saveFingerprints({ merge = false } = {}): void {
 }
 
 function loadFingerprints(): NotarizedAsset | null {
-  const raw = localStorage.getItem(KEY)
+  const raw = localStorage.getItem(FINGERPRINT_KEY)
   if (raw == null) return null
 
   try {

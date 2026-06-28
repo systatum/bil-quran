@@ -19,16 +19,21 @@ import { persistDb } from "./driver"
 // the database is freshly created, and migration scripts
 // are executed against it.
 
+type SeedProgress = "verses" | "paginations"
+
 // seed the app with minimal data so that it can work
-export async function seedData() {
+export async function seedData(callback: (progress: SeedProgress) => void) {
   const hasAnyChapter = unpackIPC(await repo.chapters.count()) > 0
   LOGGER.debug("Has any chapter?", hasAnyChapter)
   if (!hasAnyChapter) {
+    callback("verses")
     const chapters = await seedChapters()
     await seedVerses(chapters)
     await seedWordTranslations()
+    await persistDb()
   }
 
+  callback("paginations")
   await seedPaginations()
   await persistDb()
   saveFingerprints()
@@ -277,7 +282,11 @@ async function seedPaginations() {
     )
     if (existings.length > 0) continue
 
-    const pages = await FingerprintedAsset.Quran.getPaginationStyle(style)
-    await repo.paginations.create({ name: style, pages })
+    try {
+      const pages = await FingerprintedAsset.Quran.getPaginationStyle(style)
+      await repo.paginations.create({ name: style, pages })
+    } catch (e) {
+      LOGGER.error(`Failed seeding pagination style ${style}`, e)
+    }
   }
 }
