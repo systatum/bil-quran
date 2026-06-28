@@ -185,5 +185,87 @@ test.describe("SearchSheet", () => {
         timeout: 10_000,
       })
     })
+
+    test.describe("small screen (≤430px)", () => {
+      test.use({ viewport: { width: 390, height: 844 } })
+
+      /**
+       * Queries the pagination DB to find the first juz that contains a page
+       * with 3+ chapters. Returns { juzIndex, pageCount } or null.
+       */
+      async function findJuzWithMultiChapterPage(page: Page) {
+        return page.evaluate(async () => {
+          const result = await (window as any).__repo.paginations.findAllBy({
+            name: "madinah",
+          })
+          if (!result.succeed) return null
+          const [pagination] = result.data
+          if (!pagination) return null
+
+          const partToJuz = new Map<number, number>()
+          const groups: any[][] = []
+          for (const p of pagination.pages) {
+            if (!partToJuz.has(p.part)) {
+              partToJuz.set(p.part, groups.length)
+              groups.push([])
+            }
+            groups[partToJuz.get(p.part)!].push(p)
+          }
+
+          for (let j = 0; j < groups.length; j++) {
+            const pages = groups[j]
+            if (pages.some((p: any) => p.chapterIds.length >= 3)) {
+              return { juzIndex: j, pageCount: pages.length }
+            }
+          }
+          return null
+        })
+      }
+
+      test("each option shows at most 2 chapters", async ({ page }) => {
+        const info = await findJuzWithMultiChapterPage(page)
+        expect(info).not.toBeNull()
+
+        const drawer = await openJuzDrawer(page)
+        await drawer
+          .locator('[aria-label="tree-list-group-title"]')
+          .nth(info!.juzIndex)
+          .click()
+
+        const items = drawer.locator('[aria-label="tree-list-item"]')
+        await expect(items.first()).toBeVisible({ timeout: 3000 })
+
+        // The middle-dot separator · appears once per chapter boundary.
+        // At most 2 chapters = at most 1 separator per option.
+        const count = await items.count()
+        for (let k = 0; k < count; k++) {
+          const seps = await items
+            .nth(k)
+            .evaluate((el) => (el.textContent?.match(/·/g) ?? []).length)
+          expect(seps).toBeLessThanOrEqual(1)
+        }
+      })
+
+      test("produces more options than physical pages when 3+ chapter pages exist", async ({
+        page,
+      }) => {
+        const info = await findJuzWithMultiChapterPage(page)
+        expect(info).not.toBeNull()
+
+        const drawer = await openJuzDrawer(page)
+        await drawer
+          .locator('[aria-label="tree-list-group-title"]')
+          .nth(info!.juzIndex)
+          .click()
+
+        const items = drawer.locator('[aria-label="tree-list-item"]')
+        await expect(items.first()).toBeVisible({ timeout: 3000 })
+        const optionCount = await items.count()
+
+        // Splitting 3+ chapter pages into chunks of 2 produces extra options,
+        // so the rendered count must exceed the raw physical page count.
+        expect(optionCount).toBeGreaterThan(info!.pageCount)
+      })
+    })
   })
 })
