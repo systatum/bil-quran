@@ -15,7 +15,7 @@ import {
   visitFresh,
 } from "./tools/state"
 
-test.describe("User settings", () => {
+test.describe("UserSettingsState", () => {
   test.beforeEach(async ({ page }) => await visitFresh(page))
 
   test.describe("theme", () => {
