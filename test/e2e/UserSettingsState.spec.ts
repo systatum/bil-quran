@@ -88,9 +88,21 @@ test.describe("UserSettingsState", () => {
     /**
      * Check currently-visible rows for vertical gaps. Any gap indicates the
      * virtualizer mis-sized a row after the font change.
+     *
+     * Waits two animation frames first so the virtualizer has finished its
+     * post-scroll layout pass before we read bounding boxes.
      */
     async function checkVisibleRowGaps(page: Page): Promise<string[]> {
-      return page.evaluate(async () => {
+      // Let any pending rAF callbacks (virtualizer re-render) flush before
+      // reading bounding boxes.
+      await page.evaluate(
+        () =>
+          new Promise<void>((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+          ),
+      )
+
+      return page.evaluate(() => {
         const rows = Array.from(
           document.querySelectorAll<HTMLElement>("[data-index]"),
         )
@@ -116,7 +128,6 @@ test.describe("UserSettingsState", () => {
           }
         }
 
-        if (gaps.length > 0) await page.pause()
         return gaps
       })
     }
@@ -149,7 +160,7 @@ test.describe("UserSettingsState", () => {
 
       for (const fontName of FONT_DISPLAY_NAMES) {
         await selectFont(fontName, page)
-        await page.waitForTimeout(500) // virtualizer re-measures rows after font swap
+        await page.waitForTimeout(800) // virtualizer re-measures rows after font swap
 
         const seenVerses = new Set<string>()
         while (seenVerses.size < VERSE_TARGET) {
@@ -164,7 +175,7 @@ test.describe("UserSettingsState", () => {
           visible.forEach((v) => seenVerses.add(v))
 
           const atEnd = await scrollDown(page, SCROLL_AMOUNT)
-          await page.waitForTimeout(150)
+          await page.waitForTimeout(300)
           if (atEnd) break
         }
       }
