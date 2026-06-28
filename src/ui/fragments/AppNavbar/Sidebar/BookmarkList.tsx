@@ -10,6 +10,7 @@ import InterlinearText from "@ui/fragments/QuranPaper/VerseRow/InterlinearText"
 import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { useIntl } from "react-intl"
+import styled from "styled-components"
 
 export default function BookmarkList({ height }: { height: number }) {
   const { formatMessage } = useIntl()
@@ -105,9 +106,17 @@ export default function BookmarkList({ height }: { height: number }) {
               words={verseWords}
               compact={true}
             />
+            {bookmark.note && <BookmarkNote>{bookmark.note}</BookmarkNote>}
           </ClippedContent>
         )
       })}
     </div>
   )
 }
+
+const BookmarkNote = styled.p`
+  border-top: 1px solid #daccb4;
+  padding: 4px;
+  padding-bottom: 0;
+  user-select: text;
+`

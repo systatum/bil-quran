@@ -1,5 +1,7 @@
 import { expect, Page, test } from "@playwright/test"
 import {
+  clickOn,
+  openSidebar,
   scrollCertainPixels,
   scrollDown,
   toggleWbwTranslation,
@@ -124,5 +126,114 @@ test.describe("VerseMarker", () => {
 
     await scrollCertainPixels(page, "down", 10)
     await scrollCertainPixels(page, "up", 10)
+  })
+
+  // visitFresh (called in beforeEach) removes "userSettings" from localStorage,
+  // which holds the bookmarks list — so every test below starts with no bookmarks.
+  test.describe("bookmarking a verse", () => {
+    /** Open sidebar and switch to the Bookmarks panel. */
+    async function openBookmarkPanel(page: Page) {
+      await openSidebar(page)
+      await page.locator('aside [aria-label="action-button"]').last().click()
+      await page.waitForTimeout(300)
+    }
+
+    test("bookmark list is empty when no bookmarks have been added", async ({
+      page,
+    }) => {
+      await openBookmarkPanel(page)
+
+      await expect(page.getByText(/No bookmarks yet/i)).toBeVisible({
+        timeout: 5000,
+      })
+      await expect(page.locator("#bookmark-list")).not.toBeVisible()
+    })
+
+    test("shown in the bookmark list", async ({ page }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const firstVerseRow = page.locator("[data-verse]").first()
+      const verseKey = await firstVerseRow.getAttribute("data-verse")
+      expect(verseKey).toBeDefined()
+      const [chapterId, verseId] = verseKey!.split(":")
+
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Bookmark", page, { ariaLabel: "tip-menu-item" })
+
+      await openBookmarkPanel(page)
+
+      // BookmarkList renders the verse label: "chapterId (latinName / meaning) : verseId"
+      const bookmarkList = page.locator("#bookmark-list")
+      await expect(bookmarkList).toBeVisible({ timeout: 5000 })
+      await expect(
+        bookmarkList.getByText(new RegExp(`${chapterId}.*:.*${verseId}`)),
+      ).toBeVisible({ timeout: 5000 })
+    })
+
+    test("bookmark with note shows note text in the bookmark list", async ({
+      page,
+    }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const firstVerseRow = page.locator("[data-verse]").first()
+      const verseKey = await firstVerseRow.getAttribute("data-verse")
+      expect(verseKey).toBeDefined()
+      const [chapterId, verseId] = verseKey!.split(":")
+
+      // Open the note dialog via the tip menu
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Note", page, { ariaLabel: "tip-menu-item" })
+
+      // Fill in the note and confirm
+      const NOTE_TEXT = "This is the verse"
+      await page.locator("textarea").fill(NOTE_TEXT)
+      await clickOn("Add", page, { role: "button" })
+
+      await openBookmarkPanel(page)
+
+      const bookmarkList = page.locator("#bookmark-list")
+      await expect(bookmarkList).toBeVisible({ timeout: 5000 })
+      await expect(
+        bookmarkList.getByText(new RegExp(`${chapterId}.*:.*${verseId}`)),
+      ).toBeVisible({ timeout: 5000 })
+      await expect(bookmarkList.getByText(NOTE_TEXT)).toBeVisible({
+        timeout: 5000,
+      })
+    })
+
+    test("cancelling the note dialog adds no bookmark", async ({ page }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const firstVerseRow = page.locator("[data-verse]").first()
+
+      // Open the note dialog, type something, then cancel
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Note", page, { ariaLabel: "tip-menu-item" })
+      await page.locator("textarea").fill("This is the verse")
+      await clickOn("Cancel", page, { role: "button" })
+
+      await openBookmarkPanel(page)
+
+      // No bookmark was saved — the "no bookmarks" notice should appear instead
+      await expect(
+        page.getByText(/No bookmarks yet/i),
+      ).toBeVisible({ timeout: 5000 })
+      await expect(page.locator("#bookmark-list")).not.toBeVisible()
+
+      // localStorage confirms no bookmarks were persisted
+      const bookmarks = await page.evaluate(() => {
+        const raw = localStorage.getItem("userSettings")
+        if (!raw) return null
+        const settings = JSON.parse(raw)
+        return settings?.bookmarks?.list ?? null
+      })
+      expect(bookmarks).toBeNull()
+    })
   })
 })
