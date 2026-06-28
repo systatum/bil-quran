@@ -84,6 +84,7 @@ export default function Title({
           type: "actions",
           actions: [
             {
+              id: "user-settings-button",
               icon: {
                 image:
                   contentType === ContentType.Settings
@@ -96,6 +97,8 @@ export default function Title({
               },
             },
             {
+              id: "bookmarks-button",
+              className: "bookmarks-button",
               icon: {
                 image:
                   contentType === ContentType.Bookmarks

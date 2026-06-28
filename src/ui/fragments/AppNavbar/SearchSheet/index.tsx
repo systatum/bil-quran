@@ -1,4 +1,5 @@
 import { ThemeMode, useThemeMode } from "@systatum/coneto/theme"
+import { Separator } from "@ui/fragments/Separator"
 import styled from "styled-components"
 import VerseLookup from "./VerseLookup"
 
@@ -17,6 +18,7 @@ export function SearchSheet({
 
   return (
     <Wrapper theme={theme} $visible={isOpen} $top={navbarPositioning?.height}>
+      <Separator title="By verse" />
       <VerseLookup onChange={() => onAfterSearch?.()} />
     </Wrapper>
   )
