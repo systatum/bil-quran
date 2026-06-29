@@ -87,11 +87,12 @@ export const words = table(
 export const word_translations = table(
   "word_translations",
   {
-    locale: text({ length: 6 }).notNull(), // TODO: for space efficiency, use enum
+    locale: integer().notNull(),
     chapter: integer().notNull(),
     ayat: integer().notNull(),
     word: integer().notNull(),
-    meaning: text({ length: 255 }).notNull(),
+    meaningSunni: text({ length: 255 }).notNull(),
+    meaningShia: text({ length: 255 }),
   },
   (table) => [
     unique("unique_word_translation").on(
