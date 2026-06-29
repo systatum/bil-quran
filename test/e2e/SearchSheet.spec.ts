@@ -117,9 +117,9 @@ test.describe("SearchSheet", () => {
           .locator('[aria-label="tree-list-group-title"]')
           .first()
           .click()
-        await page.waitForTimeout(200)
 
         const page2Item = drawer.locator('[aria-label="tree-list-item"]').nth(1)
+        await expect(page2Item).toBeVisible({ timeout: 3000 })
         await expect(page2Item).toContainText("Al-Baqara")
         await expect(page2Item).not.toContainText("(")
       })
@@ -132,9 +132,9 @@ test.describe("SearchSheet", () => {
           .locator('[aria-label="tree-list-group-title"]')
           .first()
           .click()
-        await page.waitForTimeout(200)
 
         const page3Item = drawer.locator('[aria-label="tree-list-item"]').nth(2)
+        await expect(page3Item).toBeVisible({ timeout: 3000 })
         await expect(page3Item).toContainText("Al-Baqara")
         await expect(page3Item).toContainText(/\(\d+-\d+\)/)
       })

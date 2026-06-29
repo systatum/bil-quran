@@ -125,17 +125,13 @@ test.describe("Quran paper", () => {
       const { width, height } = page.viewportSize()!
       await page.setViewportSize({ width: height, height: width })
 
-      // Wait for the full restoration cycle:
-      // - onResize debounce: 200ms
-      // - waitForMeasurements (3 stable rAF frames): ~300ms
-      // - scrollToVerse (2 rAF + fine-tune + 300ms stability): ~400ms
-      await page.waitForTimeout(2000)
-
-      // The saved verse must be visible in the viewport after restoration
+      // The app restores scroll position after a debounce + measurement cycle
+      // (~900ms total). Rather than a fixed sleep, let Playwright's retry loop
+      // wait until the verse actually becomes visible — robust on any machine speed.
       const verseLocator = page.locator(
         `[data-verse="${savedScroll!.chapterId}:${savedScroll!.verse}"]`,
       )
-      await expect(verseLocator).toBeVisible({ timeout: 3000 })
+      await expect(verseLocator).toBeVisible({ timeout: 6000 })
     })
   })
 })
