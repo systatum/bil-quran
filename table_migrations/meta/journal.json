@@ -5,6 +5,12 @@
     },
     {
       "tag": "0001_create_paginations_table"
+    },
+    {
+      "tag": "0002_add_shia_meaning_to_word"
+    },
+    {
+      "tag": "0003_store_verse_words_in_an_array"
     }
   ]
 }
