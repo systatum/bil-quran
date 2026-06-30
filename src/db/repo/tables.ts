@@ -56,7 +56,7 @@ export const lexemes = table("lexemes", {
     .default({}),
 })
 
-// a word that makes up a verse
+// representing sequence of word makeing up a verse
 export const words = table(
   "words",
   {
@@ -66,20 +66,15 @@ export const words = table(
     renderingId: integer({ mode: "number" })
       .notNull()
       .references(() => renderings.id, { onDelete: "cascade" }),
-    lexemeId: integer({ mode: "number" })
-      .notNull()
-      .references(() => lexemes.id, { onDelete: "cascade" }),
+    lexemeIds: text({ mode: "json" }).$type<number[]>().notNull().default([]),
     verse: integer().notNull(),
-    order: integer().notNull(),
     partNumber: integer().notNull(),
   },
   (table) => [
     unique("surat_unique_word_rendering").on(
       table.chapterId,
       table.renderingId,
-      table.lexemeId,
       table.verse,
-      table.order,
     ),
   ],
 )

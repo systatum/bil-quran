@@ -3,8 +3,8 @@ import { WordCell } from "../../ui/fragments/QuranPaper/VerseRow"
 import { RootRecord } from "./RootRecord"
 
 /**
- * Representing a word in a verse by binding a specific lexeme to
- * that specific position of any given verse.
+ * One row in the `words` table — a verse's full word sequence stored as an
+ * ordered array of lexeme IDs.
  */
 export interface WordRecord {
   /**
@@ -15,37 +15,23 @@ export interface WordRecord {
    * The rendering/print style
    */
   renderingId: number
-  lexemeId: number
-  /**
-   * Which verse (or ayat, or sentence) this word belongs to
-   */
+  /** Ordered list of lexeme IDs; position in the array is the word order. */
+  lexemeIds: number[]
   verse: number
-  /**
-   * In which order this word is
-   */
-  order: number
-  /**
-   * The Qur'an is divided into 30 parts (juz). Indicates which juz this
-   * word belongs to. A chapter may span multiple juz, so this shall be
-   * tracked at the word level.
-   */
   partNumber: number
 }
 
 /**
- * A special, efficient data type used to type data returned
- * from retrieving all Quranic word translations
+ * A single word expanded from a `WordRecord` row, joined with its lexeme data.
+ * `order` is 1-based (array index + 1).
  */
 export interface WordWithLexemeRecord {
   chapterId: number
   verse: number
   order: number
-
   partNumber: number
-
   lexemeId: number
   renderingId: number
-
   token: string
   root: RootRecord
   readings: Partial<Record<Locale, string>>

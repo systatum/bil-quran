@@ -24,8 +24,13 @@ type SeedProgress = "verses" | "paginations"
 // seed the app with minimal data so that it can work
 export async function seedData(callback: (progress: SeedProgress) => void) {
   const hasAnyChapter = unpackIPC(await repo.chapters.count()) > 0
-  LOGGER.debug("Has any chapter?", hasAnyChapter)
-  if (!hasAnyChapter) {
+  const hasAnyWords = unpackIPC(await repo.words.count()) > 0
+  const needVerseSeeding = !(hasAnyChapter && hasAnyWords)
+  LOGGER.debug(
+    `Has any chapter? ${hasAnyChapter}, any words? ${hasAnyWords} => ${needVerseSeeding}`,
+  )
+
+  if (needVerseSeeding) {
     callback("verses")
     const chapters = await seedChapters()
     await seedVerses(chapters)
@@ -75,11 +80,12 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
   const BATCH_SIZE = 1000
   const name = Rendering.Imlaei
 
-  // if there's already an Imlaei rendering, no need to add verses
+  // if there's already an Imlaei rendering, no need to create a new one
   const existing = unpackIPC(await repo.renderings.findAllBy({ name }))
-  if (existing.length === 1) return
-
-  const rendering = unpackIPC(await repo.renderings.create({ name }))
+  const rendering =
+    existing.length === 1
+      ? existing[0]
+      : unpackIPC(await repo.renderings.create({ name }))
 
   const chapterWords = await Promise.all(
     Array.from({ length: 114 }, (_, i) =>
@@ -201,51 +207,46 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
   ) {
     LOGGER.debug(`Chapter ${chapterId}: ${verseWords.length} source words`)
     const renderingId = rendering.id
-    let batch: Partial<WordRecord>[] = []
+    const chapter = chapters[chapterId]
 
-    async function flush() {
-      if (batch.length === 0) return
+    // Group source words by verse, preserving encounter order as word order.
+    const verseMap = new Map<
+      number,
+      { lexemeIds: number[]; partNumber: number }
+    >()
+    for (const v of verseWords) {
+      const [, verse] = v.id.split(":").map(Number)
+      if (!verseMap.has(verse)) {
+        const partNumber = chapter.partitioning.find(
+          (p) => verse >= p.start && verse <= p.end,
+        )!.part
+        verseMap.set(verse, { lexemeIds: [], partNumber })
+      }
+      verseMap.get(verse)!.lexemeIds.push(lexemeCache[v.word].id)
+    }
 
-      const first = batch[0]
-      const last = batch[batch.length - 1]
+    const records: Partial<WordRecord>[] = Array.from(verseMap.entries()).map(
+      ([verse, { lexemeIds, partNumber }]) => ({
+        chapterId,
+        verse,
+        lexemeIds,
+        partNumber,
+        renderingId,
+      }),
+    )
 
-      const result = await repo.words.createBulk(batch)
-
+    for (let i = 0; i < records.length; i += BATCH_SIZE) {
+      const result = await repo.words.createBulk(
+        records.slice(i, i + BATCH_SIZE),
+      )
       if (!result.succeed) {
         console.error(`Failed inserting chapter ${chapterId}`, result.errors)
         throw new Error(`Failed inserting chapter ${chapterId}`)
       }
-
-      batch = []
     }
 
-    const orderMap: Record<string, number> = {}
-    for (const v of verseWords) {
-      const [, verse] = v.id.split(":").map(Number)
-      const verseKey = v.id
-      const order = (orderMap[verseKey] ?? 0) + 1
-      orderMap[verseKey] = order
-      const chapter = chapters[chapterId]
-      const partNumber = chapter.partitioning.find(
-        (p) => verse >= p.start && verse <= p.end,
-      )!.part
-      batch.push({
-        chapterId,
-        verse,
-        lexemeId: lexemeCache[v.word].id,
-        order,
-        partNumber,
-        renderingId,
-      })
-
-      if (batch.length >= BATCH_SIZE) await flush()
-    }
-
-    await flush()
     LOGGER.debug(
-      `Done inserting chapter ${chapterId} (${rendering.name}), max verse = ${Math.max(
-        ...verseWords.map((v) => Number(v.id.split(":")[1])),
-      )}`,
+      `Done inserting chapter ${chapterId} (${rendering.name}), ${verseMap.size} verses`,
     )
   }
 
@@ -260,12 +261,12 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
       chapter_id,
       MAX(verse) AS max_verse,
       COUNT(DISTINCT verse) AS verse_count,
-      COUNT(*) AS word_count
+      SUM(json_array_length(lexeme_ids)) AS word_count
     FROM words
     GROUP BY chapter_id
     ORDER BY chapter_id
   `)
-  console.log(statsByChapter)
+  console.log("Chapter statistics", statsByChapter)
 }
 
 export async function seedWordTranslations() {
