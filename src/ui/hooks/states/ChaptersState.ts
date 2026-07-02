@@ -2,7 +2,6 @@ import { ChapterRecord } from "@constants/records/ChapterRecord"
 import { DEFAULT_LOCALE } from "@constants/settings"
 import { repo } from "@db/repo"
 import { unpackIPC } from "@services/Converter"
-import LOGGER from "@services/Logger"
 import { create } from "zustand"
 import useUserSettingsState from "./UserSettingsState"
 
@@ -40,7 +39,6 @@ const useChaptersState = create<ChaptersState>((set, get) => ({
   getChapterMeaning(chapterNumber: number) {
     const { userSettings } = useUserSettingsState.getState()
     const { locale } = userSettings
-    LOGGER.debug("User selected locale is", locale)
     const chapter = get().getChapter(chapterNumber)
     if (chapter == null) return null
     return chapter.meanings[locale] || chapter.meanings[DEFAULT_LOCALE]
@@ -49,7 +47,6 @@ const useChaptersState = create<ChaptersState>((set, get) => ({
   getChapterArabicName(chapterNumber: number) {
     const { userSettings } = useUserSettingsState.getState()
     const { locale } = userSettings
-    LOGGER.debug("User selected locale is", locale)
     const chapter = get().getChapter(chapterNumber)
     if (chapter == null) return null
     return chapter.namings[locale] || chapter.namings[DEFAULT_LOCALE]
@@ -58,7 +55,6 @@ const useChaptersState = create<ChaptersState>((set, get) => ({
   getChapterTransliteratedName(chapterNumber: number) {
     const { userSettings } = useUserSettingsState.getState()
     const { locale } = userSettings
-    LOGGER.debug("User selected locale is", locale)
     const chapter = get().getChapter(chapterNumber)
     if (chapter == null) return null
     return (

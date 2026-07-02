@@ -1,8 +1,7 @@
-import { PaginationStyle, QuranPage } from "@constants/records/Pagination"
-import { repo } from "@db/repo"
+import { QuranPage } from "@constants/records/Pagination"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
+import usePaginationState from "@hooks/states/PaginationState"
 import { messages } from "@i18n/message"
-import { unpackIPC } from "@services/Converter"
 import { Combobox, ComboboxOption } from "@systatum/coneto/combobox"
 import { useNavigate } from "@tanstack/react-router"
 import { Fragment, useEffect, useMemo, useState } from "react"
@@ -30,7 +29,7 @@ export default function JuzLookup({ onChange }: JuzLookupProps) {
     userSettings: { locale },
   } = useUserSettingsState()
   const { getChapterTransliteratedName } = useChaptersState()
-  const [juzPages, setJuzPages] = useState<QuranPage[][]>([])
+  const { juzPages, loadPagination } = usePaginationState()
   const { formatMessage } = useIntl()
   const pgAbbrev = formatMessage({ id: messages.searchSheet.pageAbbreviation })
 
@@ -54,28 +53,7 @@ export default function JuzLookup({ onChange }: JuzLookupProps) {
   }, [])
 
   useEffect(() => {
-    repo.paginations
-      .findAllBy({ name: PaginationStyle.Madinah })
-      .then((resp) => {
-        const [pagination] = unpackIPC(resp)
-        if (!pagination) return
-
-        // Group pages by sequential juz order rather than by raw `part` value.
-        // This tolerates any mislabeled part values in the seeded DB because
-        // the first new `part` encountered in page order = the next juz start.
-        const partToJuz = new Map<number, number>()
-        const groups: QuranPage[][] = []
-
-        for (const page of pagination.pages) {
-          if (!partToJuz.has(page.part)) {
-            partToJuz.set(page.part, groups.length)
-            groups.push([])
-          }
-          groups[partToJuz.get(page.part)!].push(page)
-        }
-
-        setJuzPages(groups)
-      })
+    loadPagination()
   }, [])
 
   const options: ComboboxOption[] = useMemo(() => {

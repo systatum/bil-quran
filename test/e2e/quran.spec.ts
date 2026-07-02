@@ -8,13 +8,21 @@ test.describe("Quran paper", () => {
   test.beforeEach(async ({ page }) => await visitFresh(page))
 
   test("correct arabic word sequence with translations", async ({ page }) => {
-    test.setTimeout(10 * 60_000)
+    // 20 min: the test scrolls the entire Quran (~300 steps × 100 ms each ≈ 5 min
+    // in isolation).  With 2 parallel workers sharing CPU it can take up to 2×;
+    // 20 minutes gives comfortable margin on any typical developer machine.
+    test.setTimeout(20 * 60_000)
 
     const SCROLL_AMOUNT = 600 // px per step — covers ~4 verses each
     const expectedWords = loadQuranWords(Rendering.Imlaei)
 
-    // Inject once — avoids re-serializing the entire ~77k-entry map on every
-    // page.evaluate call, which would exhaust the Node.js heap over a full run.
+    // Register as an init script so __expectedWords is re-injected automatically
+    // if the page ever reloads (e.g. an HMR full-reload during the long test run).
+    await page.addInitScript((words) => {
+      ;(window as any).__expectedWords = words
+    }, expectedWords)
+
+    // Also inject into the current page — addInitScript only runs on future loads.
     await page.evaluate((words) => {
       ;(window as any).__expectedWords = words
     }, expectedWords)
@@ -101,7 +109,11 @@ test.describe("Quran paper", () => {
       await waitUntilVisible(page.locator("[data-verse]").first(), {
         timeout: 15_000,
       })
-      await page.waitForTimeout(300)
+      // page.goto("/#/c/2/1") triggers scrollToVerse(2, 1) inside QuranPaper,
+      // which sets isRestoringScrollRef = true and only clears it after
+      // 3 rAFs + a 300ms debounce. Wait long enough that recordScrolling is
+      // unblocked before we start manually scrolling.
+      await page.waitForTimeout(800)
 
       // Scroll to a non-trivial position (5 × 600px ≈ verse 10–15 of Al-Baqara)
       for (let i = 0; i < 5; i++) {
