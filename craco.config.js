@@ -2,15 +2,12 @@ const path = require("path")
 
 module.exports = {
   devServer: {
-    // Disable HMR and live-reload so the dev server never pushes unsolicited
-    // reload signals to connected browsers.  Any such signal during a long
-    // Playwright test (e.g. the full-Quran scroll) resets the browser's scroll
-    // position and causes the test to restart from verse 1, ballooning runtime
-    // well beyond the 10-minute timeout.  Developers refresh the browser
-    // manually after file changes (HMR is a convenience, not required here
-    // because sql.js WASM chunks cannot be hot-replaced anyway).
-    hot: false,
-    liveReload: false,
+    // HMR is disabled when the dev server is started by Playwright (E2E=true).
+    // An unsolicited reload during a long test resets scroll position and
+    // causes tests to restart from verse 1, exceeding the 10-minute timeout.
+    // sql.js WASM chunks cannot be hot-replaced anyway, so this is no loss.
+    hot: !process.env.E2E,
+    liveReload: !process.env.E2E,
   },
 
   webpack: {

@@ -21,7 +21,7 @@ export default defineConfig({
     { name: "chromium", use: { ...devices["Desktop Chrome"], headless: true } },
   ],
   webServer: {
-    command: "pnpm start",
+    command: "E2E=true pnpm start",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
   },
