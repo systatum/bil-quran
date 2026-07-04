@@ -20,6 +20,7 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
   basmalaPosition: BasmalaPosition.Detached,
   wbwTranslations: [WordTranslationOption.AmericanEnglish],
   showPageIndicator: true,
+  exegesis: [],
   font: {
     arabic: {
       family: "NotoNaskhArabic",
@@ -115,6 +116,10 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
 
   setShowPageIndicator(show) {
     get().partialUpdate({ showPageIndicator: !!show })
+  },
+
+  setExegesis(ids) {
+    get().partialUpdate({ exegesis: ids })
   },
 
   setWordByWordTranslations(wbwTranslations) {
@@ -230,6 +235,7 @@ export interface UserSettingsState {
   setFont(font: DeepPartial<UserFontSettings>): void
   setBasmalaPosition(basmalaPosition: BasmalaPosition): void
   setShowPageIndicator(show: boolean): void
+  setExegesis(ids: string[]): void
   setWordByWordTranslations(wbwTranslation: WordTranslationOption[]): void
   setScrollPosition(chapterId: number, verse: number): void
 
@@ -259,6 +265,12 @@ export interface UserSettings {
    * Whether to show page indicator so user knows which part and page they are in
    */
   showPageIndicator: boolean
+
+  /**
+   * IDs of the exegeses the user has activated (e.g. ["aliquli/en-US"]).
+   * Multiple exegeses can be active at the same time.
+   */
+  exegesis: string[]
 
   /**
    * To record bookmarks

@@ -10,6 +10,15 @@ export interface Translation {
   wordByWord: Record<Locale, WordByWordTranslationAsset>
 }
 
+export interface ExegesisSource {
+  /** Display name of this exegesis work */
+  name: string
+  /** Full URL path to the exegesis directory (no trailing slash) */
+  path: string
+  /** Locales for which verse-level translation files are available */
+  availableLocales: Locale[]
+}
+
 export interface Asset {
   /**
    * Metadata for each of the Quranic chapters
@@ -19,11 +28,14 @@ export interface Asset {
   paginationStyles: Record<PaginationStyle, string>
   renderings: Record<Rendering, string>
   translations: Translation
+  exegesisSources: ExegesisSource[]
 }
 
 export const basePath = `${typeof window !== "undefined" ? window.location.origin : ""}${process.env.PUBLIC_URL}`
 export const assetPath = `${basePath}/quran`
 export const paginationPath = `${assetPath}/paginations`
+export const exegesisBasePath = `${assetPath}/exegesis`
+
 export const Asset: Asset = {
   chaptersMetadata: `${basePath}/quran/chapters.json`,
   paginationStyles: {
@@ -42,4 +54,11 @@ export const Asset: Asset = {
       },
     },
   },
+  exegesisSources: [
+    {
+      name: "AliQuli",
+      path: `${exegesisBasePath}/aliquli`,
+      availableLocales: [Locale.IntEnglish],
+    },
+  ],
 }

@@ -39,6 +39,19 @@ export const paginations = table("paginations", {
   pages: text({ mode: "json" }).$type<Array<QuranPage>>().notNull().default([]),
 })
 
+export const exegesis = table("exegesis", {
+  // the folder name containing the exegesis
+  id: text({ length: 15 }).notNull().primaryKey(),
+  // the original name
+  oriName: text({ length: 30 }).notNull().unique(),
+  // local names
+  locNames: text({ mode: "json" }).$type<Record<Locale, string>>().notNull(),
+  // a short description
+  description: text({ mode: "json" }).$type<Record<Locale, string>>().notNull(),
+  author: text({ length: 30 }).notNull(),
+  authorBio: text({ mode: "json" }).$type<Record<Locale, string>>().notNull(),
+})
+
 export const roots = table("roots", {
   id: integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
   root: text({ length: 18 }).notNull(),

@@ -29,6 +29,13 @@
       "when": 1782777709798,
       "tag": "0003_store_verse_words_in_an_array",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1783034020231,
+      "tag": "0004_create_exegesis_table",
+      "breakpoints": true
     }
   ]
 }

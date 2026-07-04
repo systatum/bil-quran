@@ -113,6 +113,9 @@ export async function getRemoteFingerprints(): Promise<NotarizedAsset | null> {
 /**
  * Check if fingerprints of used assets match. If they don't match, we force
  * redownload by skipping the persisted database snapshot.
+ *
+ * Exegesis files are excluded: they are optional and fetched on-demand, so a
+ * change in them should not trigger a full DB wipe.
  */
 export async function isAssetsRecent(): Promise<boolean> {
   const latest = await getRemoteFingerprints()
@@ -124,7 +127,11 @@ export async function isAssetsRecent(): Promise<boolean> {
   const current = loadFingerprints()
   if (current == null) return false
 
-  const isEqual = areStoredFingerprintsCurrent(latest, current)
+  const coreAssets = Object.fromEntries(
+    Object.entries(current).filter(([k]) => !k.startsWith("exegesis/")),
+  )
+
+  const isEqual = areStoredFingerprintsCurrent(latest, coreAssets)
   LOGGER.debug(
     "Are used asset fingerprints equal? " + (isEqual ? "Yes!" : "No!"),
   )
