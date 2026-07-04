@@ -418,13 +418,13 @@ export async function pause(ms: number) {
 // ==== QURAN ======================================================
 
 export async function openSidebar(page: Page) {
-  await page.locator('[aria-label="action-button"]:not(aside *)').last().click()
+  await page.locator('[aria-label="title-action"]:not(aside *)').last().click()
   await page.waitForTimeout(300) // sidebar CSS transition is 220ms
 }
 
 export async function closeSidebar(page: Page) {
   await page
-    .locator('[aria-label="action-button"]:not(aside *)')
+    .locator('[aria-label="title-action"]:not(aside *)')
     .last()
     .dispatchEvent("click")
   await page.waitForTimeout(300) // sidebar CSS transition is 220ms
@@ -432,7 +432,7 @@ export async function closeSidebar(page: Page) {
 
 export async function openSearchSheet(page: Page) {
   await page
-    .locator('[aria-label="action-button"]:not(aside *)')
+    .locator('[aria-label="title-action"]:not(aside *)')
     .first()
     .click()
   await page.waitForTimeout(300)
@@ -461,7 +461,7 @@ export async function toggleWbwTranslation(label: string, page: Page) {
   // dispatchEvent fires directly on the DOM node, bypassing the aside overlay
   // that intercepts physical mouse clicks at the same screen coordinates.
   await page
-    .locator('[aria-label="action-button"]:not(aside *)')
+    .locator('[aria-label="title-action"]:not(aside *)')
     .last()
     .dispatchEvent("click")
   await page.waitForTimeout(300)

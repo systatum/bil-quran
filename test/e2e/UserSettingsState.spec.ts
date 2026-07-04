@@ -207,18 +207,22 @@ test.describe("UserSettingsState", () => {
       // Default: showPageIndicator is true → bar is visible out of the box
       await expect(juzBar).toBeVisible({ timeout: 5000 })
 
-      // Disable via sidebar toggle
+      // Disable via sidebar toggle — Coneto hides the checkbox with CSS and
+      // overlays a styled element; click the visible label to activate it.
       await openSidebar(page)
-      const toggle = await findVisibleTarget(undefined, page, {
-        formLabel: "Show page indicator",
-      })
-      await toggle.click()
+      const toggleLabel = page
+        .locator('[aria-label="stateful-form-label-wrapper"]')
+        .filter({ hasText: "Show page indicator" })
+        .first()
+      await expect(toggleLabel).toBeVisible({ timeout: 5000 })
+      await toggleLabel.click()
       await closeSidebar(page)
       await page.waitForTimeout(300)
 
       await expect(juzBar).toHaveCount(0)
 
-      // Disabled state persists after reload
+      // Disabled state persists after reload — no scroll needed here because
+      // showPageIndicator is false so the bar is unconditionally absent.
       await page.reload()
       await untilUsable(page)
       await waitUntilVisible(page.locator('[data-verse^="2:"]').first(), {
@@ -278,7 +282,7 @@ test.describe("UserSettingsState", () => {
           // The coneto Combobox renders all 114 chapter group-titles in the DOM simultaneously
           // (no virtual scrolling inside the drawer), so allTextContents() is a single O(n) pass.
           await page
-            .locator('[aria-label="action-button"]:not(aside *)')
+            .locator('[aria-label="title-action"]:not(aside *)')
             .first()
             .click()
           await page.waitForTimeout(300)

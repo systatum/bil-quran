@@ -49,7 +49,7 @@ export async function clearBrowserStorage(page: Page) {
 /** Waits until the app has fully bootstrapped (stored settings applied). */
 export async function untilUsable(page: Page | Locator) {
   await page
-    .getByRole("button", { name: "action-button" })
+    .getByRole("button", { name: "title-action" })
     .first()
     .waitFor({ state: "visible", timeout: 30_000 })
   await waitUntilVisible(page.locator("[data-verse]").first(), {

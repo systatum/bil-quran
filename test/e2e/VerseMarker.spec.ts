@@ -134,7 +134,7 @@ test.describe("VerseMarker", () => {
     /** Open sidebar and switch to the Bookmarks panel. */
     async function openBookmarkPanel(page: Page) {
       await openSidebar(page)
-      await page.locator('aside [aria-label="action-button"]').last().click()
+      await page.locator('aside [aria-label="title-action"]').last().click()
       await page.waitForTimeout(300)
     }
 
