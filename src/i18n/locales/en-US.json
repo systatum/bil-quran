@@ -25,6 +25,10 @@
     "0": "Embedded",
     "1": "Detached"
   },
+  "showPageIndicator": {
+    "title": "Show page indicator",
+    "helper": "Show how far your reading has been relatively to part-by-part (the juz) of the Holy Qur'an"
+  },
   "fontCategory": {
     "shaddaStacked": "Shadda-stacked",
     "shaddaSeparable": "Allow diacritics separation",

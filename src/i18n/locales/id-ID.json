@@ -25,6 +25,10 @@
     "0": "Se-level",
     "1": "Terpisah"
   },
+  "showPageIndicator": {
+    "title": "Tampilkan indikator halaman",
+    "helper": "Tampilkan sejauh mana Al-Qur'an telah di baca per bagian/juz"
+  },
   "fontCategory": {
     "shaddaStacked": "Tashdid-harakat setumpuk",
     "shaddaSeparable": "Tashdid-harakat fleksibel",

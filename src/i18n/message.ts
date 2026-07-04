@@ -28,6 +28,10 @@ export const messages = {
     "0": "basmalaPosition.0",
     "1": "basmalaPosition.1",
   },
+  showPageIndicator: {
+    title: "showPageIndicator.title",
+    helper: "showPageIndicator.helper",
+  },
   fontCategory: {
     shaddaStacked: "fontCategory.shaddaStacked",
     shaddaSeparable: "fontCategory.shaddaSeparable",

@@ -191,6 +191,44 @@ test.describe("UserSettingsState", () => {
     })
   })
 
+  test.describe("showPageIndicator", () => {
+    test("juz bar is hidden by default and visible when enabled", async ({
+      page,
+    }) => {
+      // Navigate to a mid-Quran verse so juzProgress is non-null once enabled
+      await page.goto("/#/c/2/1")
+      await untilUsable(page)
+      await waitUntilVisible(page.locator('[data-verse^="2:"]').first(), {
+        timeout: 15_000,
+      })
+
+      const juzBar = page.locator('[data-testid="juz-progress-bar"]')
+
+      // Default: showPageIndicator is true → bar is visible out of the box
+      await expect(juzBar).toBeVisible({ timeout: 5000 })
+
+      // Disable via sidebar toggle
+      await openSidebar(page)
+      const toggle = await findVisibleTarget(undefined, page, {
+        formLabel: "Show page indicator",
+      })
+      await toggle.click()
+      await closeSidebar(page)
+      await page.waitForTimeout(300)
+
+      await expect(juzBar).toHaveCount(0)
+
+      // Disabled state persists after reload
+      await page.reload()
+      await untilUsable(page)
+      await waitUntilVisible(page.locator('[data-verse^="2:"]').first(), {
+        timeout: 15_000,
+      })
+
+      await expect(juzBar).toHaveCount(0)
+    })
+  })
+
   test.describe("locale", () => {
     const allLocales = Object.entries(ENGLISH_LOCALE_NAMES)
     for (const [locale, displayName] of allLocales) {

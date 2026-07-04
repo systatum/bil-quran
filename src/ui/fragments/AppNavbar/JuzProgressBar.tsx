@@ -11,7 +11,7 @@ export default function JuzProgressBar({ progress, theme }: Props) {
   const pct = Math.min(100, (progress.current / progress.total) * 100)
   const color = theme === "dark" ? "#77a879" : "#231c0f"
   return (
-    <Track $theme={theme}>
+    <Track $theme={theme} data-testid="juz-progress-bar">
       <Fill $pct={pct} $color={color} />
     </Track>
   )

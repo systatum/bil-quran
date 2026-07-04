@@ -11,7 +11,7 @@ export default function UIIndex() {
   const [chapter, setChapter] = useState<ChapterRecord | null>(null)
   const [currentVerse, setCurrentVerse] = useState<number | null>(null)
   const {
-    userSettings: { theme, locale },
+    userSettings: { theme, locale, showPageIndicator },
   } = useUserSettingsState()
 
   const { loadPagination } = usePaginationState()
@@ -51,7 +51,7 @@ export default function UIIndex() {
 
   return (
     <>
-      <AppNavbar theme={theme} title={navbarTitle} juzProgress={juzProgress} />
+      <AppNavbar theme={theme} title={navbarTitle} juzProgress={showPageIndicator ? juzProgress : null} />
       <QuranPaper
         theme={theme}
         onScroll={(verseRow) => {

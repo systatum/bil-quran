@@ -19,7 +19,7 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
   theme: "light",
   basmalaPosition: BasmalaPosition.Detached,
   wbwTranslations: [WordTranslationOption.AmericanEnglish],
-  showPageIndicator: false,
+  showPageIndicator: true,
   font: {
     arabic: {
       family: "NotoNaskhArabic",
@@ -111,6 +111,10 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
 
   setBasmalaPosition(basmalaPosition) {
     get().partialUpdate({ basmalaPosition })
+  },
+
+  setShowPageIndicator(show) {
+    get().partialUpdate({ showPageIndicator: !!show })
   },
 
   setWordByWordTranslations(wbwTranslations) {
@@ -225,6 +229,7 @@ export interface UserSettingsState {
   setLocale(locale: string): void
   setFont(font: DeepPartial<UserFontSettings>): void
   setBasmalaPosition(basmalaPosition: BasmalaPosition): void
+  setShowPageIndicator(show: boolean): void
   setWordByWordTranslations(wbwTranslation: WordTranslationOption[]): void
   setScrollPosition(chapterId: number, verse: number): void
 

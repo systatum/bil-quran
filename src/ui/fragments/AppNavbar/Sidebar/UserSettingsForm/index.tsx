@@ -20,6 +20,7 @@ export default function UserSettingsForm() {
     setLocale,
     setBasmalaPosition,
     setWordByWordTranslations,
+    setShowPageIndicator,
     userSettings,
   } = useUserSettingsState()
 
@@ -30,6 +31,7 @@ export default function UserSettingsForm() {
     locale: userSettings.locale,
     basmalaPosition: userSettings.basmalaPosition,
     wbwTranslations: userSettings.wbwTranslations,
+    showPageIndicator: userSettings.showPageIndicator ?? true,
   })
 
   const { arabicFontOptions } = useFonts()
@@ -116,6 +118,16 @@ export default function UserSettingsForm() {
         })),
       },
     },
+
+    {
+      name: "showPageIndicator",
+      title: formatMessage({ id: messages.showPageIndicator.title }),
+      helper: formatMessage({ id: messages.showPageIndicator.helper }),
+      type: "toggle",
+      toggle: {
+        mobile: true,
+      },
+    },
   ]
 
   return (
@@ -130,8 +142,8 @@ export default function UserSettingsForm() {
       onChange={({ currentState }) => {
         if (currentState == null) return
         const key = Object.keys(currentState)[0]
-        if (currentState[key] == "") return
-        console.log(currentState)
+        if (currentState[key] === "") return
+        console.log(`State ${key} value:`, currentState[key])
 
         // note: do not forget to return early if value is invalid,
         // so that we are not updating the form's state.
@@ -160,7 +172,7 @@ export default function UserSettingsForm() {
           if (!Object.values(BasmalaPosition).includes(value)) return
 
           setBasmalaPosition(currentState.basmalaPosition)
-        } else if (FormState.WordByWordTranslations) {
+        } else if (FormState.WordByWordTranslations in currentState) {
           const values: WordTranslationOption[] = currentState.wbwTranslations
 
           if (!Array.isArray(values)) return
@@ -168,6 +180,9 @@ export default function UserSettingsForm() {
           const allValidValues = values.map((v) => validValues.includes(v))
 
           setWordByWordTranslations(currentState.wbwTranslations)
+        } else if (FormState.ShowPageIndicator in currentState) {
+          const value = currentState.showPageIndicator
+          setShowPageIndicator(value)
         }
 
         // update the form state
@@ -187,6 +202,7 @@ export const FormState = {
   Locale: "locale",
   BasmalaPosition: "basmalaPosition",
   WordByWordTranslations: "wbwTranslations",
+  ShowPageIndicator: "showPageIndicator",
 } as const
 
 type FormState = {
@@ -196,4 +212,5 @@ type FormState = {
   [FormState.Locale]: string
   [FormState.BasmalaPosition]: BasmalaPosition
   [FormState.WordByWordTranslations]: WordTranslationOption[]
+  [FormState.ShowPageIndicator]: boolean
 }
