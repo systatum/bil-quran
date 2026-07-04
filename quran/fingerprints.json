@@ -1,6 +1,7 @@
 {
   "chapters.json": "7a63dd15f10d75bf3fc53e7d123f6acf",
-  "exegesis/aliquli/about.json": "1953fbd19d6cd1e812468aa57627ae47",
+  "exegesis/aliquli/.DS_Store": "b1da977f34aac6ce58ea03c6d4cbccc5",
+  "exegesis/aliquli/about.json": "2c043d888dac26502ad1cbf5ecaaf2e1",
   "exegesis/aliquli/en-US/1.json": "46339d9074d1fafb3a4fb972eedd866f",
   "exegesis/aliquli/en-US/10.json": "2b4852a0c0e48a42edd65705ef619ab0",
   "exegesis/aliquli/en-US/100.json": "1899eb6962d155020add22aaac69e12a",
@@ -115,7 +116,7 @@
   "exegesis/aliquli/en-US/97.json": "6ef95e45e50d5a2ce852f76a68fc5551",
   "exegesis/aliquli/en-US/98.json": "ef98d8c64c3d4e09bcdaa470404f1344",
   "exegesis/aliquli/en-US/99.json": "16c2e990d47f4d88a841bbdbb9346c3d",
-  "exegesis/aliquli/README.md": "b68a69fb67ffe45f199fbe81f8fd23c1",
+  "exegesis/README.md": "b68a69fb67ffe45f199fbe81f8fd23c1",
   "paginations/madinah.json": "cd7c02faf2c53d79ff36b4863bc968f6",
   "paginations/README.md": "abbb7906eb391fa735863f3b4757ad97",
   "verses/imlaei/1.json": "f80a87edd1d77a9017866ccfcb1a2cc9",
