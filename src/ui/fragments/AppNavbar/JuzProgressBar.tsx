@@ -1,13 +1,22 @@
 import { ThemeMode } from "@constants/theme"
-import { JuzProgress } from "@hooks/tools/useJuzProgress"
+import useUserSettingsState from "@hooks/states/UserSettingsState"
+import useFirstVisibleVerse from "@hooks/tools/useFirstVisibleVerse"
+import { useJuzProgress } from "@hooks/tools/useJuzProgress"
 import styled from "styled-components"
 
 interface Props {
-  progress: JuzProgress
   theme: ThemeMode
 }
 
-export default function JuzProgressBar({ progress, theme }: Props) {
+export default function JuzProgressBar({ theme }: Props) {
+  const {
+    userSettings: { showPageIndicator },
+  } = useUserSettingsState()
+  const { chapter, verse } = useFirstVisibleVerse()
+  const progress = useJuzProgress(chapter, verse)
+
+  if (!showPageIndicator || !progress) return null
+
   const pct = Math.min(100, (progress.current / progress.total) * 100)
   const color = theme === "dark" ? "#77a879" : "#231c0f"
   return (

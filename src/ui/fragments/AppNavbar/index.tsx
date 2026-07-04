@@ -1,5 +1,4 @@
 import { ThemeMode } from "@constants/theme"
-import { JuzProgress } from "@hooks/tools/useJuzProgress"
 import usePositioningObserver from "@hooks/tools/usePositioningObserver"
 import { RiMenuLine, RiSearchLine } from "@remixicon/react"
 import {
@@ -17,7 +16,6 @@ import Sidebar from "./Sidebar"
 interface AppNavbarProps {
   theme: ThemeMode
   title: string
-  juzProgress?: JuzProgress | null
 }
 
 /**
@@ -25,7 +23,7 @@ interface AppNavbarProps {
  * attached to it, which can be revealed by clicking the
  * burger menu on the navbar.
  */
-export default function AppNavbar({ theme, title, juzProgress }: AppNavbarProps) {
+export default function AppNavbar({ theme, title }: AppNavbarProps) {
   const intl = useIntl()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
@@ -74,7 +72,7 @@ export default function AppNavbar({ theme, title, juzProgress }: AppNavbarProps)
           }}
           rightSection={actions}
         />
-        {juzProgress && <JuzProgressBar progress={juzProgress} theme={theme} />}
+        <JuzProgressBar theme={theme} />
       </div>
 
       {(isSidebarOpen || isSearchOpen) && (

@@ -1,5 +1,4 @@
 import { ChapterRecord } from "@constants/records/ChapterRecord"
-import { useJuzProgress } from "@hooks/tools/useJuzProgress"
 import usePaginationState from "@hooks/states/PaginationState"
 import { useParams } from "@tanstack/react-router"
 import { useEffect, useMemo, useState } from "react"
@@ -11,7 +10,7 @@ export default function UIIndex() {
   const [chapter, setChapter] = useState<ChapterRecord | null>(null)
   const [currentVerse, setCurrentVerse] = useState<number | null>(null)
   const {
-    userSettings: { theme, locale, showPageIndicator },
+    userSettings: { theme, locale },
   } = useUserSettingsState()
 
   const { loadPagination } = usePaginationState()
@@ -19,7 +18,10 @@ export default function UIIndex() {
     loadPagination()
   }, [])
 
-  const juzProgress = useJuzProgress(chapter, currentVerse)
+  // read params
+  const params = useParams({ strict: false })
+  const chapterId = params.chapter ? parseInt(params.chapter) : null
+  const verseNumber = params.verse ? parseInt(params.verse) : null
 
   const navbarTitle = useMemo(() => {
     if (chapter == null) return "bil-Qur'an"
@@ -38,11 +40,6 @@ export default function UIIndex() {
     }
   }, [chapter, locale])
 
-  // read params
-  const params = useParams({ strict: false })
-  const chapterId = params.chapter ? parseInt(params.chapter) : null
-  const verseNumber = params.verse ? parseInt(params.verse) : null
-
   console.debug(
     "Received params of chapter ID to scroll:",
     chapterId,
@@ -51,7 +48,7 @@ export default function UIIndex() {
 
   return (
     <>
-      <AppNavbar theme={theme} title={navbarTitle} juzProgress={showPageIndicator ? juzProgress : null} />
+      <AppNavbar theme={theme} title={navbarTitle} />
       <QuranPaper
         theme={theme}
         onScroll={(verseRow) => {

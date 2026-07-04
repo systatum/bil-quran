@@ -72,39 +72,41 @@ export default function UserSettingsForm() {
       },
       {
         name: "arabicFontSize",
+        title: "Size",
         type: "combo",
         placeholder: "Size of the font",
-        width: "50%",
         combobox: { mobile: true, options: arabicFontSizeOptions },
       },
     ],
 
-    {
-      name: "locale",
-      title: formatMessage({ id: messages.lang }),
-      type: "combo",
-      combobox: {
-        mobile: true,
-        options: Object.values(Locale).map((l) => ({
-          text: formatMessage({ id: messages.locale[l] }),
-          value: l,
-        })),
+    [
+      {
+        name: "locale",
+        title: formatMessage({ id: messages.lang }),
+        type: "combo",
+        combobox: {
+          mobile: true,
+          options: Object.values(Locale).map((l) => ({
+            text: formatMessage({ id: messages.locale[l] }),
+            value: l,
+          })),
+        },
       },
-    },
 
-    {
-      name: "wbwTranslations",
-      title: "Word-by-word translations",
-      type: "combo",
-      combobox: {
-        mobile: true,
-        multiple: true,
-        options: WordTranslationOption.values().map((l) => ({
-          text: formatMessage({ id: messages.locale[l] }),
-          value: l,
-        })),
+      {
+        name: "wbwTranslations",
+        title: "Word-by-word translations",
+        type: "combo",
+        combobox: {
+          mobile: true,
+          multiple: true,
+          options: WordTranslationOption.values().map((l) => ({
+            text: formatMessage({ id: messages.locale[l] }),
+            value: l,
+          })),
+        },
       },
-    },
+    ],
 
     {
       name: "basmalaPosition",
@@ -132,11 +134,15 @@ export default function UserSettingsForm() {
 
   return (
     <StatefulForm
+      mobile
       fields={FIELDS}
       formValues={formValues}
       styles={{
         containerStyle: css`
           padding: 24px;
+        `,
+        rowStyle: css`
+          background: ${mode === "dark" ? "#1a211d" : "#ededed"} !important;
         `,
       }}
       onChange={({ currentState }) => {
