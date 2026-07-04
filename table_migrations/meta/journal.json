@@ -11,6 +11,9 @@
     },
     {
       "tag": "0003_store_verse_words_in_an_array"
+    },
+    {
+      "tag": "0004_create_exegesis_table"
     }
   ]
 }
