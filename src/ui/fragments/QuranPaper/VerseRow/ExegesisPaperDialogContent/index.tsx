@@ -3,8 +3,8 @@ import useChaptersState from "@hooks/states/ChaptersState"
 import useExegesisState from "@hooks/states/ExegesisState"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import { useTranslatedWords, useWords } from "@hooks/tools/useWordTranslations"
-import LOGGER from "@services/Logger"
 import { RiArrowGoBackLine } from "@remixicon/react"
+import LOGGER from "@services/Logger"
 import { useTheme } from "@systatum/coneto/theme"
 import { marked } from "marked"
 import React, { useEffect, useMemo, useRef, useState } from "react"
@@ -66,7 +66,7 @@ export default function ExegesisPaperDialogContent({
     }
   }, [activeChapter, activeIds.join(",")])
 
-  const fontArabic = { ...userSettings.font.arabic, size: 26 }
+  const fontArabic = userSettings.font.arabic
 
   const prevVerse = () => {
     if (navTarget) setNavTarget((t) => t && { ...t, verse: t.verse - 1 })
@@ -214,6 +214,7 @@ const MainContent = styled.div`
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  padding-left: 20px;
 `
 
 const InterlinearSection = styled.div<{ $theme: string }>`
@@ -263,6 +264,31 @@ const Entry = styled.div<{ $theme: string }>`
   &:last-child {
     border-bottom: none;
   }
+
+  a.inline-marker {
+    cursor: pointer;
+  }
+
+  a.marker-type-f {
+    color: inherit;
+    text-decoration: none;
+    sup {
+      font-size: 0.72em;
+      font-weight: 700;
+      vertical-align: super;
+      color: ${({ $theme }) => ($theme === "dark" ? "#c8a96e" : "#8a6030")};
+    }
+  }
+
+  a.marker-type-q {
+    color: ${({ $theme }) => ($theme === "dark" ? "#9b9b9b" : "#886c36")};
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+    margin-left: 5px;
+    margin-right: 2px;
+  }
 `
 
 const SourceLabel = styled.span<{ $theme: string }>`
@@ -274,7 +300,7 @@ const SourceLabel = styled.span<{ $theme: string }>`
 `
 
 const VerseText = styled.div<{ $theme: string; $loaded: boolean }>`
-  font-size: 16px;
+  font-size: 21px;
   line-height: 1.7;
   margin: 0;
   color: ${({ $theme, $loaded }) =>
@@ -285,28 +311,6 @@ const VerseText = styled.div<{ $theme: string; $loaded: boolean }>`
       : $theme === "dark"
         ? "#555"
         : "#bbb"};
-
-  a.inline-marker {
-    cursor: pointer;
-    text-decoration: none;
-  }
-
-  a.inline-marker[data-marker-type="F"] {
-    color: inherit;
-    sup {
-      font-size: 0.72em;
-      font-weight: 700;
-      vertical-align: super;
-      color: ${({ $theme }) => ($theme === "dark" ? "#c8a96e" : "#8a6030")};
-    }
-  }
-
-  a.inline-marker[data-marker-type="Q"] {
-    color: ${({ $theme }) => ($theme === "dark" ? "#c8a96e" : "#8a6030")};
-    text-decoration: underline;
-    text-decoration-style: dotted;
-    font-weight: 500;
-  }
 `
 
 const Empty = styled.p<{ $theme: string }>`

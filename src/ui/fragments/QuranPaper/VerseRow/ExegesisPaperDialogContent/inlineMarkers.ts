@@ -30,7 +30,8 @@ export function parseInlineMarkers(text: string): string {
       return match
     }
 
-    return `<a class="inline-marker" data-marker-type="${type}" data-marker="${encAttr(json)}">${label}</a>`
+    const typeClass = `marker-type-${type.toLowerCase()}`
+    return `<a class="inline-marker ${typeClass}" data-marker-type="${type}" data-marker="${encAttr(json)}">${label}</a>`
   })
 }
 

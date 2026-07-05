@@ -46,7 +46,7 @@ const FootnoteList = styled.ol`
 `
 
 const FootnoteItem = styled.li<{ $theme: string; $highlighted?: boolean }>`
-  font-size: 13px;
+  font-size: 17px;
   line-height: 1.5;
   color: ${({ $theme }) => ($theme === "dark" ? "#9a8f7a" : "#666")};
   border-radius: 4px;
