@@ -1,3 +1,4 @@
+import { Asset } from "@constants/assets"
 import { ArabicFonts, getAllPossibleFontSizeOptions } from "@constants/fonts"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
 import { BasmalaPosition, Locale } from "@constants/settings"
@@ -8,7 +9,7 @@ import { ComboboxOption } from "@systatum/coneto/combobox"
 import { FormFieldGroup, StatefulForm } from "@systatum/coneto/stateful-form"
 import { useTheme } from "@systatum/coneto/theme"
 import { useMemo, useState } from "react"
-import { useIntl } from "react-intl"
+import { IntlShape, useIntl } from "react-intl"
 import { css } from "styled-components"
 import useUserSettingsState from "../../../../hooks/states/UserSettingsState"
 export default function UserSettingsForm() {
@@ -21,6 +22,7 @@ export default function UserSettingsForm() {
     setBasmalaPosition,
     setWordByWordTranslations,
     setShowPageIndicator,
+    setExegesis,
     userSettings,
   } = useUserSettingsState()
 
@@ -32,10 +34,15 @@ export default function UserSettingsForm() {
     basmalaPosition: userSettings.basmalaPosition,
     wbwTranslations: userSettings.wbwTranslations,
     showPageIndicator: userSettings.showPageIndicator ?? true,
+    exegesis: userSettings.exegesis,
   })
 
   const { arabicFontOptions } = useFonts()
   const arabicFontSizeOptions = useMemo(getAllPossibleFontSizeOptions, [])
+  const exegesisOptions = useMemo(
+    () => gatherExegesisOptions(formatMessage),
+    [],
+  )
 
   const FIELDS: FormFieldGroup[] = [
     {
@@ -104,6 +111,17 @@ export default function UserSettingsForm() {
             text: formatMessage({ id: messages.locale[l] }),
             value: l,
           })),
+        },
+      },
+
+      {
+        name: "exegesis",
+        title: "Exegesis",
+        type: "combo",
+        combobox: {
+          mobile: true,
+          multiple: true,
+          options: exegesisOptions,
         },
       },
     ],
@@ -189,6 +207,14 @@ export default function UserSettingsForm() {
         } else if (FormState.ShowPageIndicator in currentState) {
           const value = currentState.showPageIndicator
           setShowPageIndicator(value)
+        } else if (FormState.Exegesis in currentState) {
+          const values: string[] = currentState.exegesis
+          if (!Array.isArray(values)) return
+          const validIds = Asset.exegesisSources.flatMap((s) =>
+            s.availableLocales.map((l) => `${s.path.split("/").pop()}/${l}`),
+          )
+          if (!values.every((v) => validIds.includes(v))) return
+          setExegesis(values)
         }
 
         // update the form state
@@ -209,6 +235,7 @@ export const FormState = {
   BasmalaPosition: "basmalaPosition",
   WordByWordTranslations: "wbwTranslations",
   ShowPageIndicator: "showPageIndicator",
+  Exegesis: "exegesis",
 } as const
 
 type FormState = {
@@ -219,4 +246,30 @@ type FormState = {
   [FormState.BasmalaPosition]: BasmalaPosition
   [FormState.WordByWordTranslations]: WordTranslationOption[]
   [FormState.ShowPageIndicator]: boolean
+  [FormState.Exegesis]: string[]
+}
+
+function gatherExegesisOptions(
+  formatMessage: IntlShape["formatMessage"],
+): ComboboxOption[] {
+  const byLocale = new Map<Locale, typeof Asset.exegesisSources>()
+  for (const source of Asset.exegesisSources) {
+    for (const locale of source.availableLocales) {
+      const group = byLocale.get(locale) ?? []
+      group.push(source)
+      byLocale.set(locale, group)
+    }
+  }
+
+  return Array.from(byLocale.entries()).map(([locale, sources]) => ({
+    text: formatMessage({ id: messages.locale[locale] }),
+    value: `locale:${locale}`,
+    groupOptions: sources.map((s) => {
+      const slug = s.path.split("/").pop() ?? ""
+      return {
+        text: s.name,
+        value: `${slug}/${locale}`,
+      } satisfies ComboboxOption
+    }),
+  }))
 }
