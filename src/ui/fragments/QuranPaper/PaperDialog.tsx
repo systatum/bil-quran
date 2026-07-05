@@ -4,7 +4,7 @@ import * as Coneto from "@systatum/coneto/paper-dialog"
 import { useTheme } from "@systatum/coneto/theme"
 import { useEffect, useRef } from "react"
 import { css } from "styled-components"
-import ExegesisDialogContent from "./ExegesisDialogContent"
+import ExegesisPaperDialogContent from "./VerseRow/ExegesisPaperDialogContent"
 import { LexemeDetailPaperDialog } from "./VerseRow/LexemeDetailPaperDialog"
 
 export default function QuranPaperDialog() {
@@ -49,7 +49,7 @@ export default function QuranPaperDialog() {
         />
       )}
       {content?.type === "exegesis" && (
-        <ExegesisDialogContent
+        <ExegesisPaperDialogContent
           chapterId={content.chapterId}
           verseNumber={content.verseNumber}
         />
