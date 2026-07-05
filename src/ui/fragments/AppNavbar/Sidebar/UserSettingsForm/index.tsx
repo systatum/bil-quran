@@ -10,7 +10,7 @@ import { FormFieldGroup, StatefulForm } from "@systatum/coneto/stateful-form"
 import { useTheme } from "@systatum/coneto/theme"
 import { useMemo, useState } from "react"
 import { IntlShape, useIntl } from "react-intl"
-import { css } from "styled-components"
+import styled, { css } from "styled-components"
 import useUserSettingsState from "../../../../hooks/states/UserSettingsState"
 export default function UserSettingsForm() {
   const { formatMessage } = useIntl()
@@ -269,7 +269,27 @@ function gatherExegesisOptions(
       return {
         text: s.name,
         value: `${slug}/${locale}`,
+        render: s.description ? (
+          <ExegesisOptionLabel>
+            {s.name}
+            <ExegesisOptionDesc>{s.description}</ExegesisOptionDesc>
+          </ExegesisOptionLabel>
+        ) : undefined,
       } satisfies ComboboxOption
     }),
   }))
 }
+
+const ExegesisOptionLabel = styled.span`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.77em;
+`
+
+const ExegesisOptionDesc = styled.span`
+  font-size: 11px;
+  opacity: 0.65;
+  line-height: 1.4;
+  white-space: normal;
+`
