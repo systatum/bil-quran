@@ -189,7 +189,8 @@ function Lexeme({
 
 const ScrollContainer = styled.div`
   overflow-y: auto;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 10px;

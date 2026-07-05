@@ -205,12 +205,15 @@ function ExegesisEntry({
 const Outer = styled.div`
   display: flex;
   flex-direction: row;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
 `
 
 const MainContent = styled.div`
   flex: 1;
+  min-height: 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -219,14 +222,20 @@ const MainContent = styled.div`
 
 const InterlinearSection = styled.div<{ $theme: string }>`
   flex-shrink: 0;
+  max-height: 30%;
+  overflow-y: auto;
   padding: 12px 16px 10px;
   border-bottom: 1px solid
     ${({ $theme }) => ($theme === "dark" ? "#303030" : "#e2d6c3")};
   direction: rtl;
+
+  scrollbar-width: thin;
+  scrollbar-color: rgba(150, 150, 150, 0.5) transparent;
 `
 
 const ExegesisScrollArea = styled.div`
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 12px 16px 16px;
   display: flex;
