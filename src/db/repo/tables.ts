@@ -3,6 +3,7 @@ import { QuranPage } from "@constants/records/Pagination"
 import { Locale } from "@constants/settings"
 import {
   integer,
+  primaryKey,
   sqliteTable as table,
   text,
   unique,
@@ -50,7 +51,30 @@ export const exegesis = table("exegesis", {
   description: text({ mode: "json" }).$type<Record<Locale, string>>().notNull(),
   author: text({ length: 30 }).notNull(),
   authorBio: text({ mode: "json" }).$type<Record<Locale, string>>().notNull(),
+  // chapter IDs whose verse content has been fully fetched and stored locally
+  downloadedChapters: text({ mode: "json" })
+    .$type<number[]>()
+    .notNull()
+    .default([]),
 })
+
+export const exegesisContent = table(
+  "exegesis_content",
+  {
+    exegesisId: text()
+      .notNull()
+      .references(() => exegesis.id, { onDelete: "cascade" }),
+    chapterId: integer({ mode: "number" }).notNull(),
+    verseNumber: integer({ mode: "number" }).notNull(),
+    translation: text().notNull(),
+    // footnote index → footnote text for this verse
+    footnotes: text({ mode: "json" })
+      .$type<Record<string, string>>()
+      .notNull()
+      .default({}),
+  },
+  (t) => [primaryKey({ columns: [t.exegesisId, t.chapterId, t.verseNumber] })],
+)
 
 export const roots = table("roots", {
   id: integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
@@ -92,7 +116,7 @@ export const words = table(
   ],
 )
 
-export const word_translations = table(
+export const wordTranslations = table(
   "word_translations",
   {
     locale: integer().notNull(),

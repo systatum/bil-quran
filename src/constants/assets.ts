@@ -13,7 +13,7 @@ export interface Translation {
 export interface ExegesisSource {
   /** Display name of this exegesis work */
   name: string
-  /** Full URL path to the exegesis directory (no trailing slash) */
+  /** Full URL path to the exegesis directory (no trailing slash), can serve as an ID */
   path: string
   /** Locales for which verse-level translation files are available */
   availableLocales: Locale[]
@@ -29,6 +29,11 @@ export interface Asset {
   renderings: Record<Rendering, string>
   translations: Translation
   exegesisSources: ExegesisSource[]
+
+  /** Find an exegesis source by slug or full exegesisId. Returns null if not found. */
+  exegesisOf: (id: string) => ExegesisSource | null
+  /** Build the URL for a chapter asset given a slug (or full exegesisId), locale, and chapter number. */
+  exegesisAssetUrlOf: (id: string, locale: Locale, chapterId: number) => string
 }
 
 export const basePath = `${typeof window !== "undefined" ? window.location.origin : ""}${process.env.PUBLIC_URL}`
@@ -56,9 +61,21 @@ export const Asset: Asset = {
   },
   exegesisSources: [
     {
-      name: "AliQuli",
+      name: "Ali Quli Qara'i",
       path: `${exegesisBasePath}/aliquli`,
       availableLocales: [Locale.IntEnglish],
     },
   ],
+  exegesisOf(id) {
+    const slug = id.split("/")[0]
+    return (
+      Asset.exegesisSources.find((s) => s.path.split("/").pop() === slug) ??
+      null
+    )
+  },
+  exegesisAssetUrlOf(id, locale, chapterId) {
+    const source = Asset.exegesisOf(id)
+    if (!source) throw new Error(`Unknown exegesis source: ${id.split("/")[0]}`)
+    return `${source.path}/${locale}/${chapterId}.json`
+  },
 }

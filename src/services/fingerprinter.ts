@@ -62,6 +62,7 @@ export class FingerprintedAsset {
 
     const response = await fetch(assetPath, { cache: "no-cache" })
     if (!response.ok) {
+      LOGGER.error(`Unable to load asset: ${assetPath}`)
       throw new Error(`Unable to load asset: ${assetPath}`)
     }
 
@@ -93,7 +94,7 @@ export async function getRemoteFingerprints(): Promise<NotarizedAsset | null> {
   })
     .then((response) => {
       if (!response.ok) {
-        LOGGER.error("Unable to load fingerprint file: " + fingerprintsPath)
+        LOGGER.error(`Unable to load fingerprint file: ${fingerprintsPath}`)
         return null
       }
 
@@ -101,7 +102,7 @@ export async function getRemoteFingerprints(): Promise<NotarizedAsset | null> {
     })
     .catch((error) => {
       LOGGER.error(
-        "Unable to load fingerprint file: " + fingerprintsPath,
+        `Unable to load fingerprint file: ${fingerprintsPath}`,
         error,
       )
       return null
@@ -111,13 +112,12 @@ export async function getRemoteFingerprints(): Promise<NotarizedAsset | null> {
 }
 
 /**
- * Check if fingerprints of used assets match. If they don't match, we force
- * redownload by skipping the persisted database snapshot.
- *
- * Exegesis files are excluded: they are optional and fetched on-demand, so a
- * change in them should not trigger a full DB wipe.
+ * Check if fingerprints of core Qur'an assets (chapters, verses, word
+ * translations, etc.) still match the remote manifest. If not, the persisted
+ * DB snapshot is skipped so data is re-seeded from fresh files.
+ * Exegesis assets are intentionally excluded, as they are optional.
  */
-export async function isAssetsRecent(): Promise<boolean> {
+export async function isCoreAssetsRecent(): Promise<boolean> {
   const latest = await getRemoteFingerprints()
 
   // If the fingerprint file cannot be read, avoid resetting the database just
@@ -132,16 +132,31 @@ export async function isAssetsRecent(): Promise<boolean> {
   )
 
   const isEqual = areStoredFingerprintsCurrent(latest, coreAssets)
-  LOGGER.debug(
-    "Are used asset fingerprints equal? " + (isEqual ? "Yes!" : "No!"),
-  )
+  LOGGER.debug(`Core fingerprints equal? ${isEqual ? "Yes!" : "No!"}`)
   return isEqual
+}
+
+/**
+ * Returns true if the locally stored fingerprint for the given asset path
+ * matches the current remote fingerprint.
+ */
+export async function isAssetCurrent(assetPath: string): Promise<boolean> {
+  const filePath = canonizePathKey(assetPath)
+  if (filePath == null) return false
+
+  const remote = await getRemoteFingerprints()
+  if (remote == null) return true
+
+  const stored = loadFingerprints()
+  if (stored == null) return false
+
+  return stored[filePath] === remote[filePath]
 }
 
 export function saveFingerprints({ merge = false } = {}): void {
   // Nothing was read this session and we're not merging — preserve whatever is
   // already stored rather than overwriting with an empty object, which would
-  // cause isAssetsRecent() to return false on the very next load.
+  // cause isCoreAssetsRecent() to return false on the very next load.
   if (!merge && Object.keys(readFingerprints).length === 0) return
 
   const existingFingerprints = merge ? loadFingerprints() : null

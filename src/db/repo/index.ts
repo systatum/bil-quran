@@ -1,5 +1,6 @@
 import { chapters } from "./ChapterRepo"
 import { exegesis } from "./ExegesisRepo"
+import { exegesisContent } from "./ExegesisContentRepo"
 import { lexemes } from "./LexemeRepo"
 import { paginations } from "./PaginationRepo"
 import { renderings } from "./RenderingRepo"
@@ -16,6 +17,7 @@ export const repo = {
   wbwTranslations,
   words,
   exegesis,
+  exegesisContent,
 }
 
 export type IgnoredFields = "id" | "createdAt" | "updatedAt" | "lastUpdaterId"

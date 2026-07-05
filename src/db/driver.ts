@@ -1,5 +1,5 @@
 import LOGGER from "@services/Logger"
-import { isAssetsRecent } from "@services/fingerprinter"
+import { isCoreAssetsRecent } from "@services/fingerprinter"
 import { drizzle } from "drizzle-orm/sql-js"
 import { get, set } from "idb-keyval"
 import initSqlJs, { Database, SqlJsStatic } from "sql.js"
@@ -25,7 +25,7 @@ export async function initDbDriver(): Promise<SqlJsStatic> {
 export async function getClient(): Promise<Database> {
   if (client) return client
   const SQL = await initDbDriver()
-  const canRestoreSnapshot = await isAssetsRecent()
+  const canRestoreSnapshot = await isCoreAssetsRecent()
   const snapshot = canRestoreSnapshot
     ? await get<Uint8Array>(DATABASE_KEY)
     : null

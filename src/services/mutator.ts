@@ -87,6 +87,32 @@ export function pickLocalized<V, R>(
 }
 
 /**
+ * Immutably set a value at a nested key path, spreading existing values at
+ * each level. Missing intermediate objects are initialised as empty records.
+ *
+ * @example
+ * mergeKeys({ a: { b: 1 } }, ["a", "c"], 2) // → { a: { b: 1, c: 2 } }
+ */
+export function mergeKeys<T extends Record<string | number, unknown>>(
+  obj: T,
+  keys: (string | number)[],
+  value: unknown,
+): T {
+  const [head, ...tail] = keys
+  return {
+    ...obj,
+    [head]:
+      tail.length > 0
+        ? mergeKeys(
+            ((obj[head] ?? {}) as Record<string | number, unknown>),
+            tail,
+            value,
+          )
+        : value,
+  } as T
+}
+
+/**
  * Create a pause that must be awaited before some
  * other action can be done
  */

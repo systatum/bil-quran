@@ -8,7 +8,7 @@ import { unpackIPC } from "@services/Converter"
 import { and, eq } from "drizzle-orm"
 import { withDb } from "../driver"
 import { conditional, Repository } from "./Repository"
-import { word_translations as schema } from "./tables"
+import { wordTranslations as schema } from "./tables"
 
 class WbwTranslationRepo extends Repository<
   typeof schema,

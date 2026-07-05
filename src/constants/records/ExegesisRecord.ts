@@ -8,6 +8,17 @@ export interface ExegesisRecord {
   description: Partial<Record<Locale, string>>
   author: string
   authorBio: Partial<Record<Locale, string>>
+  /** Chapter IDs whose verse content has been fully fetched and stored locally */
+  downloadedChapters: number[]
+}
+
+export interface ExegesisContentRecord {
+  exegesisId: string
+  chapterId: number
+  verseNumber: number
+  translation: string
+  /** Footnote index → footnote text for this verse */
+  footnotes: Record<string, string>
 }
 
 /** Shape of the about.json file sitting in each exegesis directory */
