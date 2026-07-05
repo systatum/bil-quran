@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "6db3f44c-33b1-4c50-9403-fc44363139df",
+  "id": "923689e5-29fc-4040-afe8-13085eb1c08b",
   "prevId": "0253d16a-efda-4041-a212-dc79ae83d99d",
   "tables": {
     "chapters": {
@@ -100,6 +100,14 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "downloaded_chapters": {
+          "name": "downloaded_chapters",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'[]'"
         }
       },
       "indexes": {
@@ -113,6 +121,75 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "exegesis_content": {
+      "name": "exegesis_content",
+      "columns": {
+        "exegesis_id": {
+          "name": "exegesis_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "chapter_id": {
+          "name": "chapter_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "verse_number": {
+          "name": "verse_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "translation": {
+          "name": "translation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "footnotes": {
+          "name": "footnotes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'{}'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "exegesis_content_exegesis_id_exegesis_id_fk": {
+          "name": "exegesis_content_exegesis_id_exegesis_id_fk",
+          "tableFrom": "exegesis_content",
+          "tableTo": "exegesis",
+          "columnsFrom": [
+            "exegesis_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "exegesis_content_exegesis_id_chapter_id_verse_number_pk": {
+          "columns": [
+            "exegesis_id",
+            "chapter_id",
+            "verse_number"
+          ],
+          "name": "exegesis_content_exegesis_id_chapter_id_verse_number_pk"
+        }
+      },
       "uniqueConstraints": {},
       "checkConstraints": {}
     },

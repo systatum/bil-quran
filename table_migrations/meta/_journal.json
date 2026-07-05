@@ -33,8 +33,8 @@
     {
       "idx": 4,
       "version": "6",
-      "when": 1783034020231,
-      "tag": "0004_create_exegesis_table",
+      "when": 1783207669723,
+      "tag": "0004_create_exegesis",
       "breakpoints": true
     }
   ]
