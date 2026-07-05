@@ -5,12 +5,12 @@ import {
 } from "@constants/fonts"
 import { WordOccurrence } from "@constants/records/WordRecord"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
-import { ThemeMode } from "@constants/theme"
 import useChaptersState from "@hooks/states/ChaptersState"
 import useUserSettingsState, {
   FontSetting,
 } from "@hooks/states/UserSettingsState"
 import { Grid } from "@systatum/coneto/grid"
+import { useTheme } from "@systatum/coneto/theme"
 import { useCallback, useRef, useState } from "react"
 import styled, { css } from "styled-components"
 import { Transliteration, WordCell } from "."
@@ -21,16 +21,15 @@ import InterlinearText from "./InterlinearText"
 interface LexemeDetailPaperDialogProps {
   content: WordCell
   arabicFont: string
-  theme: ThemeMode
   occurrences: Record<string, WordOccurrence>
 }
 
 export function LexemeDetailPaperDialog({
   content,
   arabicFont,
-  theme,
   occurrences,
 }: LexemeDetailPaperDialogProps) {
+  const { mode: theme } = useTheme()
   const {
     userSettings: { locale, wbwTranslations, font },
   } = useUserSettingsState()
@@ -131,7 +130,7 @@ function Lexeme({
 }: {
   token: string
   transliteration: string | undefined
-  theme: ThemeMode
+  theme: string
   scrolled: boolean
   font: string
 }) {
@@ -218,7 +217,7 @@ const ScrollContainer = styled.div`
 `
 
 const TokenSection = styled.div<{
-  $theme: ThemeMode
+  $theme: string
   $scrolled: boolean
   $forLearningFont?: boolean
 }>`
@@ -246,7 +245,7 @@ const TokenSection = styled.div<{
 
 const ArabicToken = styled.span.attrs({ className: "arabic-lex" })<{
   $font: string
-  $theme: ThemeMode
+  $theme: string
   $scrolled: boolean
 }>`
   font-family:

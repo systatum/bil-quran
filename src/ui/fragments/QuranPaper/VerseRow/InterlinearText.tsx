@@ -94,6 +94,7 @@ export default function InterlinearText({
           }}
           $usingLearningFont={isForLearningFont}
           $compact={compact}
+          onPointerDown={(e) => e.stopPropagation()}
         >
           <Arabic
             $highlighted={

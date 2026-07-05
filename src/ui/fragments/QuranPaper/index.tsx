@@ -7,6 +7,7 @@ import { useVirtualizer, VirtualItem } from "@tanstack/react-virtual"
 import useChaptersState from "../../hooks/states/ChaptersState"
 import useUserSettingsState from "../../hooks/states/UserSettingsState"
 import ChapterRow from "./ChapterRow"
+import PaperDialog from "./PaperDialog"
 import VerseRow, { Verse } from "./VerseRow"
 import { Bismillah } from "./VerseRow/Bismillah"
 import NoteVerseDialog from "./VerseRow/NoteDialog"
@@ -346,6 +347,7 @@ export default function QuranPaper({
         }}
       >
         <NoteVerseDialog />
+        <PaperDialog theme={theme} />
 
         {items.map((item) => {
           const row = renderRows[item.index]

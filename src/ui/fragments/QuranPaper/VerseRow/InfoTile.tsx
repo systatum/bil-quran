@@ -1,12 +1,11 @@
 import { ArabicFontFamily } from "@constants/fonts"
-import { ThemeMode } from "@constants/theme"
 import { Grid } from "@systatum/coneto/grid"
 import styled, { css } from "styled-components"
 
 interface InfoTileProps {
   label: string
   value: string
-  theme: ThemeMode
+  theme: string
   arabic?: boolean
   arabicFont?: string
 }
@@ -39,7 +38,7 @@ export default function InfoTile({
   )
 }
 
-const TileLabel = styled.p<{ $theme: ThemeMode }>`
+const TileLabel = styled.p<{ $theme: string }>`
   font-size: 11px;
   color: ${({ $theme }) => ($theme === "dark" ? "#8f938f" : "#a09083")};
   margin: 0;
@@ -48,7 +47,7 @@ const TileLabel = styled.p<{ $theme: ThemeMode }>`
 `
 
 const TileValue = styled.p<{
-  $theme: ThemeMode
+  $theme: string
   $arabic?: boolean
   $font?: string
 }>`

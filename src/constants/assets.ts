@@ -66,6 +66,7 @@ export const Asset: Asset = {
       availableLocales: [Locale.IntEnglish],
     },
   ],
+
   exegesisOf(id) {
     const slug = id.split("/")[0]
     return (

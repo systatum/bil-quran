@@ -7,20 +7,19 @@ import { TranslatedWord } from "@constants/records/WordTranslationRecord"
 import { BasmalaPosition } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import { repo } from "@db/repo"
+import usePaperDialogState from "@hooks/states/PaperDialogState"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
 import { useWordTranslations } from "@hooks/tools/useWordTranslations"
 import { unpackIPC } from "@services/Converter"
 import LOGGER from "@services/Logger"
 import { makeSnippet } from "@services/mutator"
-import { PaperDialog, PaperDialogRef } from "@systatum/coneto/paper-dialog"
 import { haptic } from "ios-haptics"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import { useIntl } from "react-intl"
-import styled, { css } from "styled-components"
+import styled from "styled-components"
 import { Bismillah } from "./Bismillah"
 import InterlinearText from "./InterlinearText"
-import { LexemeDetailPaperDialog } from "./LexemeDetailPaperDialog"
 import { VerseMarker } from "./VerseMarker"
 
 export type Verse = {
@@ -61,11 +60,8 @@ export default function VerseRow({
   showMeaning?: boolean
   theme: ThemeMode
 }) {
-  const [content, setContent] = useState<WordCell | undefined>(undefined)
-  const [showNoteVerseDialog, setShowNoteVerseDialog] = useState<boolean>(false)
-  const [occurrences, setOccurrences] = useState<
-    Record<string, WordOccurrence>
-  >({})
+  const { openLexeme, updateLexemeOccurrences, openExegesis } =
+    usePaperDialogState()
 
   const {
     userSettings: { wbwTranslations },
@@ -76,8 +72,8 @@ export default function VerseRow({
   const { userSettings, bookmarkVerse } = useUserSettingsState()
   const { basmalaPosition } = userSettings
 
-  const paperDialogRef = useRef<PaperDialogRef>(null)
-  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const wordTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const verseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const markerColumnRef = useRef<HTMLDivElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -186,90 +182,58 @@ export default function VerseRow({
           const key = `${v.chapterId}:${v.verse}`
           obj[key] = v
         })
-        setOccurrences(obj)
+        updateLexemeOccurrences(obj)
       })
       .catch((e) => LOGGER.error("Failed getting occurrences data", e))
   }
 
   return (
-    <>
-      <VerseRowWrapper
-        data-index={index}
-        data-verse={verse.id}
-        ref={(el) => {
-          if (!el) return
-          wrapperRef.current = el
-          ref(el)
-        }}
-        $theme={theme}
-        style={{ transform: style.transform }}
-      >
+    <VerseRowWrapper
+      data-index={index}
+      data-verse={verse.id}
+      ref={(el) => {
+        if (!el) return
+        wrapperRef.current = el
+        ref(el)
+      }}
+      $theme={theme}
+      style={{ transform: style.transform }}
+      onPointerDown={() => {
+        verseTimeoutRef.current = setTimeout(() => {
+          haptic()
+          openExegesis(verse.chapter.id, verse.number)
+        }, 500)
+      }}
+      onPointerUp={() => clearTimeout(verseTimeoutRef.current!)}
+      onPointerLeave={() => clearTimeout(verseTimeoutRef.current!)}
+      onPointerCancel={() => clearTimeout(verseTimeoutRef.current!)}
+    >
+      <div ref={markerColumnRef} onPointerDown={(e) => e.stopPropagation()}>
         <VerseMarker ref={markerColumnRef} verse={verse} />
-        <InterlinearText
-          showMeaning={showMeaning}
-          id={`${verse.chapter.id}-${verse.id}`}
-          arabicFont={userSettings.font.arabic}
-          words={verse.words}
-          shownTranslations={wbwTranslations}
-          withBasmala={
-            basmalaPosition === BasmalaPosition.Embedded &&
-            Bismillah.isRenderableHere(verse.number, verse.chapter.id)
-          }
-          onPointerDown={(word) => {
-            setContent(word)
+      </div>
+
+      <InterlinearText
+        showMeaning={showMeaning}
+        id={`${verse.chapter.id}-${verse.id}`}
+        arabicFont={userSettings.font.arabic}
+        words={verse.words}
+        shownTranslations={wbwTranslations}
+        withBasmala={
+          basmalaPosition === BasmalaPosition.Embedded &&
+          Bismillah.isRenderableHere(verse.number, verse.chapter.id)
+        }
+        onPointerDown={(word) => {
+          wordTimeoutRef.current = setTimeout(() => {
+            haptic()
+            openLexeme(word)
             findWordsOccurrences(word)
-
-            hoverTimeoutRef.current = setTimeout(() => {
-              haptic()
-              paperDialogRef.current?.openDialog()
-            }, 500)
-          }}
-          onPointerUp={(word) => {
-            if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
-          }}
-          onPointerLeave={(word) => {
-            if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
-          }}
-          onPointerCancel={(word) => {
-            if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
-          }}
-        />
-      </VerseRowWrapper>
-
-      {/* TODO: refactor so we only have paper dialog in the whole system rather than rendering one by one */}
-      <PaperDialog
-        mobile
-        ref={paperDialogRef}
-        height="55dvh"
-        controls={[]}
-        closable
-        resizable
-        styles={{
-          indicatorStyle: css`
-            height: 40px;
-          `,
-          contentStyle: css`
-            display: flex;
-            min-width: auto;
-            overflow-wrap: break-word;
-            flex-direction: column;
-            overflow-y: auto;
-            gap: 0px;
-            padding: 0px;
-            margin-top: 0px;
-          `,
+          }, 500)
         }}
-      >
-        {content && (
-          <LexemeDetailPaperDialog
-            occurrences={occurrences}
-            content={content}
-            arabicFont={userSettings.font.arabic.family}
-            theme={theme}
-          />
-        )}
-      </PaperDialog>
-    </>
+        onPointerUp={() => clearTimeout(wordTimeoutRef.current!)}
+        onPointerLeave={() => clearTimeout(wordTimeoutRef.current!)}
+        onPointerCancel={() => clearTimeout(wordTimeoutRef.current!)}
+      />
+    </VerseRowWrapper>
   )
 }
 
