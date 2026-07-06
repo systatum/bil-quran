@@ -104,9 +104,13 @@ export default function ExegesisPaperDialogContent({
             background: linear-gradient(
               to bottom,
               transparent 0%,
-              ${theme === "dark" ? "rgba(0, 0, 0, 0.22)" : "rgba(0, 0, 0, 0.07)"}
+              ${theme === "dark"
+                  ? "rgba(0, 0, 0, 0.22)"
+                  : "rgba(0, 0, 0, 0.07)"}
                 30%,
-              ${theme === "dark" ? "rgba(0, 0, 0, 0.08)" : "rgba(0, 0, 0, 0.02)"}
+              ${theme === "dark"
+                  ? "rgba(0, 0, 0, 0.08)"
+                  : "rgba(0, 0, 0, 0.02)"}
                 65%,
               ${theme === "dark"
                   ? "rgba(255, 255, 255, 0.03)"
@@ -115,7 +119,9 @@ export default function ExegesisPaperDialogContent({
               transparent 100%
             );
             box-shadow: 0 4px 8px
-              ${theme === "dark" ? "rgba(0, 0, 0, 0.12)" : "rgba(0, 0, 0, 0.04)"};
+              ${theme === "dark"
+                ? "rgba(0, 0, 0, 0.12)"
+                : "rgba(0, 0, 0, 0.04)"};
             margin: 2px 10px;
 
             &::after {
@@ -127,12 +133,18 @@ export default function ExegesisPaperDialogContent({
               width: 3px;
               height: 3px;
               border-radius: 50%;
-              background: ${theme === "dark" ? "rgba(255, 255, 255, 0.09)" : "rgba(0, 0, 0, 0.13)"};
+              background: ${theme === "dark"
+                ? "rgba(255, 255, 255, 0.09)"
+                : "rgba(0, 0, 0, 0.13)"};
               box-shadow:
                 8px 0 0
-                  ${theme === "dark" ? "rgba(255, 255, 255, 0.09)" : "rgba(0, 0, 0, 0.13)"},
+                  ${theme === "dark"
+                    ? "rgba(255, 255, 255, 0.09)"
+                    : "rgba(0, 0, 0, 0.13)"},
                 16px 0 0
-                  ${theme === "dark" ? "rgba(255, 255, 255, 0.09)" : "rgba(0, 0, 0, 0.13)"};
+                  ${theme === "dark"
+                    ? "rgba(255, 255, 255, 0.09)"
+                    : "rgba(0, 0, 0, 0.13)"};
             }
           `,
         }}
@@ -357,7 +369,7 @@ const SourceLabel = styled.span<{ $theme: string }>`
 `
 
 const VerseText = styled.div<{ $theme: string; $loaded: boolean }>`
-  font-size: 1.25em;
+  font-size: 0.95em;
   line-height: 1.7;
   margin: 0;
   color: ${({ $theme, $loaded }) =>
@@ -372,7 +384,7 @@ const VerseText = styled.div<{ $theme: string; $loaded: boolean }>`
 
 const Empty = styled.p<{ $theme: string }>`
   padding: 24px;
-  font-size: 1.25em;
+  font-size: 0.95em;
   text-align: center;
   color: ${({ $theme }) => ($theme === "dark" ? "#666" : "#999")};
 `
