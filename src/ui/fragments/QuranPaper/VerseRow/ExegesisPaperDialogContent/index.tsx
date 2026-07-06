@@ -5,6 +5,7 @@ import useUserSettingsState from "@hooks/states/UserSettingsState"
 import { useTranslatedWords, useWords } from "@hooks/tools/useWordTranslations"
 import { RiArrowGoBackLine } from "@remixicon/react"
 import LOGGER from "@services/Logger"
+import { SplitPane } from "@systatum/coneto/split-pane"
 import { useTheme } from "@systatum/coneto/theme"
 import { marked } from "marked"
 import React, { useEffect, useMemo, useRef, useState } from "react"
@@ -13,7 +14,6 @@ import CircleButton from "../../CircleButton"
 import InterlinearText from "../InterlinearText"
 import Footnotes from "./Footnotes"
 import { parseInlineMarkers, readMarker } from "./inlineMarkers"
-import { SplitPane } from "@systatum/coneto/split-pane"
 
 type NavTarget = { chapterId: number; verse: number }
 
@@ -91,8 +91,48 @@ export default function ExegesisPaperDialogContent({
       <SplitPane
         orientation="horizontal"
         styles={{
+          self: css`
+            padding-left: 1em;
+            padding-right: 0.5em;
+          `,
           dividerStyle: css`
-            border: 1px solid ${theme === "dark" ? "#303030" : "#e2d6c3"};
+            border: none;
+            height: 5px;
+            overflow: visible;
+            position: relative;
+            background: linear-gradient(
+              to bottom,
+              transparent 0%,
+              ${theme === "dark" ? "rgba(0, 0, 0, 0.22)" : "rgba(0, 0, 0, 0.07)"}
+                30%,
+              ${theme === "dark" ? "rgba(0, 0, 0, 0.08)" : "rgba(0, 0, 0, 0.02)"}
+                65%,
+              ${theme === "dark"
+                  ? "rgba(255, 255, 255, 0.03)"
+                  : "rgba(255, 255, 255, 0.60)"}
+                85%,
+              transparent 100%
+            );
+            box-shadow: 0 4px 8px
+              ${theme === "dark" ? "rgba(0, 0, 0, 0.12)" : "rgba(0, 0, 0, 0.04)"};
+            margin: 2px 10px;
+
+            &::after {
+              content: "";
+              position: absolute;
+              left: 14px;
+              top: 50%;
+              transform: translateY(-50%);
+              width: 3px;
+              height: 3px;
+              border-radius: 50%;
+              background: ${theme === "dark" ? "rgba(255, 255, 255, 0.09)" : "rgba(0, 0, 0, 0.13)"};
+              box-shadow:
+                8px 0 0
+                  ${theme === "dark" ? "rgba(255, 255, 255, 0.09)" : "rgba(0, 0, 0, 0.13)"},
+                16px 0 0
+                  ${theme === "dark" ? "rgba(255, 255, 255, 0.09)" : "rgba(0, 0, 0, 0.13)"};
+            }
           `,
         }}
       >
@@ -152,7 +192,9 @@ export default function ExegesisPaperDialogContent({
         <CircleButton disabled={activeVerse <= 1} onClick={prevVerse}>
           ‹
         </CircleButton>
-        <VerseIndicator $theme={theme}>{activeVerse}</VerseIndicator>
+        <VerseIndicator $theme={theme} data-testid="verse-indicator">
+          {activeVerse}
+        </VerseIndicator>
         <CircleButton disabled={activeVerse >= maxVerse} onClick={nextVerse}>
           ›
         </CircleButton>
@@ -260,9 +302,7 @@ const TraversalColumn = styled.div`
   flex-shrink: 0;
 `
 
-const VerseIndicator = styled.span.attrs({ "data-testid": "verse-indicator" })<{
-  $theme: string
-}>`
+const VerseIndicator = styled.span<{ $theme: string }>`
   font-size: 12px;
   color: ${({ $theme }) => ($theme === "dark" ? "#7a7a7a" : "#999")};
   min-width: 20px;
