@@ -90,6 +90,7 @@ export default function ExegesisPaperDialogContent({
     <Outer>
       <SplitPane
         orientation="horizontal"
+        initialSizeRatio={[0.3, 0.7]}
         styles={{
           self: css`
             padding-left: 1em;
