@@ -8,11 +8,12 @@ import LOGGER from "@services/Logger"
 import { useTheme } from "@systatum/coneto/theme"
 import { marked } from "marked"
 import React, { useEffect, useMemo, useRef, useState } from "react"
-import styled from "styled-components"
+import styled, { css } from "styled-components"
 import CircleButton from "../../CircleButton"
 import InterlinearText from "../InterlinearText"
 import Footnotes from "./Footnotes"
 import { parseInlineMarkers, readMarker } from "./inlineMarkers"
+import { SplitPane } from "@systatum/coneto/split-pane"
 
 type NavTarget = { chapterId: number; verse: number }
 
@@ -87,9 +88,26 @@ export default function ExegesisPaperDialogContent({
 
   return (
     <Outer>
-      <MainContent>
-        {verseWords.length > 0 && (
-          <InterlinearSection $theme={theme}>
+      <SplitPane
+        orientation="horizontal"
+        styles={{
+          dividerStyle: css`
+            border: 3px solid ${theme === "dark" ? "#303030" : "#e2d6c3"};
+          `,
+        }}
+      >
+        <SplitPane.Cell
+          styles={{
+            self: css`
+              overflow: auto;
+              display: flex;
+              flex-direction: row;
+              scrollbar-width: thin;
+              scrollbar-color: rgba(150, 150, 150, 0.5) transparent;
+            `,
+          }}
+        >
+          {verseWords.length > 0 && (
             <InterlinearText
               id={`exegesis-${activeChapter}-${activeVerse}`}
               arabicFont={fontArabic}
@@ -98,37 +116,49 @@ export default function ExegesisPaperDialogContent({
               showMeaning
               compact
             />
-          </InterlinearSection>
-        )}
+          )}
+          <TraversalColumn>
+            {navTarget && (
+              <CircleButton onClick={() => setNavTarget(null)}>
+                <RiArrowGoBackLine size={18} />
+              </CircleButton>
+            )}
+            <CircleButton disabled={activeVerse <= 1} onClick={prevVerse}>
+              ‹
+            </CircleButton>
+            <VerseIndicator $theme={theme}>{activeVerse}</VerseIndicator>
+            <CircleButton
+              disabled={activeVerse >= maxVerse}
+              onClick={nextVerse}
+            >
+              ›
+            </CircleButton>
+          </TraversalColumn>
+        </SplitPane.Cell>
 
-        <ExegesisScrollArea>
-          {activeIds.map((exegesisId) => (
-            <ExegesisEntry
-              key={exegesisId}
-              exegesisId={exegesisId}
-              chapterId={activeChapter}
-              verseNumber={activeVerse}
-              theme={theme}
-              onNavigate={setNavTarget}
-            />
-          ))}
-        </ExegesisScrollArea>
-      </MainContent>
-
-      <TraversalColumn>
-        {navTarget && (
-          <CircleButton onClick={() => setNavTarget(null)}>
-            <RiArrowGoBackLine size={18} />
-          </CircleButton>
-        )}
-        <CircleButton disabled={activeVerse <= 1} onClick={prevVerse}>
-          ‹
-        </CircleButton>
-        <VerseIndicator $theme={theme}>{activeVerse}</VerseIndicator>
-        <CircleButton disabled={activeVerse >= maxVerse} onClick={nextVerse}>
-          ›
-        </CircleButton>
-      </TraversalColumn>
+        <SplitPane.Cell
+          styles={{
+            self: css`
+              overflow: auto;
+              display: flex;
+              flex-direction: row;
+            `,
+          }}
+        >
+          <ExegesisScrollArea>
+            {activeIds.map((exegesisId) => (
+              <ExegesisEntry
+                key={exegesisId}
+                exegesisId={exegesisId}
+                chapterId={activeChapter}
+                verseNumber={activeVerse}
+                theme={theme}
+                onNavigate={setNavTarget}
+              />
+            ))}
+          </ExegesisScrollArea>
+        </SplitPane.Cell>
+      </SplitPane>
     </Outer>
   )
 }
@@ -208,29 +238,6 @@ const Outer = styled.div`
   flex: 1;
   min-height: 0;
   overflow: hidden;
-`
-
-const MainContent = styled.div`
-  flex: 1;
-  min-height: 0;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  padding-left: 20px;
-`
-
-const InterlinearSection = styled.div<{ $theme: string }>`
-  flex-shrink: 0;
-  max-height: 30%;
-  overflow-y: auto;
-  padding: 12px 16px 10px;
-  border-bottom: 1px solid
-    ${({ $theme }) => ($theme === "dark" ? "#303030" : "#e2d6c3")};
-  direction: rtl;
-
-  scrollbar-width: thin;
-  scrollbar-color: rgba(150, 150, 150, 0.5) transparent;
 `
 
 const ExegesisScrollArea = styled.div`
