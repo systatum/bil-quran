@@ -86,3 +86,17 @@ export async function getPageLuminance(page: Page): Promise<number> {
     return (r * 299 + g * 587 + b * 114) / 1000
   })
 }
+
+/** Enable the specified exegesis source and wait for the app to be ready. */
+export async function enableExegesis(page: Page, exegesisId = "aliquli/en-US") {
+  await page.evaluate(() => {
+    localStorage.setItem(
+      "userSettings",
+      JSON.stringify({ exegesis: [exegesisId] }),
+    )
+  })
+  await page.reload()
+  await waitUntilVisible(page.locator("[data-verse]").first(), {
+    timeout: 20_000,
+  })
+}

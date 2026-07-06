@@ -3,7 +3,11 @@ import useChaptersState from "@hooks/states/ChaptersState"
 import useExegesisState from "@hooks/states/ExegesisState"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import { useTranslatedWords, useWords } from "@hooks/tools/useWordTranslations"
-import { RiArrowGoBackLine } from "@remixicon/react"
+import {
+  RiArrowDropLeftFill,
+  RiArrowDropRightFill,
+  RiArrowGoBackLine,
+} from "@remixicon/react"
 import LOGGER from "@services/Logger"
 import { SplitPane } from "@systatum/coneto/split-pane"
 import { useTheme } from "@systatum/coneto/theme"
@@ -202,14 +206,22 @@ export default function ExegesisPaperDialogContent({
             <RiArrowGoBackLine size={18} />
           </CircleButton>
         )}
-        <CircleButton disabled={activeVerse <= 1} onClick={prevVerse}>
-          ‹
+        <CircleButton
+          data-testid="prev-verse-btn"
+          disabled={activeVerse <= 1}
+          onClick={prevVerse}
+        >
+          <RiArrowDropLeftFill />
         </CircleButton>
         <VerseIndicator $theme={theme} data-testid="verse-indicator">
           {activeVerse}
         </VerseIndicator>
-        <CircleButton disabled={activeVerse >= maxVerse} onClick={nextVerse}>
-          ›
+        <CircleButton
+          data-testid="next-verse-btn"
+          disabled={activeVerse >= maxVerse}
+          onClick={nextVerse}
+        >
+          <RiArrowDropRightFill />
         </CircleButton>
       </TraversalColumn>
     </Outer>

@@ -431,10 +431,7 @@ export async function closeSidebar(page: Page) {
 }
 
 export async function openSearchSheet(page: Page) {
-  await page
-    .locator('[aria-label="title-action"]:not(aside *)')
-    .first()
-    .click()
+  await page.locator('[aria-label="title-action"]:not(aside *)').first().click()
   await page.waitForTimeout(300)
 }
 
@@ -465,6 +462,14 @@ export async function toggleWbwTranslation(label: string, page: Page) {
     .last()
     .dispatchEvent("click")
   await page.waitForTimeout(300)
+}
+
+/** Long-press a verse row (by "chapterId:verseNumber") to open the exegesis dialog. */
+export async function openExegesisDialog(page: Page, verseKey: string) {
+  const row = page.locator(`[data-verse="${verseKey}"]`)
+  await waitUntilVisible(row, { timeout: 10_000 })
+  await longPress(page, row)
+  return getPaperDialog(page)
 }
 
 /** @returns true when the scroll container has reached the top. */
