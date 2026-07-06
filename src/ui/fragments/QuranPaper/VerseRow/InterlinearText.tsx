@@ -1,10 +1,12 @@
-import { ArabicFontFamily } from "@constants/fonts"
+import { ArabicFontFamily, isLearningFont } from "@constants/fonts"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
 import { DEFAULT_LOCALE } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
-import { FontSetting } from "@hooks/states/UserSettingsState"
+import useUserSettingsState, {
+  FontSetting,
+} from "@hooks/states/UserSettingsState"
 import useAligner from "@hooks/tools/useAligner"
-import { MouseEventHandler, RefObject } from "react"
+import { RefObject } from "react"
 import styled from "styled-components"
 import { WordCell } from "."
 import { Bismillah } from "./Bismillah"
@@ -18,16 +20,26 @@ interface InterlinearTextProps {
   withBasmala?: boolean
   showTransliteration?: boolean
   showMeaning?: boolean
-  theme: ThemeMode
   words: WordCell[]
   lastWordRef?: RefObject<HTMLSpanElement>
-  onMouseDown?: MouseEventHandler
-  onPointerDown?: MouseEventHandler
-  onPointerUp?: MouseEventHandler
-  onPointerLeave?: MouseEventHandler
-  onPointerCancel?: MouseEventHandler
+  onMouseDown?: (w: WordCell) => void
+  onPointerDown?: (w: WordCell) => void
+  onPointerUp?: (w: WordCell) => void
+  onPointerLeave?: (w: WordCell) => void
+  onPointerCancel?: (w: WordCell) => void
   shownTranslations?: WordTranslationOption[]
   highlightOn?: number[]
+  /**
+   * If compact, text is shown more closer to each other
+   */
+  compact?: boolean
+
+  /**
+   * If undefined, will detect whether the showing is for learning or not
+   * based on the font type. Text for learning is displayed with more
+   * margins in-between of the words.
+   */
+  isForLearning?: boolean | undefined
 }
 
 export default function InterlinearText({
@@ -36,13 +48,21 @@ export default function InterlinearText({
   withBasmala = false,
   showTransliteration,
   showMeaning,
-  theme,
   words,
   lastWordRef,
   shownTranslations,
+  isForLearning,
+  compact,
   ...props
 }: InterlinearTextProps) {
-  const { refs: meaningRefs, layerHeights } = useAligner({ key: id })
+  const {
+    userSettings: { theme },
+  } = useUserSettingsState()
+  const { wordRefs, wordRows, rowLayerHeights } = useAligner({
+    key: id,
+  })
+  const isForLearningFont: boolean =
+    isForLearning === undefined ? isLearningFont(font.family) : !!isForLearning
 
   return (
     <VerseText $font={font}>
@@ -55,27 +75,36 @@ export default function InterlinearText({
           )}
 
           {showMeaning && (
-            <Meaning $theme={theme} $marginTop="57px">
-              In the name of Allah, the Most Gracious, the Most Merciful
-            </Meaning>
+            <Meanings>
+              <Meaning $theme={theme} $marginTop="57px">
+                In the name of Allah, the Most Gracious, the Most Merciful
+              </Meaning>
+            </Meanings>
           )}
         </Word>
       )}
 
       {words.map((word, i) => (
         <Word
-          ref={i === words.length - 1 ? lastWordRef : undefined}
           key={`${word.chapterId}-${word.verse}-${word.order}`}
+          data-word-index={i}
+          ref={(el) => {
+            if (!el) return
+            wordRefs.current[i] = el
+          }}
+          $usingLearningFont={isForLearningFont}
+          $compact={compact}
+          onPointerDown={(e) => e.stopPropagation()}
         >
           <Arabic
             $highlighted={
               props.highlightOn && props.highlightOn.includes(word.order)
             }
-            onMouseDown={props.onMouseDown}
-            onPointerDown={props.onPointerDown}
-            onPointerUp={props.onPointerUp}
-            onPointerLeave={props.onPointerLeave}
-            onPointerCancel={props.onPointerCancel}
+            onMouseDown={() => props.onMouseDown?.(word)}
+            onPointerDown={() => props.onPointerDown?.(word)}
+            onPointerUp={() => props.onPointerUp?.(word)}
+            onPointerLeave={() => props.onPointerLeave?.(word)}
+            onPointerCancel={() => props.onPointerCancel?.(word)}
           >
             {word.token}
           </Arabic>
@@ -90,13 +119,8 @@ export default function InterlinearText({
                 <Meaning
                   key={t}
                   $theme={theme}
-                  ref={(el) => {
-                    if (!el) return
-
-                    meaningRefs.current[layer] ??= []
-                    meaningRefs.current[layer].push(el)
-                  }}
-                  $minHeight={layerHeights[layer]}
+                  data-layer={layer}
+                  $minHeight={rowLayerHeights[wordRows[i]]?.[layer]}
                 >
                   {word.meanings[t]}
                 </Meaning>
@@ -109,10 +133,14 @@ export default function InterlinearText({
   )
 }
 
+/**
+ * Verse line. Do not introduce line height, unless you do other things.
+ * Visually, each verse should be separated by a "line" (or border-bottom gap)
+ * between verses; that gap will disappear if we introduce line height.
+ */
 const VerseText = styled.div<{ $font: FontSetting }>`
   text-align: right;
   font-size: ${({ $font }) => `${$font.size}px`};
-  line-height: 2.4;
   font-family:
     ${({ $font }) => `"${$font.family}"`},
     "${"NotoNaskhArabic" satisfies ArabicFontFamily}", serif;
@@ -120,16 +148,19 @@ const VerseText = styled.div<{ $font: FontSetting }>`
   direction: rtl;
 `
 
-const Word = styled.span`
+const Word = styled.span<{ $usingLearningFont?: boolean; $compact?: boolean }>`
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  margin: 0 6px;
+  margin: ${({ $usingLearningFont, $compact }) =>
+    `${$compact ? "3px" : "10px"} ${$usingLearningFont ? "25" : "6"}px`};
   vertical-align: top;
   user-select: none;
 `
 
-const Arabic = styled.span<{ $highlighted?: boolean }>`
+const Arabic = styled.span.attrs({ className: "arabic-lex" })<{
+  $highlighted?: boolean
+}>`
   line-height: 1.6;
   cursor: pointer;
   ${({ $highlighted }) =>
@@ -138,7 +169,7 @@ const Arabic = styled.span<{ $highlighted?: boolean }>`
       : ""}
 `
 
-export const Transliteration = styled.span`
+const Transliteration = styled.span`
   font-size: 14px;
   color: #666;
   margin-top: 4px;

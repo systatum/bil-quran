@@ -1,6 +1,15 @@
 const path = require("path")
 
 module.exports = {
+  devServer: {
+    // HMR is disabled when the dev server is started by Playwright (E2E=true).
+    // An unsolicited reload during a long test resets scroll position and
+    // causes tests to restart from verse 1, exceeding the 10-minute timeout.
+    // sql.js WASM chunks cannot be hot-replaced anyway, so this is no loss.
+    hot: !process.env.E2E,
+    liveReload: !process.env.E2E,
+  },
+
   webpack: {
     configure: (webpackConfig) => {
       webpackConfig.experiments = {
@@ -17,11 +26,20 @@ module.exports = {
       "@hooks": path.resolve(__dirname, "src/ui/hooks"),
       "@i18n": path.resolve(__dirname, "src/i18n"),
       "@services": path.resolve(__dirname, "src/services"),
+      "@ui": path.resolve(__dirname, "src/ui"),
     },
   },
 
   jest: {
     configure: (jestConfig) => {
+      jestConfig.roots = [
+        ...(jestConfig.roots ?? ["<rootDir>/src"]),
+        "<rootDir>/test/unit",
+      ]
+      jestConfig.testMatch = [
+        ...(jestConfig.testMatch ?? []),
+        "<rootDir>/test/unit/**/*.{spec,test}.{js,jsx,ts,tsx}",
+      ]
       jestConfig.moduleNameMapper = {
         ...jestConfig.moduleNameMapper,
         "^@constants(.*)$": "<rootDir>/src/constants$1",

@@ -19,6 +19,8 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
   theme: "light",
   basmalaPosition: BasmalaPosition.Detached,
   wbwTranslations: [WordTranslationOption.AmericanEnglish],
+  showPageIndicator: true,
+  exegesis: [],
   font: {
     arabic: {
       family: "NotoNaskhArabic",
@@ -112,6 +114,14 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
     get().partialUpdate({ basmalaPosition })
   },
 
+  setShowPageIndicator(show) {
+    get().partialUpdate({ showPageIndicator: !!show })
+  },
+
+  setExegesis(ids) {
+    get().partialUpdate({ exegesis: ids })
+  },
+
   setWordByWordTranslations(wbwTranslations) {
     get().partialUpdate({ wbwTranslations })
   },
@@ -149,7 +159,7 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
       let usedCategory: BookmarkCategory | undefined = category
       if (usedCategory == null) {
         // the category at index 0 is the default
-        usedCategory = userSettings.bookmarks.categories["default"]
+        usedCategory = bookmarks.categories["default"]
         if (usedCategory == null) {
           usedCategory = {
             id: "default",
@@ -171,13 +181,19 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
 
       // add bookmark
       if (!isPlainObject(bookmarks.list)) bookmarks.list = {}
-      bookmarks.list[verseKey] = {
-        type: BookmarkType.Verse,
-        key: verseKey,
-        addedAt: Date.now(),
-        category: usedCategory.id,
-        note: note ? String(note) : undefined,
-        color: color ? Number(color) : BookmarkColor.Gray,
+      bookmarks = {
+        ...bookmarks,
+        list: {
+          ...bookmarks.list,
+          [verseKey]: {
+            type: BookmarkType.Verse,
+            key: verseKey,
+            addedAt: Date.now(),
+            category: usedCategory.id,
+            note: note ? String(note) : undefined,
+            color: color ? Number(color) : BookmarkColor.Gray,
+          },
+        },
       }
 
       get().partialUpdate({ bookmarks })
@@ -218,6 +234,8 @@ export interface UserSettingsState {
   setLocale(locale: string): void
   setFont(font: DeepPartial<UserFontSettings>): void
   setBasmalaPosition(basmalaPosition: BasmalaPosition): void
+  setShowPageIndicator(show: boolean): void
+  setExegesis(ids: string[]): void
   setWordByWordTranslations(wbwTranslation: WordTranslationOption[]): void
   setScrollPosition(chapterId: number, verse: number): void
 
@@ -242,12 +260,36 @@ export interface UserSettings {
   locale: Locale
   theme: ThemeMode
   font: UserFontSettings
+
+  /**
+   * Whether to show page indicator so user knows which part and page they are in
+   */
+  showPageIndicator: boolean
+
+  /**
+   * IDs of the exegeses the user has activated (e.g. ["aliquli/en-US"]).
+   * Multiple exegeses can be active at the same time.
+   */
+  exegesis: string[]
+
+  /**
+   * To record bookmarks
+   */
   bookmarks: {
     categories: Record<string, BookmarkCategory>
     list: Record<string, Bookmark>
   }
+
   basmalaPosition: BasmalaPosition
+
+  /**
+   * Which language is going to be used for showing word-by-word translation
+   */
   wbwTranslations: WordTranslationOption[]
+
+  /**
+   * To restore to last scroll position
+   */
   lastScroll: {
     chapterId: number
     verse: number

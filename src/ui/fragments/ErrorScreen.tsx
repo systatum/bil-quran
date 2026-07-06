@@ -26,8 +26,8 @@ async function clearIndexedDb() {
   }
 }
 
-async function factoryReset() {
-  localStorage.clear()
+async function factoryReset(clearLocalStorage: boolean) {
+  if (clearLocalStorage) localStorage.clear()
   sessionStorage.clear()
   await clearIndexedDb()
 }
@@ -35,11 +35,12 @@ async function factoryReset() {
 export default function ErrorScreen() {
   const { errors } = useAppState()
   const [isResetting, setIsResetting] = useState(false)
+  const [resetLocalStorage, setResetLocalStorage] = useState(true)
 
   async function resetFactorySettings() {
     try {
       setIsResetting(true)
-      await factoryReset()
+      await factoryReset(resetLocalStorage)
       window.location.reload()
     } catch (e) {
       console.error("Failed resetting application", e)
@@ -63,6 +64,16 @@ export default function ErrorScreen() {
             <ErrorItem key={index}>{error}</ErrorItem>
           ))}
         </ErrorList>
+
+        <CheckboxRow>
+          <input
+            id="reset-ls"
+            type="checkbox"
+            checked={resetLocalStorage}
+            onChange={(e) => setResetLocalStorage(e.target.checked)}
+          />
+          <label htmlFor="reset-ls">Reset local storage</label>
+        </CheckboxRow>
 
         <ResetButton
           disabled={isResetting}
@@ -156,6 +167,28 @@ const ErrorItem = styled.li`
   line-height: 1.4;
 
   overflow-wrap: anywhere;
+`
+
+const CheckboxRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 12px;
+
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #c44;
+  }
+
+  label {
+    color: #b8b8b8;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+  }
 `
 
 const ResetButton = styled.button`

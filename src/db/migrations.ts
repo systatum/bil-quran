@@ -60,6 +60,7 @@ export async function applyMigrations() {
     }
 
     await persistDb()
+    LOGGER.debug("Returning from applying migrations")
   } catch (e) {
     console.error("Failed applying migrations", e)
     throw e

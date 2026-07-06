@@ -1,6 +1,7 @@
 import { ArabicFonts } from "@constants/fonts"
 import { initDbDriver } from "@db/driver"
 import { applyMigrations } from "@db/migrations"
+import { repo } from "@db/repo"
 import { seedData } from "@db/seeders"
 import useAppState from "@hooks/states/AppState"
 import { loadMessages, resolveLocale } from "@i18n"
@@ -53,12 +54,21 @@ function AppRoot() {
         setLoadingText("Setting up local storage...")
         await applyMigrations()
 
-        setLoadingText("Seeding verses...")
-        await seedData()
+        await seedData((progress) => {
+          if (progress === "verses") setLoadingText("Seeding verses...")
+          else if (progress === "paginations")
+            setLoadingText("Seeding paginations...")
+        })
+
         setLoadingText("Loading chapters...")
         loadChapters()
 
         setLoadingText("Preparing the layout...")
+
+        // this is done only for testing/development, so we can debug/test by looking at the db
+        if (process.env.NODE_ENV !== "production") {
+          ;(window as any).__repo = repo
+        }
 
         restoreState()
         setIsBootstrapped(true)
