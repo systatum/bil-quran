@@ -255,7 +255,9 @@ const TraversalColumn = styled.div`
   flex-shrink: 0;
 `
 
-const VerseIndicator = styled.span<{ $theme: string }>`
+const VerseIndicator = styled.span.attrs({ "data-testid": "verse-indicator" })<{
+  $theme: string
+}>`
   font-size: 12px;
   color: ${({ $theme }) => ($theme === "dark" ? "#7a7a7a" : "#999")};
   min-width: 20px;
@@ -309,7 +311,7 @@ const SourceLabel = styled.span<{ $theme: string }>`
 `
 
 const VerseText = styled.div<{ $theme: string; $loaded: boolean }>`
-  font-size: 21px;
+  font-size: 1.25em;
   line-height: 1.7;
   margin: 0;
   color: ${({ $theme, $loaded }) =>
@@ -324,7 +326,7 @@ const VerseText = styled.div<{ $theme: string; $loaded: boolean }>`
 
 const Empty = styled.p<{ $theme: string }>`
   padding: 24px;
-  font-size: 15px;
+  font-size: 1.25em;
   text-align: center;
   color: ${({ $theme }) => ($theme === "dark" ? "#666" : "#999")};
 `
