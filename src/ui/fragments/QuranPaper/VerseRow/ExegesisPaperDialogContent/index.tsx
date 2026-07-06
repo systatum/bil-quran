@@ -92,7 +92,7 @@ export default function ExegesisPaperDialogContent({
         orientation="horizontal"
         styles={{
           dividerStyle: css`
-            border: 3px solid ${theme === "dark" ? "#303030" : "#e2d6c3"};
+            border: 1px solid ${theme === "dark" ? "#303030" : "#e2d6c3"};
           `,
         }}
       >
@@ -118,23 +118,6 @@ export default function ExegesisPaperDialogContent({
               compact
             />
           )}
-          <TraversalColumn>
-            {navTarget && (
-              <CircleButton onClick={() => setNavTarget(null)}>
-                <RiArrowGoBackLine size={18} />
-              </CircleButton>
-            )}
-            <CircleButton disabled={activeVerse <= 1} onClick={prevVerse}>
-              ‹
-            </CircleButton>
-            <VerseIndicator $theme={theme}>{activeVerse}</VerseIndicator>
-            <CircleButton
-              disabled={activeVerse >= maxVerse}
-              onClick={nextVerse}
-            >
-              ›
-            </CircleButton>
-          </TraversalColumn>
         </SplitPane.Cell>
 
         <SplitPane.Cell
@@ -160,6 +143,20 @@ export default function ExegesisPaperDialogContent({
           </ExegesisScrollArea>
         </SplitPane.Cell>
       </SplitPane>
+      <TraversalColumn>
+        {navTarget && (
+          <CircleButton onClick={() => setNavTarget(null)}>
+            <RiArrowGoBackLine size={18} />
+          </CircleButton>
+        )}
+        <CircleButton disabled={activeVerse <= 1} onClick={prevVerse}>
+          ‹
+        </CircleButton>
+        <VerseIndicator $theme={theme}>{activeVerse}</VerseIndicator>
+        <CircleButton disabled={activeVerse >= maxVerse} onClick={nextVerse}>
+          ›
+        </CircleButton>
+      </TraversalColumn>
     </Outer>
   )
 }
