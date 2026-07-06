@@ -347,7 +347,7 @@ export default function QuranPaper({
         }}
       >
         <NoteVerseDialog />
-        <PaperDialog theme={theme} />
+        <PaperDialog />
 
         {items.map((item) => {
           const row = renderRows[item.index]
