@@ -8,7 +8,6 @@ import ExegesisPaperDialogContent from "./VerseRow/ExegesisPaperDialogContent"
 import { LexemeDetailPaperDialog } from "./VerseRow/LexemeDetailPaperDialog"
 
 export default function QuranPaperDialog() {
-  const { mode: theme } = useTheme()
   const paperDialogRef = useRef<Coneto.PaperDialogRef>(null)
   const { content, openCount } = usePaperDialogState()
   const { userSettings } = useUserSettingsState()
