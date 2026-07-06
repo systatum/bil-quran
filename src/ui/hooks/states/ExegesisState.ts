@@ -79,7 +79,29 @@ const useExegesisState = create<ExegesisState>((set, get) => ({
   },
 }))
 
-async function downloadChapter(
+// Coalesces concurrent downloads for the same (exegesisId, chapterId) so
+// only one deleteChapter + createBulk sequence ever runs at a time.
+const activeDownloads = new Map<
+  string,
+  Promise<Record<number, ExegesisVerseContent>>
+>()
+
+function downloadChapter(
+  exegesisId: string,
+  chapterId: number,
+): Promise<Record<number, ExegesisVerseContent>> {
+  const key = `${exegesisId}:${chapterId}`
+  const inflight = activeDownloads.get(key)
+  if (inflight) return inflight
+
+  const promise = doDownloadChapter(exegesisId, chapterId).finally(() => {
+    activeDownloads.delete(key)
+  })
+  activeDownloads.set(key, promise)
+  return promise
+}
+
+async function doDownloadChapter(
   exegesisId: string,
   chapterId: number,
 ): Promise<Record<number, ExegesisVerseContent>> {
@@ -129,6 +151,11 @@ async function ensureMetadata(exegesisId: string): Promise<void> {
   const about = await FingerprintedAsset.readJson<ExegesisMetadata>(
     `${source.path}/about.json`,
   )
+
+  // Check again after the async fetch — a concurrent call may have already
+  // inserted this row while we were waiting for about.json.
+  const afterFetch = unpackIPC(await repo.exegesis.findAllBy({ id: exegesisId }))
+  if (afterFetch.length > 0) return
 
   await repo.exegesis.create({
     id: exegesisId,
