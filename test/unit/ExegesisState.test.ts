@@ -45,16 +45,16 @@ jest.mock("@services/Logger", () => ({
   default: { error: jest.fn(), debug: jest.fn() },
 }))
 
-import { act, renderHook } from "@testing-library/react"
 import { Asset } from "@constants/assets"
 import { ExegesisChapterAsset } from "@constants/records/ExegesisRecord"
+import { repo } from "@db/repo"
+import useExegesisState from "@hooks/states/ExegesisState"
 import {
   FingerprintedAsset,
   isAssetCurrent,
   saveFingerprints,
 } from "@services/fingerprinter"
-import { repo } from "@db/repo"
-import useExegesisState from "@hooks/states/ExegesisState"
+import { act, renderHook } from "@testing-library/react"
 
 const mockFindAllBy = repo.exegesis.findAllBy as jest.MockedFunction<
   typeof repo.exegesis.findAllBy
@@ -90,7 +90,10 @@ function existingRecord(
   downloadedChapters: number[] = [],
   description: Record<string, string> = {},
 ) {
-  return { succeed: true, data: [{ id: EXEGESIS_ID, downloadedChapters, description }] }
+  return {
+    succeed: true,
+    data: [{ id: EXEGESIS_ID, downloadedChapters, description }],
+  }
 }
 
 beforeEach(() => {
@@ -117,7 +120,7 @@ beforeEach(() => {
   })
 })
 
-describe("ExegesisState.getShortDesc", () => {
+describe("getShortDesc", () => {
   const EN = "en-US"
   const ID = "id-ID"
   const AR = "ar-IQ"
@@ -130,42 +133,88 @@ describe("ExegesisState.getShortDesc", () => {
   it("returns the description for the requested locale", async () => {
     withDesc({ [EN]: "English desc", [ID]: "Deskripsi" })
     const { result } = renderHook(() => useExegesisState())
-    await expect(result.current.getShortDesc(EXEGESIS_ID, ID as any)).resolves.toBe(
-      "Deskripsi",
-    )
+    await expect(
+      result.current.getShortDesc(EXEGESIS_ID, ID as any),
+    ).resolves.toBe("Deskripsi")
   })
 
   it("falls back to English when the requested locale is absent", async () => {
     withDesc({ [EN]: "English desc" })
     const { result } = renderHook(() => useExegesisState())
-    await expect(result.current.getShortDesc(EXEGESIS_ID, AR as any)).resolves.toBe(
-      "English desc",
-    )
+    await expect(
+      result.current.getShortDesc(EXEGESIS_ID, AR as any),
+    ).resolves.toBe("English desc")
   })
 
   it("falls back to any available locale when both requested and English are absent", async () => {
     withDesc({ [ID]: "Deskripsi" })
     const { result } = renderHook(() => useExegesisState())
-    await expect(result.current.getShortDesc(EXEGESIS_ID, AR as any)).resolves.toBe(
-      "Deskripsi",
-    )
+    await expect(
+      result.current.getShortDesc(EXEGESIS_ID, AR as any),
+    ).resolves.toBe("Deskripsi")
   })
 
   it("returns empty string when description is empty", async () => {
     withDesc({})
     const { result } = renderHook(() => useExegesisState())
-    await expect(result.current.getShortDesc(EXEGESIS_ID, EN as any)).resolves.toBe("")
+    await expect(
+      result.current.getShortDesc(EXEGESIS_ID, EN as any),
+    ).resolves.toBe("")
   })
 
   it("returns empty string when no DB record exists", async () => {
     mockFindAllBy.mockResolvedValue({ succeed: true, data: [] } as any)
     const { result } = renderHook(() => useExegesisState())
-    await expect(result.current.getShortDesc(EXEGESIS_ID, EN as any)).resolves.toBe("")
+    await expect(
+      result.current.getShortDesc(EXEGESIS_ID, EN as any),
+    ).resolves.toBe("")
   })
 })
 
-describe("ExegesisState.loadChapter", () => {
-  describe("downloaded and recent", () => {
+describe("ensureMetadata", () => {
+  it("does not insert when another concurrent call already created the record during the about.json fetch", async () => {
+    // Simulate the race: first check returns empty, but by the time about.json
+    // is fetched the row already exists (inserted by a concurrent call).
+    mockFindAllBy
+      .mockResolvedValueOnce({ succeed: true, data: [] } as any) // initial check: empty
+      .mockResolvedValueOnce(existingRecord([]) as any) // after-fetch re-check: row exists
+      .mockResolvedValueOnce(existingRecord([]) as any) // loadChapter downloadedChapters check
+    mockIsAssetCurrent.mockResolvedValue(true)
+    mockFindByChapter.mockResolvedValue(DB_CONTENT as any)
+
+    const { result } = renderHook(() => useExegesisState())
+    await act(async () => {
+      await result.current.loadChapter(EXEGESIS_ID, CHAPTER_ID)
+    })
+
+    expect(repo.exegesis.create).not.toHaveBeenCalled()
+  })
+})
+
+describe("downloadChapter", () => {
+  beforeEach(() => {
+    // Record exists so ensureMetadata exits early on all calls (one findAllBy each)
+    mockFindAllBy.mockResolvedValue(existingRecord([]) as any)
+    mockIsAssetCurrent.mockResolvedValue(false)
+  })
+
+  it("runs createBulk exactly once when two loadChapter calls race for the same chapter", async () => {
+    const { result } = renderHook(() => useExegesisState())
+    await act(async () => {
+      // Fire both concurrently — they should coalesce onto one download
+      await Promise.all([
+        result.current.loadChapter(EXEGESIS_ID, CHAPTER_ID),
+        result.current.loadChapter(EXEGESIS_ID, CHAPTER_ID),
+      ])
+    })
+
+    expect(repo.exegesisContent.createBulk).toHaveBeenCalledTimes(1)
+    expect(repo.exegesisContent.deleteChapter).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe("loadChapter", () => {
+  describe("when downloaded and recent", () => {
     beforeEach(() => {
       // first call: ensureMetadata (record exists → early return)
       // second call: loadChapter checks downloadedChapters
@@ -212,6 +261,23 @@ describe("ExegesisState.loadChapter", () => {
       mockIsAssetCurrent.mockResolvedValue(false)
     })
 
+    it("deletes stale content rows before re-downloading to prevent UNIQUE constraint errors", async () => {
+      const { result } = renderHook(() => useExegesisState())
+      await act(async () => {
+        await result.current.loadChapter(EXEGESIS_ID, CHAPTER_ID)
+      })
+      expect(repo.exegesisContent.deleteChapter).toHaveBeenCalledWith(
+        EXEGESIS_ID,
+        CHAPTER_ID,
+      )
+      // deleteChapter must run before createBulk
+      const deleteOrder = (repo.exegesisContent.deleteChapter as jest.Mock).mock
+        .invocationCallOrder[0]
+      const insertOrder = (repo.exegesisContent.createBulk as jest.Mock).mock
+        .invocationCallOrder[0]
+      expect(deleteOrder).toBeLessThan(insertOrder)
+    })
+
     it("evicts then re-downloads", async () => {
       const { result } = renderHook(() => useExegesisState())
       await act(async () => {
@@ -239,12 +305,28 @@ describe("ExegesisState.loadChapter", () => {
     })
   })
 
-  describe("not yet downloaded", () => {
+  describe("when not yet downloaded", () => {
     beforeEach(() => {
       mockFindAllBy
         .mockResolvedValueOnce(existingRecord([]) as any)
         .mockResolvedValueOnce(existingRecord([]) as any)
       mockIsAssetCurrent.mockResolvedValue(false)
+    })
+
+    it("deletes any orphaned rows before inserting to guard against interrupted previous downloads", async () => {
+      const { result } = renderHook(() => useExegesisState())
+      await act(async () => {
+        await result.current.loadChapter(EXEGESIS_ID, CHAPTER_ID)
+      })
+      expect(repo.exegesisContent.deleteChapter).toHaveBeenCalledWith(
+        EXEGESIS_ID,
+        CHAPTER_ID,
+      )
+      const deleteOrder = (repo.exegesisContent.deleteChapter as jest.Mock).mock
+        .invocationCallOrder[0]
+      const insertOrder = (repo.exegesisContent.createBulk as jest.Mock).mock
+        .invocationCallOrder[0]
+      expect(deleteOrder).toBeLessThan(insertOrder)
     })
 
     it("downloads and marks without evicting", async () => {
