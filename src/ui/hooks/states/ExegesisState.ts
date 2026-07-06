@@ -1,10 +1,10 @@
 import { Asset } from "@constants/assets"
-import { Locale } from "@constants/settings"
 import {
   ExegesisChapterAsset,
   ExegesisMetadata,
   ExegesisVerseContent,
 } from "@constants/records/ExegesisRecord"
+import { Locale } from "@constants/settings"
 import { repo } from "@db/repo"
 import { unpackIPC } from "@services/Converter"
 import {
@@ -23,12 +23,30 @@ const useExegesisState = create<ExegesisState>((set, get) => ({
     return get().exegesis[exegesisId]?.[chapterId]?.[verseNumber] ?? null
   },
 
+  async getShortDesc(exegesisId, locale) {
+    await ensureMetadata(exegesisId)
+    const records = unpackIPC(await repo.exegesis.findAllBy({ id: exegesisId }))
+    const record = records[0]
+    if (!record) return ""
+    const desc = record.description as Partial<Record<Locale, string>>
+    return (
+      desc[locale] ??
+      desc[Locale.IntEnglish] ??
+      Object.values(desc).find(Boolean) ??
+      ""
+    )
+  },
+
   async loadChapter(exegesisId, chapterId) {
     const [, locale] = exegesisId.split("/")
     const source = Asset.exegesisOf(exegesisId)
     if (!source) throw new Error(`Unknown exegesis source: ${exegesisId}`)
 
-    const chapterUrl = Asset.exegesisAssetUrlOf(exegesisId, locale as Locale, chapterId)
+    const chapterUrl = Asset.exegesisAssetUrlOf(
+      exegesisId,
+      locale as Locale,
+      chapterId,
+    )
     await ensureMetadata(exegesisId)
 
     const [exegesis] = unpackIPC(
@@ -65,8 +83,17 @@ async function downloadChapter(
   exegesisId: string,
   chapterId: number,
 ): Promise<Record<number, ExegesisVerseContent>> {
+  // Delete any stale rows before inserting fresh ones — guards against both
+  // fingerprint-drift re-downloads and interrupted previous downloads where
+  // markChapter never ran.
+  await repo.exegesisContent.deleteChapter(exegesisId, chapterId)
+
   const [, locale] = exegesisId.split("/")
-  const chapterUrl = Asset.exegesisAssetUrlOf(exegesisId, locale as Locale, chapterId)
+  const chapterUrl = Asset.exegesisAssetUrlOf(
+    exegesisId,
+    locale as Locale,
+    chapterId,
+  )
   const data =
     await FingerprintedAsset.readJson<ExegesisChapterAsset>(chapterUrl)
 
@@ -122,6 +149,12 @@ type ChapterExegesis = Record<number, VerseExegesis>
 export interface ExegesisState {
   /** In-memory cache of verse content, keyed by exegesisId → chapterId → verseNumber. */
   exegesis: Record<string, ChapterExegesis>
+
+  /**
+   * Fetch the short description for an exegesis source in the given locale,
+   * before falling back to English/available locale or if neither exists: empty string
+   */
+  getShortDesc: (exegesisId: string, locale: Locale) => Promise<string>
 
   /** Return cached verse content for a specific verse, or null if not yet loaded. */
   getVerseExegesis: (

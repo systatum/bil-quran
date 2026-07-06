@@ -35,6 +35,7 @@ jest.mock("@db/repo", () => ({
     exegesisContent: {
       findByChapter: jest.fn(),
       createBulk: jest.fn(),
+      deleteChapter: jest.fn(),
     },
   },
 }))
@@ -85,8 +86,11 @@ const DB_CONTENT = {
   data: { [VERSE]: { translation: "Cached verse", footnotes: {} } },
 }
 
-function existingRecord(downloadedChapters: number[] = []) {
-  return { succeed: true, data: [{ id: EXEGESIS_ID, downloadedChapters }] }
+function existingRecord(
+  downloadedChapters: number[] = [],
+  description: Record<string, string> = {},
+) {
+  return { succeed: true, data: [{ id: EXEGESIS_ID, downloadedChapters, description }] }
 }
 
 beforeEach(() => {
@@ -107,6 +111,56 @@ beforeEach(() => {
   ;(repo.exegesis.unmarkChapter as jest.Mock).mockResolvedValue(undefined)
   ;(repo.exegesisContent.createBulk as jest.Mock).mockResolvedValue({
     succeed: true,
+  })
+  ;(repo.exegesisContent.deleteChapter as jest.Mock).mockResolvedValue({
+    succeed: true,
+  })
+})
+
+describe("ExegesisState.getShortDesc", () => {
+  const EN = "en-US"
+  const ID = "id-ID"
+  const AR = "ar-IQ"
+
+  function withDesc(description: Record<string, string>) {
+    // Both calls in getShortDesc (ensureMetadata + findAllBy) return the same record
+    mockFindAllBy.mockResolvedValue(existingRecord([], description) as any)
+  }
+
+  it("returns the description for the requested locale", async () => {
+    withDesc({ [EN]: "English desc", [ID]: "Deskripsi" })
+    const { result } = renderHook(() => useExegesisState())
+    await expect(result.current.getShortDesc(EXEGESIS_ID, ID as any)).resolves.toBe(
+      "Deskripsi",
+    )
+  })
+
+  it("falls back to English when the requested locale is absent", async () => {
+    withDesc({ [EN]: "English desc" })
+    const { result } = renderHook(() => useExegesisState())
+    await expect(result.current.getShortDesc(EXEGESIS_ID, AR as any)).resolves.toBe(
+      "English desc",
+    )
+  })
+
+  it("falls back to any available locale when both requested and English are absent", async () => {
+    withDesc({ [ID]: "Deskripsi" })
+    const { result } = renderHook(() => useExegesisState())
+    await expect(result.current.getShortDesc(EXEGESIS_ID, AR as any)).resolves.toBe(
+      "Deskripsi",
+    )
+  })
+
+  it("returns empty string when description is empty", async () => {
+    withDesc({})
+    const { result } = renderHook(() => useExegesisState())
+    await expect(result.current.getShortDesc(EXEGESIS_ID, EN as any)).resolves.toBe("")
+  })
+
+  it("returns empty string when no DB record exists", async () => {
+    mockFindAllBy.mockResolvedValue({ succeed: true, data: [] } as any)
+    const { result } = renderHook(() => useExegesisState())
+    await expect(result.current.getShortDesc(EXEGESIS_ID, EN as any)).resolves.toBe("")
   })
 })
 

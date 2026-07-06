@@ -4,13 +4,14 @@ import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
 import { BasmalaPosition, Locale } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import useFonts from "@hooks/tools/useFonts"
+import useExegesisOptions from "@hooks/tools/useExegesisOptions"
 import { isProperThemeValue, messages } from "@i18n/message"
 import { ComboboxOption } from "@systatum/coneto/combobox"
 import { FormFieldGroup, StatefulForm } from "@systatum/coneto/stateful-form"
 import { useTheme } from "@systatum/coneto/theme"
 import { useMemo, useState } from "react"
-import { IntlShape, useIntl } from "react-intl"
-import styled, { css } from "styled-components"
+import { useIntl } from "react-intl"
+import { css } from "styled-components"
 import useUserSettingsState from "../../../../hooks/states/UserSettingsState"
 export default function UserSettingsForm() {
   const { formatMessage } = useIntl()
@@ -39,10 +40,7 @@ export default function UserSettingsForm() {
 
   const { arabicFontOptions } = useFonts()
   const arabicFontSizeOptions = useMemo(getAllPossibleFontSizeOptions, [])
-  const exegesisOptions = useMemo(
-    () => gatherExegesisOptions(formatMessage),
-    [],
-  )
+  const exegesisOptions = useExegesisOptions()
 
   const FIELDS: FormFieldGroup[] = [
     {
@@ -200,8 +198,8 @@ export default function UserSettingsForm() {
           const values: WordTranslationOption[] = currentState.wbwTranslations
 
           if (!Array.isArray(values)) return
-          const validValues = WordTranslationOption.values()
-          const allValidValues = values.map((v) => validValues.includes(v))
+          if (!values.every((v) => WordTranslationOption.values().includes(v)))
+            return
 
           setWordByWordTranslations(currentState.wbwTranslations)
         } else if (FormState.ShowPageIndicator in currentState) {
@@ -249,47 +247,3 @@ type FormState = {
   [FormState.Exegesis]: string[]
 }
 
-function gatherExegesisOptions(
-  formatMessage: IntlShape["formatMessage"],
-): ComboboxOption[] {
-  const byLocale = new Map<Locale, typeof Asset.exegesisSources>()
-  for (const source of Asset.exegesisSources) {
-    for (const locale of source.availableLocales) {
-      const group = byLocale.get(locale) ?? []
-      group.push(source)
-      byLocale.set(locale, group)
-    }
-  }
-
-  return Array.from(byLocale.entries()).map(([locale, sources]) => ({
-    text: formatMessage({ id: messages.locale[locale] }),
-    value: `locale:${locale}`,
-    groupOptions: sources.map((s) => {
-      const slug = s.path.split("/").pop() ?? ""
-      return {
-        text: s.name,
-        value: `${slug}/${locale}`,
-        render: s.description ? (
-          <ExegesisOptionLabel>
-            {s.name}
-            <ExegesisOptionDesc>{s.description}</ExegesisOptionDesc>
-          </ExegesisOptionLabel>
-        ) : undefined,
-      } satisfies ComboboxOption
-    }),
-  }))
-}
-
-const ExegesisOptionLabel = styled.span`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 0.77em;
-`
-
-const ExegesisOptionDesc = styled.span`
-  font-size: 11px;
-  opacity: 0.65;
-  line-height: 1.4;
-  white-space: normal;
-`
