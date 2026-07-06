@@ -104,6 +104,7 @@ export default function ExegesisPaperDialogContent({
               flex-direction: row;
               scrollbar-width: thin;
               scrollbar-color: rgba(150, 150, 150, 0.5) transparent;
+              justify-content: end;
             `,
           }}
         >
