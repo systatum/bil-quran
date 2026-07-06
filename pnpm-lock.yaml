@@ -5582,8 +5582,8 @@ packages:
   react-error-overlay@6.1.0:
     resolution: {integrity: sha512-SN/U6Ytxf1QGkw/9ve5Y+NxBbZM6Ht95tuXNMKs8EJyFa/Vy/+Co3stop3KBHARfn/giv+Lj1uUnTfOJ3moFEQ==}
 
-  react-hook-form@7.80.0:
-    resolution: {integrity: sha512-4P+fk6oXsxY+6xSj7Euhc2sumQD8zQqCuVHoJwoyp9EchP+IUW9OESB7uHFJOKsIBQ4MQqYE84INJFqUCYNoOg==}
+  react-hook-form@7.81.0:
+    resolution: {integrity: sha512-ocbmr2p5KBMoAfj4WCUvped33lVi1Kd5DuDUvQDnB6VEAacOjPI/jMbtDdbhco4y9ct4xUuCmMY0b/C9L0QHjw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
@@ -8106,10 +8106,10 @@ snapshots:
       '@formatjs/icu-messageformat-parser': 3.5.10
       intl-messageformat: 11.2.7
 
-  '@hookform/resolvers@5.4.0(react-hook-form@7.80.0(react@19.2.6))':
+  '@hookform/resolvers@5.4.0(react-hook-form@7.81.0(react@19.2.6))':
     dependencies:
       '@standard-schema/utils': 0.3.0
-      react-hook-form: 7.80.0(react@19.2.6)
+      react-hook-form: 7.81.0(react@19.2.6)
 
   '@humanwhocodes/config-array@0.13.0':
     dependencies:
@@ -8612,14 +8612,14 @@ snapshots:
   '@systatum/coneto@file:../coneto(@emotion/is-prop-valid@1.4.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)':
     dependencies:
       '@floating-ui/react': 0.27.19(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      '@hookform/resolvers': 5.4.0(react-hook-form@7.80.0(react@19.2.6))
+      '@hookform/resolvers': 5.4.0(react-hook-form@7.81.0(react@19.2.6))
       '@remixicon/react': 4.9.0(react@19.2.6)
       framer-motion: 12.42.2(@emotion/is-prop-valid@1.4.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       monaco-editor: 0.55.1
       pdfjs-dist: 5.4.54
       react: 19.2.6
       react-dom: 19.2.6(react@19.2.6)
-      react-hook-form: 7.80.0(react@19.2.6)
+      react-hook-form: 7.81.0(react@19.2.6)
       react-swipeable: 7.0.2(react@19.2.6)
       styled-components: 6.4.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       zod: 3.25.76
@@ -12849,7 +12849,7 @@ snapshots:
 
   react-error-overlay@6.1.0: {}
 
-  react-hook-form@7.80.0(react@19.2.6):
+  react-hook-form@7.81.0(react@19.2.6):
     dependencies:
       react: 19.2.6
 

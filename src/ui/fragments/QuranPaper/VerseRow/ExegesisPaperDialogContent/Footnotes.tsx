@@ -46,7 +46,7 @@ const FootnoteList = styled.ol`
 `
 
 const FootnoteItem = styled.li<{ $theme: string; $highlighted?: boolean }>`
-  font-size: 17px;
+  font-size: 0.85em;
   line-height: 1.5;
   color: ${({ $theme }) => ($theme === "dark" ? "#9a8f7a" : "#666")};
   border-radius: 4px;
@@ -60,7 +60,7 @@ const FootnoteItem = styled.li<{ $theme: string; $highlighted?: boolean }>`
 `
 
 const FootnoteMarker = styled.span<{ $theme: string }>`
-  font-weight: 600;
+  font-weight: 500;
   margin-right: 4px;
   color: ${({ $theme }) => ($theme === "dark" ? "#c8a96e" : "#8a6030")};
 `
