@@ -6,22 +6,16 @@
   "scripts": {
     "prestart": "pnpm run split-chapter",
     "start": "craco start",
-<<<<<<< research/capacitor-research
     "start:android": "cap run android",
     "start:ios": "cap run ios",
-    "build": "craco build && node scripts/copy-files.js",
+    "build": "craco build",
     "build:mobile": "craco build && node scripts/copy-files.js && cap sync",
     "build:android:apk": "pnpm build:android && cd android && ./gradlew assembleRelease",
     "build:android:aab": "pnpm build:android && cd android && ./gradlew bundleRelease",
-    "test": "craco test",
-    "predeploy": "pnpm run build",
-=======
-    "build": "craco build",
     "test": "pnpm run test:unit && pnpm run test:e2e",
     "test:unit": "craco test --watchAll=false --passWithNoTests",
     "test:e2e": "playwright test",
     "predeploy": "pnpm run prepare-assets && pnpm run build && node scripts/pre-deploy.js",
->>>>>>> main
     "deploy": "gh-pages -d build",
     "db:generate": "drizzle-kit generate",
     "prepare-assets": "pnpm run split-chapter && pnpm run fingerprint",
@@ -29,14 +23,11 @@
     "split-chapter": "node scripts/split-chapter.js"
   },
   "dependencies": {
-<<<<<<< research/capacitor-research
     "@capacitor/android": "^8.3.4",
     "@capacitor/cli": "^8.3.4",
     "@capacitor/core": "^8.3.4",
     "@capacitor/ios": "^8.3.4",
     "@electric-sql/pglite": "^0.4.5",
-=======
->>>>>>> main
     "@remixicon/react": "^4.9.0",
     "@systatum/coneto": "file:./../systatum/coneto",
     "@tanstack/react-router": "^1.169.2",
