@@ -6,9 +6,17 @@ import {
   Outlet,
 } from "@tanstack/react-router"
 import UIIndex from "."
+import ErrorRescuer from "../ErrorRescuer"
 
 const rootRoute = createRootRoute({
-  component: () => <Outlet />,
+  component: () => (
+    <ErrorRescuer>
+      <Outlet />
+    </ErrorRescuer>
+  ),
+  errorComponent: ({ error }) => {
+    throw error
+  },
 })
 
 const indexRoute = createRoute({

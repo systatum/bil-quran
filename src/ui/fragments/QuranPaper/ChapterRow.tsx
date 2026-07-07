@@ -1,9 +1,12 @@
+import { ArabicFonts } from "@constants/fonts"
 import { ChapterRecord } from "@constants/records/ChapterRecord"
-import { BasmalaPosition, DEFAULT_LOCALE } from "@constants/settings"
+import { BasmalaPosition } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
 import styled from "styled-components"
+import useChaptersState from "../../hooks/states/ChaptersState"
 import useUserSettingsState from "../../hooks/states/UserSettingsState"
+import BasmalaRow from "./BasmalaRow"
 
 /**
  * Row for each chapter. Because it is a virtualized row, we still need
@@ -13,6 +16,7 @@ import useUserSettingsState from "../../hooks/states/UserSettingsState"
 export default function ChapterRow({
   chapter,
   index,
+  hasBasmala,
   style,
   sizeMap,
   virtualizer,
@@ -20,6 +24,7 @@ export default function ChapterRow({
 }: {
   chapter: ChapterRecord
   index: number
+  hasBasmala: boolean
   style: React.CSSProperties
   sizeMap: React.RefObject<Map<number, number>>
   virtualizer: any
@@ -29,44 +34,68 @@ export default function ChapterRow({
     userSettings: { basmalaPosition },
   } = useUserSettingsState()
 
+  const { getChapterTransliteratedName, getChapterMeaning, getChapterArabicName } =
+    useChaptersState()
+
   const ref = useVirtualRowMeasurer({
     index,
     sizeMap,
     virtualizer,
-    deps: [chapter, basmalaPosition],
   })
+
+  hasBasmala = hasBasmala && basmalaPosition === BasmalaPosition.Detached
+  const ULTIMATE_HEIGHT = 210
+  const BASMALA_HEIGHT = 95
 
   return (
     <ChapterHeaderContainer
+      data-index={index}
       ref={ref}
       theme={theme}
       style={{ transform: style.transform }}
-      basmalaPosition={basmalaPosition}
+      $basmalaPosition={basmalaPosition}
     >
-      <ChapterPanel theme={theme} basmalaPosition={basmalaPosition}>
-        <SideOrnament side="left" />
-        <ChapterGlowLine side="left" theme={theme} />
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          height: `${ULTIMATE_HEIGHT}px`,
+        }}
+      >
+        <ChapterPanel
+          theme={theme}
+          $basmalaPosition={basmalaPosition}
+          $height={
+            hasBasmala ? ULTIMATE_HEIGHT - BASMALA_HEIGHT : ULTIMATE_HEIGHT
+          }
+        >
+          <SideOrnament $side="left" />
+          <ChapterGlowLine $side="left" $theme={theme} />
 
-        <ChapterCenter>
-          <ChapterName>{chapter.namings[DEFAULT_LOCALE]}</ChapterName>
+          <ChapterCenter>
+            <ChapterName $hasBasmala={hasBasmala}>
+              {getChapterArabicName(chapter.id)}
+            </ChapterName>
 
-          <ChapterDescription>
-            {chapter.transliterations[DEFAULT_LOCALE]}
-            {" · "}
-            {chapter.meanings[DEFAULT_LOCALE]}
-          </ChapterDescription>
-        </ChapterCenter>
+            <ChapterDescription $hasBasmala={hasBasmala}>
+              {getChapterTransliteratedName(chapter.id)}
+              {" · "}
+              {getChapterMeaning(chapter.id)}
+            </ChapterDescription>
+          </ChapterCenter>
 
-        <ChapterGlowLine side="right" theme={theme} />
-        <SideOrnament side="right" />
-      </ChapterPanel>
+          <ChapterGlowLine $side="right" $theme={theme} />
+          <SideOrnament $side="right" />
+        </ChapterPanel>
+        {hasBasmala && <BasmalaRow theme={theme} />}
+      </div>
     </ChapterHeaderContainer>
   )
 }
 
 const ChapterHeaderContainer = styled.div<{
   theme: ThemeMode
-  basmalaPosition: BasmalaPosition
+  $basmalaPosition: BasmalaPosition
 }>`
   --bg: ${({ theme }) => (theme === "dark" ? "#181818" : "#f6f1e7")};
   --panel-top: ${({ theme }) => (theme === "dark" ? "#26231d" : "#f4ede0")};
@@ -83,8 +112,8 @@ const ChapterHeaderContainer = styled.div<{
   left: 0;
   width: 100%;
   box-sizing: border-box;
-  padding: ${({ basmalaPosition }) =>
-    basmalaPosition === BasmalaPosition.Detached
+  padding: ${({ $basmalaPosition }) =>
+    $basmalaPosition === BasmalaPosition.Detached
       ? "10px 18px 0"
       : "6px 18px 0"};
   background: var(--bg);
@@ -93,13 +122,15 @@ const ChapterHeaderContainer = styled.div<{
 
 const ChapterPanel = styled.div<{
   theme: ThemeMode
-  basmalaPosition: BasmalaPosition
+  $basmalaPosition: BasmalaPosition
+  $height: number
 }>`
   position: relative;
   width: 100%;
+  height: ${({ $height }) => $height}px;
   box-sizing: border-box;
-  padding: ${({ basmalaPosition }) =>
-    basmalaPosition === BasmalaPosition.Detached
+  padding: ${({ $basmalaPosition }) =>
+    $basmalaPosition === BasmalaPosition.Detached
       ? "18px 88px"
       : "12px 88px 10px"};
   background: linear-gradient(180deg, var(--panel-top), var(--panel-bottom));
@@ -129,14 +160,15 @@ const ChapterPanel = styled.div<{
   }
 `
 
-const ChapterName = styled.div`
+const ChapterName = styled.div<{ $hasBasmala: boolean }>`
   position: relative;
   z-index: 2;
   margin: 0;
   direction: rtl;
   text-align: center;
-  font-family: "Amiri", "Noto Naskh Arabic", serif;
-  font-size: clamp(2rem, 4vw, 5rem);
+  font-family: "${ArabicFonts.DroidNaskh.name}", "Noto Naskh Arabic", serif;
+  font-size: ${({ $hasBasmala }) =>
+    `clamp(2rem, ${$hasBasmala ? 15 : 30}vh, ${$hasBasmala ? 3 : 5}rem)`};
   line-height: 1.15;
   color: var(--text);
 
@@ -150,19 +182,20 @@ const ChapterName = styled.div`
     "calt" 1;
 `
 
-const ChapterDescription = styled.div`
-  margin-top: 0px;
+const ChapterDescription = styled.div<{ $hasBasmala: boolean }>`
+  margin-top: ${({ $hasBasmala }) => ($hasBasmala ? "8" : "5")}px;
   text-align: center;
-  font-size: 0.72rem;
+  font-size: ${({ $hasBasmala }) => ($hasBasmala ? "0.8" : "1.1")}rem;
   line-height: 1.2;
   color: var(--subtext);
   letter-spacing: 0.06em;
-  font-family: "Ubuntu", "Noto Naskh Arabic", serif;
+  font-family:
+    "${ArabicFonts.Ubuntu.name}", "${ArabicFonts.NotoNaskhArabic.name}", serif;
 `
 
-const SideOrnament = ({ side }: { side: "left" | "right" }) => {
+const SideOrnament = ({ $side }: { $side: "left" | "right" }) => {
   return (
-    <SideOrnamentWrapper side={side}>
+    <SideOrnamentWrapper $side={$side}>
       <svg viewBox="0 0 100 100" fill="none">
         <path
           d="
@@ -184,10 +217,10 @@ const SideOrnament = ({ side }: { side: "left" | "right" }) => {
 }
 
 const SideOrnamentWrapper = styled.div<{
-  side: "left" | "right"
+  $side: "left" | "right"
 }>`
   position: absolute;
-  ${({ side }) => side}: 22px;
+  ${({ $side }) => $side}: 22px;
   top: 50%;
   transform: translateY(-50%);
   width: 44px;
@@ -198,6 +231,10 @@ const SideOrnamentWrapper = styled.div<{
     width: 100%;
     height: 100%;
     display: block;
+  }
+
+  @media (max-width: 430px) {
+    display: none;
   }
 `
 
@@ -211,12 +248,12 @@ const ChapterCenter = styled.div`
 `
 
 const ChapterGlowLine = styled.div<{
-  side: "left" | "right"
-  theme: ThemeMode
+  $side: "left" | "right"
+  $theme: ThemeMode
 }>`
   position: absolute;
 
-  ${({ side }) => side}: 74px;
+  ${({ $side }) => $side}: 74px;
 
   top: 50%;
   transform: translateY(-50%);
@@ -241,13 +278,17 @@ const ChapterGlowLine = styled.div<{
     transform: translateY(-50%);
 
     background: linear-gradient(
-      ${({ side }) => (side === "left" ? "to left" : "to right")},
-      ${({ theme }) =>
-          theme === "dark" ? "rgba(216,204,176,0.58)" : "rgba(127,103,64,0.42)"}
+      ${({ $side }) => ($side === "left" ? "to left" : "to right")},
+      ${({ $theme }) =>
+          $theme === "dark"
+            ? "rgba(216,204,176,0.58)"
+            : "rgba(127,103,64,0.42)"}
         0%,
 
-      ${({ theme }) =>
-          theme === "dark" ? "rgba(216,204,176,0.20)" : "rgba(127,103,64,0.16)"}
+      ${({ $theme }) =>
+          $theme === "dark"
+            ? "rgba(216,204,176,0.20)"
+            : "rgba(127,103,64,0.16)"}
         55%,
 
       transparent 100%

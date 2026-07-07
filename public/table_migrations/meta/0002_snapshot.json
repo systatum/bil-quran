@@ -1,204 +1,346 @@
 {
-  "id": "69f1872e-9eae-4a77-a17b-708f2b153f6d",
-  "prevId": "64ca53f9-370b-4702-9ed3-77fa5cc0b04e",
-  "version": "7",
-  "dialect": "postgresql",
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "44219551-205b-4525-ac1f-4e8513952873",
+  "prevId": "19303a0d-2777-4623-82aa-b4e1c8770ec4",
   "tables": {
-    "public.chapters": {
+    "chapters": {
       "name": "chapters",
-      "schema": "",
       "columns": {
         "id": {
           "name": "id",
-          "type": "bigint",
+          "type": "integer",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "is_meccan": {
           "name": "is_meccan",
-          "type": "boolean",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
-        "part_divisions": {
-          "name": "part_divisions",
-          "type": "jsonb",
+        "partitioning": {
+          "name": "partitioning",
+          "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
-        "ar": {
-          "name": "ar",
-          "type": "varchar(20)",
+        "namings": {
+          "name": "namings",
+          "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
-        "en": {
-          "name": "en",
-          "type": "varchar(15)",
+        "transliterations": {
+          "name": "transliterations",
+          "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
-        "en_meaning": {
-          "name": "en_meaning",
-          "type": "varchar(35)",
+        "meanings": {
+          "name": "meanings",
+          "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
+      "checkConstraints": {}
     },
-    "public.renderings": {
-      "name": "renderings",
-      "schema": "",
+    "lexemes": {
+      "name": "lexemes",
       "columns": {
         "id": {
           "name": "id",
-          "type": "bigint",
+          "type": "integer",
           "primaryKey": true,
           "notNull": true,
-          "identity": {
-            "type": "always",
-            "name": "renderings_id_seq",
-            "schema": "public",
-            "increment": "1",
-            "startWith": "1",
-            "minValue": "1",
-            "maxValue": "9223372036854775807",
-            "cache": "1",
-            "cycle": false
-          }
+          "autoincrement": true
+        },
+        "root_id": {
+          "name": "root_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "token": {
+          "name": "token",
+          "type": "text(25)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "readings": {
+          "name": "readings",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'{}'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "lexemes_root_id_roots_id_fk": {
+          "name": "lexemes_root_id_roots_id_fk",
+          "tableFrom": "lexemes",
+          "tableTo": "roots",
+          "columnsFrom": [
+            "root_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "paginations": {
+      "name": "paginations",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
         },
         "name": {
           "name": "name",
-          "type": "varchar(20)",
+          "type": "text(20)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
+        },
+        "pages": {
+          "name": "pages",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'[]'"
+        }
+      },
+      "indexes": {
+        "paginations_name_unique": {
+          "name": "paginations_name_unique",
+          "columns": [
+            "name"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "renderings": {
+      "name": "renderings",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "renderings_name_unique": {
+          "name": "renderings_name_unique",
+          "columns": [
+            "name"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "roots": {
+      "name": "roots",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "root": {
+          "name": "root",
+          "type": "text(18)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "renderings_name_unique": {
-          "name": "renderings_name_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "name"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
-    "public.word_by_word_translations": {
-      "name": "word_by_word_translations",
-      "schema": "",
+    "word_translations": {
+      "name": "word_translations",
       "columns": {
         "locale": {
           "name": "locale",
-          "type": "varchar(6)",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "chapter": {
           "name": "chapter",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "ayat": {
           "name": "ayat",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "word": {
           "name": "word",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
-        "meaning": {
-          "name": "meaning",
-          "type": "varchar(255)",
+        "meaning_sunni": {
+          "name": "meaning_sunni",
+          "type": "text(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
+        },
+        "meaning_shia": {
+          "name": "meaning_shia",
+          "type": "text(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "unique_word_by_word_translation": {
-          "name": "unique_word_by_word_translation",
-          "nullsNotDistinct": false,
+      "indexes": {
+        "unique_word_translation": {
+          "name": "unique_word_translation",
           "columns": [
             "locale",
             "chapter",
             "ayat",
             "word"
-          ]
+          ],
+          "isUnique": true
         }
       },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
-    "public.words": {
+    "words": {
       "name": "words",
-      "schema": "",
       "columns": {
         "chapter_id": {
           "name": "chapter_id",
-          "type": "bigint",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "rendering_id": {
           "name": "rendering_id",
-          "type": "bigint",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lexeme_id": {
+          "name": "lexeme_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
         },
         "verse": {
           "name": "verse",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
-        "word": {
-          "name": "word",
-          "type": "varchar(13)",
+        "order": {
+          "name": "order",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "autoincrement": false
         },
         "part_number": {
           "name": "part_number",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "surat_unique_word_rendering": {
+          "name": "surat_unique_word_rendering",
+          "columns": [
+            "chapter_id",
+            "rendering_id",
+            "lexeme_id",
+            "verse",
+            "order"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
         "words_chapter_id_chapters_id_fk": {
           "name": "words_chapter_id_chapters_id_fk",
@@ -225,34 +367,36 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
+        },
+        "words_lexeme_id_lexemes_id_fk": {
+          "name": "words_lexeme_id_lexemes_id_fk",
+          "tableFrom": "words",
+          "tableTo": "lexemes",
+          "columnsFrom": [
+            "lexeme_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "surat_unique_word_rendering": {
-          "name": "surat_unique_word_rendering",
-          "nullsNotDistinct": false,
-          "columns": [
-            "chapter_id",
-            "rendering_id",
-            "verse"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     }
   },
-  "enums": {},
-  "schemas": {},
-  "sequences": {},
-  "roles": {},
-  "policies": {},
   "views": {},
+  "enums": {},
   "_meta": {
-    "columns": {},
     "schemas": {},
-    "tables": {}
+    "tables": {},
+    "columns": {
+      "\"word_translations\".\"meaning\"": "\"word_translations\".\"meaning_sunni\""
+    }
+  },
+  "internal": {
+    "indexes": {}
   }
 }

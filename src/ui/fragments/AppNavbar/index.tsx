@@ -1,12 +1,17 @@
 import { ThemeMode } from "@constants/theme"
-import { messages } from "@i18n/message"
-import { RiCloseLine, RiMenuLine } from "@remixicon/react"
-import { useCallback, useState } from "react"
+import usePositioningObserver from "@hooks/tools/usePositioningObserver"
+import { RiMenuLine, RiSearchLine } from "@remixicon/react"
+import {
+  OverlayBlocker,
+  OverlayBlockerRef,
+} from "@systatum/coneto/overlay-blocker"
+import { Title, TitleSection } from "@systatum/coneto/title"
+import { Ref, useMemo, useRef, useState } from "react"
 import { useIntl } from "react-intl"
-import styled from "styled-components"
-import useUserSettingsState from "../../hooks/states/UserSettingsState"
-import UserSettingsForm from "./UserSettingsForm"
-import VerseLookup from "./VerseLookup"
+import { css } from "styled-components"
+import JuzProgressBar from "./JuzProgressBar"
+import { SearchSheet } from "./SearchSheet"
+import Sidebar from "./Sidebar"
 
 interface AppNavbarProps {
   theme: ThemeMode
@@ -21,125 +26,83 @@ interface AppNavbarProps {
 export default function AppNavbar({ theme, title }: AppNavbarProps) {
   const intl = useIntl()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const BurgerIcon = isSidebarOpen ? RiCloseLine : RiMenuLine
-  const { setTheme, setLocale, userSettings } = useUserSettingsState()
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const fontColor = theme === "dark" ? "#6e9370" : "#fff0d3"
+  const bgColor = theme === "dark" ? "#22271b" : "rgb(117 95 77)"
 
-  const changeLocale = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      e.preventDefault()
-      const value = e.target.value
-      setLocale(value)
-    },
-    [],
+  const titleRef = useRef<HTMLDivElement>(null)
+  const overlayBlockerRef: Ref<OverlayBlockerRef> = useRef(null)
+  const navbarPositioning = usePositioningObserver(titleRef)
+
+  const actions: TitleSection[] = useMemo(
+    () => [
+      {
+        type: "actions",
+        actions: [
+          {
+            icon: { image: RiSearchLine, color: fontColor },
+            onClick: () => setIsSearchOpen((x) => !x),
+          },
+          {
+            icon: { image: RiMenuLine, color: fontColor },
+            onClick: () => setIsSidebarOpen((x) => !x),
+          },
+        ],
+      },
+    ],
+    [theme],
   )
 
   return (
     <>
-      <NavbarContainer theme={theme}>
-        <ChapterLabel theme={theme}>{title}</ChapterLabel>
-        <BurgerButton theme={theme} onClick={() => setIsSidebarOpen((x) => !x)}>
-          <BurgerIcon size={24} />
-        </BurgerButton>
-      </NavbarContainer>
+      <div ref={titleRef} style={{ position: "relative" }}>
+        <Title
+          size="sm"
+          text={title}
+          styles={{
+            containerStyle: css`
+              padding: 10px;
+              background-color: ${bgColor};
+              color: ${fontColor};
+              align-items: center;
+            `,
+            titleStyle: css`
+              color: ${fontColor};
+            `,
+          }}
+          rightSection={actions}
+        />
+        <JuzProgressBar theme={theme} />
+      </div>
 
-      <SidebarOverlay
-        $visible={isSidebarOpen}
-        onClick={() => setIsSidebarOpen(false)}
+      {(isSidebarOpen || isSearchOpen) && (
+        <OverlayBlocker
+          ref={overlayBlockerRef}
+          exemptRegions={["#combo-list", "#bookmark-list"]}
+          show={isSidebarOpen || isSearchOpen}
+          onClick={({ close }) => {
+            setIsSidebarOpen(false)
+            setIsSearchOpen(false)
+            close()
+          }}
+        />
+      )}
+
+      <Sidebar
+        theme={theme}
+        visible={isSidebarOpen}
+        onClosingSidebarRequested={() => {
+          overlayBlockerRef?.current?.close()
+          setIsSidebarOpen(false)
+          setIsSearchOpen(false)
+        }}
       />
 
-      <SidebarContainer theme={theme} $visible={isSidebarOpen}>
-        <SidebarItem>
-          {intl.formatMessage({ id: messages.lookup.title })}
-        </SidebarItem>
-        <VerseLookup />
-
-        <UserSettingsForm />
-      </SidebarContainer>
+      <SearchSheet
+        isOpen={isSearchOpen}
+        navbarPositioning={navbarPositioning}
+        onAfterSearch={() => setIsSearchOpen(false)}
+      />
     </>
   )
 }
-
-const NavbarContainer = styled.header<{ theme: ThemeMode }>`
-  top: 0;
-  position: sticky;
-  z-index: 1000;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  background: ${({ theme }) =>
-    theme === "dark" ? "#22271b" : "rgb(117 95 77)"};
-  border-bottom: 1px solid
-    ${({ theme }) => (theme === "dark" ? "#455230" : "#ececec")};
-  backdrop-filter: blur(12px);
-`
-
-const ChapterLabel = styled.div<{ theme: ThemeMode }>`
-  font-size: 18px;
-  font-weight: 600;
-  color: ${({ theme }) => (theme === "dark" ? "#6e9370" : "#fff0d3")};
-`
-
-const BurgerButton = styled.button<{ theme: ThemeMode }>`
-  color: ${({ theme }) => (theme === "dark" ? "#475848" : "#fff0d3")};
-  width: 42px;
-  height: 42px;
-  border: none;
-  background: transparent;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: background 0.15s ease;
-
-  &:hover {
-    background: rgba(0, 0, 0, 0.08);
-  }
-`
-
-const SidebarOverlay = styled.div<{
-  $visible: boolean
-}>`
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.35);
-  opacity: ${(p) => (p.$visible ? 1 : 0)};
-  pointer-events: ${(p) => (p.$visible ? "auto" : "none")};
-  transition: opacity 0.2s ease;
-  z-index: 1100;
-`
-
-const SidebarContainer = styled.aside<{
-  theme: ThemeMode
-  $visible: boolean
-}>`
-  background: ${({ theme }) => (theme === "dark" ? "#9fae81" : "#e1dfda")};
-  position: fixed;
-  top: 0;
-  right: 0;
-  height: 100vh;
-  width: 300px;
-  max-width: 300px;
-  padding: 24px;
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.08);
-  transform: translateX(${(p) => (p.$visible ? "0%" : "100%")});
-  transition: transform 0.22s ease;
-  z-index: 1200;
-`
-
-const SidebarItem = styled.button`
-  width: 100%;
-  border: none;
-  background: transparent;
-  text-align: left;
-  padding: 14px 0;
-  font-size: 16px;
-  color: #333;
-  cursor: pointer;
-  transition: color 0.15s ease;
-
-  &:hover {
-    color: #000;
-  }
-`

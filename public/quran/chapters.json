@@ -3,7 +3,11 @@
     "length": 7,
     "isMeccan": true,
     "partitioning": [{ "part": 1, "start": 1, "end": 7 }],
-    "meanings": { "en-US": "The Opener", "ar-IQ": null, "id-ID": "Pembukaan" },
+    "meanings": {
+      "en-US": "The Exordium",
+      "ar-IQ": null,
+      "id-ID": "Pembukaan"
+    },
     "namings": { "en-US": "الفاتحة", "ar-IQ": "الفاتحة", "id-ID": "الفاتحة" },
     "transliterations": {
       "en-US": "Al-Faatiha",
@@ -39,7 +43,7 @@
       { "part": 4, "start": 93, "end": 200 }
     ],
     "meanings": {
-      "en-US": "Family of Imran",
+      "en-US": "The Imrans",
       "ar-IQ": null,
       "id-ID": "Keluarga Imran"
     },
@@ -78,7 +82,7 @@
       { "part": 7, "start": 82, "end": 120 }
     ],
     "meanings": {
-      "en-US": "The Table Spread",
+      "en-US": "The Feast",
       "ar-IQ": null,
       "id-ID": "Hidangan"
     },
@@ -223,7 +227,11 @@
     "length": 99,
     "isMeccan": true,
     "partitioning": [{ "part": 14, "start": 1, "end": 99 }],
-    "meanings": { "en-US": "The Stoneland", "ar-IQ": null, "id-ID": "Hijr" },
+    "meanings": {
+      "en-US": "The Stoneland",
+      "ar-IQ": null,
+      "id-ID": "Jalur Berbatu"
+    },
     "namings": { "en-US": "الحجر", "ar-IQ": "الحجر", "id-ID": "الحجر" },
     "transliterations": {
       "en-US": "Al-Hijr",
@@ -250,7 +258,7 @@
     "meanings": {
       "en-US": "The Night Journey",
       "ar-IQ": null,
-      "id-ID": "Memperjalankan Malam Hari"
+      "id-ID": "Perjalanan Malam"
     },
     "namings": { "en-US": "الإسراء", "ar-IQ": "الإسراء", "id-ID": "الإسراء" },
     "transliterations": {
@@ -463,7 +471,7 @@
     "length": 30,
     "isMeccan": true,
     "partitioning": [{ "part": 21, "start": 1, "end": 30 }],
-    "meanings": { "en-US": "Prostration", "ar-IQ": null, "id-ID": "Sajdah" },
+    "meanings": { "en-US": "Prostration", "ar-IQ": null, "id-ID": "Sujud" },
     "namings": { "en-US": "السجدة", "ar-IQ": "السجدة", "id-ID": "السجدة" },
     "transliterations": {
       "en-US": "As-Sajda",
@@ -494,7 +502,11 @@
     "length": 54,
     "isMeccan": true,
     "partitioning": [{ "part": 22, "start": 1, "end": 54 }],
-    "meanings": { "en-US": "Sheba", "ar-IQ": null, "id-ID": "Saba'" },
+    "meanings": {
+      "en-US": "The City of Sheba",
+      "ar-IQ": null,
+      "id-ID": "Kota Saba'"
+    },
     "namings": { "en-US": "سبأ", "ar-IQ": "سبأ", "id-ID": "سبأ" },
     "transliterations": { "en-US": "Saba", "ar-IQ": "سبأ", "id-ID": "Saba'" }
   },
@@ -541,7 +553,7 @@
     "length": 88,
     "isMeccan": true,
     "partitioning": [{ "part": 23, "start": 1, "end": 88 }],
-    "meanings": { "en-US": "The Letter Saad", "ar-IQ": null, "id-ID": "Sad" },
+    "meanings": { "en-US": "Saad", "ar-IQ": null, "id-ID": "Sad" },
     "namings": { "en-US": "ص", "ar-IQ": "ص", "id-ID": "ص" },
     "transliterations": { "en-US": "Saad", "ar-IQ": "ص", "id-ID": "Sad" }
   },
@@ -552,7 +564,7 @@
       { "part": 23, "start": 1, "end": 31 },
       { "part": 24, "start": 32, "end": 75 }
     ],
-    "meanings": { "en-US": "The Troops", "ar-IQ": null, "id-ID": "Rombongan" },
+    "meanings": { "en-US": "The Crowds", "ar-IQ": null, "id-ID": "Rombongan" },
     "namings": { "en-US": "الزمر", "ar-IQ": "الزمر", "id-ID": "الزمر" },
     "transliterations": {
       "en-US": "Az-Zumar",
@@ -584,7 +596,7 @@
       { "part": 25, "start": 47, "end": 54 }
     ],
     "meanings": {
-      "en-US": "Explained in Detail",
+      "en-US": "The Well-Explained",
       "ar-IQ": null,
       "id-ID": "Yang Dijelaskan"
     },
@@ -600,7 +612,7 @@
     "isMeccan": true,
     "partitioning": [{ "part": 25, "start": 1, "end": 53 }],
     "meanings": {
-      "en-US": "The Consultation",
+      "en-US": "The Counsel",
       "ar-IQ": null,
       "id-ID": "Musyawarah"
     },
@@ -615,7 +627,7 @@
     "length": 89,
     "isMeccan": true,
     "partitioning": [{ "part": 25, "start": 1, "end": 89 }],
-    "meanings": { "en-US": "Luxury", "ar-IQ": null, "id-ID": "Perhiasan" },
+    "meanings": { "en-US": "Ornaments", "ar-IQ": null, "id-ID": "Perhiasan" },
     "namings": { "en-US": "الزخرف", "ar-IQ": "الزخرف", "id-ID": "الزخرف" },
     "transliterations": {
       "en-US": "Az-Zukhruf",
@@ -627,7 +639,7 @@
     "length": 59,
     "isMeccan": true,
     "partitioning": [{ "part": 25, "start": 1, "end": 59 }],
-    "meanings": { "en-US": "The Smoke", "ar-IQ": null, "id-ID": "Kabut" },
+    "meanings": { "en-US": "Mist", "ar-IQ": null, "id-ID": "Kabut" },
     "namings": { "en-US": "الدخان", "ar-IQ": "الدخان", "id-ID": "الدخان" },
     "transliterations": {
       "en-US": "Ad-Dukhaan",
@@ -640,7 +652,7 @@
     "isMeccan": true,
     "partitioning": [{ "part": 25, "start": 1, "end": 37 }],
     "meanings": {
-      "en-US": "The Crouching",
+      "en-US": "The Kneeling",
       "ar-IQ": null,
       "id-ID": "Berlutut"
     },
@@ -747,7 +759,7 @@
     "isMeccan": true,
     "partitioning": [{ "part": 27, "start": 1, "end": 49 }],
     "meanings": {
-      "en-US": "The Mountain",
+      "en-US": "Mount Sinai",
       "ar-IQ": null,
       "id-ID": "Bukit Tursina"
     },
@@ -805,7 +817,7 @@
     "meanings": {
       "en-US": "The Inevitable",
       "ar-IQ": null,
-      "id-ID": "Hari Kiamat"
+      "id-ID": "Peristiwa Pasti"
     },
     "namings": { "en-US": "الواقعة", "ar-IQ": "الواقعة", "id-ID": "الواقعة" },
     "transliterations": {
@@ -831,7 +843,7 @@
     "isMeccan": false,
     "partitioning": [{ "part": 28, "start": 1, "end": 22 }],
     "meanings": {
-      "en-US": "The Pleading Woman",
+      "en-US": "The Dispute",
       "ar-IQ": null,
       "id-ID": "Gugatan"
     },
@@ -863,7 +875,7 @@
     "isMeccan": false,
     "partitioning": [{ "part": 28, "start": 1, "end": 13 }],
     "meanings": {
-      "en-US": "She That Is To Be Examined",
+      "en-US": "The Woman Tested",
       "ar-IQ": null,
       "id-ID": "Wanita Yang Diuji"
     },
@@ -882,7 +894,7 @@
     "length": 14,
     "isMeccan": false,
     "partitioning": [{ "part": 28, "start": 1, "end": 14 }],
-    "meanings": { "en-US": "The Ranks", "ar-IQ": null, "id-ID": "Barisan" },
+    "meanings": { "en-US": "Solid Lines", "ar-IQ": null, "id-ID": "Barisan" },
     "namings": { "en-US": "الصف", "ar-IQ": "الصف", "id-ID": "الصف" },
     "transliterations": {
       "en-US": "As-Saff",
@@ -895,7 +907,7 @@
     "isMeccan": false,
     "partitioning": [{ "part": 28, "start": 1, "end": 11 }],
     "meanings": {
-      "en-US": "Congregation Prayer",
+      "en-US": "Friday",
       "ar-IQ": null,
       "id-ID": "Jumat"
     },
@@ -931,7 +943,7 @@
     "isMeccan": false,
     "partitioning": [{ "part": 28, "start": 1, "end": 18 }],
     "meanings": {
-      "en-US": "Mutual Dispossession",
+      "en-US": "Exposition",
       "ar-IQ": null,
       "id-ID": "Pengungkapan Kesalahan"
     },
@@ -1003,9 +1015,9 @@
     "isMeccan": true,
     "partitioning": [{ "part": 29, "start": 1, "end": 52 }],
     "meanings": {
-      "en-US": "The Reality",
+      "en-US": "The Inevitable",
       "ar-IQ": null,
-      "id-ID": "Hari Kiamat"
+      "id-ID": "Kebenaran Pasti"
     },
     "namings": { "en-US": "الحاقة", "ar-IQ": "الحاقة", "id-ID": "الحاقة" },
     "transliterations": {
@@ -1019,9 +1031,9 @@
     "isMeccan": true,
     "partitioning": [{ "part": 29, "start": 1, "end": 44 }],
     "meanings": {
-      "en-US": "The Ascending Stairways",
+      "en-US": "Lofty Stations",
       "ar-IQ": null,
-      "id-ID": "Tempat Naik"
+      "id-ID": "Stasiun Tinggi"
     },
     "namings": { "en-US": "المعارج", "ar-IQ": "المعارج", "id-ID": "المعارج" },
     "transliterations": {
@@ -1087,9 +1099,9 @@
     "isMeccan": true,
     "partitioning": [{ "part": 29, "start": 1, "end": 40 }],
     "meanings": {
-      "en-US": "The Resurrection",
+      "en-US": "Day of Resurrection",
       "ar-IQ": null,
-      "id-ID": "Hari Kiamat"
+      "id-ID": "Hari Akhir"
     },
     "namings": { "en-US": "القيامة", "ar-IQ": "القيامة", "id-ID": "القيامة" },
     "transliterations": {
@@ -1135,7 +1147,7 @@
     "isMeccan": true,
     "partitioning": [{ "part": 30, "start": 1, "end": 40 }],
     "meanings": {
-      "en-US": "The Tidings",
+      "en-US": "The Great Tiding",
       "ar-IQ": null,
       "id-ID": "Berita Besar"
     },
@@ -1151,7 +1163,7 @@
     "isMeccan": true,
     "partitioning": [{ "part": 30, "start": 1, "end": 46 }],
     "meanings": {
-      "en-US": "Those Who Drag Forth",
+      "en-US": "The Soul-Snatchers",
       "ar-IQ": null,
       "id-ID": "Malaikat Yang Mencabut"
     },
@@ -1183,7 +1195,7 @@
     "isMeccan": true,
     "partitioning": [{ "part": 30, "start": 1, "end": 29 }],
     "meanings": {
-      "en-US": "The Overthrowing",
+      "en-US": "The Darkening",
       "ar-IQ": null,
       "id-ID": "Penggulungan"
     },
@@ -1198,7 +1210,11 @@
     "length": 19,
     "isMeccan": true,
     "partitioning": [{ "part": 30, "start": 1, "end": 19 }],
-    "meanings": { "en-US": "The Cleaving", "ar-IQ": null, "id-ID": "Terbelah" },
+    "meanings": {
+      "en-US": "Cleft Asunder",
+      "ar-IQ": null,
+      "id-ID": "Terbelah"
+    },
     "namings": {
       "en-US": "الإنفطار",
       "ar-IQ": "الإنفطار",
@@ -1215,7 +1231,7 @@
     "isMeccan": true,
     "partitioning": [{ "part": 30, "start": 1, "end": 36 }],
     "meanings": {
-      "en-US": "The Defrauding",
+      "en-US": "The Defrauders",
       "ar-IQ": null,
       "id-ID": "Orang-Orang Curang"
     },
@@ -1235,9 +1251,9 @@
     "isMeccan": true,
     "partitioning": [{ "part": 30, "start": 1, "end": 25 }],
     "meanings": {
-      "en-US": "The Sundering",
+      "en-US": "Ripped Apart",
       "ar-IQ": null,
-      "id-ID": "Terbelah"
+      "id-ID": "Terkoyak"
     },
     "namings": {
       "en-US": "الإنشقاق",
@@ -1255,7 +1271,7 @@
     "isMeccan": true,
     "partitioning": [{ "part": 30, "start": 1, "end": 22 }],
     "meanings": {
-      "en-US": "The Mansions of the Stars",
+      "en-US": "The Constellations",
       "ar-IQ": null,
       "id-ID": "Gugusan Bintang"
     },
@@ -1303,7 +1319,7 @@
     "isMeccan": true,
     "partitioning": [{ "part": 30, "start": 1, "end": 26 }],
     "meanings": {
-      "en-US": "The Overwhelming",
+      "en-US": "The Overpowering",
       "ar-IQ": null,
       "id-ID": "Hari Pembalasan"
     },
@@ -1382,7 +1398,7 @@
     "length": 8,
     "isMeccan": true,
     "partitioning": [{ "part": 30, "start": 1, "end": 8 }],
-    "meanings": { "en-US": "The Expansion", "ar-IQ": null, "id-ID": "Lapang" },
+    "meanings": { "en-US": "Relief", "ar-IQ": null, "id-ID": "Lapang" },
     "namings": { "en-US": "الشرح", "ar-IQ": "الشرح", "id-ID": "الشرح" },
     "transliterations": {
       "en-US": "Ash-Sharh",
@@ -1394,7 +1410,7 @@
     "length": 8,
     "isMeccan": true,
     "partitioning": [{ "part": 30, "start": 1, "end": 8 }],
-    "meanings": { "en-US": "The Fig", "ar-IQ": null, "id-ID": "Buah Tin" },
+    "meanings": { "en-US": "The Figtree", "ar-IQ": null, "id-ID": "Buah Tin" },
     "namings": { "en-US": "التين", "ar-IQ": "التين", "id-ID": "التين" },
     "transliterations": {
       "en-US": "At-Tin",
@@ -1407,7 +1423,7 @@
     "isMeccan": true,
     "partitioning": [{ "part": 30, "start": 1, "end": 19 }],
     "meanings": {
-      "en-US": "The Blood Clot",
+      "en-US": "Read",
       "ar-IQ": null,
       "id-ID": "Segumpal Darah"
     },
@@ -1422,7 +1438,7 @@
     "length": 5,
     "isMeccan": true,
     "partitioning": [{ "part": 30, "start": 1, "end": 5 }],
-    "meanings": { "en-US": "The Power", "ar-IQ": null, "id-ID": "Kemuliaan" },
+    "meanings": { "en-US": "The Glory", "ar-IQ": null, "id-ID": "Kemuliaan" },
     "namings": { "en-US": "القدر", "ar-IQ": "القدر", "id-ID": "القدر" },
     "transliterations": {
       "en-US": "Al-Qadr",
@@ -1451,7 +1467,7 @@
     "isMeccan": false,
     "partitioning": [{ "part": 30, "start": 1, "end": 8 }],
     "meanings": {
-      "en-US": "The Earthquake",
+      "en-US": "The Quake",
       "ar-IQ": null,
       "id-ID": "Guncangan"
     },
@@ -1467,7 +1483,7 @@
     "isMeccan": true,
     "partitioning": [{ "part": 30, "start": 1, "end": 11 }],
     "meanings": {
-      "en-US": "The Courser",
+      "en-US": "The Charging Mares",
       "ar-IQ": null,
       "id-ID": "Kuda Yang Berlari Kencang"
     },
@@ -1487,9 +1503,9 @@
     "isMeccan": true,
     "partitioning": [{ "part": 30, "start": 1, "end": 11 }],
     "meanings": {
-      "en-US": "The Calamity",
+      "en-US": "The Catastrophe",
       "ar-IQ": null,
-      "id-ID": "Hari Kiamat"
+      "id-ID": "Bencana Dahsyat"
     },
     "namings": { "en-US": "القارعة", "ar-IQ": "القارعة", "id-ID": "القارعة" },
     "transliterations": {
@@ -1503,7 +1519,7 @@
     "isMeccan": true,
     "partitioning": [{ "part": 30, "start": 1, "end": 8 }],
     "meanings": {
-      "en-US": "Vying for Increase",
+      "en-US": "Plenitude",
       "ar-IQ": null,
       "id-ID": "Bermegah-Megahan"
     },
@@ -1519,7 +1535,7 @@
     "isMeccan": true,
     "partitioning": [{ "part": 30, "start": 1, "end": 3 }],
     "meanings": {
-      "en-US": "The Declining Day",
+      "en-US": "Time",
       "ar-IQ": null,
       "id-ID": "Masa"
     },
@@ -1562,7 +1578,11 @@
     "length": 4,
     "isMeccan": true,
     "partitioning": [{ "part": 30, "start": 1, "end": 4 }],
-    "meanings": { "en-US": "Quraish", "ar-IQ": null, "id-ID": "Kaum Quraisy" },
+    "meanings": {
+      "en-US": "Tribe of Quraish",
+      "ar-IQ": null,
+      "id-ID": "Kaum Quraisy"
+    },
     "namings": { "en-US": "قريش", "ar-IQ": "قريش", "id-ID": "قريش" },
     "transliterations": {
       "en-US": "Quraish",
@@ -1575,9 +1595,9 @@
     "isMeccan": true,
     "partitioning": [{ "part": 30, "start": 1, "end": 7 }],
     "meanings": {
-      "en-US": "The Small Kindness",
+      "en-US": "Almsgiving",
       "ar-IQ": null,
-      "id-ID": "Barang Berguna"
+      "id-ID": "Bantuan"
     },
     "namings": { "en-US": "الماعون", "ar-IQ": "الماعون", "id-ID": "الماعون" },
     "transliterations": {
@@ -1591,7 +1611,7 @@
     "isMeccan": true,
     "partitioning": [{ "part": 30, "start": 1, "end": 3 }],
     "meanings": {
-      "en-US": "The Abundance",
+      "en-US": "Abundance",
       "ar-IQ": null,
       "id-ID": "Pemberian Berlimpah"
     },
@@ -1607,7 +1627,7 @@
     "isMeccan": true,
     "partitioning": [{ "part": 30, "start": 1, "end": 6 }],
     "meanings": {
-      "en-US": "The Disbelievers",
+      "en-US": "The Faithless",
       "ar-IQ": null,
       "id-ID": "Orang-Orang Kafir"
     },
@@ -1627,7 +1647,7 @@
     "isMeccan": false,
     "partitioning": [{ "part": 30, "start": 1, "end": 3 }],
     "meanings": {
-      "en-US": "The Divine Support",
+      "en-US": "The Help",
       "ar-IQ": null,
       "id-ID": "Pertolongan"
     },
@@ -1658,7 +1678,7 @@
     "length": 4,
     "isMeccan": true,
     "partitioning": [{ "part": 30, "start": 1, "end": 4 }],
-    "meanings": { "en-US": "The Sincerity", "ar-IQ": null, "id-ID": "Ikhlas" },
+    "meanings": { "en-US": "Monotheism", "ar-IQ": null, "id-ID": "Iman Murni" },
     "namings": { "en-US": "الإخلاص", "ar-IQ": "الإخلاص", "id-ID": "الإخلاص" },
     "transliterations": {
       "en-US": "Al-Ikhlaas",
@@ -1670,7 +1690,11 @@
     "length": 5,
     "isMeccan": true,
     "partitioning": [{ "part": 30, "start": 1, "end": 5 }],
-    "meanings": { "en-US": "The Daybreak", "ar-IQ": null, "id-ID": "Subuh" },
+    "meanings": {
+      "en-US": "The Daybreak",
+      "ar-IQ": null,
+      "id-ID": "Terbit Hari"
+    },
     "namings": { "en-US": "الفلق", "ar-IQ": "الفلق", "id-ID": "الفلق" },
     "transliterations": {
       "en-US": "Al-Falaq",

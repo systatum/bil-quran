@@ -1,5 +1,8 @@
-import { PGlite } from "@electric-sql/pglite"
-import { drizzle } from "drizzle-orm/pglite"
+import LOGGER from "@services/Logger"
+import { isCoreAssetsRecent } from "@services/fingerprinter"
+import { drizzle } from "drizzle-orm/sql-js"
+import { get, set } from "idb-keyval"
+import initSqlJs, { Database, SqlJsStatic } from "sql.js"
 import { repo } from "./repo"
 
 // This module handles raw database creation and setup
@@ -8,22 +11,37 @@ import { repo } from "./repo"
 /**
  * Where shall the data be stored
  */
-const DATA_DIR = `idb://bilquran`
+export const DATABASE_KEY = `bilquran.systatum`
 
-let pgClient: PGlite | null = null
-export async function getPostgresDriver() {
-  if (pgClient != null) return pgClient
+let SQL: SqlJsStatic | null = null
+let client: Database | null = null
+export async function initDbDriver(): Promise<SqlJsStatic> {
+  SQL ??= await initSqlJs({
+    locateFile: (file) => `/db/sqlite/${file}`,
+  })
+  return SQL
+}
 
-  try {
-    pgClient = await PGlite.create({
-      dataDir: DATA_DIR,
-      relaxedDurability: true,
-    })
-  } catch (e) {
-    console.error("Error getting PGlite database instance", e)
-  }
+export async function getClient(): Promise<Database> {
+  if (client) return client
+  const SQL = await initDbDriver()
+  const canRestoreSnapshot = await isCoreAssetsRecent()
+  const snapshot = canRestoreSnapshot
+    ? await get<Uint8Array>(DATABASE_KEY)
+    : null
+  LOGGER.debug(
+    "Database snapshot size: " + String(snapshot?.byteLength ?? 0) + " bytes",
+  )
+  client = snapshot != null ? new SQL.Database(snapshot) : new SQL.Database()
+  return client
+}
 
-  return pgClient
+export async function persistDb(): Promise<void> {
+  if (!client) return
+
+  LOGGER.debug("Persisting database changes")
+  await set(DATABASE_KEY, client.export())
+  LOGGER.debug("Database changes persisted to: " + DATABASE_KEY)
 }
 
 export type DbConn = ReturnType<typeof drizzle>
@@ -37,10 +55,11 @@ export async function getConn(): Promise<DbConn> {
   // that would make initPromise remains a rejected promise
   initPromise = (async () => {
     try {
-      if (pgClient == null) {
-        pgClient = new PGlite(DATA_DIR)
-      }
-      db = drizzle(pgClient, { schema: repo, casing: "snake_case" })
+      const sqlite = await getClient()
+      db = drizzle(sqlite, {
+        schema: repo,
+        casing: "snake_case",
+      })
       return db
     } finally {
       if (!db) initPromise = null

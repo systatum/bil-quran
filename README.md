@@ -1,5 +1,7 @@
 # bil-quran
 
+Bil-Quran is an Qur'an app where translation is provided interlinear (or word-by-word/verse-by-verse) to aid with understanding the Qur'an for those who want to read the Qur'an not just at the Qira'ah/recitation level.
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 - `pnpm start`: Starts the development server.
@@ -13,13 +15,21 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 Scrolling works by using hash router, ie: https://bil-quran.com/#/c/11/12
 
+App unique features:
+
+- Allow you to learn word-by-word
+- Allow you to see tajwid rules and words in the quran exemplify those rules
+- Respect both Sunni and Shi'i perspective of what makes Surat Sajdah
+
 ## If I had more time
 
 - Better scroll preservation (both saving and restoring the position)
-- Better typing (ie for the user settings)
-- Add more word-by-word translation: Indonesian
 - Ability to bookmark any verse and go to that any moment
-- Store number of verses in each chapter, so that the verse lookup component can display verse number rather than making user type
+- Can lookup by: juz, root word, and verse theme.
+- Normalize such as in baqarah 10: اَلِیْمٌۢ بِمَا the mim at the first word has indicator of mim
+- Make it easy to learn tajwid on the app
+- Add a feature to report an issue
+- Rate translation feature (this needs Ligo backend).
 
 ## Stack
 
@@ -28,7 +38,27 @@ Scrolling works by using hash router, ie: https://bil-quran.com/#/c/11/12
 
 ## Test to be made
 
-- [ ] Selecting/changing theme should be recorded/persisted (event after reload)
-- [ ] Can change font, and when changing the font, all the rows are calculated correctly (the distance between one verse row to another is 0, check for all the first 100 rows, and change one by one from one font to another).
-  - and when revisiting the page should read/use the same font
-- [ ] Can go to specific chapter and verse of the Quran through the lookup form
+- [ ] Test when user translations has English and Indonesian, both are shown fine on first load (Indonesian is not the default). This is to test first pre-flight translation downloading and insertion works.
+- [ ] Try raising error at the translator-level (ie at the i18n's formatMessage) and ensure that we see an error screen; otherwise we miss a locale, and the user is not seeing any error. Another simple way is inject into `WordTranslationOption` some fake value, where there's no corresponding i18n key for that in locale files, and so the lookup will generate a null/undefined, causing error on formatMessage-part automatically.
+- [ ] If we add another locale, and then refresh the page, we should not redownload the locale (this proves that database persisting works for all new-locale)
+- [ ] Work on all the to-do
+- [ ] Add madhab mode (shia/sunni)
+- [ ] Check overlay behavior: if sidebar is opened, has overlay, and clicking overlay close the sidebar. Same expected behavior with search bar.
+- [ ] Make sure pressing on the word show the occurrences across different verses
+- [ ] Fix 2:204 word 16 buggy cannot scroll down
+- [ ] Add a new bookmark note. And if adding on a bookmarked verse, will edit instead of insert. Also check that each bookmark, whenever not specified, will add to default (but the localstorage should always have 1 default category)
+- [ ] Can change and update setting and ensure it makes effect (test one by one, ie adding and removing word transation option also one by one)
+- [ ] Test bookmark can click and go to that verse.
+- [ ] When having bookmark data, ensure that scrollbar is shown and user can scroll when there are a lot of bookmark.
+
+ءَا
+لْإِ
+"\w+/
+sedikit/([\w\-\s]+")
+
+standardize مَنْ in indonesian (like 2:200) so that it reads "barang siapa" (or "yang" better?) rather than "orang" (but must check the English, if it is just whom or who -> yang, if it is (to) whom then (ke) yang, (is he) -> (ialah) yang; other than that put te english word as-is: (english) yang)
+
+good ayat to check: 2:200, 3:26,
+
+dalam dalam -> dalam
+adalah ia -> ia

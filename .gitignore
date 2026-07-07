@@ -22,4 +22,14 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# came from _journal.json which is actually used, but Github doesn't like _journal so we normalize
+# it to journal.json, and since this is a duplicate and not used for anything else than database
+# seeding, we better ignore it
 /public/table_migrations/meta/journal.json
+# ignore the chapter-by-chapter files; it shouldn't be committed, but built during dev/deploy time
+/public/quran/verses/**/*.json
+
+scripts/**/.wrangler
+scripts/quran_audio_uploader/**/ayats/**/*.mp3
+scripts/quran_audio_uploader/**/ayats/**/*
+scripts/quran_audio_uploader/**/except_*.txt

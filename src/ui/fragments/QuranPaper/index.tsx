@@ -1,17 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 
 import { ChapterRecord } from "@constants/records/ChapterRecord"
-import { BasmalaPosition } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
-import { repo } from "@db/repo"
-import { unpackIPC } from "@services/Converter"
+import { useTranslatedWords, useWords } from "@hooks/tools/useWordTranslations"
 import { useVirtualizer, VirtualItem } from "@tanstack/react-virtual"
 import useChaptersState from "../../hooks/states/ChaptersState"
 import useUserSettingsState from "../../hooks/states/UserSettingsState"
-import { Bismillah } from "./Bismillah"
 import ChapterRow from "./ChapterRow"
-import FullblockBasmala from "./FullblockBasmala"
-import VerseRow, { Verse, WordCell } from "./VerseRow"
+import PaperDialog from "./PaperDialog"
+import VerseRow, { Verse } from "./VerseRow"
+import { Bismillah } from "./VerseRow/Bismillah"
+import NoteVerseDialog from "./VerseRow/NoteDialog"
 
 // This module contains the content browser of the Quran.
 // It includes various components to build the verse, and
@@ -20,13 +19,18 @@ import VerseRow, { Verse, WordCell } from "./VerseRow"
 // a few in the viewport so as not to crumble the device's
 // precious RAM and slowing down the device's processor.
 
-type RenderableChapterRow = { type: "chapter"; chapter: ChapterRecord }
-type RenderableVerseRow = { type: "verse"; verse: Verse }
-type RenderableBasmalaRow = { type: "basmala" }
-type RenderRow =
-  | RenderableChapterRow
-  | RenderableVerseRow
-  | RenderableBasmalaRow
+interface RenderableChapterRow {
+  type: "chapter"
+  chapter: ChapterRecord
+  hasBasmala: boolean
+}
+
+interface RenderableVerseRow {
+  type: "verse"
+  verse: Verse
+}
+
+type RenderRow = RenderableChapterRow | RenderableVerseRow
 
 function isVerseRow(row: RenderRow): row is RenderableVerseRow {
   return row.type === "verse"
@@ -51,10 +55,13 @@ export default function QuranPaper({
   chapterId: requestedChapterId,
   verseNumber: requestedVerseNumber,
 }: QuranBrowserProps) {
-  const { chapters } = useChaptersState()
-  const [words, setWords] = useState<WordCell[]>([])
   const parentRef = useRef<HTMLDivElement>(null)
+
+  const { chapters } = useChaptersState()
   const { setScrollPosition, userSettings } = useUserSettingsState()
+
+  const rawWords = useWords()
+  const words = useTranslatedWords(rawWords, userSettings.wbwTranslations)
 
   // some flags about the rendering
   const [showTransliteration, setShowTransliteration] = useState(false)
@@ -65,24 +72,6 @@ export default function QuranPaper({
    * Virtualizer relies on this for correct positioning.
    */
   const sizeMap = useRef<Map<number, number>>(new Map())
-
-  useEffect(() => {
-    async function load() {
-      // load word-by-word translations and associate to its relevant word in a verse
-      const wbwTranslations = unpackIPC(
-        await repo.wbwTranslations.compile("en-US"),
-      )
-      const words = unpackIPC(await repo.words.findAllBy())
-      const translatedWords = words.map((w) => ({
-        ...w,
-        meaning: wbwTranslations[w.chapterId][w.verse][w.order],
-      }))
-
-      setWords(translatedWords)
-    }
-
-    load().catch(console.error)
-  }, [])
 
   /**
    * Group words into verses.
@@ -101,9 +90,14 @@ export default function QuranPaper({
     let lastChapterId: number | null = null
     for (const verse of verses) {
       if (verse.chapter.id !== lastChapterId) {
-        rows.push({ type: "chapter", chapter: verse.chapter })
-        if (Bismillah.isRenderableHere(verse.number, verse.chapter.id))
-          rows.push({ type: "basmala" })
+        rows.push({
+          type: "chapter",
+          chapter: verse.chapter,
+          hasBasmala: Bismillah.isRenderableHere(
+            verse.number,
+            verse.chapter.id,
+          ),
+        })
         lastChapterId = verse.chapter.id
       }
 
@@ -121,7 +115,7 @@ export default function QuranPaper({
     count: renderRows.length,
     getScrollElement: () => parentRef.current,
     estimateSize: (i) => sizeMap.current.get(i) ?? 140,
-    overscan: 8,
+    overscan: 15,
   })
 
   const items = virtualizer.getVirtualItems()
@@ -186,6 +180,30 @@ export default function QuranPaper({
       el.removeEventListener("scroll", recordScrolling)
     }
   }, [renderRows])
+
+  async function waitForMeasurements() {
+    return new Promise<void>((resolve) => {
+      let lastSize = virtualizer.getTotalSize()
+      let stableCount = 0
+
+      const check = () => {
+        const currentSize = virtualizer.getTotalSize()
+        if (currentSize === lastSize) {
+          stableCount++
+          if (stableCount >= 3) {
+            resolve()
+            return
+          }
+        } else {
+          stableCount = 0
+          lastSize = currentSize
+        }
+        requestAnimationFrame(check)
+      }
+
+      requestAnimationFrame(check)
+    })
+  }
 
   async function scrollToVerse(chapterId: number, verse: number) {
     const targetIndex = renderRows.findIndex((row) => {
@@ -257,8 +275,10 @@ export default function QuranPaper({
 
     async function restoreScroll() {
       const { lastScroll } = userSettings
-      if (lastScroll.chapterId > 0)
+      if (lastScroll.chapterId > 0) {
+        await waitForMeasurements()
         await scrollToVerse(lastScroll.chapterId, lastScroll.verse)
+      }
       hasRestoredScrollRef.current = true
     }
 
@@ -273,32 +293,42 @@ export default function QuranPaper({
     scrollToVerse(requestedChapterId, requestedVerseNumber)
   }, [requestedChapterId, requestedVerseNumber, renderRows])
 
+  // Always points at the latest restore-to-last-position logic so the
+  // resize effect (empty deps, no re-registration) can call it.
+  const scrollRestoreRef = useRef<(() => Promise<void>) | null>(null)
+  scrollRestoreRef.current = async () => {
+    const { chapterId, verse } = userSettings.lastScroll
+    if (chapterId > 0) {
+      await waitForMeasurements()
+      await scrollToVerse(chapterId, verse)
+    } else {
+      isRestoringScrollRef.current = false
+    }
+  }
+
   // global resize/orientation observer that invalidates every cached measurement
   // which then would force the virtualizer to recompute
   useEffect(() => {
-    function remeasureAll() {
-      // clear all cached heights
-      sizeMap.current.clear()
+    let timer: ReturnType<typeof setTimeout>
 
-      // force virtualizer recalculation
-      virtualizer.measure()
-
-      // resize observer/layout might still settle
-      requestAnimationFrame(() => {
+    const onResize = () => {
+      clearTimeout(timer)
+      // Block scroll recording immediately so drift during remeasurement
+      // doesn't overwrite the last known good position.
+      isRestoringScrollRef.current = true
+      timer = setTimeout(() => {
+        sizeMap.current.clear()
         virtualizer.measure()
-      })
+        scrollRestoreRef.current?.()
+      }, 200)
     }
 
-    const media = window.matchMedia("(orientation: portrait)")
-
-    window.addEventListener("resize", remeasureAll)
-    media.addEventListener("change", remeasureAll)
-
+    window.addEventListener("resize", onResize)
     return () => {
-      window.removeEventListener("resize", remeasureAll)
-      media.removeEventListener("change", remeasureAll)
+      clearTimeout(timer)
+      window.removeEventListener("resize", onResize)
     }
-  }, [virtualizer])
+  }, [])
 
   return (
     <div
@@ -316,35 +346,23 @@ export default function QuranPaper({
           position: "relative",
         }}
       >
+        <NoteVerseDialog />
+        <PaperDialog />
+
         {items.map((item) => {
           const row = renderRows[item.index]
 
           if (row.type === "chapter") {
             return (
               <ChapterRow
-                key={`ch-${row.chapter.id}`}
+                key={item.index}
                 theme={theme}
                 index={item.index}
                 chapter={row.chapter}
+                hasBasmala={row.hasBasmala}
                 style={{ transform: `translateY(${item.start}px)` }}
                 sizeMap={sizeMap}
                 virtualizer={virtualizer}
-              />
-            )
-          }
-
-          if (row.type === "basmala") {
-            return (
-              <FullblockBasmala
-                key={`basmala-${item.index}`}
-                theme={theme}
-                index={item.index}
-                style={{ transform: `translateY(${item.start}px)` }}
-                sizeMap={sizeMap}
-                virtualizer={virtualizer}
-                hidden={
-                  userSettings.basmalaPosition === BasmalaPosition.Embedded
-                }
               />
             )
           }

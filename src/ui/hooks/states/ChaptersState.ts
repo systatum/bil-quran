@@ -2,32 +2,44 @@ import { ChapterRecord } from "@constants/records/ChapterRecord"
 import { DEFAULT_LOCALE } from "@constants/settings"
 import { repo } from "@db/repo"
 import { unpackIPC } from "@services/Converter"
-import LOGGER from "@services/Logger"
 import { create } from "zustand"
 import useUserSettingsState from "./UserSettingsState"
 
 const useChaptersState = create<ChaptersState>((set, get) => ({
   chapters: {},
 
-  async loadChapters() {
+  loadChapters() {
     const loadedChapters = get().chapters
     if (Object.keys(loadedChapters).length === 144) return
 
     console.debug("Loading chapters data from the database")
-    const chapters = unpackIPC(await repo.chapters.findAllBy({}))
-    set({
-      chapters: chapters.reduce<Record<number, ChapterRecord>>(
-        (acc, ch) => ({ ...acc, [ch.id]: ch }),
-        {},
-      ),
-    })
+    repo.chapters
+      .findAllBy({})
+      .then((ipcResp) => {
+        const chapters = unpackIPC(ipcResp)
+        set({
+          chapters: chapters.reduce<Record<number, ChapterRecord>>(
+            (acc, ch) => ({ ...acc, [ch.id]: ch }),
+            {},
+          ),
+        })
+      })
+      .catch((e) => {
+        throw e
+      })
+  },
+
+  getChapter(arg) {
+    const chapterNumber = Number(String(arg))
+    const chapter = get().chapters[chapterNumber]
+    if (chapter == null) throw new Error(`Chapter '${chapterNumber}' not found`)
+    return chapter
   },
 
   getChapterMeaning(chapterNumber: number) {
     const { userSettings } = useUserSettingsState.getState()
     const { locale } = userSettings
-    LOGGER.debug("User selected locale is", locale)
-    const chapter = get().chapters[chapterNumber]
+    const chapter = get().getChapter(chapterNumber)
     if (chapter == null) return null
     return chapter.meanings[locale] || chapter.meanings[DEFAULT_LOCALE]
   },
@@ -35,8 +47,7 @@ const useChaptersState = create<ChaptersState>((set, get) => ({
   getChapterArabicName(chapterNumber: number) {
     const { userSettings } = useUserSettingsState.getState()
     const { locale } = userSettings
-    LOGGER.debug("User selected locale is", locale)
-    const chapter = get().chapters[chapterNumber]
+    const chapter = get().getChapter(chapterNumber)
     if (chapter == null) return null
     return chapter.namings[locale] || chapter.namings[DEFAULT_LOCALE]
   },
@@ -44,8 +55,7 @@ const useChaptersState = create<ChaptersState>((set, get) => ({
   getChapterTransliteratedName(chapterNumber: number) {
     const { userSettings } = useUserSettingsState.getState()
     const { locale } = userSettings
-    LOGGER.debug("User selected locale is", locale)
-    const chapter = get().chapters[chapterNumber]
+    const chapter = get().getChapter(chapterNumber)
     if (chapter == null) return null
     return (
       chapter.transliterations[locale] ||
@@ -56,7 +66,8 @@ const useChaptersState = create<ChaptersState>((set, get) => ({
 
 export interface ChaptersState {
   chapters: Record<number, ChapterRecord>
-  loadChapters: () => Promise<void>
+  loadChapters: () => void
+  getChapter: (chapterNumber: number | string) => ChapterRecord
   getChapterMeaning: (chapterNumber: number) => string | null
   getChapterArabicName: (chapterNumber: number) => string | null
   getChapterTransliteratedName: (chapterNumber: number) => string | null
