@@ -50,11 +50,11 @@ export async function ensureHasTranslation(locale: WordTranslationOption) {
 
       const [chapter, verse, word] = loc.split(":")
       batch.push({
-        locale: locale,
+        locale: WordTranslationOption.toNumber(locale),
         chapter: parseInt(chapter),
         ayat: parseInt(verse),
         word: parseInt(word),
-        meaning,
+        meaningSunni: meaning,
       })
 
       if (batch.length >= BATCH_SIZE) await flushBatch()

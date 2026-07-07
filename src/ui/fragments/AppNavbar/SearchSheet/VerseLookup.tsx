@@ -3,8 +3,8 @@ import LOGGER from "@services/Logger"
 import { Combobox, ComboboxOption } from "@systatum/coneto/combobox"
 import { useNavigate } from "@tanstack/react-router"
 import { useEffect, useMemo, useState } from "react"
-import useChaptersState from "../../hooks/states/ChaptersState"
-import { FlexContainer } from "./Container"
+import useChaptersState from "../../../hooks/states/ChaptersState"
+import { FlexContainer } from "../Container"
 
 interface VerseLookupProps {
   onChange?: () => void
@@ -127,7 +127,8 @@ export default function VerseLookup({ onChange }: VerseLookupProps) {
     <FlexContainer direction="column">
       <Combobox
         clearable
-        mobile={{ drawerHeight: "60dvh" }}
+        mobile
+        drawerHeight="60dvh"
         onChange={(selectionOption) => {
           const value = selectionOption as string
           const [chapterId, verseId] = value.split("-")

@@ -8,6 +8,34 @@
       "when": 1780222556492,
       "tag": "0000_create_chapters_lexemes_verses_wordtranslations_and_renderings_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1782634923060,
+      "tag": "0001_create_paginations_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1782776160983,
+      "tag": "0002_add_shia_meaning_to_word",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1782777709798,
+      "tag": "0003_store_verse_words_in_an_array",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1783207669723,
+      "tag": "0004_create_exegesis",
+      "breakpoints": true
     }
   ]
 }

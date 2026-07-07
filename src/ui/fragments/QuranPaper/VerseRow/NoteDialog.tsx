@@ -1,25 +1,19 @@
+import useNoteVerseDialogState from "@hooks/states/NoteVerseDialogState"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import { messages } from "@i18n/message"
+import LOGGER from "@services/Logger"
 import { Dialog } from "@systatum/coneto/dialog"
 import { Textarea } from "@systatum/coneto/textarea"
 import { useState } from "react"
+import toast from "react-hot-toast"
 import { useIntl } from "react-intl"
 import styled, { css } from "styled-components"
 
-interface NoteVerseDialog {
-  isOpen: boolean
-  verseKey: string
-  onVisibilityChange: (state: boolean | undefined) => void
-}
-
-export default function NoteVerseDialog({
-  verseKey: key,
-  isOpen,
-  onVisibilityChange,
-}: NoteVerseDialog) {
+export default function NoteVerseDialog() {
   const { formatMessage } = useIntl()
   const [note, setNote] = useState<string>("")
   const { bookmarkVerse } = useUserSettingsState()
+  const { isOpen, verseKey, setIsOpen } = useNoteVerseDialogState()
 
   return (
     <>
@@ -28,11 +22,22 @@ export default function NoteVerseDialog({
         closable={false}
         isOpen={isOpen}
         title={formatMessage({ id: messages.dialog.noteVerse.title })}
-        onClick={({ closeDialog }) => {
-          bookmarkVerse({ verseKey: key, note })
+        onClick={({ buttonId, closeDialog }) => {
+          switch (buttonId) {
+            case "cancel":
+              break
+
+            case "add": {
+              if (verseKey == null)
+                return toast.error("Cannot bookmark unknown verse")
+              LOGGER.debug(`Bookmarking ${verseKey} with note: ${note}`)
+              bookmarkVerse({ verseKey: verseKey, note })
+            }
+          }
+
           closeDialog()
         }}
-        onVisibilityChange={onVisibilityChange}
+        onVisibilityChange={(isOpen) => setIsOpen(!!isOpen)}
         actions={[
           {
             id: "cancel",

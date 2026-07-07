@@ -45,6 +45,14 @@ SPECIAL_LEADING_WORDS = %w[
   sungguh
 ].freeze
 
+PRONOUNS = %w[
+  aku
+  kamu
+  mereka
+  dia
+  kalian
+].freeze
+
 # Returns the first word of a string.
 #
 # If the first token is wrapped in parentheses, the parentheses
@@ -78,9 +86,9 @@ def remove_first_word(text)
   words.join(" ")
 end
 
-# If the current entry starts with a parenthesized word and that
-# word already appears among the last two words of the previous
-# entry, remove the parenthesized word.
+# If the current entry starts with a parenthesized pronoun and that
+# pronoun already appears anywhere in the previous entry, remove the
+# parenthesized pronoun.
 #
 # Examples:
 #
@@ -101,19 +109,18 @@ end
 #   "D"
 #
 def remove_leading_parenthesized_repetition(prev_text, curr_text)
-  match = curr_text.match(/^\(([^)]+)\)\s+(.*)$/)
+  match = curr_text.match(/^\(([^)]+)\)\s*(.*)$/)
   return curr_text unless match
 
   repeated_word = match[1]
   remainder = match[2]
 
+  return curr_text unless PRONOUNS.any? { |word| word.casecmp?(repeated_word) }
+
   prev_words = prev_text.strip.split(/\s+/)
-  return curr_text if prev_words.empty?
 
-  last_two_words = prev_words.last(2)
-
-  if last_two_words.any? { |word| word.casecmp?(repeated_word) }
-    remainder
+  if prev_words.any? { |word| word.casecmp?(repeated_word) }
+    remainder.lstrip
   else
     curr_text
   end
@@ -151,12 +158,36 @@ end
   prev_last = prev_words.last
   curr_first = first_word_ignoring_parentheses(curr_text)
 
+  # --------------------------------------------------------------
+  # Case 2:
+  #
+  #   A adalah
+  #   A B...
+  #
+  # =>
+  #
+  #   A adalah
+  #   B...
+  #
+  # Never perform this transformation if it would make the
+  # current entry empty.
+  # --------------------------------------------------------------
+  if prev_words.length == 2 &&
+     prev_words.last.casecmp?("adalah") &&
+     prev_words.first.casecmp?(curr_first)
+
+    next if curr_words.length == 1
+
+    data[curr_key] = remove_first_word(curr_text)
+    next
+  end
+
   # No overlap between the end of the previous entry and the
   # beginning of the current entry.
   next unless prev_last.casecmp?(curr_first)
 
   # --------------------------------------------------------------
-  # Case 2:
+  # Case 3:
   #
   #   sesungguhnya B
   #   B
@@ -184,7 +215,7 @@ end
   end
 
   # --------------------------------------------------------------
-  # Case 3:
+  # Case 4:
   #
   #   A B
   #   B
@@ -200,7 +231,7 @@ end
   end
 
   # --------------------------------------------------------------
-  # Case 4:
+  # Case 5:
   #
   #   adalah B
   #   B C...
@@ -224,7 +255,7 @@ end
   end
 
   # --------------------------------------------------------------
-  # Case 5 (default):
+  # Case 6 (default):
   #
   #   A B
   #   B C...
