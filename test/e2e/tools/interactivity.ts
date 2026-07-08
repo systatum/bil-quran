@@ -464,6 +464,50 @@ export async function toggleWbwTranslation(label: string, page: Page) {
   await page.waitForTimeout(300)
 }
 
+/**
+ * Opens the sidebar and toggles an exegesis source on/off via its display
+ * name (e.g. "Ali Quli Qara'i"). Options are grouped by locale (like the
+ * Font field), so every collapsed group is expanded before searching.
+ */
+export async function toggleExegesis(label: string, page: Page) {
+  await openSidebar(page)
+
+  const input = await findVisibleTarget(undefined, page, {
+    formLabel: "Exegesis",
+  })
+  await input.click()
+
+  const drawer = page
+    .locator('[aria-label="combobox-drawer"]')
+    .filter({ visible: true })
+  await expect(drawer).toBeVisible({ timeout: 5000 })
+
+  const groupHeaders = drawer.locator(
+    '[aria-label="tree-list-group-title"][data-has-options="true"]',
+  )
+  for (let i = 0; i < (await groupHeaders.count()); i++) {
+    await groupHeaders.nth(i).click()
+  }
+  await page.waitForTimeout(250)
+
+  const item = drawer
+    .locator('[aria-label="tree-list-item"]')
+    .filter({ hasText: label })
+    .first()
+  await expect(item).toBeVisible({ timeout: 5000 })
+  await item.click()
+
+  await page.keyboard.press("Escape") // close drawer
+  await page.waitForTimeout(150)
+  // dispatchEvent fires directly on the DOM node, bypassing the aside overlay
+  // that intercepts physical mouse clicks at the same screen coordinates.
+  await page
+    .locator('[aria-label="title-action"]:not(aside *)')
+    .last()
+    .dispatchEvent("click")
+  await page.waitForTimeout(300)
+}
+
 /** Long-press a verse row (by "chapterId:verseNumber") to open the exegesis dialog. */
 export async function openExegesisDialog(page: Page, verseKey: string) {
   const row = page.locator(`[data-verse="${verseKey}"]`)
