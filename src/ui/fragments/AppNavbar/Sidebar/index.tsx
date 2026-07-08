@@ -46,7 +46,9 @@ export default function Sidebar({
       </div>
 
       <div>
-        {contentType === ContentType.Settings && <UserSettingsForm />}
+        {contentType === ContentType.Settings && (
+          <UserSettingsForm key={String(visible) /* `key` forces re-mount */} />
+        )}
         {contentType === ContentType.Bookmarks && (
           <BookmarkList height={contentHeight} />
         )}

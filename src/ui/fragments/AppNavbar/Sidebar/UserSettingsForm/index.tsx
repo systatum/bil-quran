@@ -27,7 +27,7 @@ export default function UserSettingsForm() {
     userSettings,
   } = useUserSettingsState()
 
-  const [formValues, setFormValues] = useState<FormState>({
+  const formValues: FormState = {
     theme: userSettings.theme ?? mode,
     arabicFontFamily: userSettings.font.arabic.family,
     arabicFontSize: String(userSettings.font.arabic.size),
@@ -36,7 +36,7 @@ export default function UserSettingsForm() {
     wbwTranslations: userSettings.wbwTranslations,
     showPageIndicator: userSettings.showPageIndicator ?? true,
     exegesis: userSettings.exegesis,
-  })
+  }
 
   const { arabicFontOptions } = useFonts()
   const arabicFontSizeOptions = useMemo(getAllPossibleFontSizeOptions, [])
@@ -214,12 +214,6 @@ export default function UserSettingsForm() {
           if (!values.every((v) => validIds.includes(v))) return
           setExegesis(values)
         }
-
-        // update the form state
-        setFormValues((s) => ({
-          ...s,
-          ...currentState,
-        }))
       }}
     />
   )

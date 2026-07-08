@@ -233,6 +233,54 @@ test.describe("UserSettingsState", () => {
     })
   })
 
+
+  test.describe("hasSeenExegesisDialog", () => {
+    test("defaults to false for a first-time visitor", async ({ page }) => {
+      const settings = await page.evaluate(() =>
+        JSON.parse(localStorage.getItem("userSettings") || "null"),
+      )
+      // Nothing has triggered a persist yet on a fresh visit
+      expect(settings?.hasSeenExegesisDialog ?? false).toBe(false)
+    })
+
+    test("stays false when restoring a settings blob saved before this flag existed", async ({
+      page,
+    }) => {
+      await page.evaluate(() => {
+        localStorage.setItem(
+          "userSettings",
+          JSON.stringify({ exegesis: ["aliquli/en-US"] }),
+        )
+      })
+      await page.reload()
+      await untilUsable(page)
+
+      const settings = await page.evaluate(() =>
+        JSON.parse(localStorage.getItem("userSettings")!),
+      )
+      expect(settings.hasSeenExegesisDialog).toBe(false)
+    })
+
+    test("persists true after the exegesis dialog is opened once", async ({
+      page,
+    }) => {
+      await openExegesisDialog(page, "1:1")
+      await page.waitForTimeout(300)
+
+      const settings = await page.evaluate(() =>
+        JSON.parse(localStorage.getItem("userSettings")!),
+      )
+      expect(settings.hasSeenExegesisDialog).toBe(true)
+
+      await page.reload()
+      await untilUsable(page)
+      const settingsAfterReload = await page.evaluate(() =>
+        JSON.parse(localStorage.getItem("userSettings")!),
+      )
+      expect(settingsAfterReload.hasSeenExegesisDialog).toBe(true)
+    })
+  })
+
   test.describe("locale", () => {
     const allLocales = Object.entries(ENGLISH_LOCALE_NAMES)
     for (const [locale, displayName] of allLocales) {

@@ -29,9 +29,21 @@ export default function ExegesisPaperDialogContent({
   verseNumber: number
 }) {
   const { mode: theme } = useTheme()
-  const { userSettings } = useUserSettingsState()
+  const { userSettings, setExegesis, setHasSeenExegesisDialog } =
+    useUserSettingsState()
   const { loadChapter } = useExegesisState()
   const { chapters } = useChaptersState()
+
+  useEffect(() => {
+    if (userSettings.hasSeenExegesisDialog) return
+
+    if (userSettings.exegesis.length === 0) {
+      const defaultId = Asset.defaultExegesisId(userSettings.locale)
+      if (defaultId) setExegesis([defaultId])
+    }
+    setHasSeenExegesisDialog(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const [currentVerse, setCurrentVerse] = useState(verseNumber)
   const [navTarget, setNavTarget] = useState<NavTarget | null>(null)

@@ -21,6 +21,7 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
   wbwTranslations: [WordTranslationOption.AmericanEnglish],
   showPageIndicator: true,
   exegesis: [],
+  hasSeenExegesisDialog: false,
   font: {
     arabic: {
       family: "NotoNaskhArabic",
@@ -120,6 +121,10 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
 
   setExegesis(ids) {
     get().partialUpdate({ exegesis: ids })
+  },
+
+  setHasSeenExegesisDialog(seen) {
+    get().partialUpdate({ hasSeenExegesisDialog: !!seen })
   },
 
   setWordByWordTranslations(wbwTranslations) {
@@ -236,6 +241,7 @@ export interface UserSettingsState {
   setBasmalaPosition(basmalaPosition: BasmalaPosition): void
   setShowPageIndicator(show: boolean): void
   setExegesis(ids: string[]): void
+  setHasSeenExegesisDialog(seen: boolean): void
   setWordByWordTranslations(wbwTranslation: WordTranslationOption[]): void
   setScrollPosition(chapterId: number, verse: number): void
 
@@ -271,6 +277,9 @@ export interface UserSettings {
    * Multiple exegeses can be active at the same time.
    */
   exegesis: string[]
+
+  /** Whether ever seen exegesis paper dialog. Used to set default exegesis selection. */
+  hasSeenExegesisDialog: boolean
 
   /**
    * To record bookmarks
