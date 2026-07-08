@@ -12,6 +12,11 @@
 # Java class files
 *.class
 
+
+# android
+*.keystore
+keystore.properties
+
 # Generated files
 bin/
 gen/
