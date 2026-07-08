@@ -2,12 +2,13 @@ import { expect, test } from "@playwright/test"
 import {
   closePaperDialog,
   closeSidebar,
+  getPaperDialog,
   openExegesisDialog,
   openSidebar,
   selectComboBox,
   toggleExegesis,
 } from "./tools/interactivity"
-import { visitFresh } from "./tools/state"
+import { untilUsable, visitFresh } from "./tools/state"
 
 test.describe("ExegesisDialog", () => {
   test.describe("with an exegesis selected", () => {
@@ -379,5 +380,20 @@ test.describe("ExegesisDialog", () => {
       // Allow 5% to accommodate subpixel rounding, mirroring the 30% test above
       expect(ratio!).toBeGreaterThanOrEqual(0.65)
     })
+  })
+
+  test("auto open when URL pattern is /e/$chapter/$verse", async ({ page }) => {
+    await page.goto("/#/e/1/7")
+    await untilUsable(page)
+
+    const dialog = await getPaperDialog(page)
+    await expect(dialog).toBeVisible({ timeout: 8_000 })
+
+    const verseIndicator = dialog.locator('[data-testid="verse-indicator"]')
+    await expect(verseIndicator).toHaveText("7", { timeout: 5_000 })
+
+    // The always-mounted VerseLookup combobox must not silently rewrite the URL
+    await page.waitForTimeout(500)
+    expect(page.url()).toContain("/#/e/1/7")
   })
 })

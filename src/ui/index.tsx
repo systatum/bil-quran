@@ -1,12 +1,18 @@
 import { ChapterRecord } from "@constants/records/ChapterRecord"
 import usePaginationState from "@hooks/states/PaginationState"
 import { useParams } from "@tanstack/react-router"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import AppNavbar from "./fragments/AppNavbar"
 import QuranPaper from "./fragments/QuranPaper"
+import usePaperDialogState from "./hooks/states/PaperDialogState"
 import useUserSettingsState from "./hooks/states/UserSettingsState"
 
-export default function UIIndex() {
+interface UIIndexProps {
+  /** When true, opens the exegesis paper dialog for the routed verse on mount. */
+  openExegesisOnMount?: boolean
+}
+
+export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
   const [chapter, setChapter] = useState<ChapterRecord | null>(null)
   const [currentVerse, setCurrentVerse] = useState<number | null>(null)
   const {
@@ -22,6 +28,17 @@ export default function UIIndex() {
   const params = useParams({ strict: false })
   const chapterId = params.chapter ? parseInt(params.chapter) : null
   const verseNumber = params.verse ? parseInt(params.verse) : null
+
+  const { openExegesis } = usePaperDialogState()
+  const hasOpenedExegesisRef = useRef(false)
+  useEffect(() => {
+    if (!openExegesisOnMount) return
+    if (hasOpenedExegesisRef.current) return
+    if (chapterId == null || verseNumber == null) return
+
+    hasOpenedExegesisRef.current = true
+    openExegesis(chapterId, verseNumber)
+  }, [openExegesisOnMount, chapterId, verseNumber, openExegesis])
 
   const navbarTitle = useMemo(() => {
     if (chapter == null) return "bil-Qur'an"
