@@ -14,7 +14,16 @@ import LOGGER from "@services/Logger"
 import { DeepPartial, mergeKnownKeys } from "@services/mutator"
 import { create } from "zustand"
 
+/**
+ * Schema version of the persisted user settings. Bump this whenever the
+ * `UserSettings` shape changes in a way that needs reconciling, so
+ * `restoreState()` has a version to compare a persisted blob against
+ * instead of discarding it outright.
+ */
+export const USER_SETTINGS_VERSION = 260708
+
 const DEFAULT_USER_SETTINGS: UserSettings = {
+  version: USER_SETTINGS_VERSION,
   locale: DEFAULT_LOCALE,
   theme: "light",
   basmalaPosition: BasmalaPosition.Detached,
@@ -56,6 +65,9 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
     const current = get().userSettings
     const hydrated = mergeKnownKeys(current, parsed) as UserSettings
     hydrated.bookmarks = parsed.bookmarks
+    // Reconciliation point for future migrations: branch on `parsed.version`
+    // here before stamping forward, once the schema actually needs one.
+    hydrated.version = USER_SETTINGS_VERSION
 
     set({
       userSettings: hydrated,
@@ -263,6 +275,9 @@ export interface UserFontSettings {
 }
 
 export interface UserSettings {
+  /** Schema version of this persisted blob; see `USER_SETTINGS_VERSION`. */
+  version: number
+
   locale: Locale
   theme: ThemeMode
   font: UserFontSettings

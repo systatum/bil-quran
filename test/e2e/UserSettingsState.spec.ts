@@ -1,4 +1,5 @@
 import { Locale } from "@constants/settings"
+import { USER_SETTINGS_VERSION } from "@hooks/states/UserSettingsState"
 import { expect, Page, test } from "@playwright/test"
 import { ArabicFontId, ArabicFonts } from "../../src/constants/fonts"
 import enUS from "../../src/i18n/locales/en-US.json"
@@ -234,6 +235,22 @@ test.describe("UserSettingsState", () => {
     })
   })
 
+  test.describe("version", () => {
+    test("stamps persisted settings with the current schema version", async ({
+      page,
+    }) => {
+      // Trigger a persist by changing any setting
+      await openSidebar(page)
+      await selectComboBox("Dark", page, { formLabel: "Theme" })
+      await closeSidebar(page)
+
+      const settings = await page.evaluate(() =>
+        JSON.parse(localStorage.getItem("userSettings") || "{}"),
+      )
+      expect(settings.version).toBe(USER_SETTINGS_VERSION)
+    })
+
+  })
 
   test.describe("hasSeenExegesisDialog", () => {
     test("defaults to false for a first-time visitor", async ({ page }) => {
