@@ -5,6 +5,7 @@ import { createHash } from "crypto"
 const SITE_URL = process.env.SITE_URL ?? "https://bil-quran.com"
 const QURAN_PATH = join(process.cwd(), "public/quran")
 const OUTPUT_DIR = "public/rss"
+const EXEGESIS_PATH = join(QURAN_PATH, "exegesis/aliquli")
 
 async function readJson<T>(filePath: string): Promise<T> {
   const raw = await readFile(filePath, "utf8")
@@ -41,6 +42,67 @@ interface Word {
 interface ExistingItem {
   pubDate: Date
   digest: string
+}
+
+interface ExegesisChapter {
+  chapterId: number
+  description: string
+  footnotes: Record<string, Record<string, string>>
+  translations: Record<string, string>
+}
+
+async function loadExegesis(
+  localeCode: string,
+  chapterId: number,
+): Promise<ExegesisChapter | null> {
+  try {
+    return await readJson<ExegesisChapter>(
+      join(EXEGESIS_PATH, localeCode, `${chapterId}.json`),
+    )
+  } catch {
+    // no exegesis for this locale/chapter — fail quietly
+    return null
+  }
+}
+
+// Converts **bold**, _italic_, and the <{["F",n]}> / <{["Q","c:v"]}> markers into HTML.
+function renderMarkers(
+  text: string,
+  opts: { verseFootnotes?: Record<string, string> } = {},
+): string {
+  let out = text
+    .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")
+    .replace(/_(.+?)_/g, "<i>$1</i>")
+    .replace(/\n/g, "<br/>")
+
+  out = out.replace(
+    /<\{\[\s*"([A-Z])"\s*,\s*(?:"([^"]+)"|(\d+))\s*\]\}>/g,
+    (
+      _match,
+      tag: string,
+      strArg: string | undefined,
+      numArg: string | undefined,
+    ) => {
+      if (tag === "F" && numArg && opts.verseFootnotes) {
+        return `<sup>[${numArg}]</sup>`
+      }
+      if (tag === "Q" && strArg) {
+        return ` (Q ${strArg})`
+      }
+      return "" // unknown marker, drop it rather than leak raw syntax into RSS
+    },
+  )
+
+  return out
+}
+
+function renderFootnotes(verseFootnotes?: Record<string, string>): string {
+  if (!verseFootnotes) return ""
+  const entries = Object.entries(verseFootnotes)
+  if (!entries.length) return ""
+  return `<ul>${entries
+    .map(([n, note]) => `<li><sup>[${n}]</sup> ${renderMarkers(note)}</li>`)
+    .join("")}</ul>`
 }
 
 async function loadExistingFeed(
@@ -145,9 +207,13 @@ function buildFeed(opts: { localeCode: string; items: string[] }): string {
   <channel>
     <title><![CDATA[Bil-Quran: Word-by-Word Qur'an]]></title>
     <link>${SITE_URL}</link>
-    <description><![CDATA[${descriptions[opts.localeCode as LocaleCode]}]]></description>
+    <description><![CDATA[${
+      descriptions[opts.localeCode as LocaleCode]
+    }]]></description>
     <language>${opts.localeCode}</language>
-    <atom:link href="${SITE_URL}/rss/${opts.localeCode}.xml" rel="self" type="application/rss+xml"/>
+    <atom:link href="${SITE_URL}/rss/${
+    opts.localeCode
+  }.xml" rel="self" type="application/rss+xml"/>
     ${opts.items.join("\n")}
   </channel>
 </rss>`
@@ -211,32 +277,47 @@ async function generateRSS() {
 
       const verses = groupVerses(words, translations)
       const verseEntries = Array.from(verses.entries())
+      const exegesis = await loadExegesis(localeCode, chapterId)
 
       // Per-chapter item
       addItem(
         `${chapterId}. ${chapterArabic} (${chapterName})`,
         `${SITE_URL}/#/c/${chapterId}/1?locale=${localeCode}`,
-        verseEntries
-          .slice(0, 3)
-          .map(
-            ([verseId, v]) => `
+        [
+          exegesis ? `<p>${renderMarkers(exegesis.description)}</p>` : "",
+          verseEntries
+            .slice(0, 3)
+            .map(
+              ([verseId, v]) => `
 <p>
   <b>${verseId}</b><br/>
   ${v.arabic}<br/>
   <i>${v.transliteration}</i><br/>
   ${v.translation}
 </p>`,
-          )
+            )
+            .join("\n"),
+        ]
+          .filter(Boolean)
           .join("\n"),
       )
 
       // Per-verse items
       for (const [verseId, v] of verseEntries) {
         const verseNumber = Number(verseId.split(":")[1])
+        const verseFootnotes = exegesis?.footnotes[String(verseNumber)]
+
         addItem(
           `${chapterName}:${verseNumber}`,
           `${SITE_URL}/#/c/${chapterId}/${verseNumber}?locale=${localeCode}`,
-          `${chapterName}:${verseNumber} - ${v.arabic}\n\n${v.transliteration}\n\n${v.translation}`.trim(),
+          [
+            `${chapterName}:${verseNumber} - ${v.arabic}`,
+            v.transliteration,
+            v.translation,
+            verseFootnotes ? renderFootnotes(verseFootnotes) : "",
+          ]
+            .filter(Boolean)
+            .join("\n\n"),
         )
       }
     }
