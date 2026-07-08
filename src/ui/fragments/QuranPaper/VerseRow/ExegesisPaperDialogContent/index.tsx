@@ -94,19 +94,13 @@ export default function ExegesisPaperDialogContent({
     else setCurrentVerse((v) => v + 1)
   }
 
-  if (activeIds.length === 0) {
-    return (
-      <Empty $theme={theme}>
-        No exegesis selected — enable one in Settings.
-      </Empty>
-    )
-  }
+  const hasExegesis = activeIds.length > 0
 
   return (
     <Outer>
       <SplitPane
         orientation="horizontal"
-        initialSizeRatio={[0.3, 0.7]}
+        initialSizeRatio={hasExegesis ? [0.3, 0.7] : [0.7, 0.3]}
         styles={{
           self: css`
             padding-left: 1em;
@@ -198,18 +192,24 @@ export default function ExegesisPaperDialogContent({
             `,
           }}
         >
-          <ExegesisScrollArea>
-            {activeIds.map((exegesisId) => (
-              <ExegesisEntry
-                key={exegesisId}
-                exegesisId={exegesisId}
-                chapterId={activeChapter}
-                verseNumber={activeVerse}
-                theme={theme}
-                onNavigate={setNavTarget}
-              />
-            ))}
-          </ExegesisScrollArea>
+          {hasExegesis ? (
+            <ExegesisScrollArea>
+              {activeIds.map((exegesisId) => (
+                <ExegesisEntry
+                  key={exegesisId}
+                  exegesisId={exegesisId}
+                  chapterId={activeChapter}
+                  verseNumber={activeVerse}
+                  theme={theme}
+                  onNavigate={setNavTarget}
+                />
+              ))}
+            </ExegesisScrollArea>
+          ) : (
+            <Empty $theme={theme}>
+              No exegesis selected — enable one in Settings.
+            </Empty>
+          )}
         </SplitPane.Cell>
       </SplitPane>
       <TraversalColumn>

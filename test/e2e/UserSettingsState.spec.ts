@@ -12,6 +12,7 @@ import {
 import {
   closeSidebar,
   findVisibleTarget,
+  openExegesisDialog,
   openSidebar,
   scrollDown,
   selectComboBox,
