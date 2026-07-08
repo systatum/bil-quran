@@ -12,7 +12,7 @@
 /build
 
 # feed xml
-*.xml
+**/*.xml
 
 # misc
 .DS_Store
