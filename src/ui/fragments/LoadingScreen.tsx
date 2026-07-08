@@ -77,7 +77,7 @@ export default function LoadingScreen() {
       <Overlay />
 
       <Content>
-        <Logo src="/logo_full.jpg" alt="logo" />
+        <Logo src="/logo_full.png" alt="logo" />
         <Title>Bil-Quran</Title>
         <Subtitle>{loadingText}</Subtitle>
       </Content>
