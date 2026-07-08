@@ -4,7 +4,7 @@ import { createHash } from "crypto"
 
 const SITE_URL = process.env.SITE_URL ?? "https://bil-quran.com"
 const QURAN_PATH = join(process.cwd(), "public/quran")
-const OUTPUT_DIR = "public/rss"
+const OUTPUT_DIR = "build/rss"
 const EXEGESIS_PATH = join(QURAN_PATH, "exegesis/aliquli")
 
 async function readJson<T>(filePath: string): Promise<T> {
@@ -212,8 +212,8 @@ function buildFeed(opts: { localeCode: string; items: string[] }): string {
     }]]></description>
     <language>${opts.localeCode}</language>
     <atom:link href="${SITE_URL}/rss/${
-    opts.localeCode
-  }.xml" rel="self" type="application/rss+xml"/>
+      opts.localeCode
+    }.xml" rel="self" type="application/rss+xml"/>
     ${opts.items.join("\n")}
   </channel>
 </rss>`

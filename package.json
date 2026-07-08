@@ -10,7 +10,7 @@
     "test": "pnpm run test:unit && pnpm run test:e2e",
     "test:unit": "craco test --watchAll=false --passWithNoTests",
     "test:e2e": "playwright test",
-    "predeploy": "pnpm run prepare-assets && pnpm run build && node scripts/pre-deploy.js && pnpm run generate-rss",
+    "predeploy": "pnpm run prepare-assets && pnpm run build && pnpm run generate-rss && node scripts/pre-deploy.js",
     "generate-rss": "tsx scripts/generate-rss.ts",
     "deploy": "gh-pages -d build",
     "db:generate": "drizzle-kit generate",
