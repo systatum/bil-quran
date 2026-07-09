@@ -29,6 +29,7 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
   basmalaPosition: BasmalaPosition.Detached,
   wbwTranslations: [WordTranslationOption.AmericanEnglish],
   showPageIndicator: true,
+  alphabeticalChaptersSorting: false,
   exegesis: [],
   hasSeenExegesisDialog: false,
   font: {
@@ -129,6 +130,10 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
 
   setShowPageIndicator(show) {
     get().partialUpdate({ showPageIndicator: !!show })
+  },
+
+  setAlphabeticalChaptersSorting(sort) {
+    get().partialUpdate({ alphabeticalChaptersSorting: !!sort })
   },
 
   setExegesis(ids) {
@@ -252,6 +257,7 @@ export interface UserSettingsState {
   setFont(font: DeepPartial<UserFontSettings>): void
   setBasmalaPosition(basmalaPosition: BasmalaPosition): void
   setShowPageIndicator(show: boolean): void
+  setAlphabeticalChaptersSorting(sort: boolean): void
   setExegesis(ids: string[]): void
   setHasSeenExegesisDialog(seen: boolean): void
   setWordByWordTranslations(wbwTranslation: WordTranslationOption[]): void
@@ -286,6 +292,13 @@ export interface UserSettings {
    * Whether to show page indicator so user knows which part and page they are in
    */
   showPageIndicator: boolean
+
+  /**
+   * Whether to sort the chapter lookup list alphabetically by transliterated
+   * name (ignoring leading definite-article prefixes like "Al-"/"An-")
+   * instead of natural chapter-id order
+   */
+  alphabeticalChaptersSorting: boolean
 
   /**
    * IDs of the exegeses the user has activated (e.g. ["aliquli/en-US"]).

@@ -32,6 +32,10 @@ export const messages = {
     title: "showPageIndicator.title",
     helper: "showPageIndicator.helper",
   },
+  alphabeticalChaptersSorting: {
+    title: "alphabeticalChaptersSorting.title",
+    helper: "alphabeticalChaptersSorting.helper",
+  },
   fontCategory: {
     shaddaStacked: "fontCategory.shaddaStacked",
     shaddaSeparable: "fontCategory.shaddaSeparable",

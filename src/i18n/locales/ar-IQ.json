@@ -29,6 +29,10 @@
     "title": "إظهار مؤشر الصفحة",
     "helper": "يعرض مدى تقدم قراءتك بالنسبة إلى أجزاء القرآن الكريم"
   },
+  "alphabeticalChaptersSorting": {
+    "title": "ترتيب السور أبجديًا",
+    "helper": "ترتيب السور من الألف إلى الياء"
+  },
   "fontCategory": {
     "shaddaStacked": "الشدة والحركات متراكبة",
     "shaddaSeparable": "السماح بفصل الحركات",

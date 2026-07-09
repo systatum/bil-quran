@@ -29,6 +29,10 @@
     "title": "Tampilkan indikator halaman",
     "helper": "Tampilkan sejauh mana Al-Qur'an telah di baca per bagian/juz"
   },
+  "alphabeticalChaptersSorting": {
+    "title": "Urutkan surah secara alfabetis",
+    "helper": "Urutkan surah dari A sampai Z"
+  },
   "fontCategory": {
     "shaddaStacked": "Tashdid-harakat setumpuk",
     "shaddaSeparable": "Tashdid-harakat fleksibel",
