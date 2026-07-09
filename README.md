@@ -190,3 +190,36 @@ android/app/build/outputs/bundle/release/app-release.aab
 | `pnpm build:mobile:android` | Build the web app and sync it to the Android project.                        |
 | `pnpm build:android:apk`    | Build a release Android APK.                                                 |
 | `pnpm build:android:aab`    | Build a release Android App Bundle (AAB).                                    |
+
+### Platform-specific Styling
+
+When using Capacitor, you can detect the current platform and apply different styles or behavior for Android and iOS.
+
+```ts
+import { Capacitor } from "@capacitor/core"
+
+const platform = Capacitor.getPlatform()
+
+console.log(platform) // "ios", "android", or "web"
+```
+
+#### Example: Using `styled-components`
+
+You can use the detected platform to conditionally apply styles.
+
+```tsx
+import { Capacitor } from "@capacitor/core"
+import styled from "styled-components"
+
+const isIOS = Capacitor.getPlatform() === "ios"
+
+const Container = styled.div<{ $isIOS: boolean }>`
+  padding-top: ${({ $isIOS }) => ($isIOS ? "44px" : "24px")};
+`
+
+function App() {
+  return <Container $isIOS={isIOS}>Content</Container>
+}
+```
+
+This approach is useful when you need different spacing, safe area handling, or platform-specific UI adjustments between Android and iOS.
