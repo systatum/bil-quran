@@ -1,4 +1,5 @@
 import { Locale } from "@constants/settings"
+import { USER_SETTINGS_VERSION } from "@hooks/states/UserSettingsState"
 import { expect, Page, test } from "@playwright/test"
 import { ArabicFontId, ArabicFonts } from "../../src/constants/fonts"
 import enUS from "../../src/i18n/locales/en-US.json"
@@ -12,6 +13,7 @@ import {
 import {
   closeSidebar,
   findVisibleTarget,
+  openExegesisDialog,
   openSidebar,
   scrollDown,
   selectComboBox,
@@ -230,6 +232,70 @@ test.describe("UserSettingsState", () => {
       })
 
       await expect(juzBar).toHaveCount(0)
+    })
+  })
+
+  test.describe("version", () => {
+    test("stamps persisted settings with the current schema version", async ({
+      page,
+    }) => {
+      // Trigger a persist by changing any setting
+      await openSidebar(page)
+      await selectComboBox("Dark", page, { formLabel: "Theme" })
+      await closeSidebar(page)
+
+      const settings = await page.evaluate(() =>
+        JSON.parse(localStorage.getItem("userSettings") || "{}"),
+      )
+      expect(settings.version).toBe(USER_SETTINGS_VERSION)
+    })
+
+  })
+
+  test.describe("hasSeenExegesisDialog", () => {
+    test("defaults to false for a first-time visitor", async ({ page }) => {
+      const settings = await page.evaluate(() =>
+        JSON.parse(localStorage.getItem("userSettings") || "null"),
+      )
+      // Nothing has triggered a persist yet on a fresh visit
+      expect(settings?.hasSeenExegesisDialog ?? false).toBe(false)
+    })
+
+    test("stays false when restoring a settings blob saved before this flag existed", async ({
+      page,
+    }) => {
+      await page.evaluate(() => {
+        localStorage.setItem(
+          "userSettings",
+          JSON.stringify({ exegesis: ["aliquli/en-US"] }),
+        )
+      })
+      await page.reload()
+      await untilUsable(page)
+
+      const settings = await page.evaluate(() =>
+        JSON.parse(localStorage.getItem("userSettings")!),
+      )
+      expect(settings.hasSeenExegesisDialog).toBe(false)
+    })
+
+    test("persists true after the exegesis dialog is opened once", async ({
+      page,
+    }) => {
+      await openExegesisDialog(page, "1:1")
+      await page.waitForTimeout(300)
+
+      const settings = await page.evaluate(() =>
+        JSON.parse(localStorage.getItem("userSettings")!),
+      )
+      expect(settings.hasSeenExegesisDialog).toBe(true)
+
+      await page.reload()
+      await untilUsable(page)
+      const settingsAfterReload = await page.evaluate(() =>
+        JSON.parse(localStorage.getItem("userSettings")!),
+      )
+      expect(settingsAfterReload.hasSeenExegesisDialog).toBe(true)
     })
   })
 

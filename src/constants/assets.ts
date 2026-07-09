@@ -34,6 +34,8 @@ export interface Asset {
   exegesisOf: (id: string) => ExegesisSource | null
   /** Build the URL for a chapter asset given a slug (or full exegesisId), locale, and chapter number. */
   exegesisAssetUrlOf: (id: string, locale: Locale, chapterId: number) => string
+  /** Find default exegesis id for first-time. */
+  defaultExegesisId: (locale: Locale) => string | null
 }
 
 export const basePath = `${typeof window !== "undefined" ? window.location.origin : ""}${process.env.PUBLIC_URL}`
@@ -78,5 +80,14 @@ export const Asset: Asset = {
     const source = Asset.exegesisOf(id)
     if (!source) throw new Error(`Unknown exegesis source: ${id.split("/")[0]}`)
     return `${source.path}/${locale}/${chapterId}.json`
+  },
+  defaultExegesisId(locale) {
+    const source = Asset.exegesisOf("aliquli")
+    if (!source) return null
+    const slug = source.path.split("/").pop()!
+    const resolvedLocale = source.availableLocales.includes(locale)
+      ? locale
+      : Locale.IntEnglish
+    return `${slug}/${resolvedLocale}`
   },
 }

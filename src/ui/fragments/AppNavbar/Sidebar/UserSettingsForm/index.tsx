@@ -9,7 +9,7 @@ import { isProperThemeValue, messages } from "@i18n/message"
 import { ComboboxOption } from "@systatum/coneto/combobox"
 import { FormFieldGroup, StatefulForm } from "@systatum/coneto/stateful-form"
 import { useTheme } from "@systatum/coneto/theme"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { useIntl } from "react-intl"
 import { css } from "styled-components"
 import useUserSettingsState from "../../../../hooks/states/UserSettingsState"
@@ -27,7 +27,10 @@ export default function UserSettingsForm() {
     userSettings,
   } = useUserSettingsState()
 
-  const [formValues, setFormValues] = useState<FormState>({
+  // Derived fresh from the store on every render — userSettings is the sole
+  // source of truth, so this can never go stale relative to it (unlike a
+  // useState snapshot would).
+  const formValues: FormState = {
     theme: userSettings.theme ?? mode,
     arabicFontFamily: userSettings.font.arabic.family,
     arabicFontSize: String(userSettings.font.arabic.size),
@@ -36,7 +39,7 @@ export default function UserSettingsForm() {
     wbwTranslations: userSettings.wbwTranslations,
     showPageIndicator: userSettings.showPageIndicator ?? true,
     exegesis: userSettings.exegesis,
-  })
+  }
 
   const { arabicFontOptions } = useFonts()
   const arabicFontSizeOptions = useMemo(getAllPossibleFontSizeOptions, [])
@@ -214,12 +217,6 @@ export default function UserSettingsForm() {
           if (!values.every((v) => validIds.includes(v))) return
           setExegesis(values)
         }
-
-        // update the form state
-        setFormValues((s) => ({
-          ...s,
-          ...currentState,
-        }))
       }}
     />
   )

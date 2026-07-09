@@ -11,6 +11,9 @@
 # production
 /build
 
+# feed xml
+**/*.xml
+
 # misc
 .DS_Store
 .env.local
