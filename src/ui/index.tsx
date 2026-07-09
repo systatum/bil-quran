@@ -30,13 +30,15 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
   const verseNumber = params.verse ? parseInt(params.verse) : null
 
   const { openExegesis } = usePaperDialogState()
-  const hasOpenedExegesisRef = useRef(false)
+  const openedExegesisForRef = useRef<string | null>(null)
   useEffect(() => {
     if (!openExegesisOnMount) return
-    if (hasOpenedExegesisRef.current) return
     if (chapterId == null || verseNumber == null) return
 
-    hasOpenedExegesisRef.current = true
+    const target = `${chapterId}:${verseNumber}`
+    if (openedExegesisForRef.current === target) return
+
+    openedExegesisForRef.current = target
     openExegesis(chapterId, verseNumber)
   }, [openExegesisOnMount, chapterId, verseNumber, openExegesis])
 

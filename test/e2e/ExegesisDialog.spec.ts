@@ -409,5 +409,22 @@ test.describe("ExegesisDialog", () => {
         dialog.getByText("This verse could not be found."),
       ).toBeVisible({ timeout: 8_000 })
     })
+
+    test("allow /e/ revisit to update dialog content", async ({ page }) => {
+      await page.goto("/#/e/1/2")
+      await untilUsable(page)
+
+      const dialog = await getPaperDialog(page)
+      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      const verseIndicator = dialog.locator('[data-testid="verse-indicator"]')
+      await expect(verseIndicator).toHaveText("2", { timeout: 5_000 })
+
+      // Manually navigate to a different /e/ target within the same tab,
+      // aka an in-app hash change, not a full reload
+      await page.goto("/#/e/4/8")
+      await page.waitForTimeout(500)
+
+      await expect(verseIndicator).toHaveText("8", { timeout: 5_000 })
+    })
   })
 })
