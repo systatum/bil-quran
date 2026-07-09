@@ -260,10 +260,16 @@ export default function QuranPaper({
     })
   }
 
-  // restore persisted scroll position ONCE.
+  // restore persisted scroll position ONCE — unless a specific chapter/verse
+  // was requested (e.g. via URL), which always wins over the last position.
   useEffect(() => {
     if (hasRestoredScrollRef.current) return
     if (renderRows.length === 0) return
+
+    if (requestedChapterId && requestedVerseNumber) {
+      hasRestoredScrollRef.current = true
+      return
+    }
 
     async function restoreScroll() {
       const { lastScroll } = userSettings
@@ -275,7 +281,7 @@ export default function QuranPaper({
     }
 
     restoreScroll()
-  }, [renderRows])
+  }, [renderRows, requestedChapterId, requestedVerseNumber])
 
   useEffect(() => {
     // must have rows on the page

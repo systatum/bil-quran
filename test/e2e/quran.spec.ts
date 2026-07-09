@@ -2,7 +2,7 @@ import { Rendering } from "@constants/records/RenderingRecord"
 import { expect, Page, test } from "@playwright/test"
 import { loadQuranWords } from "./tools/data"
 import { scrollDown, waitUntilVisible } from "./tools/interactivity"
-import { untilUsable, visitFresh } from "./tools/state"
+import { getTopMostVerse, untilUsable, visitFresh } from "./tools/state"
 
 test.describe("Quran paper", () => {
   test.beforeEach(async ({ page }) => await visitFresh(page))
@@ -176,6 +176,25 @@ test.describe("Quran paper", () => {
       // previously an extra row's height was tacked on, pushing it ~1 verse
       // too far down and requiring a manual scroll-up to see it.
       expect(Math.abs(offsetFromTop!)).toBeLessThan(5)
+    })
+
+    test("URL parameter takes precedence", async ({ page }) => {
+      // Fabricate a persisted scroll position far from the verse we're to visit
+      await page.evaluate(() => {
+        const raw = localStorage.getItem("userSettings")
+        const settings = raw ? JSON.parse(raw) : {}
+        settings.lastScroll = { chapterId: 50, verse: 1 }
+        localStorage.setItem("userSettings", JSON.stringify(settings))
+        window.location.hash = "#/c/2/21"
+      })
+      await page.reload()
+      await untilUsable(page)
+
+      // Let both the persisted-restore and requested-verse effects race and settle.
+      await page.waitForTimeout(1000)
+
+      const topmostVerse = getTopMostVerse(page)
+      expect(topmostVerse).toBe("2:21")
     })
   })
 })
