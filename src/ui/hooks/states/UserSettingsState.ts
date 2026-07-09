@@ -208,6 +208,7 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
 
       // omitted fields fall back to the existing record, so re-bookmarking never wipes a note/color
       if (!isPlainObject(bookmarks.list)) bookmarks.list = {}
+      const existing = bookmarks.list[verseKey]
       bookmarks = {
         ...bookmarks,
         list: {
@@ -215,10 +216,20 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
           [verseKey]: {
             type: BookmarkType.Verse,
             key: verseKey,
-            addedAt: Date.now(),
+            addedAt: existing?.addedAt ?? Date.now(),
             category: usedCategory.id,
-            note: note ? String(note) : undefined,
-            color: color ? Number(color) : BookmarkColor.Gray,
+            note:
+              "note" in args
+                ? note
+                  ? String(note)
+                  : undefined
+                : existing?.note,
+            color:
+              "color" in args
+                ? color
+                  ? Number(color)
+                  : BookmarkColor.Gray
+                : (existing?.color ?? BookmarkColor.Gray),
           },
         },
       }

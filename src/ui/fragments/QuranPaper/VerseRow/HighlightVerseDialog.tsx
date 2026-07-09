@@ -15,21 +15,13 @@ const HIGHLIGHT_COLORS = [
   HighlightColor.Tertiary,
 ]
 
-/**
- * Config for the "Highlight this verse" dialog. `verseKey` is only passed
- * in while this is the active dialog — see `ModalDialog`.
- */
-export function useHighlightVerseDialog(
-  verseKey: string | undefined,
-): ModalDialogConfig {
+export function useHighlightVerseDialog(verseKey: string): ModalDialogConfig {
   const { formatMessage } = useIntl()
   const { mode: theme } = useTheme()
   const { userSettings, highlightVerse, removeHighlight } =
     useUserSettingsState()
 
-  const existingColor = verseKey
-    ? userSettings.highlightedVerses[verseKey]
-    : undefined
+  const existingColor = userSettings.highlightedVerses[verseKey]
 
   const [selectedColor, setSelectedColor] = useState<HighlightColor>(
     existingColor ?? HighlightColor.Primary,
@@ -98,7 +90,6 @@ export function useHighlightVerseDialog(
         />
       ),
       onAction(buttonId) {
-        if (verseKey == null) return
         if (buttonId === "remove") removeHighlight(verseKey)
         if (buttonId === "apply") {
           if (!highlightVerse(verseKey, selectedColor))

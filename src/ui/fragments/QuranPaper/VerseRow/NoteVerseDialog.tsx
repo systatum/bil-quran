@@ -7,20 +7,16 @@ import toast from "react-hot-toast"
 import { useIntl } from "react-intl"
 import { css } from "styled-components"
 
-/**
- * Config for the "Note this verse" dialog. `verseKey` is only passed in
- * while this is the active dialog — see `ModalDialog`.
- */
-export function useNoteVerseDialog(
-  verseKey: string | undefined,
-): ModalDialogConfig {
+export function useNoteVerseDialog(verseKey: string): ModalDialogConfig {
   const { formatMessage } = useIntl()
-  const { bookmarkVerse } = useUserSettingsState()
+  const { userSettings, bookmarkVerse } = useUserSettingsState()
   const [note, setNote] = useState("")
 
-  // this hook stays mounted, so reset on verse change or it'd leak text
+  // this hook stays mounted, so reset on verse change or it'd leak selection
+  // also, if there's any existing note: perform edit instead of starting blank
   useEffect(() => {
-    setNote("")
+    setNote(userSettings.bookmarks.list[verseKey]?.note ?? "")
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [verseKey])
 
   // memoized to avoid an infinite loop in ModalDialog's report-up effect
@@ -52,7 +48,7 @@ export function useNoteVerseDialog(
         />
       ),
       onAction(buttonId) {
-        if (buttonId !== "add" || verseKey == null) return
+        if (buttonId !== "add") return
         if (!bookmarkVerse({ verseKey, note }))
           toast.error("Failed bookmarking")
       },
