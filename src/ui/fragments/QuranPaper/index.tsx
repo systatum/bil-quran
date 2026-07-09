@@ -7,10 +7,10 @@ import { useVirtualizer, VirtualItem } from "@tanstack/react-virtual"
 import useChaptersState from "../../hooks/states/ChaptersState"
 import useUserSettingsState from "../../hooks/states/UserSettingsState"
 import ChapterRow from "./ChapterRow"
+import ModalDialog from "./ModalDialog"
 import PaperDialog from "./PaperDialog"
 import VerseRow, { Verse } from "./VerseRow"
 import { Bismillah } from "./VerseRow/Bismillah"
-import NoteVerseDialog from "./VerseRow/NoteDialog"
 
 // This module contains the content browser of the Quran.
 // It includes various components to build the verse, and
@@ -346,7 +346,7 @@ export default function QuranPaper({
           position: "relative",
         }}
       >
-        <NoteVerseDialog />
+        <ModalDialog />
         <PaperDialog />
 
         {items.map((item) => {

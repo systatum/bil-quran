@@ -1,3 +1,4 @@
+import { HighlightColor } from "@constants/highlight"
 import { ChapterRecord } from "@constants/records/ChapterRecord"
 import {
   WordOccurrence,
@@ -187,6 +188,11 @@ export default function VerseRow({
       .catch((e) => LOGGER.error("Failed getting occurrences data", e))
   }
 
+  const highlightColor = userSettings.highlightedVerses[verse.id]
+  const highlightHex = highlightColor
+    ? HighlightColor.on(theme)[highlightColor]
+    : undefined
+
   return (
     <VerseRowWrapper
       data-index={index}
@@ -197,6 +203,7 @@ export default function VerseRow({
         ref(el)
       }}
       $theme={theme}
+      $highlightHex={highlightHex}
       style={{ transform: style.transform }}
       onPointerDown={() => {
         verseTimeoutRef.current = setTimeout(() => {
@@ -271,7 +278,10 @@ VerseRow.groupVerse = (
   return Array.from(Object.values(grouped))
 }
 
-const VerseRowWrapper = styled.div<{ $theme: ThemeMode }>`
+const VerseRowWrapper = styled.div<{
+  $theme: ThemeMode
+  $highlightHex?: string
+}>`
   position: absolute;
   top: 0;
   left: 0;
@@ -285,7 +295,8 @@ const VerseRowWrapper = styled.div<{ $theme: ThemeMode }>`
   overflow: hidden;
 
   color: ${({ $theme }) => ($theme === "dark" ? "#d8c7a3" : "#1f1f1f")};
-  background: ${({ $theme }) => ($theme === "dark" ? "#181818" : "#f6f1e7")};
+  background: ${({ $theme, $highlightHex }) =>
+    $highlightHex ?? ($theme === "dark" ? "#181818" : "#f6f1e7")};
   border-bottom: 1px solid
     ${({ $theme }) => ($theme === "dark" ? "#303030" : "#bfbfbf")};
 `

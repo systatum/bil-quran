@@ -107,8 +107,9 @@ export default function ExegesisPaperDialogContent({
             padding-right: 0.5em;
           `,
           dividerStyle: css`
-            border: none;
-            height: 5px;
+            border-top: 2px solid transparent;
+            border-bottom: 2px solid transparent;
+            height: 6px;
             overflow: visible;
             position: relative;
             background: linear-gradient(
@@ -140,18 +141,18 @@ export default function ExegesisPaperDialogContent({
               left: 14px;
               top: 50%;
               transform: translateY(-50%);
-              width: 3px;
-              height: 3px;
+              width: 6px;
+              height: 6px;
               border-radius: 50%;
               background: ${theme === "dark"
                 ? "rgba(255, 255, 255, 0.09)"
                 : "rgba(0, 0, 0, 0.13)"};
               box-shadow:
-                8px 0 0
+                10px 0 0
                   ${theme === "dark"
                     ? "rgba(255, 255, 255, 0.09)"
                     : "rgba(0, 0, 0, 0.13)"},
-                16px 0 0
+                20px 0 0
                   ${theme === "dark"
                     ? "rgba(255, 255, 255, 0.09)"
                     : "rgba(0, 0, 0, 0.13)"};

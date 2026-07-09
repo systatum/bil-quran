@@ -29,6 +29,10 @@
     "title": "إظهار مؤشر الصفحة",
     "helper": "يعرض مدى تقدم قراءتك بالنسبة إلى أجزاء القرآن الكريم"
   },
+  "alphabeticalChaptersSorting": {
+    "title": "ترتيب السور أبجديًا",
+    "helper": "ترتيب السور من الألف إلى الياء"
+  },
   "fontCategory": {
     "shaddaStacked": "الشدة والحركات متراكبة",
     "shaddaSeparable": "السماح بفصل الحركات",
@@ -44,15 +48,28 @@
       "input": {
         "placeholder": "أضف ملاحظة إذا أردت..."
       }
+    },
+    "highlightVerse": {
+      "title": "تمييز هذه الآية",
+      "colorLabel": "اللون"
     }
   },
 
   "tipMenu": {
     "verseMarker": {
       "bookmark": "إضافة علامة",
-      "note": "إضافة ملاحظة"
+      "note": "إضافة ملاحظة",
+      "highlight": "تمييز"
     }
   },
+
+  "highlightColor": {
+    "1": "أخضر",
+    "2": "أصفر",
+    "3": "أحمر"
+  },
+  "highlightAction": "تمييز",
+  "removeHighlight": "إزالة التمييز",
 
   "notice": {
     "bookmark": {

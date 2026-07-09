@@ -32,6 +32,10 @@ export const messages = {
     title: "showPageIndicator.title",
     helper: "showPageIndicator.helper",
   },
+  alphabeticalChaptersSorting: {
+    title: "alphabeticalChaptersSorting.title",
+    helper: "alphabeticalChaptersSorting.helper",
+  },
   fontCategory: {
     shaddaStacked: "fontCategory.shaddaStacked",
     shaddaSeparable: "fontCategory.shaddaSeparable",
@@ -53,6 +57,10 @@ export const messages = {
         placeholder: "dialog.noteVerse.input.placeholder",
       },
     },
+    highlightVerse: {
+      title: "dialog.highlightVerse.title",
+      colorLabel: "dialog.highlightVerse.colorLabel",
+    },
   },
   notice: {
     bookmark: {
@@ -63,8 +71,16 @@ export const messages = {
     verseMarker: {
       bookmark: "tipMenu.verseMarker.bookmark",
       note: "tipMenu.verseMarker.note",
+      highlight: "tipMenu.verseMarker.highlight",
     },
   },
+  highlightColor: {
+    "1": "highlightColor.1",
+    "2": "highlightColor.2",
+    "3": "highlightColor.3",
+  },
+  highlightAction: "highlightAction",
+  removeHighlight: "removeHighlight",
   errors: {
     bookmarkDataNotFound: "errors.bookmarkDataNotFound",
   },
