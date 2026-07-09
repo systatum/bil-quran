@@ -239,20 +239,12 @@ export default function QuranPaper({
           requestAnimationFrame(() => {
             const virtualItems = virtualizer.getVirtualItems()
             const item = virtualItems.find((x) => x.index === targetIndex)
-            const previousItem = virtualItems.find(
-              (x) => x.index === targetIndex - 1,
-            )
             const parentContainer = parentRef.current
 
             // last scrolling, trying to make the verse fully visible
             if (item && parentContainer) {
               parentContainer.scrollTo({
-                top:
-                  item.start +
-                  (previousItem
-                    ? Math.abs(item.start - previousItem.start)
-                    : 0),
-
+                top: item.start,
                 behavior: "instant",
               })
             }

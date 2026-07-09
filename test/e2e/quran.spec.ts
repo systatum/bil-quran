@@ -145,5 +145,37 @@ test.describe("Quran paper", () => {
       )
       await expect(verseLocator).toBeVisible({ timeout: 6000 })
     })
+
+    test("scrolls the target verse to the top of the viewport", async ({
+      page,
+    }) => {
+      await page.goto("/#/c/12/5")
+      await untilUsable(page)
+
+      const verseLocator = page.locator('[data-verse="12:5"]')
+      await expect(verseLocator).toBeVisible({ timeout: 10_000 })
+      // Let the scroll-restoration debounce (3 rAFs + 300ms) fully settle.
+      await page.waitForTimeout(800)
+
+      const offsetFromTop = await verseLocator.evaluate((el) => {
+        let container = el.parentElement
+        while (
+          container &&
+          window.getComputedStyle(container).overflowY !== "auto"
+        ) {
+          container = container.parentElement
+        }
+        if (!container) return null
+        return (
+          el.getBoundingClientRect().top - container.getBoundingClientRect().top
+        )
+      })
+
+      expect(offsetFromTop).not.toBeNull()
+      // The verse row must be flush with the top of the scroll container —
+      // previously an extra row's height was tacked on, pushing it ~1 verse
+      // too far down and requiring a manual scroll-up to see it.
+      expect(Math.abs(offsetFromTop!)).toBeLessThan(5)
+    })
   })
 })
