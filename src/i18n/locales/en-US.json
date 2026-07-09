@@ -55,15 +55,28 @@
       "input": {
         "placeholder": "Optionally add some note..."
       }
+    },
+    "highlightVerse": {
+      "title": "Highlight this verse",
+      "colorLabel": "Color"
     }
   },
 
   "tipMenu": {
     "verseMarker": {
       "bookmark": "Bookmark",
-      "note": "Note"
+      "note": "Note",
+      "highlight": "Highlight"
     }
   },
+
+  "highlightColor": {
+    "1": "Green",
+    "2": "Yellow",
+    "3": "Red"
+  },
+  "highlightAction": "Highlight",
+  "removeHighlight": "Remove highlight",
 
   "notice": {
     "bookmark": {

@@ -5,6 +5,7 @@ import {
   BookmarkType,
 } from "@constants/bookmark"
 import { ArabicFontFamily, ArabicFonts } from "@constants/fonts"
+import { HighlightColor } from "@constants/highlight"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
 import { BasmalaPosition, DEFAULT_LOCALE, Locale } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
@@ -42,6 +43,7 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
     categories: {},
     list: {},
   },
+  highlightedVerses: {},
   lastScroll: {
     chapterId: 0,
     verse: 0,
@@ -66,6 +68,8 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
     const current = get().userSettings
     const hydrated = mergeKnownKeys(current, parsed) as UserSettings
     hydrated.bookmarks = parsed.bookmarks
+    // same reason as bookmarks above — mergeKnownKeys can't merge new keys into {}
+    hydrated.highlightedVerses = parsed.highlightedVerses ?? {}
     // Reconciliation point for future migrations: branch on `parsed.version`
     // here before stamping forward, once the schema actually needs one.
     hydrated.version = USER_SETTINGS_VERSION
@@ -225,6 +229,42 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
       return false
     }
   },
+
+  highlightVerse(verseKey, color) {
+    const validKeyFormat = /^\d{1,3}:\d{1,3}$/.test(verseKey)
+    if (!validKeyFormat) throw new Error("Unexpected verse key: " + verseKey)
+    const [chapterId, verseNumber] = verseKey.split(":")
+    if (!isValidVerse(chapterId, verseNumber))
+      throw new Error(`Verse ${verseKey} not found`)
+
+    try {
+      const userSettings = get().userSettings
+      const highlightedVerses = isPlainObject(userSettings.highlightedVerses)
+        ? userSettings.highlightedVerses
+        : {}
+
+      get().partialUpdate({
+        highlightedVerses: {
+          ...highlightedVerses,
+          [verseKey]: color,
+        },
+      })
+      return true
+    } catch (e) {
+      LOGGER.error("Failed highlighting verse", e)
+      return false
+    }
+  },
+
+  removeHighlight(verseKey) {
+    const { [verseKey]: _removed, ...rest } = isPlainObject(
+      get().userSettings.highlightedVerses,
+    )
+      ? get().userSettings.highlightedVerses
+      : {}
+
+    get().partialUpdate({ highlightedVerses: rest })
+  },
 }))
 
 export default useUserSettingsState
@@ -265,6 +305,10 @@ export interface UserSettingsState {
 
   // bookmark related
   bookmarkVerse(args: BookmarkVerseFunctionArgs): boolean
+
+  // highlight related
+  highlightVerse(verseKey: string, color: HighlightColor): boolean
+  removeHighlight(verseKey: string): void
 }
 
 export interface FontSetting {
@@ -316,6 +360,12 @@ export interface UserSettings {
     categories: Record<string, BookmarkCategory>
     list: Record<string, Bookmark>
   }
+
+  /**
+   * Highlighted verses, keyed by "chapterId:verseNumber", valued by the
+   * `HighlightColor` chosen for that verse.
+   */
+  highlightedVerses: Record<string, HighlightColor>
 
   basmalaPosition: BasmalaPosition
 

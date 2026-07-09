@@ -55,15 +55,28 @@
       "input": {
         "placeholder": "Tambahkan pesan di sini jika perlu..."
       }
+    },
+    "highlightVerse": {
+      "title": "Sorot ayat ini",
+      "colorLabel": "Warna"
     }
   },
 
   "tipMenu": {
     "verseMarker": {
       "bookmark": "Tandai ayat ini",
-      "note": "Beri catatan"
+      "note": "Beri catatan",
+      "highlight": "Sorot"
     }
   },
+
+  "highlightColor": {
+    "1": "Hijau",
+    "2": "Kuning",
+    "3": "Merah"
+  },
+  "highlightAction": "Sorot",
+  "removeHighlight": "Hapus sorotan",
 
   "notice": {
     "bookmark": {
