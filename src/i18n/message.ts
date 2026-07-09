@@ -66,6 +66,14 @@ export const messages = {
       title: "dialog.highlightVerse.title",
       colorLabel: "dialog.highlightVerse.colorLabel",
     },
+    backup: {
+      title: "dialog.backup.title",
+      description: "dialog.backup.description",
+      copy: "dialog.backup.copy",
+      download: "dialog.backup.download",
+      copySuccess: "dialog.backup.copySuccess",
+      copyFailed: "dialog.backup.copyFailed",
+    },
   },
   notice: {
     bookmark: {

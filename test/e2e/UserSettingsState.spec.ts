@@ -19,6 +19,7 @@ import {
   openSidebar,
   scrollDown,
   selectComboBox,
+  toggleWbwTranslation,
   waitUntilVisible,
 } from "./tools/interactivity"
 import {
@@ -380,6 +381,29 @@ test.describe("UserSettingsState", () => {
         JSON.parse(localStorage.getItem("userSettings")!),
       )
       expect(settingsAfterReload.hasSeenExegesisDialog).toBe(true)
+    })
+  })
+
+  test.describe("wbwTranslations", () => {
+    test("does not re-fetch a translation's locale file after a page refresh", async ({
+      page,
+    }) => {
+      const requests: string[] = []
+      page.on("request", (req) => {
+        if (req.url().includes("/wbw_translations/id-ID.json"))
+          requests.push(req.url())
+      })
+
+      await toggleWbwTranslation("Indonesian", page)
+      await page.waitForTimeout(500)
+      expect(requests.length).toBe(1)
+
+      await page.reload()
+      await untilUsable(page)
+      await page.waitForTimeout(500)
+
+      // still just the one fetch from before toggling — persisted DB serves it now
+      expect(requests.length).toBe(1)
     })
   })
 

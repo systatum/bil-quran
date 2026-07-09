@@ -1,4 +1,5 @@
 import { ThemeMode } from "@constants/theme"
+import useModalDialogState from "@hooks/states/ModalDialogState"
 import { messages } from "@i18n/message"
 import { Button } from "@systatum/coneto/button"
 import { useLayoutEffect, useRef, useState } from "react"
@@ -19,6 +20,7 @@ export default function Sidebar({
   onClosingSidebarRequested,
 }: SidebarProps) {
   const { formatMessage } = useIntl()
+  const { showBackupDialog } = useModalDialogState()
   const titleRef = useRef<HTMLDivElement>(null)
   const [contentHeight, setContentHeight] = useState(0)
   const [contentType, setContentType] = useState<ContentType>(
@@ -51,7 +53,22 @@ export default function Sidebar({
 
       <div>
         {contentType === ContentType.Settings && (
-          <UserSettingsForm key={String(visible) /* `key` forces re-mount */} />
+          <>
+            <UserSettingsForm
+              key={String(visible) /* `key` forces re-mount */}
+            />
+            <Button
+              aria-label="settings-backup-button"
+              onClick={() => showBackupDialog()}
+              styles={{
+                containerStyle: css`
+                  margin: 0 24px 24px;
+                `,
+              }}
+            >
+              {formatMessage({ id: messages.backup })}
+            </Button>
+          </>
         )}
         {contentType === ContentType.Bookmarks && (
           <BookmarkList height={contentHeight} />

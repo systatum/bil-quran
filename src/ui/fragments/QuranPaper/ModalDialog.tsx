@@ -5,16 +5,20 @@ import useModalDialogState, {
 import { Dialog } from "@systatum/coneto/dialog"
 import { useEffect, useState } from "react"
 import styled from "styled-components"
+import { useBackupDialog } from "../AppNavbar/Sidebar/BackupDialog"
 import { useHighlightVerseDialog } from "./VerseRow/HighlightVerseDialog"
 import { useNoteVerseDialog } from "./VerseRow/NoteVerseDialog"
 
 // type → the hook that builds that dialog's config; add an entry per new type
 const DIALOG_HOOKS: Record<
   ModalDialogContent["type"],
-  (verseKey: string) => ModalDialogConfig
+  (content: ModalDialogContent) => ModalDialogConfig
 > = {
-  note: useNoteVerseDialog,
-  highlight: useHighlightVerseDialog,
+  note: (content) =>
+    useNoteVerseDialog((content as { verseKey: string }).verseKey),
+  highlight: (content) =>
+    useHighlightVerseDialog((content as { verseKey: string }).verseKey),
+  backup: () => useBackupDialog(),
 }
 
 // Calls only the active type's hook (remounts via `key` on type change,
@@ -28,7 +32,7 @@ function ActiveDialogConfig({
   onConfig: (config: ModalDialogConfig) => void
 }) {
   const useDialog = DIALOG_HOOKS[content.type]
-  const config = useDialog(content.verseKey)
+  const config = useDialog(content)
 
   useEffect(() => {
     onConfig(config)
@@ -62,7 +66,7 @@ export default function ModalDialog() {
         title={active?.title ?? ""}
         onClick={({ buttonId, closeDialog }) => {
           active?.onAction(buttonId)
-          closeDialog()
+          if (buttonId !== "copy") closeDialog()
         }}
         onVisibilityChange={(isOpen) => {
           if (!isOpen) close()

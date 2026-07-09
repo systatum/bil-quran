@@ -64,6 +64,14 @@
     "highlightVerse": {
       "title": "تمييز هذه الآية",
       "colorLabel": "اللون"
+    },
+    "backup": {
+      "title": "نسخ بياناتك احتياطيًا",
+      "description": "انسخ أو نزّل نسخة مشفّرة من إعدادات bil-Qur'an وملاحظاتك وبياناتك الأخرى.",
+      "copy": "نسخ",
+      "download": "تنزيل",
+      "copySuccess": "تم النسخ إلى الحافظة",
+      "copyFailed": "فشل النسخ"
     }
   },
 

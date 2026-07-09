@@ -64,6 +64,14 @@
     "highlightVerse": {
       "title": "Highlight this verse",
       "colorLabel": "Color"
+    },
+    "backup": {
+      "title": "Backup your data",
+      "description": "Copy or download an encoded backup of your bil-Qur'an settings, notes, and other data.",
+      "copy": "Copy",
+      "download": "Download",
+      "copySuccess": "Copied to clipboard",
+      "copyFailed": "Failed to copy"
     }
   },
 

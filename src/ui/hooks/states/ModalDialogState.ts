@@ -11,6 +11,10 @@ const useModalDialogState = create<ModalDialogState>((set) => ({
     set({ content: { type: "highlight", verseKey } })
   },
 
+  showBackupDialog() {
+    set({ content: { type: "backup" } })
+  },
+
   close() {
     set({ content: null })
   },
@@ -20,11 +24,13 @@ export interface ModalDialogState {
   content: ModalDialogContent | null
   showNoteVerseDialog: (verseKey: string) => void
   showHighlightVerseDialog: (verseKey: string) => void
+  showBackupDialog: () => void
   close: () => void
 }
 
 export type ModalDialogContent =
   | { type: "note"; verseKey: string }
   | { type: "highlight"; verseKey: string }
+  | { type: "backup" }
 
 export default useModalDialogState

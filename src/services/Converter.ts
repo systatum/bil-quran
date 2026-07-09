@@ -36,6 +36,14 @@ export function arabicLetterToLatin(letter: string): string {
   return ROOT_LETTER_LATIN[letter] ?? letter
 }
 
+/** Base64-encodes a Unicode string (plain `btoa` only handles Latin1). */
+export function encodeBase64Unicode(str: string): string {
+  const bytes = new TextEncoder().encode(str)
+  let binary = ""
+  bytes.forEach((b) => (binary += String.fromCharCode(b)))
+  return btoa(binary)
+}
+
 // ===== OBJECT =====================================
 
 export function flattenObject(
