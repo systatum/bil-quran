@@ -10,10 +10,11 @@ import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
 import { BasmalaPosition, DEFAULT_LOCALE, Locale } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import { resolveLocale } from "@i18n"
-import { isPlainObject, isValidVerse } from "@services/checker"
+import { isPlainObject } from "@services/checker"
 import LOGGER from "@services/Logger"
 import { DeepPartial, mergeKnownKeys } from "@services/mutator"
 import { create } from "zustand"
+import useChaptersState from "./ChaptersState"
 
 /**
  * Schema version of the persisted user settings. Bump this whenever the
@@ -175,7 +176,7 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
     if (!validKeyFormat) throw new Error("Unexpected verse key: " + verseKey)
     // Check that chapterId and verseNumber is indeed a proper number
     const [chapterId, verseNumber] = verseKey.split(":")
-    if (!isValidVerse(chapterId, verseNumber))
+    if (!useChaptersState.getState().isValidVerse(chapterId, verseNumber))
       throw new Error(`Verse ${verseKey} not found`)
 
     // TODO: cannot bookmark an existing verse twice
@@ -234,7 +235,7 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
     const validKeyFormat = /^\d{1,3}:\d{1,3}$/.test(verseKey)
     if (!validKeyFormat) throw new Error("Unexpected verse key: " + verseKey)
     const [chapterId, verseNumber] = verseKey.split(":")
-    if (!isValidVerse(chapterId, verseNumber))
+    if (!useChaptersState.getState().isValidVerse(chapterId, verseNumber))
       throw new Error(`Verse ${verseKey} not found`)
 
     try {

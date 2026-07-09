@@ -3,6 +3,7 @@ import useChaptersState from "@hooks/states/ChaptersState"
 import useExegesisState from "@hooks/states/ExegesisState"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import { useTranslatedWords, useWords } from "@hooks/tools/useWordTranslations"
+import { messages } from "@i18n/message"
 import {
   RiArrowDropLeftFill,
   RiArrowDropRightFill,
@@ -13,6 +14,7 @@ import { SplitPane } from "@systatum/coneto/split-pane"
 import { useTheme } from "@systatum/coneto/theme"
 import { marked } from "marked"
 import React, { useEffect, useMemo, useRef, useState } from "react"
+import { useIntl } from "react-intl"
 import styled, { css } from "styled-components"
 import CircleButton from "../../CircleButton"
 import InterlinearText from "../InterlinearText"
@@ -29,10 +31,11 @@ export default function ExegesisPaperDialogContent({
   verseNumber: number
 }) {
   const { mode: theme } = useTheme()
+  const { formatMessage } = useIntl()
   const { userSettings, setExegesis, setHasSeenExegesisDialog } =
     useUserSettingsState()
   const { loadChapter } = useExegesisState()
-  const { chapters } = useChaptersState()
+  const { chapters, isValidVerse } = useChaptersState()
 
   useEffect(() => {
     if (userSettings.hasSeenExegesisDialog) return
@@ -95,6 +98,16 @@ export default function ExegesisPaperDialogContent({
   }
 
   const hasExegesis = activeIds.length > 0
+
+  if (!isValidVerse(activeChapter, activeVerse)) {
+    return (
+      <Outer>
+        <Empty $theme={theme}>
+          {formatMessage({ id: messages.errors.verseNotFound })}
+        </Empty>
+      </Outer>
+    )
+  }
 
   return (
     <Outer>
@@ -408,6 +421,7 @@ const VerseText = styled.div<{ $theme: string; $loaded: boolean }>`
 `
 
 const Empty = styled.p<{ $theme: string }>`
+  flex: 1;
   padding: 24px;
   font-size: 0.95em;
   text-align: center;

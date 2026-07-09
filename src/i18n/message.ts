@@ -83,6 +83,7 @@ export const messages = {
   removeHighlight: "removeHighlight",
   errors: {
     bookmarkDataNotFound: "errors.bookmarkDataNotFound",
+    verseNotFound: "error.verseNotFound",
   },
 } as const
 

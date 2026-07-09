@@ -85,6 +85,7 @@
   },
 
   "error": {
-    "bookmarkDataNotFound": "Bookmark data not found"
+    "bookmarkDataNotFound": "Bookmark data not found",
+    "verseNotFound": "This verse could not be found."
   }
 }

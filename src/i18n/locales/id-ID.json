@@ -85,6 +85,7 @@
   },
 
   "error": {
-    "bookmarkDataNotFound": "Data bookmark tidak ditemukan"
+    "bookmarkDataNotFound": "Data bookmark tidak ditemukan",
+    "verseNotFound": "Ayat ini tidak ditemukan."
   }
 }
