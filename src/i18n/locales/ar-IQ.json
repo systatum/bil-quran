@@ -59,7 +59,8 @@
     "verseMarker": {
       "bookmark": "إضافة علامة",
       "note": "إضافة ملاحظة",
-      "highlight": "تمييز"
+      "highlight": "تمييز",
+      "exegesis": "التفسير"
     }
   },
 
@@ -78,6 +79,7 @@
   },
 
   "error": {
-    "bookmarkDataNotFound": "تعذر العثور على بيانات العلامات"
+    "bookmarkDataNotFound": "تعذر العثور على بيانات العلامات",
+    "verseNotFound": "لم يتم العثور على هذه الآية."
   }
 }

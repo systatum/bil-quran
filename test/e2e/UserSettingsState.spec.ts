@@ -334,7 +334,6 @@ test.describe("UserSettingsState", () => {
       )
       expect(settings.version).toBe(USER_SETTINGS_VERSION)
     })
-
   })
 
   test.describe("hasSeenExegesisDialog", () => {

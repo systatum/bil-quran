@@ -1,7 +1,9 @@
 import useModalDialogState from "@hooks/states/ModalDialogState"
+import usePaperDialogState from "@hooks/states/PaperDialogState"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import { messages } from "@i18n/message"
 import {
+  RiBookOpenLine,
   RiFileMarkedLine,
   RiMarkPenLine,
   RiPencilAi2Line,
@@ -24,6 +26,7 @@ export function VerseMarker({ ref, verse }: VerseMarkerProps) {
   const { bookmarkVerse } = useUserSettingsState()
   const { showNoteVerseDialog, showHighlightVerseDialog } =
     useModalDialogState()
+  const { openExegesis } = usePaperDialogState()
 
   return (
     <VerseMarkerColumn data-vmark ref={ref}>
@@ -61,6 +64,19 @@ export function VerseMarker({ ref, verse }: VerseMarkerProps) {
                 const verseKey = `${verse.chapter.id}:${verse.number}`
                 LOGGER.debug("Showing highlight verse dialog for", verseKey)
                 showHighlightVerseDialog(verseKey)
+              },
+            },
+            {
+              caption: formatMessage({
+                id: messages.tipMenu.verseMarker.exegesis,
+              }),
+              icon: { image: RiBookOpenLine },
+              onClick: () => {
+                LOGGER.debug(
+                  "Showing exegesis dialog for",
+                  `${verse.chapter.id}:${verse.number}`,
+                )
+                openExegesis(verse.chapter.id, verse.number)
               },
             },
           ])

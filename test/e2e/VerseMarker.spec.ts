@@ -363,4 +363,28 @@ test.describe("VerseMarker", () => {
       expect(highlighted?.[verseKey!]).toBeUndefined()
     })
   })
+
+  test.describe("opening exegesis from the verse marker", () => {
+    test("clicking Exegesis opens the paper dialog for that verse", async ({
+      page,
+    }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const firstVerseRow = page.locator("[data-verse]").first()
+      const verseKey = await firstVerseRow.getAttribute("data-verse")
+      expect(verseKey).toBeDefined()
+      const [, verseId] = verseKey!.split(":")
+
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Exegesis", page, { ariaLabel: "tip-menu-item" })
+
+      const dialog = await getPaperDialog(page)
+      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(
+        dialog.locator('[data-testid="verse-indicator"]'),
+      ).toHaveText(verseId, { timeout: 5_000 })
+    })
+  })
 })

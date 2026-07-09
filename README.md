@@ -41,12 +41,12 @@ App unique features:
 - [ ] Test when user translations has English and Indonesian, both are shown fine on first load (Indonesian is not the default). This is to test first pre-flight translation downloading and insertion works.
 - [ ] Try raising error at the translator-level (ie at the i18n's formatMessage) and ensure that we see an error screen; otherwise we miss a locale, and the user is not seeing any error. Another simple way is inject into `WordTranslationOption` some fake value, where there's no corresponding i18n key for that in locale files, and so the lookup will generate a null/undefined, causing error on formatMessage-part automatically.
 - [ ] If we add another locale, and then refresh the page, we should not redownload the locale (this proves that database persisting works for all new-locale)
-- [ ] Work on all the to-do
 - [ ] Add madhab mode (shia/sunni)
 - [ ] Check overlay behavior: if sidebar is opened, has overlay, and clicking overlay close the sidebar. Same expected behavior with search bar.
-- [ ] Make sure pressing on the word show the occurrences across different verses
 - [ ] Fix 2:204 word 16 buggy cannot scroll down
-- [ ] Add a new bookmark note. And if adding on a bookmarked verse, will edit instead of insert. Also check that each bookmark, whenever not specified, will add to default (but the localstorage should always have 1 default category)
+- [ ] And if adding on a bookmarked verse, will edit instead of insert. Also check that each bookmark, whenever not specified, will add to default (but the localstorage should always have 1 default category)
+- [ ] Add functionality to backup (when click, then show export and import screen).
+- [ ] When adding note, add at the head, so we see newer notes first.
 - [ ] Can change and update setting and ensure it makes effect (test one by one, ie adding and removing word transation option also one by one)
 - [ ] Test bookmark can click and go to that verse.
 - [ ] When having bookmark data, ensure that scrollbar is shown and user can scroll when there are a lot of bookmark.

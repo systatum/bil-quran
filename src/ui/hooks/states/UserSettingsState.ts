@@ -206,7 +206,7 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
         }
       }
 
-      // add bookmark
+      // omitted fields fall back to the existing record, so re-bookmarking never wipes a note/color
       if (!isPlainObject(bookmarks.list)) bookmarks.list = {}
       bookmarks = {
         ...bookmarks,

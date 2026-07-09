@@ -72,6 +72,7 @@ export const messages = {
       bookmark: "tipMenu.verseMarker.bookmark",
       note: "tipMenu.verseMarker.note",
       highlight: "tipMenu.verseMarker.highlight",
+      exegesis: "tipMenu.verseMarker.exegesis",
     },
   },
   highlightColor: {

@@ -396,10 +396,65 @@ export async function getPaperDialog(page: Page | Locator) {
   return paperDialog
 }
 
-export async function closePaperDialog(page: Page | Locator) {
-  await clickOn(undefined, page, {
-    ariaLabel: "paper-dialog-toggle-close",
+/** Drags the paper dialog's indicator down fast enough to slide it off-screen. */
+async function dragDownFastToClose(page: Page) {
+  const indicator = page
+    .locator('[aria-label="paper-dialog-drag-indicator"]')
+    .first()
+
+  await indicator.dispatchEvent("pointerdown", {
+    clientY: 0,
+    bubbles: true,
+    cancelable: true,
   })
+  await indicator.dispatchEvent("pointermove", {
+    clientY: 20,
+    bubbles: true,
+    cancelable: true,
+  })
+  await page.waitForTimeout(16) // real gap so velocity tracking sees it as a fast flick
+  await indicator.dispatchEvent("pointermove", {
+    clientY: 200,
+    bubbles: true,
+    cancelable: true,
+  })
+  await indicator.dispatchEvent("pointerup", {
+    clientY: 200,
+    bubbles: true,
+    cancelable: true,
+  })
+}
+
+/**
+ * Dismisses the paper dialog (no close button); rotates deterministically
+ * across Escape, backdrop click, and fast drag-down based on the caller's
+ * source line
+ */
+export async function closePaperDialog(page: Page | Locator) {
+  const actualPage = "keyboard" in page ? page : page.page()
+
+  const callerLine = new Error().stack?.split("\n")[2] ?? ""
+  const hash = Array.from(callerLine).reduce(
+    (sum, ch) => sum + ch.charCodeAt(0),
+    0,
+  )
+
+  switch (hash % 3) {
+    case 0:
+      await actualPage.keyboard.press("Escape")
+      break
+    case 1:
+      await actualPage
+        .locator('[aria-label="overlay-blocker"]')
+        .first()
+        .click({ position: { x: 5, y: 5 } })
+      break
+    default:
+      await dragDownFastToClose(actualPage)
+      break
+  }
+
+  await actualPage.waitForTimeout(300)
 }
 
 // ==== TIMER ======================================================
