@@ -31,6 +31,25 @@ test.describe("Lexeme details", () => {
     await expect(dialog.getByText(/1:/)).toBeVisible()
   })
 
+  test("shows the root's latin transliteration next to the arabic root", async ({
+    page,
+  }) => {
+    await longPress(page, firstVerseWord(page))
+
+    const dialog = await getPaperDialog(page)
+    await expect(dialog).toBeVisible({ timeout: 5000 })
+
+    // First word of 1:1 ("بِسْمِ") has root "س م و" — each letter is
+    // followed by its own latin reading badge (no more literal parens; the
+    // circled badge itself is the "encirclement"). Pair spacing comes from
+    // CSS gap (no literal space characters), so match loosely rather than
+    // pinning an exact rendered string.
+    const rootTile = dialog.locator('[data-label="Root"]')
+    await expect(rootTile).toBeVisible()
+    const rootText = (await rootTile.innerText()).replace(/\s+/g, "")
+    expect(rootText).toContain("سsمmوw")
+  })
+
   test("drag handle resizes the dialog", async ({ page }) => {
     await longPress(page, firstVerseWord(page))
 

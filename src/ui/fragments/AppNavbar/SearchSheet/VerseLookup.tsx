@@ -1,8 +1,10 @@
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import LOGGER from "@services/Logger"
+import { chapterNameSortKey } from "@services/chapters"
 import { Combobox, ComboboxOption } from "@systatum/coneto/combobox"
 import { useNavigate } from "@tanstack/react-router"
 import { useMemo } from "react"
+import styled from "styled-components"
 import useChaptersState from "../../../hooks/states/ChaptersState"
 import { FlexContainer } from "../Container"
 
@@ -13,7 +15,7 @@ interface VerseLookupProps {
 export default function VerseLookup({ onChange }: VerseLookupProps) {
   const navigate = useNavigate()
   const {
-    userSettings: { locale },
+    userSettings: { locale, alphabeticalChaptersSorting },
   } = useUserSettingsState()
 
   // make sure Quranic chapters are loaded
@@ -58,17 +60,35 @@ export default function VerseLookup({ onChange }: VerseLookupProps) {
         groupOptions: [],
       }) satisfies ComboboxOption
 
-    return Object.values(chapters).map((chapter) => {
+    const orderedChapters = alphabeticalChaptersSorting
+      ? [...Object.values(chapters)].sort((a, b) =>
+          chapterNameSortKey(
+            getChapterTransliteratedName(a.id) ?? "",
+          ).localeCompare(
+            chapterNameSortKey(getChapterTransliteratedName(b.id) ?? ""),
+          ),
+        )
+      : Object.values(chapters)
+
+    return orderedChapters.map((chapter) => {
       const meaning = getChapterMeaning(chapter.id)
       const latinName = getChapterTransliteratedName(chapter.id)
       const arabicName = getChapterArabicName(chapter.id)
-      const text = `${chapter.id}. ${latinName} (${arabicName}) - ${meaning}`
+      const chapterLabel = `${latinName} (${arabicName}) - ${meaning}`
+      const text = `${chapter.id}. ${chapterLabel}`
+      const render = alphabeticalChaptersSorting ? (
+        <ChapterOptionRow>
+          <span>{chapterLabel}</span>
+          <ChapterNumber>{chapter.id}</ChapterNumber>
+        </ChapterOptionRow>
+      ) : undefined
       const [firstVerseNumber, lastVerseNumber] = chaptersVerseRange[chapter.id]
 
       if (lastVerseNumber <= VERSE_GROUP_SIZE) {
         return {
           value: chapter.id,
-          text: text,
+          text,
+          render,
           groupOptions: Array.from(
             { length: lastVerseNumber - firstVerseNumber + 1 },
             (_, i) => firstVerseNumber + i,
@@ -97,11 +117,12 @@ export default function VerseLookup({ onChange }: VerseLookupProps) {
         return {
           value: chapter.id,
           text,
+          render,
           groupOptions: groupedOptions,
         } satisfies ComboboxOption
       }
     })
-  }, [chapters, locale])
+  }, [chapters, locale, alphabeticalChaptersSorting])
 
   return (
     <FlexContainer direction="column">
@@ -129,3 +150,20 @@ export default function VerseLookup({ onChange }: VerseLookupProps) {
     </FlexContainer>
   )
 }
+
+// Alphabetical order groups chapters by name, so the chapter number no
+// longer lines up sequentially. Let's push it to the right instead of leading
+// with it, to avoid it reading like a jumbled sequence.
+const ChapterOptionRow = styled.span`
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+`
+
+const ChapterNumber = styled.span`
+  opacity: 0.6;
+  font-size: 0.85em;
+  flex-shrink: 0;
+`

@@ -29,6 +29,10 @@
     "title": "Show page indicator",
     "helper": "Show how far your reading has been relatively to part-by-part (the juz) of the Holy Qur'an"
   },
+  "alphabeticalChaptersSorting": {
+    "title": "Alphabetical chapters sorting",
+    "helper": "Sort chapters neatly, A to Z"
+  },
   "fontCategory": {
     "shaddaStacked": "Shadda-stacked",
     "shaddaSeparable": "Allow diacritics separation",
@@ -51,15 +55,28 @@
       "input": {
         "placeholder": "Optionally add some note..."
       }
+    },
+    "highlightVerse": {
+      "title": "Highlight this verse",
+      "colorLabel": "Color"
     }
   },
 
   "tipMenu": {
     "verseMarker": {
       "bookmark": "Bookmark",
-      "note": "Note"
+      "note": "Note",
+      "highlight": "Highlight"
     }
   },
+
+  "highlightColor": {
+    "1": "Green",
+    "2": "Yellow",
+    "3": "Red"
+  },
+  "highlightAction": "Highlight",
+  "removeHighlight": "Remove highlight",
 
   "notice": {
     "bookmark": {

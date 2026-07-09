@@ -4,6 +4,7 @@ import {
   openSidebar,
   scrollCertainPixels,
   scrollDown,
+  selectComboBox,
   toggleWbwTranslation,
   waitUntilVisible,
 } from "./tools/interactivity"
@@ -234,6 +235,132 @@ test.describe("VerseMarker", () => {
         return settings?.bookmarks?.list ?? null
       })
       expect(bookmarks).toBeNull()
+    })
+  })
+
+  // visitFresh (called in beforeEach) removes "userSettings" from localStorage,
+  // which holds highlightedVerses — so every test below starts unhighlighted.
+  test.describe("highlighting a verse", () => {
+    async function getHighlightedVerses(page: Page) {
+      return page.evaluate(() => {
+        const raw = localStorage.getItem("userSettings")
+        if (!raw) return null
+        return JSON.parse(raw)?.highlightedVerses ?? null
+      })
+    }
+
+    async function getRowBackgroundColor(row: ReturnType<Page["locator"]>) {
+      return row.evaluate((el) => window.getComputedStyle(el).backgroundColor)
+    }
+
+    test("shows Highlight option in the verse marker dropdown", async ({
+      page,
+    }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      await page
+        .locator("[data-verse]")
+        .first()
+        .locator("[data-vmark] button")
+        .click()
+
+      await expect(
+        page.locator('[aria-label="tip-menu-item"]').filter({ hasText: "Highlight" }),
+      ).toBeVisible({ timeout: 5000 })
+    })
+
+    test("highlighting with the default color persists Green and colors the row", async ({
+      page,
+    }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const firstVerseRow = page.locator("[data-verse]").first()
+      const verseKey = await firstVerseRow.getAttribute("data-verse")
+      expect(verseKey).toBeDefined()
+
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Highlight", page, { ariaLabel: "tip-menu-item" })
+
+      await expect(page.getByText("Highlight this verse")).toBeVisible({
+        timeout: 5000,
+      })
+      await clickOn("Highlight", page, { role: "button" })
+
+      const highlighted = await getHighlightedVerses(page)
+      expect(highlighted?.[verseKey!]).toBe(1)
+
+      // Primary color, light theme (default) → #c8e6c9
+      await expect
+        .poll(() => getRowBackgroundColor(firstVerseRow))
+        .toBe("rgb(200, 230, 201)")
+    })
+
+    test("selecting a different color persists that color", async ({
+      page,
+    }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const firstVerseRow = page.locator("[data-verse]").first()
+      const verseKey = await firstVerseRow.getAttribute("data-verse")
+
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Highlight", page, { ariaLabel: "tip-menu-item" })
+
+      await selectComboBox("Red", page, { formLabel: "Color" })
+      await clickOn("Highlight", page, { role: "button" })
+
+      const highlighted = await getHighlightedVerses(page)
+      expect(highlighted?.[verseKey!]).toBe(3)
+
+      // Tertiary color, light theme (default) → #f9c6c6
+      await expect
+        .poll(() => getRowBackgroundColor(firstVerseRow))
+        .toBe("rgb(249, 198, 198)")
+    })
+
+    test("cancelling the highlight dialog does not persist a highlight", async ({
+      page,
+    }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const firstVerseRow = page.locator("[data-verse]").first()
+
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Highlight", page, { ariaLabel: "tip-menu-item" })
+      await clickOn("Cancel", page, { role: "button" })
+
+      const highlighted = await getHighlightedVerses(page)
+      expect(highlighted).toBeNull()
+    })
+
+    test("removing an existing highlight clears it", async ({ page }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const firstVerseRow = page.locator("[data-verse]").first()
+      const verseKey = await firstVerseRow.getAttribute("data-verse")
+
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Highlight", page, { ariaLabel: "tip-menu-item" })
+      await clickOn("Highlight", page, { role: "button" })
+      expect((await getHighlightedVerses(page))?.[verseKey!]).toBe(1)
+
+      // reopening now shows a "Remove highlight" action
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Highlight", page, { ariaLabel: "tip-menu-item" })
+      await clickOn("Remove highlight", page, { role: "button" })
+
+      const highlighted = await getHighlightedVerses(page)
+      expect(highlighted?.[verseKey!]).toBeUndefined()
     })
   })
 })

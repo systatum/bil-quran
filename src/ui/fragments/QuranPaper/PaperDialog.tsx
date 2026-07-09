@@ -1,13 +1,12 @@
 import usePaperDialogState from "@hooks/states/PaperDialogState"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import * as Coneto from "@systatum/coneto/paper-dialog"
-import { useTheme } from "@systatum/coneto/theme"
 import { useEffect, useRef } from "react"
 import { css } from "styled-components"
 import ExegesisPaperDialogContent from "./VerseRow/ExegesisPaperDialogContent"
 import { LexemeDetailPaperDialog } from "./VerseRow/LexemeDetailPaperDialog"
 
-export default function QuranPaperDialog() {
+export default function PaperDialog() {
   const paperDialogRef = useRef<Coneto.PaperDialogRef>(null)
   const { content, openCount } = usePaperDialogState()
   const { userSettings } = useUserSettingsState()

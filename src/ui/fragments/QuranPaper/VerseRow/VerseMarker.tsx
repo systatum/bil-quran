@@ -1,7 +1,11 @@
-import useNoteVerseDialogState from "@hooks/states/NoteVerseDialogState"
+import useModalDialogState from "@hooks/states/ModalDialogState"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import { messages } from "@i18n/message"
-import { RiFileMarkedLine, RiPencilAi2Line } from "@remixicon/react"
+import {
+  RiFileMarkedLine,
+  RiMarkPenLine,
+  RiPencilAi2Line,
+} from "@remixicon/react"
 import LOGGER from "@services/Logger"
 import { RefObject } from "react"
 import toast from "react-hot-toast"
@@ -18,7 +22,8 @@ interface VerseMarkerProps {
 export function VerseMarker({ ref, verse }: VerseMarkerProps) {
   const { formatMessage } = useIntl()
   const { bookmarkVerse } = useUserSettingsState()
-  const { showNoteVerseDialog } = useNoteVerseDialogState()
+  const { showNoteVerseDialog, showHighlightVerseDialog } =
+    useModalDialogState()
 
   return (
     <VerseMarkerColumn data-vmark ref={ref}>
@@ -45,6 +50,17 @@ export function VerseMarker({ ref, verse }: VerseMarkerProps) {
                 const verseKey = `${verse.chapter.id}:${verse.number}`
                 LOGGER.debug("Showing note verse dialog for", verseKey)
                 showNoteVerseDialog(verseKey)
+              },
+            },
+            {
+              caption: formatMessage({
+                id: messages.tipMenu.verseMarker.highlight,
+              }),
+              icon: { image: RiMarkPenLine },
+              onClick: () => {
+                const verseKey = `${verse.chapter.id}:${verse.number}`
+                LOGGER.debug("Showing highlight verse dialog for", verseKey)
+                showHighlightVerseDialog(verseKey)
               },
             },
           ])

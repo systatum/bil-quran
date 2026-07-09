@@ -3,8 +3,8 @@ import { ArabicFonts, getAllPossibleFontSizeOptions } from "@constants/fonts"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
 import { BasmalaPosition, Locale } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
-import useFonts from "@hooks/tools/useFonts"
 import useExegesisOptions from "@hooks/tools/useExegesisOptions"
+import useFonts from "@hooks/tools/useFonts"
 import { isProperThemeValue, messages } from "@i18n/message"
 import { ComboboxOption } from "@systatum/coneto/combobox"
 import { FormFieldGroup, StatefulForm } from "@systatum/coneto/stateful-form"
@@ -23,6 +23,7 @@ export default function UserSettingsForm() {
     setBasmalaPosition,
     setWordByWordTranslations,
     setShowPageIndicator,
+    setAlphabeticalChaptersSorting,
     setExegesis,
     userSettings,
   } = useUserSettingsState()
@@ -38,6 +39,8 @@ export default function UserSettingsForm() {
     basmalaPosition: userSettings.basmalaPosition,
     wbwTranslations: userSettings.wbwTranslations,
     showPageIndicator: userSettings.showPageIndicator ?? true,
+    alphabeticalChaptersSorting:
+      userSettings.alphabeticalChaptersSorting ?? false,
     exegesis: userSettings.exegesis,
   }
 
@@ -140,15 +143,31 @@ export default function UserSettingsForm() {
       },
     },
 
-    {
-      name: "showPageIndicator",
-      title: formatMessage({ id: messages.showPageIndicator.title }),
-      helper: formatMessage({ id: messages.showPageIndicator.helper }),
-      type: "toggle",
-      toggle: {
-        mobile: true,
+    [
+      {
+        name: "showPageIndicator",
+        title: formatMessage({ id: messages.showPageIndicator.title }),
+        helper: formatMessage({ id: messages.showPageIndicator.helper }),
+        type: "toggle",
+        toggle: {
+          mobile: true,
+        },
       },
-    },
+
+      {
+        name: "alphabeticalChaptersSorting",
+        title: formatMessage({
+          id: messages.alphabeticalChaptersSorting.title,
+        }),
+        helper: formatMessage({
+          id: messages.alphabeticalChaptersSorting.helper,
+        }),
+        type: "toggle",
+        toggle: {
+          mobile: true,
+        },
+      },
+    ],
   ]
 
   return (
@@ -208,6 +227,9 @@ export default function UserSettingsForm() {
         } else if (FormState.ShowPageIndicator in currentState) {
           const value = currentState.showPageIndicator
           setShowPageIndicator(value)
+        } else if (FormState.AlphabeticalChaptersSorting in currentState) {
+          const value = currentState.alphabeticalChaptersSorting
+          setAlphabeticalChaptersSorting(value)
         } else if (FormState.Exegesis in currentState) {
           const values: string[] = currentState.exegesis
           if (!Array.isArray(values)) return
@@ -230,6 +252,7 @@ export const FormState = {
   BasmalaPosition: "basmalaPosition",
   WordByWordTranslations: "wbwTranslations",
   ShowPageIndicator: "showPageIndicator",
+  AlphabeticalChaptersSorting: "alphabeticalChaptersSorting",
   Exegesis: "exegesis",
 } as const
 
@@ -241,6 +264,6 @@ type FormState = {
   [FormState.BasmalaPosition]: BasmalaPosition
   [FormState.WordByWordTranslations]: WordTranslationOption[]
   [FormState.ShowPageIndicator]: boolean
+  [FormState.AlphabeticalChaptersSorting]: boolean
   [FormState.Exegesis]: string[]
 }
-
