@@ -4,7 +4,12 @@
   "add": "Add",
   "cancel": "Cancel",
   "settings": "Settings",
+  "backup": "Backup",
   "bookmarks_and_notes": "Bookmarks and Notes",
+  "bookmark": "Bookmark",
+  "note": "Note",
+  "highlight": "Highlight",
+  "exegesis": "Exegesis",
 
   "lookup": {
     "title": "Verse lookup",
@@ -62,15 +67,6 @@
     }
   },
 
-  "tipMenu": {
-    "verseMarker": {
-      "bookmark": "Bookmark",
-      "note": "Note",
-      "highlight": "Highlight",
-      "exegesis": "Exegesis"
-    }
-  },
-
   "highlightColor": {
     "1": "Green",
     "2": "Yellow",
@@ -85,8 +81,11 @@
     }
   },
 
-  "error": {
+  "errors": {
+    "bookmarkCreationFailed": "Failed bookmarking this verse",
     "bookmarkDataNotFound": "Bookmark data not found",
+    "bookmarkFetchFailed": "Failed getting all the bookmarked verses",
+    "highlightingFailed": "Failed highlighting verse",
     "verseNotFound": "This verse could not be found."
   }
 }

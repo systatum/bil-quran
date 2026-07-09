@@ -1,6 +1,9 @@
 import { ThemeMode } from "@constants/theme"
+import { messages } from "@i18n/message"
+import { Button } from "@systatum/coneto/button"
 import { useLayoutEffect, useRef, useState } from "react"
-import styled from "styled-components"
+import { useIntl } from "react-intl"
+import styled, { css } from "styled-components"
 import BookmarkList from "./BookmarkList"
 import Title from "./Title"
 import UserSettingsForm from "./UserSettingsForm"
@@ -15,6 +18,7 @@ export default function Sidebar({
   visible,
   onClosingSidebarRequested,
 }: SidebarProps) {
+  const { formatMessage } = useIntl()
   const titleRef = useRef<HTMLDivElement>(null)
   const [contentHeight, setContentHeight] = useState(0)
   const [contentType, setContentType] = useState<ContentType>(

@@ -120,7 +120,7 @@ export default function UserSettingsForm() {
 
       {
         name: "exegesis",
-        title: "Exegesis",
+        title: formatMessage({ id: messages.exegesis }),
         type: "combo",
         combobox: {
           mobile: true,

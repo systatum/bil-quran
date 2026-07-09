@@ -249,8 +249,7 @@ test.describe("VerseMarker", () => {
       await page.locator("textarea").fill(NOTE_TEXT)
       await clickOn("Add", page, { role: "button" })
 
-      // Reopening the note dialog for the same verse should recall the text
-      // that was already saved, so the flow acts as an edit, not a fresh add.
+      // reopening should recall the saved text
       await firstVerseRow.locator("[data-vmark] button").click()
       await clickOn("Note", page, { ariaLabel: "tip-menu-item" })
 

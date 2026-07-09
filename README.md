@@ -23,9 +23,8 @@ App unique features:
 
 ## If I had more time
 
-- Better scroll preservation (both saving and restoring the position)
 - Ability to bookmark any verse and go to that any moment
-- Can lookup by: juz, root word, and verse theme.
+- Can lookup by: root word, and verse theme.
 - Normalize such as in baqarah 10: اَلِیْمٌۢ بِمَا the mim at the first word has indicator of mim
 - Make it easy to learn tajwid on the app
 - Add a feature to report an issue
@@ -47,7 +46,6 @@ App unique features:
 - [ ] And if adding on a bookmarked verse, will edit instead of insert. Also check that each bookmark, whenever not specified, will add to default (but the localstorage should always have 1 default category)
 - [ ] Add functionality to backup (when click, then show export and import screen).
 - [ ] When adding note, add at the head, so we see newer notes first.
-- [ ] Can change and update setting and ensure it makes effect (test one by one, ie adding and removing word transation option also one by one)
 - [ ] Test bookmark can click and go to that verse.
 - [ ] When having bookmark data, ensure that scrollbar is shown and user can scroll when there are a lot of bookmark.
 

@@ -8,7 +8,12 @@ export const messages = {
   add: "add",
   cancel: "cancel",
   settings: "settings",
+  backup: "backup",
   bookmarks_and_notes: "bookmarks_and_notes",
+  bookmark: "bookmark",
+  note: "note",
+  highlight: "highlight",
+  exegesis: "exegesis",
   lookup: {
     title: "lookup.title",
     go: "lookup.go",
@@ -67,14 +72,6 @@ export const messages = {
       noDataYet: "notice.bookmark.noDataYet",
     },
   },
-  tipMenu: {
-    verseMarker: {
-      bookmark: "tipMenu.verseMarker.bookmark",
-      note: "tipMenu.verseMarker.note",
-      highlight: "tipMenu.verseMarker.highlight",
-      exegesis: "tipMenu.verseMarker.exegesis",
-    },
-  },
   highlightColor: {
     "1": "highlightColor.1",
     "2": "highlightColor.2",
@@ -83,8 +80,11 @@ export const messages = {
   highlightAction: "highlightAction",
   removeHighlight: "removeHighlight",
   errors: {
+    bookmarkCreationFailed: "errors.bookmarkCreationFailed",
     bookmarkDataNotFound: "errors.bookmarkDataNotFound",
-    verseNotFound: "error.verseNotFound",
+    bookmarkFetchFailed: "errors.bookmarkFetchFailed",
+    highlightingFailed: "errors.highlightingFailed",
+    verseNotFound: "errors.verseNotFound",
   },
 } as const
 

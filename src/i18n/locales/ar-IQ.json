@@ -4,7 +4,12 @@
   "add": "إضافة",
   "cancel": "إلغاء",
   "settings": "الإعدادات",
+  "backup": "نسخ احتياطي",
   "bookmarks_and_notes": "العلامات والملاحظات",
+  "bookmark": "علامة",
+  "note": "ملاحظة",
+  "highlight": "تمييز",
+  "exegesis": "التفسير",
 
   "lookup": {
     "title": "الانتقال إلى آية",
@@ -42,6 +47,13 @@
     "meQuranLearner": "MeQuran (للمتعلمين)"
   },
 
+  "searchSheet": {
+    "byChapter": "بحسب السورة",
+    "byJuz": "بحسب الجزء",
+    "juz": "الجزء",
+    "pageAbbreviation": "ص."
+  },
+
   "dialog": {
     "noteVerse": {
       "title": "إضافة ملاحظة على هذه الآية",
@@ -52,15 +64,6 @@
     "highlightVerse": {
       "title": "تمييز هذه الآية",
       "colorLabel": "اللون"
-    }
-  },
-
-  "tipMenu": {
-    "verseMarker": {
-      "bookmark": "إضافة علامة",
-      "note": "إضافة ملاحظة",
-      "highlight": "تمييز",
-      "exegesis": "التفسير"
     }
   },
 
@@ -78,8 +81,11 @@
     }
   },
 
-  "error": {
+  "errors": {
+    "bookmarkCreationFailed": "فشل في إضافة علامة على هذه الآية",
     "bookmarkDataNotFound": "تعذر العثور على بيانات العلامات",
+    "bookmarkFetchFailed": "فشل في استرجاع جميع الآيات المُعلَّمة",
+    "highlightingFailed": "فشل تمييز الآية",
     "verseNotFound": "لم يتم العثور على هذه الآية."
   }
 }

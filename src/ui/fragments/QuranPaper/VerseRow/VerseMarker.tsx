@@ -1,6 +1,7 @@
 import useModalDialogState from "@hooks/states/ModalDialogState"
 import usePaperDialogState from "@hooks/states/PaperDialogState"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
+import useToast from "@hooks/tools/useToast"
 import { messages } from "@i18n/message"
 import {
   RiBookOpenLine,
@@ -10,7 +11,6 @@ import {
 } from "@remixicon/react"
 import LOGGER from "@services/Logger"
 import { RefObject } from "react"
-import toast from "react-hot-toast"
 import { useIntl } from "react-intl"
 import styled, { css } from "styled-components"
 import { Verse } from "."
@@ -27,6 +27,7 @@ export function VerseMarker({ ref, verse }: VerseMarkerProps) {
   const { showNoteVerseDialog, showHighlightVerseDialog } =
     useModalDialogState()
   const { openExegesis } = usePaperDialogState()
+  const { errorToast } = useToast()
 
   return (
     <VerseMarkerColumn data-vmark ref={ref}>
@@ -34,20 +35,21 @@ export function VerseMarker({ ref, verse }: VerseMarkerProps) {
         subMenu={({ list }) =>
           list?.([
             {
-              caption: formatMessage({
-                id: messages.tipMenu.verseMarker.bookmark,
-              }),
+              caption: formatMessage({ id: messages.bookmark }),
               icon: { image: RiFileMarkedLine },
               onClick: () => {
                 const verseKey = `${verse.chapter.id}:${verse.number}`
                 if (!bookmarkVerse({ verseKey }))
-                  toast.error("Failed bookmarking")
+                  errorToast(
+                    formatMessage({
+                      id: messages.errors.bookmarkCreationFailed,
+                    }),
+                    formatMessage({ id: messages.bookmark }),
+                  )
               },
             },
             {
-              caption: formatMessage({
-                id: messages.tipMenu.verseMarker.note,
-              }),
+              caption: formatMessage({ id: messages.note }),
               icon: { image: RiPencilAi2Line },
               onClick: () => {
                 const verseKey = `${verse.chapter.id}:${verse.number}`
@@ -56,9 +58,7 @@ export function VerseMarker({ ref, verse }: VerseMarkerProps) {
               },
             },
             {
-              caption: formatMessage({
-                id: messages.tipMenu.verseMarker.highlight,
-              }),
+              caption: formatMessage({ id: messages.highlight }),
               icon: { image: RiMarkPenLine },
               onClick: () => {
                 const verseKey = `${verse.chapter.id}:${verse.number}`
@@ -67,9 +67,7 @@ export function VerseMarker({ ref, verse }: VerseMarkerProps) {
               },
             },
             {
-              caption: formatMessage({
-                id: messages.tipMenu.verseMarker.exegesis,
-              }),
+              caption: formatMessage({ id: messages.exegesis }),
               icon: { image: RiBookOpenLine },
               onClick: () => {
                 LOGGER.debug(

@@ -4,7 +4,12 @@
   "add": "Tambah",
   "cancel": "Batal",
   "settings": "Pengaturan",
+  "backup": "Backup",
   "bookmarks_and_notes": "Markah dan Catatan",
+  "bookmark": "Markah",
+  "note": "Catatan",
+  "highlight": "Sorotan",
+  "exegesis": "Tafsir",
 
   "lookup": {
     "title": "Lompat ke ayat",
@@ -62,15 +67,6 @@
     }
   },
 
-  "tipMenu": {
-    "verseMarker": {
-      "bookmark": "Tandai ayat ini",
-      "note": "Beri catatan",
-      "highlight": "Sorot",
-      "exegesis": "Tafsir"
-    }
-  },
-
   "highlightColor": {
     "1": "Hijau",
     "2": "Kuning",
@@ -85,8 +81,11 @@
     }
   },
 
-  "error": {
+  "errors": {
+    "bookmarkCreationFailed": "Gagal membuat bookmark pada ayat ini",
     "bookmarkDataNotFound": "Data bookmark tidak ditemukan",
+    "bookmarkFetchFailed": "Gagal mendapatkan kembali daftar ayat yang termarkah",
+    "highlightingFailed": "Gagal menyorot ayat",
     "verseNotFound": "Ayat ini tidak ditemukan."
   }
 }

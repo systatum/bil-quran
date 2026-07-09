@@ -1,11 +1,11 @@
 import { HighlightColor } from "@constants/highlight"
 import { ModalDialogConfig } from "@constants/modalDialog"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
+import useToast from "@hooks/tools/useToast"
 import { messages } from "@i18n/message"
 import { Combobox, ComboboxOption } from "@systatum/coneto/combobox"
 import { useTheme } from "@systatum/coneto/theme"
 import { useEffect, useMemo, useState } from "react"
-import toast from "react-hot-toast"
 import { useIntl } from "react-intl"
 import styled from "styled-components"
 
@@ -20,6 +20,7 @@ export function useHighlightVerseDialog(verseKey: string): ModalDialogConfig {
   const { mode: theme } = useTheme()
   const { userSettings, highlightVerse, removeHighlight } =
     useUserSettingsState()
+  const { errorToast } = useToast()
 
   const existingColor = userSettings.highlightedVerses[verseKey]
 
@@ -93,7 +94,10 @@ export function useHighlightVerseDialog(verseKey: string): ModalDialogConfig {
         if (buttonId === "remove") removeHighlight(verseKey)
         if (buttonId === "apply") {
           if (!highlightVerse(verseKey, selectedColor))
-            toast.error("Failed highlighting verse")
+            errorToast(
+              formatMessage({ id: messages.errors.highlightingFailed }),
+              formatMessage({ id: messages.highlight }),
+            )
         }
       },
     }),
