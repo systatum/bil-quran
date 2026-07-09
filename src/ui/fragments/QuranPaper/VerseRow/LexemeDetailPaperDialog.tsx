@@ -9,6 +9,7 @@ import useChaptersState from "@hooks/states/ChaptersState"
 import useUserSettingsState, {
   FontSetting,
 } from "@hooks/states/UserSettingsState"
+import { arabicLetterToLatin } from "@services/Converter"
 import { Grid } from "@systatum/coneto/grid"
 import { useTheme } from "@systatum/coneto/theme"
 import { useCallback, useRef, useState } from "react"
@@ -37,7 +38,12 @@ export function LexemeDetailPaperDialog({
 
   const isTranslated =
     Array.isArray(wbwTranslations) && wbwTranslations.length > 0
-  const rootLetters = content.root.root ?? "—"
+  const rootReadings = content.root.root
+    ? content.root.root
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((letter) => ({ letter, latin: arabicLetterToLatin(letter) }))
+    : []
   const localeBasedTransliteration = content.readings[locale]
   const wbwBasedTransliteration = isTranslated
     ? wbwTranslations.map((x) => content.readings[x]).find((x) => x != null)
@@ -77,9 +83,20 @@ export function LexemeDetailPaperDialog({
           <InfoTile
             theme={theme}
             label="Root"
-            value={rootLetters}
-            arabic
-            arabicFont={arabicFont}
+            value={
+              rootReadings.length > 0 ? (
+                <RootReadingRow>
+                  {rootReadings.map(({ letter, latin }, i) => (
+                    <RootPair key={i}>
+                      <RootLetter $font={arabicFont}>{letter}</RootLetter>
+                      <RootLatin $theme={theme}>{latin}</RootLatin>
+                    </RootPair>
+                  ))}
+                </RootReadingRow>
+              ) : (
+                "—"
+              )
+            }
           />
           <InfoTile
             theme={theme}
@@ -186,6 +203,46 @@ function Lexeme({
     </TokenSection>
   )
 }
+
+// Root letters read right-to-left, same as the arabic script itself — the
+// first root letter sits on the right, each followed by its own latin
+// reading in a lighter, encircled badge.
+const RootReadingRow = styled.span`
+  display: inline-flex;
+  flex-wrap: wrap;
+  direction: rtl;
+  gap: 12px;
+  float: right;
+`
+
+const RootPair = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+`
+
+const RootLetter = styled.span<{ $font: string }>`
+  font-family:
+    "${({ $font }) => $font}", "${"NotoNaskhArabic" satisfies ArabicFontFamily}",
+    serif;
+  font-size: 18px;
+`
+
+const RootLatin = styled.span<{ $theme: string }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  border: 1px solid
+    ${({ $theme }) => ($theme === "dark" ? "#5a5f59" : "#c9bda3")};
+  font-size: 11px;
+  font-weight: 400;
+  color: ${({ $theme }) => ($theme === "dark" ? "#8f938f" : "#a09083")};
+  direction: ltr;
+`
 
 const ScrollContainer = styled.div`
   overflow-y: auto;

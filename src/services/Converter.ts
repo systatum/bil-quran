@@ -30,6 +30,12 @@ export function unpackIPC<T>(resp: IPCResponse<T>): T {
   throw new Error(message)
 }
 
+// ===== STRING ====================================
+
+export function arabicLetterToLatin(letter: string): string {
+  return ROOT_LETTER_LATIN[letter] ?? letter
+}
+
 // ===== OBJECT =====================================
 
 export function flattenObject(
@@ -50,4 +56,35 @@ export function flattenObject(
     },
     {} as Record<string, string>,
   )
+}
+
+const ROOT_LETTER_LATIN: Record<string, string> = {
+  ا: "a",
+  ب: "b",
+  ت: "t",
+  ث: "th",
+  ج: "j",
+  ح: "ḥ",
+  خ: "kh",
+  د: "d",
+  ذ: "dh",
+  ر: "r",
+  ز: "z",
+  س: "s",
+  ش: "sh",
+  ص: "ṣ",
+  ض: "ḍ",
+  ط: "ṭ",
+  ظ: "ẓ",
+  ع: "ʿa",
+  غ: "gh",
+  ف: "f",
+  ق: "q",
+  ك: "k",
+  ل: "l",
+  م: "m",
+  ن: "n",
+  ه: "h",
+  و: "w",
+  ي: "y",
 }
