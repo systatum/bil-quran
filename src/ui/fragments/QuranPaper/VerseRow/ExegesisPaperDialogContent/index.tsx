@@ -120,9 +120,9 @@ export default function ExegesisPaperDialogContent({
             padding-right: 0.5em;
           `,
           dividerStyle: css`
-            border-top: 2px solid transparent;
-            border-bottom: 2px solid transparent;
-            height: 6px;
+            border-top: 3px solid transparent;
+            border-bottom: 3px solid transparent;
+            height: 8px;
             overflow: visible;
             position: relative;
             background: linear-gradient(
