@@ -110,7 +110,7 @@ class APIClient:
             if data is not None:
                 with self.session as s:
                     response: requests.Response = s.post(
-                        self.setting.base_url + path, data=data.encode("utf-8")
+                        self.setting.base_url + path, data=data
                     )
             elif force_post:
                 with self.session as s:

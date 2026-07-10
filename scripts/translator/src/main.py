@@ -141,14 +141,6 @@ appstate: Appstate = Appstate()
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    import sys
-
-    print_version()
-    SettingLoader.get()  # Initialize setting here so we can see what's going on
-    print(end="", flush=True)
-    print(end="", flush=True, file=sys.stderr)
-    sleep(5)
-
     appstate.load(
         GlobalData(
             translation_service=TranslationService(),
@@ -160,6 +152,7 @@ async def lifespan(_: FastAPI):
     appstate.get().translation_service.start()
     appstate.get().rating_service.start()
     appstate.get().comparison_service.start()
+    print_version()
     yield
     appstate.get().rating_service.stop()
     appstate.get().translation_service.stop()
