@@ -1,0 +1,15 @@
+{
+  "created_at": "2026-08-02T08:16:00.811282+00:00",
+  "source_language": "english",
+  "target_language": "indonesian",
+  "models": [
+    "qwen2.5-1.5b",
+    "smollm2-1.7b"
+  ],
+  "prompt_names": [
+    "minimal",
+    "professional",
+    "verbose"
+  ],
+  "prompt_settings": {
+    "minimal": 
