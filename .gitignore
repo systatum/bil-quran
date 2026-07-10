@@ -36,3 +36,5 @@ scripts/**/.wrangler
 scripts/quran_audio_uploader/**/ayats/**/*.mp3
 scripts/quran_audio_uploader/**/ayats/**/*
 scripts/quran_audio_uploader/**/except_*.txt
+
+scripts/translator/models/*
