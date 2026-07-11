@@ -1,6 +1,7 @@
 import { repo } from "@db/repo"
 import useChaptersState from "@hooks/states/ChaptersState"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
+import useToast from "@hooks/tools/useToast"
 import { messages } from "@i18n/message"
 import { unpackIPC } from "@services/Converter"
 import LOGGER from "@services/Logger"
@@ -8,12 +9,12 @@ import ClippedContent from "@ui/fragments/ClippedContent"
 import { WordCell } from "@ui/fragments/QuranPaper/VerseRow"
 import InterlinearText from "@ui/fragments/QuranPaper/VerseRow/InterlinearText"
 import { useEffect, useState } from "react"
-import toast from "react-hot-toast"
 import { useIntl } from "react-intl"
 import styled from "styled-components"
 
 export default function BookmarkList({ height }: { height: number }) {
   const { formatMessage } = useIntl()
+  const { errorToast } = useToast()
   const {
     userSettings: { bookmarks, font },
   } = useUserSettingsState()
@@ -52,7 +53,10 @@ export default function BookmarkList({ height }: { height: number }) {
         )
         setVerses(verses)
       } catch (e) {
-        toast.error("Failed getting all the bookmarked verses")
+        errorToast(
+          formatMessage({ id: messages.errors.bookmarkFetchFailed }),
+          formatMessage({ id: messages.bookmarks_and_notes }),
+        )
         LOGGER.error(e)
       }
     })()
@@ -84,7 +88,10 @@ export default function BookmarkList({ height }: { height: number }) {
             id: messages.errors.bookmarkDataNotFound,
           })
           LOGGER.error(`${verseKeyError}: ${verseKey}`)
-          toast.error(`${verseKeyError}: ${verseKey}`)
+          errorToast(
+            verseKeyError,
+            formatMessage({ id: messages.bookmarks_and_notes }),
+          )
         }
 
         const [chapterId, verseId] = verseKey.split(":").map(Number)

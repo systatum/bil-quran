@@ -3,7 +3,7 @@ import LOGGER from "@services/Logger"
 import { chapterNameSortKey } from "@services/chapters"
 import { Combobox, ComboboxOption } from "@systatum/coneto/combobox"
 import { useNavigate } from "@tanstack/react-router"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo } from "react"
 import styled from "styled-components"
 import useChaptersState from "../../../hooks/states/ChaptersState"
 import { FlexContainer } from "../Container"
@@ -14,8 +14,6 @@ interface VerseLookupProps {
 
 export default function VerseLookup({ onChange }: VerseLookupProps) {
   const navigate = useNavigate()
-  const [selectedChapterId, setSelectedChapterId] = useState<string>("1")
-  const [verseNumber, setVerseNumber] = useState<string>("1")
   const {
     userSettings: { locale, alphabeticalChaptersSorting },
   } = useUserSettingsState()
@@ -27,24 +25,6 @@ export default function VerseLookup({ onChange }: VerseLookupProps) {
     getChapterArabicName,
     getChapterTransliteratedName,
   } = useChaptersState()
-
-  function goToVerse() {
-    if (!selectedChapterId) return
-    if (Number.isNaN(parseInt(verseNumber))) return
-    if (Number.isNaN(parseInt(selectedChapterId))) return
-
-    navigate({
-      to: "/c/$chapter/$verse",
-      params: {
-        chapter: String(selectedChapterId),
-        verse: String(verseNumber),
-      },
-    })
-  }
-
-  useEffect(() => {
-    goToVerse()
-  }, [verseNumber, selectedChapterId])
 
   /**
    * Range of verses of all the chapters
@@ -153,8 +133,16 @@ export default function VerseLookup({ onChange }: VerseLookupProps) {
         onChange={(selectionOption) => {
           const value = selectionOption as string
           const [chapterId, verseId] = value.split("-")
-          setSelectedChapterId(chapterId)
-          setVerseNumber(verseId)
+          if (
+            Number.isNaN(parseInt(chapterId)) ||
+            Number.isNaN(parseInt(verseId))
+          )
+            return
+
+          navigate({
+            to: "/c/$chapter/$verse",
+            params: { chapter: chapterId, verse: verseId },
+          })
           if (onChange) onChange()
         }}
         options={chaptersList}

@@ -1,26 +1,22 @@
 import { ModalDialogConfig } from "@constants/modalDialog"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
+import useToast from "@hooks/tools/useToast"
 import { messages } from "@i18n/message"
 import { Textarea } from "@systatum/coneto/textarea"
 import { useEffect, useMemo, useState } from "react"
-import toast from "react-hot-toast"
 import { useIntl } from "react-intl"
 import { css } from "styled-components"
 
-/**
- * Config for the "Note this verse" dialog. `verseKey` is only passed in
- * while this is the active dialog — see `ModalDialog`.
- */
-export function useNoteVerseDialog(
-  verseKey: string | undefined,
-): ModalDialogConfig {
+export function useNoteVerseDialog(verseKey: string): ModalDialogConfig {
   const { formatMessage } = useIntl()
-  const { bookmarkVerse } = useUserSettingsState()
+  const { userSettings, bookmarkVerse } = useUserSettingsState()
+  const { errorToast } = useToast()
   const [note, setNote] = useState("")
 
-  // this hook stays mounted, so reset on verse change or it'd leak text
+  // recall the existing note on verse change, so re-opening edits instead of starting blank
   useEffect(() => {
-    setNote("")
+    setNote(userSettings.bookmarks.list[verseKey]?.note ?? "")
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [verseKey])
 
   // memoized to avoid an infinite loop in ModalDialog's report-up effect
@@ -52,9 +48,12 @@ export function useNoteVerseDialog(
         />
       ),
       onAction(buttonId) {
-        if (buttonId !== "add" || verseKey == null) return
+        if (buttonId !== "add") return
         if (!bookmarkVerse({ verseKey, note }))
-          toast.error("Failed bookmarking")
+          errorToast(
+            formatMessage({ id: messages.errors.bookmarkCreationFailed }),
+            formatMessage({ id: messages.bookmark }),
+          )
       },
     }),
     [formatMessage, note, verseKey, bookmarkVerse],

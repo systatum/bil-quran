@@ -2,12 +2,13 @@ import { expect, test } from "@playwright/test"
 import {
   closePaperDialog,
   closeSidebar,
+  getPaperDialog,
   openExegesisDialog,
   openSidebar,
   selectComboBox,
   toggleExegesis,
 } from "./tools/interactivity"
-import { visitFresh } from "./tools/state"
+import { untilUsable, visitFresh } from "./tools/state"
 
 test.describe("ExegesisDialog", () => {
   test.describe("with an exegesis selected", () => {
@@ -378,6 +379,52 @@ test.describe("ExegesisDialog", () => {
       expect(ratio).not.toBeNull()
       // Allow 5% to accommodate subpixel rounding, mirroring the 30% test above
       expect(ratio!).toBeGreaterThanOrEqual(0.65)
+    })
+  })
+
+  test.describe("when URL pattern is /e/$chapter/$verse", () => {
+    test("open the verse dialog", async ({ page }) => {
+      await page.goto("/#/e/1/7")
+      await untilUsable(page)
+
+      const dialog = await getPaperDialog(page)
+      await expect(dialog).toBeVisible({ timeout: 8_000 })
+
+      const verseIndicator = dialog.locator('[data-testid="verse-indicator"]')
+      await expect(verseIndicator).toHaveText("7", { timeout: 5_000 })
+
+      // The always-mounted VerseLookup combobox must not silently rewrite the URL
+      await page.waitForTimeout(500)
+      expect(page.url()).toContain("/#/e/1/7")
+    })
+
+    test("shows not-found on an empty dialog", async ({ page }) => {
+      // Chapter 1 (Al-Faatiha) only has 7 verses
+      await page.goto("/#/e/1/999")
+      await untilUsable(page)
+
+      const dialog = await getPaperDialog(page)
+      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(
+        dialog.getByText("This verse could not be found."),
+      ).toBeVisible({ timeout: 8_000 })
+    })
+
+    test("allow /e/ revisit to update dialog content", async ({ page }) => {
+      await page.goto("/#/e/1/2")
+      await untilUsable(page)
+
+      const dialog = await getPaperDialog(page)
+      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      const verseIndicator = dialog.locator('[data-testid="verse-indicator"]')
+      await expect(verseIndicator).toHaveText("2", { timeout: 5_000 })
+
+      // Manually navigate to a different /e/ target within the same tab,
+      // aka an in-app hash change, not a full reload
+      await page.goto("/#/e/4/8")
+      await page.waitForTimeout(500)
+
+      await expect(verseIndicator).toHaveText("8", { timeout: 5_000 })
     })
   })
 })

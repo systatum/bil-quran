@@ -1,6 +1,7 @@
 import { expect, Page, test } from "@playwright/test"
 import {
   clickOn,
+  getPaperDialog,
   openSidebar,
   scrollCertainPixels,
   scrollDown,
@@ -206,6 +207,57 @@ test.describe("VerseMarker", () => {
       })
     })
 
+    test("clicking Bookmark after adding a note does not erase the note", async ({
+      page,
+    }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const firstVerseRow = page.locator("[data-verse]").first()
+
+      // Add a note first
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Note", page, { ariaLabel: "tip-menu-item" })
+      const NOTE_TEXT = "Remember this verse"
+      await page.locator("textarea").fill(NOTE_TEXT)
+      await clickOn("Add", page, { role: "button" })
+
+      // Plain re-bookmark (no note passed) must not wipe the note out
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Bookmark", page, { ariaLabel: "tip-menu-item" })
+
+      await openBookmarkPanel(page)
+
+      const bookmarkList = page.locator("#bookmark-list")
+      await expect(bookmarkList).toBeVisible({ timeout: 5000 })
+      await expect(bookmarkList.getByText(NOTE_TEXT)).toBeVisible({
+        timeout: 5000,
+      })
+    })
+
+    test("recalls existing note text for edit", async ({ page }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const firstVerseRow = page.locator("[data-verse]").first()
+
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Note", page, { ariaLabel: "tip-menu-item" })
+      const NOTE_TEXT = "My first draft"
+      await page.locator("textarea").fill(NOTE_TEXT)
+      await clickOn("Add", page, { role: "button" })
+
+      // reopening should recall the saved text
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Note", page, { ariaLabel: "tip-menu-item" })
+
+      await expect(page.locator("textarea")).toHaveValue(NOTE_TEXT, {
+        timeout: 5000,
+      })
+    })
+
     test("cancelling the note dialog adds no bookmark", async ({ page }) => {
       await waitUntilVisible(page.locator("[data-verse]").first(), {
         timeout: 15_000,
@@ -222,9 +274,9 @@ test.describe("VerseMarker", () => {
       await openBookmarkPanel(page)
 
       // No bookmark was saved — the "no bookmarks" notice should appear instead
-      await expect(
-        page.getByText(/No bookmarks yet/i),
-      ).toBeVisible({ timeout: 5000 })
+      await expect(page.getByText(/No bookmarks yet/i)).toBeVisible({
+        timeout: 5000,
+      })
       await expect(page.locator("#bookmark-list")).not.toBeVisible()
 
       // localStorage confirms no bookmarks were persisted
@@ -267,7 +319,9 @@ test.describe("VerseMarker", () => {
         .click()
 
       await expect(
-        page.locator('[aria-label="tip-menu-item"]').filter({ hasText: "Highlight" }),
+        page
+          .locator('[aria-label="tip-menu-item"]')
+          .filter({ hasText: "Highlight" }),
       ).toBeVisible({ timeout: 5000 })
     })
 
@@ -361,6 +415,30 @@ test.describe("VerseMarker", () => {
 
       const highlighted = await getHighlightedVerses(page)
       expect(highlighted?.[verseKey!]).toBeUndefined()
+    })
+  })
+
+  test.describe("opening exegesis from the verse marker", () => {
+    test("clicking Exegesis opens the paper dialog for that verse", async ({
+      page,
+    }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const firstVerseRow = page.locator("[data-verse]").first()
+      const verseKey = await firstVerseRow.getAttribute("data-verse")
+      expect(verseKey).toBeDefined()
+      const [, verseId] = verseKey!.split(":")
+
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Exegesis", page, { ariaLabel: "tip-menu-item" })
+
+      const dialog = await getPaperDialog(page)
+      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(
+        dialog.locator('[data-testid="verse-indicator"]'),
+      ).toHaveText(verseId, { timeout: 5_000 })
     })
   })
 })

@@ -120,7 +120,7 @@ export default function UserSettingsForm() {
 
       {
         name: "exegesis",
-        title: "Exegesis",
+        title: formatMessage({ id: messages.exegesis }),
         type: "combo",
         combobox: {
           mobile: true,
@@ -179,8 +179,11 @@ export default function UserSettingsForm() {
         containerStyle: css`
           padding: 24px;
         `,
-        rowStyle: css`
+        mobileFieldGroupStyle: css`
           background: ${mode === "dark" ? "#1a211d" : "#ededed"} !important;
+        `,
+        mobileFieldGroupRowDividerStyle: css`
+          background: ${mode === "dark" ? "#1e3c2b" : "#dfdfdf"} !important;
         `,
       }}
       onChange={({ currentState }) => {

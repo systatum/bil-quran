@@ -1,7 +1,7 @@
 import { IPCResponse } from "@constants/IPC"
 import { unpackIPC } from "@services/Converter.js"
 import LOGGER from "@services/Logger"
-import { toast } from "react-hot-toast"
+import { Toast } from "@systatum/coneto/toast"
 
 type GuardCallbackFnContext = {
   /**
@@ -43,7 +43,11 @@ export async function guard<T>(
     LOGGER.error(`Application error: ${error}`)
 
     if (options?.onError) options.onError(error)
-    else toast.error("Application error")
+    else
+      Toast.danger({
+        title: "Application failed",
+        content: "Application failed. Please report to us.",
+      })
   } finally {
     options?.finally?.()
   }

@@ -4,7 +4,12 @@
   "add": "Tambah",
   "cancel": "Batal",
   "settings": "Pengaturan",
+  "backup": "Backup",
   "bookmarks_and_notes": "Markah dan Catatan",
+  "bookmark": "Markah",
+  "note": "Catatan",
+  "highlight": "Sorotan",
+  "exegesis": "Tafsir",
 
   "lookup": {
     "title": "Lompat ke ayat",
@@ -59,14 +64,14 @@
     "highlightVerse": {
       "title": "Sorot ayat ini",
       "colorLabel": "Warna"
-    }
-  },
-
-  "tipMenu": {
-    "verseMarker": {
-      "bookmark": "Tandai ayat ini",
-      "note": "Beri catatan",
-      "highlight": "Sorot"
+    },
+    "backup": {
+      "title": "Backup data Anda",
+      "description": "Salin atau unduh data pengaturan, catatan, dan data lain-lain Anda di bil-Qur'an.",
+      "copy": "Salin",
+      "download": "Unduh",
+      "copySuccess": "Berhasil disalin ke clipboard",
+      "copyFailed": "Gagal menyalin"
     }
   },
 
@@ -84,7 +89,11 @@
     }
   },
 
-  "error": {
-    "bookmarkDataNotFound": "Data bookmark tidak ditemukan"
+  "errors": {
+    "bookmarkCreationFailed": "Gagal membuat bookmark pada ayat ini",
+    "bookmarkDataNotFound": "Data bookmark tidak ditemukan",
+    "bookmarkFetchFailed": "Gagal mendapatkan kembali daftar ayat yang termarkah",
+    "highlightingFailed": "Gagal menyorot ayat",
+    "verseNotFound": "Ayat ini tidak ditemukan."
   }
 }
