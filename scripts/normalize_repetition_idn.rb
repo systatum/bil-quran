@@ -29,6 +29,30 @@
 # "7:170:1": "dan mereka yang",
 # "7:170:2": "berpegang teguh",
 
+# found this:
+#  "8:35:12": "kalian adalah",
+#  "8:35:13": "kalian kafir",
+# how about:
+#   "11:3:7": "Dia akan memberi kenikmatan kepadamu",
+#   "11:3:8": "kenikmatan/kesenangan",
+# how about:
+# "28:75:16": "yang mereka adalah",
+# "28:75:17": "mereka ada-adakan",
+# how about:
+#  "70:3:4": "tempat-tempat naik",
+#  "70:4:1": "naik",
+# how about:
+# "10:75:12": "dan mereka",
+# "10:75:13": "kaum",
+# "10:75:14": "mereka yang berdosa",
+# "25:40:13": "mereka",
+# "25:40:14": "tidak",
+# "25:40:15": "mereka mengharapkan",
+# how about:
+# "12:97:6": "sesungguhnya kami",
+# "12:97:7": "kami",
+
+
 require "json"
 
 puts "Path to JSON file:"
