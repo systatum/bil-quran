@@ -2,7 +2,6 @@ import { ChapterRecord } from "@constants/records/ChapterRecord"
 import { DEFAULT_LOCALE } from "@constants/settings"
 import { repo } from "@db/repo"
 import { unpackIPC } from "@services/Converter"
-import LOGGER from "@services/Logger"
 import { create } from "zustand"
 import useUserSettingsState from "./UserSettingsState"
 
@@ -40,7 +39,6 @@ const useChaptersState = create<ChaptersState>((set, get) => ({
   getChapterMeaning(chapterNumber: number) {
     const { userSettings } = useUserSettingsState.getState()
     const { locale } = userSettings
-    LOGGER.debug("User selected locale is", locale)
     const chapter = get().getChapter(chapterNumber)
     if (chapter == null) return null
     return chapter.meanings[locale] || chapter.meanings[DEFAULT_LOCALE]
@@ -49,7 +47,6 @@ const useChaptersState = create<ChaptersState>((set, get) => ({
   getChapterArabicName(chapterNumber: number) {
     const { userSettings } = useUserSettingsState.getState()
     const { locale } = userSettings
-    LOGGER.debug("User selected locale is", locale)
     const chapter = get().getChapter(chapterNumber)
     if (chapter == null) return null
     return chapter.namings[locale] || chapter.namings[DEFAULT_LOCALE]
@@ -58,13 +55,28 @@ const useChaptersState = create<ChaptersState>((set, get) => ({
   getChapterTransliteratedName(chapterNumber: number) {
     const { userSettings } = useUserSettingsState.getState()
     const { locale } = userSettings
-    LOGGER.debug("User selected locale is", locale)
     const chapter = get().getChapter(chapterNumber)
     if (chapter == null) return null
     return (
       chapter.transliterations[locale] ||
       chapter.transliterations[DEFAULT_LOCALE]
     )
+  },
+
+  isValidVerse(chapterId, verseNumber) {
+    try {
+      const chapterNumber = Number(String(chapterId))
+      const verse = Number(String(verseNumber))
+      if (!Number.isInteger(chapterNumber) || !Number.isInteger(verse))
+        return false
+
+      const chapter = get().getChapter(chapterNumber)
+      return chapter.partitioning.some(
+        ({ start, end }) => verse >= start && verse <= end,
+      )
+    } catch {
+      return false
+    }
   },
 }))
 
@@ -75,6 +87,10 @@ export interface ChaptersState {
   getChapterMeaning: (chapterNumber: number) => string | null
   getChapterArabicName: (chapterNumber: number) => string | null
   getChapterTransliteratedName: (chapterNumber: number) => string | null
+  isValidVerse: (
+    chapterId: string | number,
+    verseNumber: string | number,
+  ) => boolean
 }
 
 export default useChaptersState

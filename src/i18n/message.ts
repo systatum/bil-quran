@@ -7,6 +7,13 @@ export const messages = {
   lang: "lang",
   add: "add",
   cancel: "cancel",
+  settings: "settings",
+  backup: "backup",
+  bookmarks_and_notes: "bookmarks_and_notes",
+  bookmark: "bookmark",
+  note: "note",
+  highlight: "highlight",
+  exegesis: "exegesis",
   lookup: {
     title: "lookup.title",
     go: "lookup.go",
@@ -26,6 +33,28 @@ export const messages = {
     "0": "basmalaPosition.0",
     "1": "basmalaPosition.1",
   },
+  showPageIndicator: {
+    title: "showPageIndicator.title",
+    helper: "showPageIndicator.helper",
+  },
+  alphabeticalChaptersSorting: {
+    title: "alphabeticalChaptersSorting.title",
+    helper: "alphabeticalChaptersSorting.helper",
+  },
+  fontCategory: {
+    shaddaStacked: "fontCategory.shaddaStacked",
+    shaddaSeparable: "fontCategory.shaddaSeparable",
+    helper: "fontCategory.helper",
+  },
+  fontOptions: {
+    meQuranLearner: "fontOptions.meQuranLearner",
+  },
+  searchSheet: {
+    byChapter: "searchSheet.byChapter",
+    byJuz: "searchSheet.byJuz",
+    juz: "searchSheet.juz",
+    pageAbbreviation: "searchSheet.pageAbbreviation",
+  },
   dialog: {
     noteVerse: {
       title: "dialog.noteVerse.title",
@@ -33,6 +62,37 @@ export const messages = {
         placeholder: "dialog.noteVerse.input.placeholder",
       },
     },
+    highlightVerse: {
+      title: "dialog.highlightVerse.title",
+      colorLabel: "dialog.highlightVerse.colorLabel",
+    },
+    backup: {
+      title: "dialog.backup.title",
+      description: "dialog.backup.description",
+      copy: "dialog.backup.copy",
+      download: "dialog.backup.download",
+      copySuccess: "dialog.backup.copySuccess",
+      copyFailed: "dialog.backup.copyFailed",
+    },
+  },
+  notice: {
+    bookmark: {
+      noDataYet: "notice.bookmark.noDataYet",
+    },
+  },
+  highlightColor: {
+    "1": "highlightColor.1",
+    "2": "highlightColor.2",
+    "3": "highlightColor.3",
+  },
+  highlightAction: "highlightAction",
+  removeHighlight: "removeHighlight",
+  errors: {
+    bookmarkCreationFailed: "errors.bookmarkCreationFailed",
+    bookmarkDataNotFound: "errors.bookmarkDataNotFound",
+    bookmarkFetchFailed: "errors.bookmarkFetchFailed",
+    highlightingFailed: "errors.highlightingFailed",
+    verseNotFound: "errors.verseNotFound",
   },
 } as const
 

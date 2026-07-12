@@ -1,25 +1,75 @@
+import { DATABASE_KEY } from "@db/driver"
 import type { Locator, Page } from "playwright-core"
+import { waitUntilVisible } from "./interactivity"
 
 export async function visitFresh(page: Page) {
+  // addInitScript runs before every navigation, making __isArabicWord available
+  // in all page.evaluate callbacks without duplicating the predicate.
+  await page.addInitScript(() => {
+    ;(window as any).__isArabicWord = (s: Element): boolean =>
+      s.classList.contains("arabic-lex")
+  })
   await page.goto("/")
   await page.evaluate(() => localStorage.removeItem("userSettings"))
   await page.reload()
   await untilUsable(page)
 }
 
-// Wait for full app bootstrap — the action-buttons only appear after
-// RouterProvider renders, which requires setIsBootstrapped(true), which
-// is called right after restoreState(). This guarantees the stored theme
-// is applied before any assertions run.
-export async function untilUsable(page: Page | Locator) {
-  await page.getByRole("button", { name: "action-button" }).last().waitFor({
-    state: "visible",
-    timeout: 30_000,
+/** Clears localStorage and the indexed DB, ie deletes the SQLite snapshot. */
+export async function clearBrowserStorage(page: Page) {
+  await page.evaluate(async () => {
+    localStorage.clear()
+    await new Promise<void>((resolve) => {
+      const req = indexedDB.open("keyval-store")
+      req.onerror = () => resolve()
+      req.onsuccess = () => {
+        const db = req.result
+        try {
+          const tx = db.transaction("keyval", "readwrite")
+          // delete the key rather than the whole database because `deleteDatabase`
+          // blocks while the app holds an open IDB connection, causing hang.
+          tx.objectStore("keyval").delete(DATABASE_KEY)
+          tx.oncomplete = () => {
+            db.close()
+            resolve()
+          }
+          tx.onerror = () => {
+            db.close()
+            resolve()
+          }
+        } catch {
+          db.close()
+          resolve()
+        }
+      }
+    })
   })
 }
 
-// Returns perceived luminance (0–255) of the first solid background found
-// depth-first in the DOM — reliable proxy for light vs dark theme.
+/** Waits until the app has fully bootstrapped (stored settings applied). */
+export async function untilUsable(page: Page | Locator) {
+  await page
+    .getByRole("button", { name: "title-action" })
+    .first()
+    .waitFor({ state: "visible", timeout: 30_000 })
+  await waitUntilVisible(page.locator("[data-verse]").first(), {
+    timeout: 15_000,
+  })
+}
+
+/** Returns the computed `font-family` of the first `.arabic-lex` span in the first `[data-verse]` row. */
+export async function getWordFontFamily(page: Page): Promise<string | null> {
+  return page.evaluate(() => {
+    const row = document.querySelector<HTMLElement>("[data-verse]")
+    if (!row) return null
+    const word = Array.from(row.querySelectorAll("span")).find(
+      window.__isArabicWord,
+    )
+    return word ? window.getComputedStyle(word).fontFamily : null
+  })
+}
+
+/** Returns perceived luminance (0–255) — reliable proxy for light vs dark theme. */
 export async function getPageLuminance(page: Page): Promise<number> {
   return page.evaluate(() => {
     const walk = (el: Element): string | null => {
@@ -35,4 +85,36 @@ export async function getPageLuminance(page: Page): Promise<number> {
     const [r, g, b] = (bg.match(/\d+/g) ?? ["128", "128", "128"]).map(Number)
     return (r * 299 + g * 587 + b * 114) / 1000
   })
+}
+
+export async function getTopMostVerse(
+  page: Page,
+): Promise<string | null | undefined> {
+  const val = await page.evaluate(() => {
+    const rows = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-verse]"),
+    )
+    if (rows.length === 0) return null
+
+    let container: HTMLElement | null = rows[0].parentElement
+    while (
+      container &&
+      window.getComputedStyle(container).overflowY !== "auto"
+    ) {
+      container = container.parentElement
+    }
+    if (!container) return null
+
+    const containerTop = container.getBoundingClientRect().top
+    const visible = rows
+      .map((row) => ({
+        verse: row.getAttribute("data-verse"),
+        top: row.getBoundingClientRect().top - containerTop,
+      }))
+      .filter((row) => row.top > -50)
+      .sort((a, b) => a.top - b.top)
+
+    return visible[0]?.verse ?? null
+  })
+  return val
 }

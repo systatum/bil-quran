@@ -5,11 +5,12 @@ import { Locale } from "@constants/settings"
  * each chapter will have this record.
  */
 export interface WordTranslationRecord {
-  locale: string
+  locale: number
   chapter: number
   ayat: number // TODO: replace this with verse
   word: number
-  meaning: string
+  meaningSunni: string
+  meaningShia: string
 }
 
 /**
@@ -51,6 +52,27 @@ export namespace WordTranslationOption {
       default:
         return WordTranslationOption.AmericanEnglish
     }
+  }
+
+  const LOCALE_TO_NUMBER: Record<Locale, number> = {
+    "ar-IQ": 100,
+    "en-US": 200,
+    "id-ID": 300,
+  } as const
+
+  /** The locale is stored in the database as number; we need to convert back-and-forth */
+  export function toNumber(locale: WordTranslationOption): number {
+    const val = LOCALE_TO_NUMBER[locale]
+    if (!val) throw new Error("Unknown locale: " + locale)
+    return val
+  }
+
+  export function fromNumber(number: number): Locale {
+    const locale = Object.keys(LOCALE_TO_NUMBER).find(
+      (key) => LOCALE_TO_NUMBER[key as Locale] === number,
+    )
+    if (!locale) throw new Error("Unknown number: " + number)
+    return locale as Locale
   }
 }
 

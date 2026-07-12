@@ -76,6 +76,15 @@ export async function clickOn(
   await target.first().click()
 }
 
+export async function longPress(page: Page, element: Locator) {
+  await element.dispatchEvent("pointerdown", {
+    bubbles: true,
+    cancelable: true,
+  })
+  await page.waitForTimeout(600) // > 500ms threshold before pointerup clears the timer
+  await element.dispatchEvent("pointerup", { bubbles: true, cancelable: true })
+}
+
 /**
  * Hover over a visible element within a container.
  */
@@ -133,6 +142,7 @@ export async function getFieldByLabel(
   if (semanticField) return semanticField
 
   // fallback: find nearest form field near label
+  if (!label) return undefined
   const wrapper = label.locator(
     `xpath=ancestor-or-self::*[
       .//input or .//textarea or .//*[@role="textbox"]
@@ -386,10 +396,65 @@ export async function getPaperDialog(page: Page | Locator) {
   return paperDialog
 }
 
-export async function closePaperDialog(page: Page | Locator) {
-  await clickOn(undefined, page, {
-    ariaLabel: "paper-dialog-toggle-close",
+/** Drags the paper dialog's indicator down fast enough to slide it off-screen. */
+async function dragDownFastToClose(page: Page) {
+  const indicator = page
+    .locator('[aria-label="paper-dialog-drag-indicator"]')
+    .first()
+
+  await indicator.dispatchEvent("pointerdown", {
+    clientY: 0,
+    bubbles: true,
+    cancelable: true,
   })
+  await indicator.dispatchEvent("pointermove", {
+    clientY: 20,
+    bubbles: true,
+    cancelable: true,
+  })
+  await page.waitForTimeout(16) // real gap so velocity tracking sees it as a fast flick
+  await indicator.dispatchEvent("pointermove", {
+    clientY: 200,
+    bubbles: true,
+    cancelable: true,
+  })
+  await indicator.dispatchEvent("pointerup", {
+    clientY: 200,
+    bubbles: true,
+    cancelable: true,
+  })
+}
+
+/**
+ * Dismisses the paper dialog (no close button); rotates deterministically
+ * across Escape, backdrop click, and fast drag-down based on the caller's
+ * source line
+ */
+export async function closePaperDialog(page: Page | Locator) {
+  const actualPage = "keyboard" in page ? page : page.page()
+
+  const callerLine = new Error().stack?.split("\n")[2] ?? ""
+  const hash = Array.from(callerLine).reduce(
+    (sum, ch) => sum + ch.charCodeAt(0),
+    0,
+  )
+
+  switch (hash % 3) {
+    case 0:
+      await actualPage.keyboard.press("Escape")
+      break
+    case 1:
+      await actualPage
+        .locator('[aria-label="overlay-blocker"]')
+        .first()
+        .click({ position: { x: 5, y: 5 } })
+      break
+    default:
+      await dragDownFastToClose(actualPage)
+      break
+  }
+
+  await actualPage.waitForTimeout(300)
 }
 
 // ==== TIMER ======================================================
@@ -403,4 +468,168 @@ export const ONE_MINUTE = 60 * 1000
  */
 export async function pause(ms: number) {
   return new Promise((f) => setTimeout(f, ms))
+}
+
+// ==== QURAN ======================================================
+
+export async function openSidebar(page: Page) {
+  await page.locator('[aria-label="title-action"]:not(aside *)').last().click()
+  await page.waitForTimeout(300) // sidebar CSS transition is 220ms
+}
+
+export async function closeSidebar(page: Page) {
+  await page
+    .locator('[aria-label="title-action"]:not(aside *)')
+    .last()
+    .dispatchEvent("click")
+  await page.waitForTimeout(300) // sidebar CSS transition is 220ms
+}
+
+export async function openSearchSheet(page: Page) {
+  await page.locator('[aria-label="title-action"]:not(aside *)').first().click()
+  await page.waitForTimeout(300)
+}
+
+/** Opens the sidebar and toggles a word-by-word translation option. */
+export async function toggleWbwTranslation(label: string, page: Page) {
+  await openSidebar(page)
+
+  const input = await findVisibleTarget(undefined, page, {
+    formLabel: "Word-by-word translations",
+  })
+  await input.click()
+
+  const drawer = page
+    .locator('[aria-label="combobox-drawer"]')
+    .filter({ visible: true })
+  await expect(drawer).toBeVisible({ timeout: 5000 })
+
+  const item = drawer.getByRole("option").filter({ hasText: label }).first()
+  await expect(item).toBeVisible({ timeout: 5000 })
+  await item.click()
+
+  await page.keyboard.press("Escape") // close drawer
+  await page.waitForTimeout(150)
+  // dispatchEvent fires directly on the DOM node, bypassing the aside overlay
+  // that intercepts physical mouse clicks at the same screen coordinates.
+  await page
+    .locator('[aria-label="title-action"]:not(aside *)')
+    .last()
+    .dispatchEvent("click")
+  await page.waitForTimeout(300)
+}
+
+/**
+ * Opens the sidebar and toggles an exegesis source on/off via its display
+ * name (e.g. "Ali Quli Qara'i"). Options are grouped by locale (like the
+ * Font field), so every collapsed group is expanded before searching.
+ */
+export async function toggleExegesis(label: string, page: Page) {
+  await openSidebar(page)
+
+  const input = await findVisibleTarget(undefined, page, {
+    formLabel: "Exegesis",
+  })
+  await input.click()
+
+  const drawer = page
+    .locator('[aria-label="combobox-drawer"]')
+    .filter({ visible: true })
+  await expect(drawer).toBeVisible({ timeout: 5000 })
+
+  const groupHeaders = drawer.locator(
+    '[aria-label="tree-list-group-title"][data-has-options="true"]',
+  )
+  for (let i = 0; i < (await groupHeaders.count()); i++) {
+    await groupHeaders.nth(i).click()
+  }
+  await page.waitForTimeout(250)
+
+  const item = drawer
+    .locator('[aria-label="tree-list-item"]')
+    .filter({ hasText: label })
+    .first()
+  await expect(item).toBeVisible({ timeout: 5000 })
+  await item.click()
+
+  await page.keyboard.press("Escape") // close drawer
+  await page.waitForTimeout(150)
+  // dispatchEvent fires directly on the DOM node, bypassing the aside overlay
+  // that intercepts physical mouse clicks at the same screen coordinates.
+  await page
+    .locator('[aria-label="title-action"]:not(aside *)')
+    .last()
+    .dispatchEvent("click")
+  await page.waitForTimeout(300)
+}
+
+/** Long-press a verse row (by "chapterId:verseNumber") to open the exegesis dialog. */
+export async function openExegesisDialog(page: Page, verseKey: string) {
+  const row = page.locator(`[data-verse="${verseKey}"]`)
+  await waitUntilVisible(row, { timeout: 10_000 })
+  await longPress(page, row)
+  return getPaperDialog(page)
+}
+
+/** @returns true when the scroll container has reached the top. */
+export async function scrollUp(page: Page, px: number): Promise<boolean> {
+  return page.evaluate((amount) => {
+    const row = document.querySelector("[data-index]")
+    if (!row) return true
+
+    let el: Element | null = row.parentElement
+    while (el) {
+      const style = window.getComputedStyle(el as HTMLElement)
+      if (style.overflow === "auto" || style.overflowY === "auto") {
+        const container = el as HTMLElement
+        container.scrollTop -= amount
+        return container.scrollTop <= 0
+      }
+      el = el.parentElement
+    }
+
+    return true
+  }, px)
+}
+
+/** Scroll up/down N steps, asserting markers stay visible at each step. */
+export async function scrollCertainPixels(
+  page: Page,
+  direction: "up" | "down",
+  steps: number,
+  callback?: () => void,
+) {
+  const px = 400
+  const scrollerFunc = direction === "up" ? scrollUp : scrollDown
+
+  for (let i = 0; i < steps; i++) {
+    await page.waitForTimeout(80)
+    if (callback) callback()
+    const atPeak = await scrollerFunc(page, px)
+    if (atPeak) break
+  }
+}
+
+/** @returns true when the scroll container has reached the bottom. */
+export async function scrollDown(page: Page, px: number): Promise<boolean> {
+  return page.evaluate((amount) => {
+    const row = document.querySelector("[data-index]")
+    if (!row) return true
+
+    let el: Element | null = row.parentElement
+    while (el) {
+      const style = window.getComputedStyle(el as HTMLElement)
+      if (style.overflow === "auto" || style.overflowY === "auto") {
+        const container = el as HTMLElement
+        container.scrollTop += amount
+        return (
+          container.scrollTop + container.clientHeight >=
+          container.scrollHeight - 10
+        )
+      }
+      el = el.parentElement
+    }
+
+    return true
+  }, px)
 }

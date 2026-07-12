@@ -19,7 +19,7 @@ export interface ChapterRecord {
   // name of the chapters in arabic and other localities
   transliterations: Record<Locale, string>
   // the meaning of the chapter in various locales
-  meanings: Record<Locale, string>
+  meanings: Record<Locale, string | null>
 }
 
 /**

@@ -30,6 +30,20 @@ export function unpackIPC<T>(resp: IPCResponse<T>): T {
   throw new Error(message)
 }
 
+// ===== STRING ====================================
+
+export function arabicLetterToLatin(letter: string): string {
+  return ROOT_LETTER_LATIN[letter] ?? letter
+}
+
+/** Base64-encodes a Unicode string (plain `btoa` only handles Latin1). */
+export function encodeBase64Unicode(str: string): string {
+  const bytes = new TextEncoder().encode(str)
+  let binary = ""
+  bytes.forEach((b) => (binary += String.fromCharCode(b)))
+  return btoa(binary)
+}
+
 // ===== OBJECT =====================================
 
 export function flattenObject(
@@ -52,34 +66,33 @@ export function flattenObject(
   )
 }
 
-// ===== STRING =====================================
-
-/**
- * Move Arabic kasra (ِ) below shadda (ّ) when they appear in the wrong order.
- *
- * Example:
- *   يُهَيِّئْ
- * becomes:
- *   يُهَيِّئْ
- *
- * Unicode:
- *   Shadda = \u0651
- *   Kasra  = \u0650
- *
- * Wrong order:
- *   kasra + shadda
- *
- * Correct order:
- *   shadda + kasra
- */
-export function normalizeArabicDiacritics(text: string): string {
-  // Replace: kasra + shadda
-  // With:    shadda + kasra
-  return text.replace(/\u0650\u0651/g, "\u0651\u0650")
+const ROOT_LETTER_LATIN: Record<string, string> = {
+  ا: "a",
+  ب: "b",
+  ت: "t",
+  ث: "th",
+  ج: "j",
+  ح: "ḥ",
+  خ: "kh",
+  د: "d",
+  ذ: "dh",
+  ر: "r",
+  ز: "z",
+  س: "s",
+  ش: "sh",
+  ص: "ṣ",
+  ض: "ḍ",
+  ط: "ṭ",
+  ظ: "ẓ",
+  ع: "ʿa",
+  غ: "gh",
+  ف: "f",
+  ق: "q",
+  ك: "k",
+  ل: "l",
+  م: "m",
+  ن: "n",
+  ه: "h",
+  و: "w",
+  ي: "y",
 }
-
-// Example
-const input = "وَيُهَيِّئْ"
-const output = normalizeArabicDiacritics(input)
-
-console.log(output)

@@ -8,9 +8,9 @@ import {
 import useAppState from "@hooks/states/AppState"
 import useTranslationsState from "@hooks/states/TranslationsState"
 import useWordsState from "@hooks/states/WordsState"
+import useToast from "@hooks/tools/useToast"
 import { stringifyError } from "@services/Converter"
 import LOGGER from "@services/Logger"
-import toast from "react-hot-toast"
 import { WordCell } from "../../fragments/QuranPaper/VerseRow"
 
 /**
@@ -21,6 +21,7 @@ export function useWordTranslations(
 ): Partial<TranslationCorpusMap> {
   const { pushError, setIsVersesLoaded } = useAppState()
   const { corpora, getCorpus } = useTranslationsState()
+  const { errorToast } = useToast()
 
   /**
    * For solving out-of-order completion issue, by monotonically increasing
@@ -54,9 +55,10 @@ export function useWordTranslations(
     }
 
     load().catch((e) => {
-      toast.error(
+      errorToast(
         "Cannot download locale, please alert the developer of this error: " +
           stringifyError(e),
+        "Error downloading",
       )
       LOGGER.error(e)
       pushError(e)

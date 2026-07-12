@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 
 import { ChapterRecord } from "@constants/records/ChapterRecord"
-import { BasmalaPosition } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import { useTranslatedWords, useWords } from "@hooks/tools/useWordTranslations"
 import { useVirtualizer, VirtualItem } from "@tanstack/react-virtual"
 import useChaptersState from "../../hooks/states/ChaptersState"
 import useUserSettingsState from "../../hooks/states/UserSettingsState"
-import BasmalaRow from "./BasmalaRow"
 import ChapterRow from "./ChapterRow"
+import ModalDialog from "./ModalDialog"
+import PaperDialog from "./PaperDialog"
 import VerseRow, { Verse } from "./VerseRow"
 import { Bismillah } from "./VerseRow/Bismillah"
 
@@ -19,13 +19,18 @@ import { Bismillah } from "./VerseRow/Bismillah"
 // a few in the viewport so as not to crumble the device's
 // precious RAM and slowing down the device's processor.
 
-type RenderableChapterRow = { type: "chapter"; chapter: ChapterRecord }
-type RenderableVerseRow = { type: "verse"; verse: Verse }
-type RenderableBasmalaRow = { type: "basmala" }
-type RenderRow =
-  | RenderableChapterRow
-  | RenderableVerseRow
-  | RenderableBasmalaRow
+interface RenderableChapterRow {
+  type: "chapter"
+  chapter: ChapterRecord
+  hasBasmala: boolean
+}
+
+interface RenderableVerseRow {
+  type: "verse"
+  verse: Verse
+}
+
+type RenderRow = RenderableChapterRow | RenderableVerseRow
 
 function isVerseRow(row: RenderRow): row is RenderableVerseRow {
   return row.type === "verse"
@@ -85,9 +90,14 @@ export default function QuranPaper({
     let lastChapterId: number | null = null
     for (const verse of verses) {
       if (verse.chapter.id !== lastChapterId) {
-        rows.push({ type: "chapter", chapter: verse.chapter })
-        if (Bismillah.isRenderableHere(verse.number, verse.chapter.id))
-          rows.push({ type: "basmala" })
+        rows.push({
+          type: "chapter",
+          chapter: verse.chapter,
+          hasBasmala: Bismillah.isRenderableHere(
+            verse.number,
+            verse.chapter.id,
+          ),
+        })
         lastChapterId = verse.chapter.id
       }
 
@@ -229,20 +239,12 @@ export default function QuranPaper({
           requestAnimationFrame(() => {
             const virtualItems = virtualizer.getVirtualItems()
             const item = virtualItems.find((x) => x.index === targetIndex)
-            const previousItem = virtualItems.find(
-              (x) => x.index === targetIndex - 1,
-            )
             const parentContainer = parentRef.current
 
             // last scrolling, trying to make the verse fully visible
             if (item && parentContainer) {
               parentContainer.scrollTo({
-                top:
-                  item.start +
-                  (previousItem
-                    ? Math.abs(item.start - previousItem.start)
-                    : 0),
-
+                top: item.start,
                 behavior: "instant",
               })
             }
@@ -258,10 +260,16 @@ export default function QuranPaper({
     })
   }
 
-  // restore persisted scroll position ONCE.
+  // restore persisted scroll position ONCE — unless a specific chapter/verse
+  // was requested (e.g. via URL), which always wins over the last position.
   useEffect(() => {
     if (hasRestoredScrollRef.current) return
     if (renderRows.length === 0) return
+
+    if (requestedChapterId && requestedVerseNumber) {
+      hasRestoredScrollRef.current = true
+      return
+    }
 
     async function restoreScroll() {
       const { lastScroll } = userSettings
@@ -273,7 +281,7 @@ export default function QuranPaper({
     }
 
     restoreScroll()
-  }, [renderRows])
+  }, [renderRows, requestedChapterId, requestedVerseNumber])
 
   useEffect(() => {
     // must have rows on the page
@@ -283,6 +291,19 @@ export default function QuranPaper({
     scrollToVerse(requestedChapterId, requestedVerseNumber)
   }, [requestedChapterId, requestedVerseNumber, renderRows])
 
+  // Always points at the latest restore-to-last-position logic so the
+  // resize effect (empty deps, no re-registration) can call it.
+  const scrollRestoreRef = useRef<(() => Promise<void>) | null>(null)
+  scrollRestoreRef.current = async () => {
+    const { chapterId, verse } = userSettings.lastScroll
+    if (chapterId > 0) {
+      await waitForMeasurements()
+      await scrollToVerse(chapterId, verse)
+    } else {
+      isRestoringScrollRef.current = false
+    }
+  }
+
   // global resize/orientation observer that invalidates every cached measurement
   // which then would force the virtualizer to recompute
   useEffect(() => {
@@ -290,9 +311,13 @@ export default function QuranPaper({
 
     const onResize = () => {
       clearTimeout(timer)
+      // Block scroll recording immediately so drift during remeasurement
+      // doesn't overwrite the last known good position.
+      isRestoringScrollRef.current = true
       timer = setTimeout(() => {
         sizeMap.current.clear()
         virtualizer.measure()
+        scrollRestoreRef.current?.()
       }, 200)
     }
 
@@ -319,6 +344,9 @@ export default function QuranPaper({
           position: "relative",
         }}
       >
+        <ModalDialog />
+        <PaperDialog />
+
         {items.map((item) => {
           const row = renderRows[item.index]
 
@@ -329,25 +357,10 @@ export default function QuranPaper({
                 theme={theme}
                 index={item.index}
                 chapter={row.chapter}
+                hasBasmala={row.hasBasmala}
                 style={{ transform: `translateY(${item.start}px)` }}
                 sizeMap={sizeMap}
                 virtualizer={virtualizer}
-              />
-            )
-          }
-
-          if (row.type === "basmala") {
-            return (
-              <BasmalaRow
-                key={item.index}
-                theme={theme}
-                index={item.index}
-                style={{ transform: `translateY(${item.start}px)` }}
-                sizeMap={sizeMap}
-                virtualizer={virtualizer}
-                hidden={
-                  userSettings.basmalaPosition === BasmalaPosition.Embedded
-                }
               />
             )
           }

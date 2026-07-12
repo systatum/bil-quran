@@ -5,20 +5,35 @@ import {
   BookmarkType,
 } from "@constants/bookmark"
 import { ArabicFontFamily, ArabicFonts } from "@constants/fonts"
+import { HighlightColor } from "@constants/highlight"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
 import { BasmalaPosition, DEFAULT_LOCALE, Locale } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import { resolveLocale } from "@i18n"
-import { isPlainObject, isValidVerse } from "@services/checker"
+import { isPlainObject } from "@services/checker"
 import LOGGER from "@services/Logger"
 import { DeepPartial, mergeKnownKeys } from "@services/mutator"
 import { create } from "zustand"
+import useChaptersState from "./ChaptersState"
+
+/**
+ * Schema version of the persisted user settings. Bump this whenever the
+ * `UserSettings` shape changes in a way that needs reconciling, so
+ * `restoreState()` has a version to compare a persisted blob against
+ * instead of discarding it outright.
+ */
+export const USER_SETTINGS_VERSION = 260708
 
 const DEFAULT_USER_SETTINGS: UserSettings = {
+  version: USER_SETTINGS_VERSION,
   locale: DEFAULT_LOCALE,
   theme: "light",
   basmalaPosition: BasmalaPosition.Detached,
   wbwTranslations: [WordTranslationOption.AmericanEnglish],
+  showPageIndicator: true,
+  alphabeticalChaptersSorting: false,
+  exegesis: [],
+  hasSeenExegesisDialog: false,
   font: {
     arabic: {
       family: "NotoNaskhArabic",
@@ -29,6 +44,7 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
     categories: {},
     list: {},
   },
+  highlightedVerses: {},
   lastScroll: {
     chapterId: 0,
     verse: 0,
@@ -53,6 +69,11 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
     const current = get().userSettings
     const hydrated = mergeKnownKeys(current, parsed) as UserSettings
     hydrated.bookmarks = parsed.bookmarks
+    // same reason as bookmarks above — mergeKnownKeys can't merge new keys into {}
+    hydrated.highlightedVerses = parsed.highlightedVerses ?? {}
+    // Reconciliation point for future migrations: branch on `parsed.version`
+    // here before stamping forward, once the schema actually needs one.
+    hydrated.version = USER_SETTINGS_VERSION
 
     set({
       userSettings: hydrated,
@@ -112,6 +133,22 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
     get().partialUpdate({ basmalaPosition })
   },
 
+  setShowPageIndicator(show) {
+    get().partialUpdate({ showPageIndicator: !!show })
+  },
+
+  setAlphabeticalChaptersSorting(sort) {
+    get().partialUpdate({ alphabeticalChaptersSorting: !!sort })
+  },
+
+  setExegesis(ids) {
+    get().partialUpdate({ exegesis: ids })
+  },
+
+  setHasSeenExegesisDialog(seen) {
+    get().partialUpdate({ hasSeenExegesisDialog: !!seen })
+  },
+
   setWordByWordTranslations(wbwTranslations) {
     get().partialUpdate({ wbwTranslations })
   },
@@ -139,7 +176,7 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
     if (!validKeyFormat) throw new Error("Unexpected verse key: " + verseKey)
     // Check that chapterId and verseNumber is indeed a proper number
     const [chapterId, verseNumber] = verseKey.split(":")
-    if (!isValidVerse(chapterId, verseNumber))
+    if (!useChaptersState.getState().isValidVerse(chapterId, verseNumber))
       throw new Error(`Verse ${verseKey} not found`)
 
     // TODO: cannot bookmark an existing verse twice
@@ -149,7 +186,7 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
       let usedCategory: BookmarkCategory | undefined = category
       if (usedCategory == null) {
         // the category at index 0 is the default
-        usedCategory = userSettings.bookmarks.categories["default"]
+        usedCategory = bookmarks.categories["default"]
         if (usedCategory == null) {
           usedCategory = {
             id: "default",
@@ -169,15 +206,32 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
         }
       }
 
-      // add bookmark
+      // omitted fields fall back to the existing record, so re-bookmarking never wipes a note/color
       if (!isPlainObject(bookmarks.list)) bookmarks.list = {}
-      bookmarks.list[verseKey] = {
-        type: BookmarkType.Verse,
-        key: verseKey,
-        addedAt: Date.now(),
-        category: usedCategory.id,
-        note: note ? String(note) : undefined,
-        color: color ? Number(color) : BookmarkColor.Gray,
+      const existing = bookmarks.list[verseKey]
+      bookmarks = {
+        ...bookmarks,
+        list: {
+          ...bookmarks.list,
+          [verseKey]: {
+            type: BookmarkType.Verse,
+            key: verseKey,
+            addedAt: existing?.addedAt ?? Date.now(),
+            category: usedCategory.id,
+            note:
+              "note" in args
+                ? note
+                  ? String(note)
+                  : undefined
+                : existing?.note,
+            color:
+              "color" in args
+                ? color
+                  ? Number(color)
+                  : BookmarkColor.Gray
+                : (existing?.color ?? BookmarkColor.Gray),
+          },
+        },
       }
 
       get().partialUpdate({ bookmarks })
@@ -186,6 +240,42 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
       LOGGER.error("Failed bookmarking", e)
       return false
     }
+  },
+
+  highlightVerse(verseKey, color) {
+    const validKeyFormat = /^\d{1,3}:\d{1,3}$/.test(verseKey)
+    if (!validKeyFormat) throw new Error("Unexpected verse key: " + verseKey)
+    const [chapterId, verseNumber] = verseKey.split(":")
+    if (!useChaptersState.getState().isValidVerse(chapterId, verseNumber))
+      throw new Error(`Verse ${verseKey} not found`)
+
+    try {
+      const userSettings = get().userSettings
+      const highlightedVerses = isPlainObject(userSettings.highlightedVerses)
+        ? userSettings.highlightedVerses
+        : {}
+
+      get().partialUpdate({
+        highlightedVerses: {
+          ...highlightedVerses,
+          [verseKey]: color,
+        },
+      })
+      return true
+    } catch (e) {
+      LOGGER.error("Failed highlighting verse", e)
+      return false
+    }
+  },
+
+  removeHighlight(verseKey) {
+    const { [verseKey]: _removed, ...rest } = isPlainObject(
+      get().userSettings.highlightedVerses,
+    )
+      ? get().userSettings.highlightedVerses
+      : {}
+
+    get().partialUpdate({ highlightedVerses: rest })
   },
 }))
 
@@ -218,11 +308,19 @@ export interface UserSettingsState {
   setLocale(locale: string): void
   setFont(font: DeepPartial<UserFontSettings>): void
   setBasmalaPosition(basmalaPosition: BasmalaPosition): void
+  setShowPageIndicator(show: boolean): void
+  setAlphabeticalChaptersSorting(sort: boolean): void
+  setExegesis(ids: string[]): void
+  setHasSeenExegesisDialog(seen: boolean): void
   setWordByWordTranslations(wbwTranslation: WordTranslationOption[]): void
   setScrollPosition(chapterId: number, verse: number): void
 
   // bookmark related
   bookmarkVerse(args: BookmarkVerseFunctionArgs): boolean
+
+  // highlight related
+  highlightVerse(verseKey: string, color: HighlightColor): boolean
+  removeHighlight(verseKey: string): void
 }
 
 export interface FontSetting {
@@ -239,15 +337,58 @@ export interface UserFontSettings {
 }
 
 export interface UserSettings {
+  /** Schema version of this persisted blob; see `USER_SETTINGS_VERSION`. */
+  version: number
+
   locale: Locale
   theme: ThemeMode
   font: UserFontSettings
+
+  /**
+   * Whether to show page indicator so user knows which part and page they are in
+   */
+  showPageIndicator: boolean
+
+  /**
+   * Whether to sort the chapter lookup list alphabetically by transliterated
+   * name (ignoring leading definite-article prefixes like "Al-"/"An-")
+   * instead of natural chapter-id order
+   */
+  alphabeticalChaptersSorting: boolean
+
+  /**
+   * IDs of the exegeses the user has activated (e.g. ["aliquli/en-US"]).
+   * Multiple exegeses can be active at the same time.
+   */
+  exegesis: string[]
+
+  /** Whether ever seen exegesis paper dialog. Used to set default exegesis selection. */
+  hasSeenExegesisDialog: boolean
+
+  /**
+   * To record bookmarks
+   */
   bookmarks: {
     categories: Record<string, BookmarkCategory>
     list: Record<string, Bookmark>
   }
+
+  /**
+   * Highlighted verses, keyed by "chapterId:verseNumber", valued by the
+   * `HighlightColor` chosen for that verse.
+   */
+  highlightedVerses: Record<string, HighlightColor>
+
   basmalaPosition: BasmalaPosition
+
+  /**
+   * Which language is going to be used for showing word-by-word translation
+   */
   wbwTranslations: WordTranslationOption[]
+
+  /**
+   * To restore to last scroll position
+   */
   lastScroll: {
     chapterId: number
     verse: number

@@ -1,31 +1,36 @@
-import { ArabicFontFamily } from "@constants/fonts"
+import {
+  ArabicFontFamily,
+  ArabicFontId,
+  isLearningFont,
+} from "@constants/fonts"
 import { WordOccurrence } from "@constants/records/WordRecord"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
-import { ThemeMode } from "@constants/theme"
 import useChaptersState from "@hooks/states/ChaptersState"
 import useUserSettingsState, {
   FontSetting,
 } from "@hooks/states/UserSettingsState"
+import { arabicLetterToLatin } from "@services/Converter"
 import { Grid } from "@systatum/coneto/grid"
+import { useTheme } from "@systatum/coneto/theme"
 import { useCallback, useRef, useState } from "react"
-import styled from "styled-components"
+import styled, { css } from "styled-components"
 import { Transliteration, WordCell } from "."
+import ClippedContent from "../../ClippedContent"
 import InfoTile from "./InfoTile"
 import InterlinearText from "./InterlinearText"
 
 interface LexemeDetailPaperDialogProps {
   content: WordCell
   arabicFont: string
-  theme: ThemeMode
   occurrences: Record<string, WordOccurrence>
 }
 
 export function LexemeDetailPaperDialog({
   content,
   arabicFont,
-  theme,
   occurrences,
 }: LexemeDetailPaperDialogProps) {
+  const { mode: theme } = useTheme()
   const {
     userSettings: { locale, wbwTranslations, font },
   } = useUserSettingsState()
@@ -33,7 +38,12 @@ export function LexemeDetailPaperDialog({
 
   const isTranslated =
     Array.isArray(wbwTranslations) && wbwTranslations.length > 0
-  const rootLetters = content.root.root ?? "—"
+  const rootReadings = content.root.root
+    ? content.root.root
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((letter) => ({ letter, latin: arabicLetterToLatin(letter) }))
+    : []
   const localeBasedTransliteration = content.readings[locale]
   const wbwBasedTransliteration = isTranslated
     ? wbwTranslations.map((x) => content.readings[x]).find((x) => x != null)
@@ -59,16 +69,13 @@ export function LexemeDetailPaperDialog({
 
   return (
     <>
-      <TokenSection $theme={theme} $scrolled={scrolled}>
-        <ArabicToken $font={arabicFont} $theme={theme} $scrolled={scrolled}>
-          {content.token}
-        </ArabicToken>
-        {transliteration && (
-          <TransliterationCollapsible $scrolled={scrolled}>
-            <Transliteration>{transliteration}</Transliteration>
-          </TransliterationCollapsible>
-        )}
-      </TokenSection>
+      <Lexeme
+        font={arabicFont}
+        theme={theme}
+        scrolled={scrolled}
+        token={content.token}
+        transliteration={transliteration}
+      />
 
       <ScrollContainer ref={scrollRef} onScroll={handleScroll}>
         <Grid preset="2-col">
@@ -76,9 +83,20 @@ export function LexemeDetailPaperDialog({
           <InfoTile
             theme={theme}
             label="Root"
-            value={rootLetters}
-            arabic
-            arabicFont={arabicFont}
+            value={
+              rootReadings.length > 0 ? (
+                <RootReadingRow>
+                  {rootReadings.map(({ letter, latin }, i) => (
+                    <RootPair key={i}>
+                      <RootLetter $font={arabicFont}>{letter}</RootLetter>
+                      <RootLatin $theme={theme}>{latin}</RootLatin>
+                    </RootPair>
+                  ))}
+                </RootReadingRow>
+              ) : (
+                "—"
+              )
+            }
           />
           <InfoTile
             theme={theme}
@@ -94,35 +112,142 @@ export function LexemeDetailPaperDialog({
 
         {Object.values(occurrences)
           .slice(0, 20)
-          .map((o, i) => {
-            return (
-              <VerseWrapper key={i} $theme={theme}>
-                <VerseLabel $theme={theme}>
-                  {o.chapterId} ({getChapterTransliteratedName(o.chapterId)}/{" "}
-                  {getChapterMeaning(o.chapterId)}) :&nbsp; {o.verse}
-                </VerseLabel>
-
-                <InterlinearText
-                  showMeaning
-                  key={`${o.chapterId}:${o.verse}:${o.chapterId}`}
-                  id={`${o.chapterId}:${o.verse}:${o.chapterId}`}
-                  arabicFont={fontArabic}
-                  theme={theme}
-                  words={o.words}
-                  shownTranslations={wbwTranslations}
-                  highlightOn={[o.targetOrder]}
-                />
-              </VerseWrapper>
-            )
-          })}
+          .map((o, i) => (
+            <ClippedContent
+              key={i}
+              label={`${o.chapterId} (${getChapterTransliteratedName(o.chapterId)} / ${getChapterMeaning(o.chapterId)}) : ${o.verse}`}
+            >
+              <InterlinearText
+                showMeaning
+                key={`${o.chapterId}:${o.verse}`}
+                id={`${o.chapterId}:${o.verse}`}
+                arabicFont={fontArabic}
+                words={o.words}
+                shownTranslations={wbwTranslations}
+                highlightOn={[o.targetOrder]}
+              />
+            </ClippedContent>
+          ))}
       </ScrollContainer>
     </>
   )
 }
 
+/**
+ * Component to render the token word. If the font chosen is "for-learning" type
+ * of font, we render the token twice side-by-side: in the original font vs in
+ * the standard arabic.
+ */
+function Lexeme({
+  token,
+  transliteration,
+  theme,
+  scrolled,
+  font,
+}: {
+  token: string
+  transliteration: string | undefined
+  theme: string
+  scrolled: boolean
+  font: string
+}) {
+  const forLearningFont = isLearningFont(font)
+
+  return (
+    <TokenSection
+      $theme={theme}
+      $scrolled={scrolled}
+      $forLearningFont={forLearningFont}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          gap: "3px",
+          textAlign: "center",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <ArabicToken $font={font} $theme={theme} $scrolled={scrolled}>
+          {token}
+        </ArabicToken>
+        {forLearningFont && (
+          <>
+            <span
+              style={{
+                color: theme === "dark" ? "#3c3c4d" : "rgb(164 150 124)",
+                fontSize: scrolled ? "2em" : "4em",
+                marginRight: "10px",
+                marginLeft: "10px",
+                transform: scrolled ? "translateY(0px)" : "translateY(-8px)",
+              }}
+            >
+              ·
+            </span>
+            <ArabicToken
+              $font={ArabicFontId.DroidNaskh}
+              $theme={theme}
+              $scrolled={scrolled}
+            >
+              {token}
+            </ArabicToken>
+          </>
+        )}
+      </div>
+      {transliteration && (
+        <TransliterationCollapsible $scrolled={scrolled}>
+          <Transliteration>{transliteration}</Transliteration>
+        </TransliterationCollapsible>
+      )}
+    </TokenSection>
+  )
+}
+
+// Root letters read right-to-left, same as the arabic script itself — the
+// first root letter sits on the right, each followed by its own latin
+// reading in a lighter, encircled badge.
+const RootReadingRow = styled.span`
+  display: inline-flex;
+  flex-wrap: wrap;
+  direction: rtl;
+  gap: 12px;
+  float: right;
+`
+
+const RootPair = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+`
+
+const RootLetter = styled.span<{ $font: string }>`
+  font-family:
+    "${({ $font }) => $font}", "${"NotoNaskhArabic" satisfies ArabicFontFamily}",
+    serif;
+  font-size: 18px;
+`
+
+const RootLatin = styled.span<{ $theme: string }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  border: 1px solid
+    ${({ $theme }) => ($theme === "dark" ? "#5a5f59" : "#c9bda3")};
+  font-size: 11px;
+  font-weight: 400;
+  color: ${({ $theme }) => ($theme === "dark" ? "#8f938f" : "#a09083")};
+  direction: ltr;
+`
+
 const ScrollContainer = styled.div`
   overflow-y: auto;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -149,7 +274,11 @@ const ScrollContainer = styled.div`
   }
 `
 
-const TokenSection = styled.div<{ $theme: ThemeMode; $scrolled: boolean }>`
+const TokenSection = styled.div<{
+  $theme: string
+  $scrolled: boolean
+  $forLearningFont?: boolean
+}>`
   position: sticky;
   top: 0;
   z-index: 1;
@@ -162,12 +291,19 @@ const TokenSection = styled.div<{ $theme: ThemeMode; $scrolled: boolean }>`
   background-color: inherit;
   z-index: 99929999;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: ${({ $scrolled }) => ($scrolled ? "4px 24px" : "24px 24px 20px")};
+  padding: ${({ $scrolled }) =>
+    $scrolled ? "0px 4px 24px" : "0 24px 24px 20px"};
+
+  ${({ $forLearningFont }) =>
+    $forLearningFont &&
+    css`
+      margin-top: 20px;
+    `}
 `
 
-const ArabicToken = styled.span<{
+const ArabicToken = styled.span.attrs({ className: "arabic-lex" })<{
   $font: string
-  $theme: ThemeMode
+  $theme: string
   $scrolled: boolean
 }>`
   font-family:
@@ -192,38 +328,4 @@ const TransliterationCollapsible = styled.div<{ $scrolled: boolean }>`
     opacity 0.25s ease;
   max-height: ${({ $scrolled }) => ($scrolled ? "0px" : "32px")};
   opacity: ${({ $scrolled }) => ($scrolled ? 0 : 1)};
-`
-
-const VerseWrapper = styled.div<{ $theme: ThemeMode }>`
-  position: relative;
-  padding: 28px 15px 12px 15px; /* reserve space for badge */
-  background: ${({ $theme }) => ($theme === "dark" ? "#263832" : "#e2d6c3")};
-  border-radius: 8px;
-`
-
-const VerseLabel = styled.div<{ $theme: ThemeMode }>`
-  position: absolute;
-  top: 1px;
-  left: 0px;
-
-  padding: 4px 10px;
-  font-size: 12px;
-  line-height: 1;
-
-  background: ${({ $theme }) => ($theme === "dark" ? "#445445" : "#e7e7e7")};
-  color: ${({ $theme }) => ($theme === "dark" ? "#bababa" : "#5d3c2c")};
-
-  border-right: 1px solid;
-  border-bottom: 1px solid;
-  border-color: ${({ $theme }) => ($theme === "dark" ? "#40573b" : "#e3e3e3")};
-
-  border-top-right-radius: 0;
-  border-top-left-radius: 8px;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 10px;
-
-  /* prevents visual jitter at corner join */
-  transform: translateY(-1px);
-
-  font-size: 0.8em;
 `
