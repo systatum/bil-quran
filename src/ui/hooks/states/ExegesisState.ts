@@ -1,10 +1,12 @@
 import { Asset } from "@constants/assets"
 import {
+  ExegesisAuthor,
   ExegesisChapterAsset,
   ExegesisMetadata,
   ExegesisVerseContent,
 } from "@constants/records/ExegesisRecord"
 import { Locale } from "@constants/settings"
+import { ThoughtSchool } from "@constants/ThoughtSchool"
 import { repo } from "@db/repo"
 import { unpackIPC } from "@services/Converter"
 import {
@@ -157,13 +159,18 @@ async function ensureMetadata(exegesisId: string): Promise<void> {
   const afterFetch = unpackIPC(await repo.exegesis.findAllBy({ id: exegesisId }))
   if (afterFetch.length > 0) return
 
+  const authors: ExegesisAuthor[] = Object.entries(about.authors).map(
+    ([name, { bio }]) => ({ name, bio }),
+  )
+
   await repo.exegesis.create({
     id: exegesisId,
     oriName: about.name,
     locNames: pickLocalized(about.locNames ?? {}, (v) => v),
     description: pickLocalized(about.about ?? {}, (v) => v.shortDesc),
-    author: about.author,
-    authorBio: pickLocalized(about.about ?? {}, (v) => v.author),
+    authors,
+    thoughtSchool: ThoughtSchool.fromNameString(about.thought),
+    source: about.source,
     downloadedChapters: [],
   })
 
