@@ -1,0 +1,34 @@
+{
+  "name": "The Holy Qur'an - The Final Testament",
+  "madhab": "shia-jafari",
+  "authors": {
+    "S.V. Mir Ahmed Ali": {
+      "bio": {
+        "en": "S.V. Mir Ahmed Ali (1902-1976) was a Twelver Shia scholar, writer, and educationist born in Madras, British India. He completed his recitation of the Qur'an at the age of nine, later earning a B.O.L. (Bachelor of Oriental Languages) and an M.A. in Arabic and Persian, along with further degrees in education, and worked at the Government Mahammadan College (later Government Arts College) in Madras.",
+        "id": "S.V. Mir Ahmed Ali (1902-1976) adalah seorang ulama Syiah Itsna Asyariah, penulis, dan pendidik yang lahir di Madras, India (masa Inggris). Ia telah khatam membaca Al-Qur'an pada usia sembilan tahun, kemudian meraih gelar B.O.L. (Bachelor of Oriental Languages) dan M.A. dalam bahasa Arab dan Persia, serta gelar-gelar di bidang pendidikan, dan bekerja di Government Mahammadan College (kemudian Government Arts College) di Madras."
+      }
+    },
+    "Ayatullah Agha Hajj Mirza Mahdi Pooya Yazdi": {
+      "bio": {
+        "en": "Ayatullah Agha Hajj Mirza Mahdi Pooya Yazdi (1899-1973) was an Iranian-born Twelver Shia scholar from Yazd who studied Qur'anic interpretation under his father and under Agha Mirza Muhammad Husain al-Na'ini. He migrated from Najaf to India in 1925, settling in Madras and Bangalore before later moving to Pakistan, where he died in Karachi in 1973. His notes in this work are drawn from his broader Qur'anic commentary, later published as The Essence of the Holy Qur'an: The Eternal Light.",
+        "id": "Ayatullah Agha Hajj Mirza Mahdi Pooya Yazdi (1899-1973) adalah seorang ulama Syiah Itsna Asyariah kelahiran Yazd, Iran, yang mempelajari tafsir Al-Qur'an di bawah bimbingan ayahnya serta Agha Mirza Muhammad Husain al-Na'ini. Ia berpindah dari Najaf ke India pada tahun 1925, menetap di Madras dan Bangalore, sebelum kemudian pindah ke Pakistan, tempat ia wafat di Karachi pada tahun 1973. Catatan-catatannya dalam karya ini diambil dari tafsirnya yang lebih luas, yang kemudian diterbitkan dengan judul The Essence of the Holy Qur'an: The Eternal Light."
+      }
+    }
+  },
+  "locNames": {
+    "en-US": "The Holy Qur'an – The Final Testament"
+  },
+  "about": {
+    "en-US": {
+      "shortDesc": "An English translation of the Holy Qur'an by S.V. Mir Ahmed Ali, accompanied by commentary notes from Ayatullah Agha Hajj Mirza Mahdi Pooya Yazdi, presenting the text from a Twelver Shia (Ithna Ashari) perspective with frequent reference to the Ahl al-Bayt and the traditions of the Twelve Imams.",
+      "detailDesc": [
+        "The Holy Qur'an – The Final Testament pairs an English translation of the Arabic text by S.V. Mir Ahmed Ali with commentary notes drawn from the Qur'anic exegesis of Ayatullah Agha Hajj Mirza Mahdi Pooya Yazdi. First published by Tahrike Tarsile Qur'an, Inc., it has since gone through multiple editions; this digitization follows the eighth U.S. edition (2019).",
+        "The translator, S.V. Mir Ahmed Ali (1902-1976), was a Twelver Shia scholar born in Madras, British India, who completed his recitation of the Qur'an at the age of nine and went on to earn degrees in Arabic, Persian, and education, working at the Government Mahammadan College (later Government Arts College) in Madras.",
+        "The commentary is drawn from the work of Ayatullah Agha Hajj Mirza Mahdi Pooya Yazdi (1899-1973), an Iranian-born scholar from Yazd who studied Qur'anic interpretation under his father and under Agha Mirza Muhammad Husain al-Na'ini before migrating from Najaf to India in 1925 and later to Pakistan, where he died in Karachi in 1973. His notes here draw on his broader tafsir, later published as The Essence of the Holy Qur'an: The Eternal Light.",
+        "Reflecting its authors' Twelver Shia background, the commentary frequently draws on the sayings of the Ahl al-Bayt and the Twelve Imams, engages directly with earlier Jewish and Christian scripture and commentators, and at points incorporates notes from other named commentators quoted within the text.",
+        "This digitized edition was prepared by Al-Islam.org's Digital Islamic Library Project (DILP), which corrected spelling, typographical, and transliteration inconsistencies and adjusted the layout for online readability, meaning the online text is not an exact reproduction of the original print edition."
+      ]
+    }
+  },
+  "source": "Al-Islam's Digital Islamic Library Project (DILP)"
+}
