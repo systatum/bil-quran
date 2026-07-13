@@ -8,14 +8,14 @@
     },
     "3": {
       "1": "Refer to Verse <{[\"Q\", \"6:59\"]}>.",
-      "2": "Refer to Verses <{[\"Q\", \"2:30\"]}>-<{[\"Q\", \"2:38\"]}>; <{[\"Q\", \"15:26\"]}>-<{[\"Q\", \"15:29\"]}>; <{[\"Q\", \"32:9\"]}>.",
+      "2": "Refer to Verses <{[\"Q\", \"2:30\"]}> - <{[\"Q\", \"2:38\"]}>; <{[\"Q\", \"15:26\"]}> - <{[\"Q\", \"15:29\"]}>; <{[\"Q\", \"32:9\"]}>.",
       "3": "Refer to Verse <{[\"Q\", \"2:32\"]}>.",
       "4": "Refer to Verse <{[\"Q\", \"33:33\"]}>.",
       "5": "See also to Verse <{[\"Q\", \"87:14\"]}>."
     },
     "4": {
       "1": "Refer to Verse <{[\"Q\", \"3:138\"]}>.",
-      "2": "Refer to Verses <{[\"Q\", \"10:23\"]}>; <{[\"Q\", \"10:37\"]}>; <{[\"Q\", \"38:11\"]}>-<{[\"Q\", \"38:13\"]}>; <{[\"Q\", \"17:88\"]}>; <{[\"Q\", \"52:34\"]}>.",
+      "2": "Refer to Verses <{[\"Q\", \"10:23\"]}>; <{[\"Q\", \"10:37\"]}>; <{[\"Q\", \"38:11\"]}> - <{[\"Q\", \"38:13\"]}>; <{[\"Q\", \"17:88\"]}>; <{[\"Q\", \"52:34\"]}>.",
       "3": "Refer to Verses <{[\"Q\", \"17:88\"]}>; <{[\"Q\", \"2:23\"]}>; <{[\"Q\", \"10:38\"]}>; <{[\"Q\", \"11:13\"]}>; <{[\"Q\", \"52:34\"]}>."
     },
     "5": {
@@ -35,7 +35,7 @@
       "1": "Refer to Verse <{[\"Q\", \"14:5\"]}>."
     },
     "39": {
-      "1": "Refer to Verses <{[\"Q\", \"7:53\"]}>; <{[\"Q\", \"15:92\"]}>; <{[\"Q\", \"18:49\"]}>; <{[\"Q\", \"24:24\"]}>; <{[\"Q\", \"28:66\"]}>; <{[\"Q\", \"36:65\"]}>; <{[\"Q\", \"69:18\"]}>-<{[\"Q\", \"69:25\"]}>.",
+      "1": "Refer to Verses <{[\"Q\", \"7:53\"]}>; <{[\"Q\", \"15:92\"]}>; <{[\"Q\", \"18:49\"]}>; <{[\"Q\", \"24:24\"]}>; <{[\"Q\", \"28:66\"]}>; <{[\"Q\", \"36:65\"]}>; <{[\"Q\", \"69:18\"]}> - <{[\"Q\", \"69:25\"]}>.",
       "2": "Refer to Verse <{[\"Q\", \"24:24\"]}>.",
       "3": "Refer to Verse <{[\"Q\", \"7:48\"]}>.",
       "4": "Refer to Verse <{[\"Q\", \"18:49\"]}> and <{[\"Q\", \"7:7\"]}>."
@@ -51,7 +51,7 @@
   "translations": {
     "1": "(God) The Beneficent",
     "2": "Taught He the Qur'an",
-    "3": "He created man (Refer to Verses <{[\"Q\", \"2:30\"]}>-<{[\"Q\", \"2:38\"]}>; <{[\"Q\", \"15:26\"]}>-<{[\"Q\", \"15:29\"]}>; <{[\"Q\", \"32:9\"]}>.)",
+    "3": "He created man (Refer to Verses <{[\"Q\", \"2:30\"]}> - <{[\"Q\", \"2:38\"]}>; <{[\"Q\", \"15:26\"]}> - <{[\"Q\", \"15:29\"]}>; <{[\"Q\", \"32:9\"]}>.)",
     "4": "He taught him expression (The power of speech and expression. Refer to Verses <{[\"Q\", \"2:31\"]}>; <{[\"Q\", \"3:138\"]}>.)",
     "5": "The sun and the moon follow the (prescribed) timings (Refer to Verses <{[\"Q\", \"13:2\"]}>; <{[\"Q\", \"21:33\"]}>; <{[\"Q\", \"36:38\"]}>.)",
     "6": "And the herbs and the trees do obeisance (unto Him) (Refer to Verses <{[\"Q\", \"13:4\"]}>; <{[\"Q\", \"16:48\"]}>; <{[\"Q\", \"16:49\"]}>; <{[\"Q\", \"22:18\"]}>.)",
@@ -81,7 +81,7 @@
     "30": "Which then of the bounties of your Lord will ye two belie?",
     "31": "Soon will We attend to you, O' ye two groups (of men and jinns)",
     "32": "Which then of the bounties of your Lord will ye two belie?",
-    "33": "O ye peoples of jinn and humans, if ye can penetrate (Pass through.) the bounds (The length and breadth.) of the heavens and the earth, then do penetrate ye through; (But) ye cannot penetrate but with (Our) authority! (Refer to Verses <{[\"Q\", \"6:129\"]}>-<{[\"Q\", \"6:134\"]}>; <{[\"Q\", \"72:1\"]}>; <{[\"Q\", \"55:33\"]}>; <{[\"Q\", \"28:37\"]}>.)",
+    "33": "O ye peoples of jinn and humans, if ye can penetrate (Pass through.) the bounds (The length and breadth.) of the heavens and the earth, then do penetrate ye through; (But) ye cannot penetrate but with (Our) authority! (Refer to Verses <{[\"Q\", \"6:129\"]}> - <{[\"Q\", \"6:134\"]}>; <{[\"Q\", \"72:1\"]}>; <{[\"Q\", \"55:33\"]}>; <{[\"Q\", \"28:37\"]}>.)",
     "34": "Which then of the bounties of your Lord will ye two belie?",
     "35": "On ye two shall be sent the flames of fire and molten brass, then ye shall not be able to protect yourselves",
     "36": "Which then of the bounties of your Lord will ye two belie?",
@@ -167,7 +167,7 @@
     "36": "See <{[\"E\", \"55:35\"]}>",
     "37": "See <{[\"E\", \"55:35\"]}>",
     "38": "See <{[\"E\", \"55:35\"]}>",
-    "39": "The deeds good and bad, of every individual will be so much self-proved, that there would not be any necessity of asking anyone, whether he accepts the report about his conduct and character or not, nor would the convicts be asked for any explanation as to why he did it. Every case will be self-proved and the ultimate state of every individual self-evident. The very organs of the body of every individual would bear witness<{[\"F\", 1]}>.\n\nIt indicates that this does not refer to the Final Resurrection, but to a different stage of the resurrection other than referred to in verse <{[\"Q\", \"7:6\"]}>-<{[\"Q\", \"7:8\"]}>, because on that day every one, the prophets and those to whom the prophets have been sent will be questioned. (A.P.).\n\nThe final resurrection is not referred to in this verse, because on that day all the prophets and those to whom they were sent will be questioned as per verses 6 to 8 of Araf mentioned above.\n\n**Verses 39, 41, 43** and **44** state that on the day of reckoning their tongues, hands and feet will bear witness against them as to their actions<{[\"F\", 2]}>.\n\nEvery man will bear marks on his person, showing his classification<{[\"F\", 3]}> .\n\nThe all-knowing Lord knows all, but to give every chance to the accused his record will be produced and shown to him<{[\"F\", 4]}> . In this way their personal responsibility will be enforced.",
+    "39": "The deeds good and bad, of every individual will be so much self-proved, that there would not be any necessity of asking anyone, whether he accepts the report about his conduct and character or not, nor would the convicts be asked for any explanation as to why he did it. Every case will be self-proved and the ultimate state of every individual self-evident. The very organs of the body of every individual would bear witness<{[\"F\", 1]}>.\n\nIt indicates that this does not refer to the Final Resurrection, but to a different stage of the resurrection other than referred to in verse <{[\"Q\", \"7:6\"]}> - <{[\"Q\", \"7:8\"]}>, because on that day every one, the prophets and those to whom the prophets have been sent will be questioned. (A.P.).\n\nThe final resurrection is not referred to in this verse, because on that day all the prophets and those to whom they were sent will be questioned as per verses 6 to 8 of Araf mentioned above.\n\n**Verses 39, 41, 43** and **44** state that on the day of reckoning their tongues, hands and feet will bear witness against them as to their actions<{[\"F\", 2]}>.\n\nEvery man will bear marks on his person, showing his classification<{[\"F\", 3]}> .\n\nThe all-knowing Lord knows all, but to give every chance to the accused his record will be produced and shown to him<{[\"F\", 4]}> . In this way their personal responsibility will be enforced.",
     "40": "See <{[\"E\", \"55:39\"]}>",
     "41": "See <{[\"E\", \"55:39\"]}>",
     "42": "See <{[\"E\", \"55:39\"]}>",
