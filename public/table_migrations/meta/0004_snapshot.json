@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "923689e5-29fc-4040-afe8-13085eb1c08b",
+  "id": "e4f178b6-b23c-48e1-b506-2b3dc5003166",
   "prevId": "0253d16a-efda-4041-a212-dc79ae83d99d",
   "tables": {
     "chapters": {
@@ -66,6 +66,20 @@
           "notNull": true,
           "autoincrement": false
         },
+        "source": {
+          "name": "source",
+          "type": "text(55)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "thought_school": {
+          "name": "thought_school",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "ori_name": {
           "name": "ori_name",
           "type": "text(30)",
@@ -87,15 +101,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "author": {
-          "name": "author",
-          "type": "text(30)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "author_bio": {
-          "name": "author_bio",
+        "authors": {
+          "name": "authors",
           "type": "text",
           "primaryKey": false,
           "notNull": true,

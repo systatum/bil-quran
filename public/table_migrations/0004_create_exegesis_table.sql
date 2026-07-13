@@ -1,10 +1,14 @@
+DROP TABLE `exegesis` IF EXISTS;
+DROP TABLE `exegesis_content` IF EXISTS;
+
 CREATE TABLE `exegesis` (
 	`id` text(15) PRIMARY KEY NOT NULL,
+	`source` text(55) NOT NULL,
+	`thought_school` integer NOT NULL,
 	`ori_name` text(30) NOT NULL,
 	`loc_names` text NOT NULL,
 	`description` text NOT NULL,
-	`author` text(30) NOT NULL,
-	`author_bio` text NOT NULL,
+	`authors` text NOT NULL,
 	`downloaded_chapters` text DEFAULT '[]' NOT NULL
 );
 --> statement-breakpoint
