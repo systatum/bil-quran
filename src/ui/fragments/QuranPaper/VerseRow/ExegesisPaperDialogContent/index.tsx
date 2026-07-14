@@ -358,6 +358,28 @@ const ExegesisScrollArea = styled.div`
 
   scrollbar-width: thin;
   scrollbar-color: rgba(150, 150, 150, 0.5) transparent;
+
+  ul,
+  ol {
+    padding-left: 2em;
+    margin-bottom: 0.9em;
+  }
+  ol {
+    list-style: number;
+  }
+
+  h1 {
+    font-size: 2.4em;
+  }
+  h2 {
+    font-size: 2.1em;
+  }
+  h3 {
+    font-size: 1.9em;
+  }
+  h4 {
+    font-size: 1.6em;
+  }
 `
 
 const TraversalColumn = styled.div`

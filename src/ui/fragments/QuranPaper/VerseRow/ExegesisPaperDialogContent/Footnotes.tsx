@@ -43,6 +43,7 @@ const FootnoteList = styled.ol`
   display: flex;
   flex-direction: column;
   gap: 4px;
+  list-style: none !important;
 `
 
 const FootnoteItem = styled.li<{ $theme: string; $highlighted?: boolean }>`
@@ -61,6 +62,6 @@ const FootnoteItem = styled.li<{ $theme: string; $highlighted?: boolean }>`
 
 const FootnoteMarker = styled.span<{ $theme: string }>`
   font-weight: 500;
-  margin-right: 4px;
+  margin-right: 0.75em;
   color: ${({ $theme }) => ($theme === "dark" ? "#c8a96e" : "#8a6030")};
 `
