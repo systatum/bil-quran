@@ -38,3 +38,4 @@ scripts/quran_audio_uploader/**/ayats/**/*
 scripts/quran_audio_uploader/**/except_*.txt
 
 scripts/translator/models/*
+scripts/translator/**/__pycache__

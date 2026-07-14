@@ -4,4 +4,4 @@ services:
     container_name: bil-quran_translator
     build: .
     volumes:
-      - ./models:/models:rw
+      - ./models:/app/models:rw

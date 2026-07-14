@@ -5,6 +5,6 @@ RUN pip install llama-cpp-python
 
 WORKDIR app
 
-COPY main.py .
+COPY *.py ./
 
 ENTRYPOINT python3 main.py
