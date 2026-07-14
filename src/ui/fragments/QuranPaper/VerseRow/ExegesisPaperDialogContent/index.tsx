@@ -10,16 +10,15 @@ import {
   RiArrowGoBackLine,
 } from "@remixicon/react"
 import LOGGER from "@services/Logger"
+import { readMarker, renderExegesisMarkdown } from "@services/markdown"
 import { SplitPane } from "@systatum/coneto/split-pane"
 import { useTheme } from "@systatum/coneto/theme"
-import { marked } from "marked"
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import { useIntl } from "react-intl"
 import styled, { css } from "styled-components"
 import CircleButton from "../../CircleButton"
 import InterlinearText from "../InterlinearText"
 import Footnotes from "./Footnotes"
-import { parseInlineMarkers, readMarker } from "./inlineMarkers"
 
 type NavTarget = { chapterId: number; verse: number }
 
@@ -319,13 +318,7 @@ function ExegesisEntry({
           $loaded={content != null}
           dangerouslySetInnerHTML={
             content
-              ? {
-                  __html: String(
-                    marked(parseInlineMarkers(content.translation), {
-                      breaks: true,
-                    }),
-                  ),
-                }
+              ? { __html: renderExegesisMarkdown(content.translation) }
               : undefined
           }
         />
@@ -336,13 +329,7 @@ function ExegesisEntry({
             $loaded={content != null}
             dangerouslySetInnerHTML={
               content
-                ? {
-                    __html: String(
-                      marked(parseInlineMarkers(content.translation), {
-                        breaks: true,
-                      }),
-                    ),
-                  }
+                ? { __html: renderExegesisMarkdown(content.translation) }
                 : undefined
             }
           />
@@ -353,11 +340,7 @@ function ExegesisEntry({
           $theme={theme}
           $loaded
           dangerouslySetInnerHTML={{
-            __html: String(
-              marked(parseInlineMarkers(content.exegesis), {
-                breaks: true,
-              }),
-            ),
+            __html: renderExegesisMarkdown(content.exegesis),
           }}
         />
       )}
@@ -521,7 +504,9 @@ const VerseText = styled.div<{ $theme: string; $loaded: boolean }>`
   th {
     font-weight: 600;
     background: ${({ $theme }) =>
-      $theme === "dark" ? "rgba(200, 169, 110, 0.12)" : "rgba(138, 96, 48, 0.08)"};
+      $theme === "dark"
+        ? "rgba(200, 169, 110, 0.12)"
+        : "rgba(138, 96, 48, 0.08)"};
   }
   tbody tr:nth-child(even) td {
     background: ${({ $theme }) =>

@@ -301,7 +301,11 @@ describe("loadChapter", () => {
       })
       expect(
         result.current.getVerseExegesis(EXEGESIS_ID, CHAPTER_ID, VERSE),
-      ).toEqual({ translation: "In the name of God", footnotes: {} })
+      ).toEqual({
+        translation: "In the name of God",
+        exegesis: null,
+        footnotes: {},
+      })
     })
   })
 
@@ -357,7 +361,11 @@ describe("loadChapter", () => {
       })
       expect(
         result.current.getVerseExegesis(EXEGESIS_ID, CHAPTER_ID, VERSE),
-      ).toEqual({ translation: "In the name of God", footnotes: {} })
+      ).toEqual({
+        translation: "In the name of God",
+        exegesis: null,
+        footnotes: {},
+      })
     })
   })
 })

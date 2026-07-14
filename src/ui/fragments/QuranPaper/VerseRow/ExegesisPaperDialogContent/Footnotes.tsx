@@ -1,8 +1,8 @@
 import { ExegesisVerseContent } from "@constants/records/ExegesisRecord"
+import { parseInlineMarkers } from "@services/markdown"
 import { useTheme } from "@systatum/coneto/theme"
 import { marked } from "marked"
 import styled from "styled-components"
-import { parseInlineMarkers } from "./inlineMarkers"
 
 export default function Footnotes({
   content,
