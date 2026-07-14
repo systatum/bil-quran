@@ -282,9 +282,8 @@ async function generateRSS() {
       // Per-chapter item
       addItem(
         `${chapterId}. ${chapterArabic} (${chapterName})`,
-        `${SITE_URL}/#/c/${chapterId}/1?locale=${localeCode}`,
+        `${SITE_URL}/#/c/${chapterId}/0?locale=${localeCode}`,
         [
-          exegesis ? `<p>${renderMarkers(exegesis.description)}</p>` : "",
           verseEntries
             .slice(0, 3)
             .map(
@@ -305,7 +304,6 @@ async function generateRSS() {
       // Per-verse items
       for (const [verseId, v] of verseEntries) {
         const verseNumber = Number(verseId.split(":")[1])
-        const verseFootnotes = exegesis?.footnotes[String(verseNumber)]
 
         addItem(
           `${chapterName}:${verseNumber}`,
@@ -314,7 +312,6 @@ async function generateRSS() {
             `${chapterName}:${verseNumber} - ${v.arabic}`,
             v.transliteration,
             v.translation,
-            verseFootnotes ? renderFootnotes(verseFootnotes) : "",
           ]
             .filter(Boolean)
             .join("\n\n"),
