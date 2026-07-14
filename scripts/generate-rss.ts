@@ -317,6 +317,36 @@ async function generateRSS() {
             .join("\n\n"),
         )
       }
+
+      // Exegesis (tafsir) items — separate namespace from the interlinear c/ items
+      if (exegesis) {
+        // chapter-level tafsir overview -> e/{chapter}/0
+        addItem(
+          `${chapterId}. ${chapterArabic} (${chapterName}) — Tafsir`,
+          `${SITE_URL}/#/e/${chapterId}/0?locale=${localeCode}`,
+          `<p>${renderMarkers(exegesis.description)}</p>`,
+        )
+
+        // Per-verse tafsir -> e/{chapter}/{verse}
+        for (const [verseNumberString, translationText] of Object.entries(
+          exegesis.translations,
+        )) {
+          const verseNumber = Number(verseNumberString)
+          const verseFootnotes = exegesis.footnotes[verseNumberString]
+
+          addItem(
+            `${chapterName}:${verseNumber} — Tafsir`,
+            `${SITE_URL}/#/e/${chapterId}/${verseNumber}?locale=${localeCode}`,
+            [
+              `<b>${chapterName}:${verseNumber}</b>`,
+              renderMarkers(translationText, { verseFootnotes }),
+              verseFootnotes ? renderFootnotes(verseFootnotes) : "",
+            ]
+              .filter(Boolean)
+              .join("\n\n"),
+          )
+        }
+      }
     }
 
     await writeFile(outputPath, buildFeed({ localeCode, items }), "utf8")
