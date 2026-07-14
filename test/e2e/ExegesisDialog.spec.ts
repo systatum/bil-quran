@@ -159,14 +159,24 @@ test.describe("ExegesisDialog", () => {
       await expect(verseIndicator).toHaveText("5", { timeout: 3_000 })
     })
 
-    test("prev button is disabled on first verse", async ({ page }) => {
+    test("prev button on first verse navigates to the chapter intro", async ({
+      page,
+    }) => {
       const dialog = await openExegesisDialog(page, "1:1")
       await expect(dialog).toBeVisible({ timeout: 8_000 })
 
       const verseIndicator = dialog.locator('[data-testid="verse-indicator"]')
       await expect(verseIndicator).toHaveText("1", { timeout: 5_000 })
 
-      // prev button must be disabled on verse 1
+      // prev button is enabled on verse 1 — it steps back to the intro (verse 0)
+      await expect(
+        dialog.locator('[data-testid="prev-verse-btn"]'),
+      ).toBeEnabled({ timeout: 5_000 })
+
+      await dialog.locator('[data-testid="prev-verse-btn"]').click()
+      await expect(verseIndicator).toHaveText("Intro", { timeout: 3_000 })
+
+      // prev button is disabled once at the intro
       await expect(
         dialog.locator('[data-testid="prev-verse-btn"]'),
       ).toBeDisabled({ timeout: 5_000 })
@@ -452,6 +462,45 @@ test.describe("ExegesisDialog", () => {
       await expect(
         dialog.getByText("This verse could not be found."),
       ).toBeVisible({ timeout: 8_000 })
+    })
+
+    test("shows the chapter introduction for verse 0", async ({ page }) => {
+      await page.goto("/#/e/1/0")
+      await untilUsable(page)
+
+      const dialog = await getPaperDialog(page)
+      await expect(dialog).toBeVisible({ timeout: 8_000 })
+
+      const verseIndicator = dialog.locator('[data-testid="verse-indicator"]')
+      await expect(verseIndicator).toHaveText("Intro", { timeout: 5_000 })
+
+      // Ali Quli Qara'i's chapter 1 description text
+      await expect(dialog.getByText(/The Opening/i)).toBeVisible({
+        timeout: 8_000,
+      })
+
+      // Prev is disabled at the intro; next steps forward into verse 1
+      await expect(
+        dialog.locator('[data-testid="prev-verse-btn"]'),
+      ).toBeDisabled({ timeout: 5_000 })
+
+      // no interlinear text
+      await expect(dialog.locator(".arabic-lex")).toHaveCount(0)
+
+      // gives content area 100% height (no interlinear pane)
+      const ratio = await dialog.evaluate((dialogEl) => {
+        const outer = dialogEl.firstElementChild as HTMLElement | null
+        const mainContent = outer?.firstElementChild as HTMLElement | null
+        const exegesisArea = mainContent?.children[2] as HTMLElement | null
+        if (!mainContent || !exegesisArea) return null
+
+        const mainH = mainContent.clientHeight
+        const contentH = exegesisArea.clientHeight
+        return mainH > 0 ? contentH / mainH : null
+      })
+      expect(ratio).not.toBeNull()
+      // Allow a small margin for the SplitPane divider's own height
+      expect(ratio!).toBeGreaterThanOrEqual(0.9)
     })
 
     test("allow /e/ revisit to update dialog content", async ({ page }) => {

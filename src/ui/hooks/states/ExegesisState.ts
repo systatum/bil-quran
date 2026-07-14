@@ -132,6 +132,18 @@ async function doDownloadChapter(
     }),
   )
 
+  // Chapter-level introductory discussion/description; 0 is used as sentinel/bait for such data
+  if (data.description) {
+    rows.push({
+      exegesisId,
+      chapterId,
+      verseNumber: 0,
+      translation: data.description,
+      exegesis: null,
+      footnotes: {},
+    })
+  }
+
   if (rows.length > 0) await repo.exegesisContent.createBulk(rows)
 
   saveFingerprints({ merge: true })
@@ -139,7 +151,11 @@ async function doDownloadChapter(
   return Object.fromEntries(
     rows.map((r) => [
       r.verseNumber,
-      { translation: r.translation, exegesis: r.exegesis, footnotes: r.footnotes },
+      {
+        translation: r.translation,
+        exegesis: r.exegesis,
+        footnotes: r.footnotes,
+      },
     ]),
   )
 }
@@ -157,7 +173,9 @@ async function ensureMetadata(exegesisId: string): Promise<void> {
 
   // Check again after the async fetch — a concurrent call may have already
   // inserted this row while we were waiting for about.json.
-  const afterFetch = unpackIPC(await repo.exegesis.findAllBy({ id: exegesisId }))
+  const afterFetch = unpackIPC(
+    await repo.exegesis.findAllBy({ id: exegesisId }),
+  )
   if (afterFetch.length > 0) return
 
   const authors: ExegesisAuthor[] = Object.entries(about.authors).map(

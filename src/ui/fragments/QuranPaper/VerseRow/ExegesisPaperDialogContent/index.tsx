@@ -99,7 +99,14 @@ export default function ExegesisPaperDialogContent({
 
   const hasExegesis = activeIds.length > 0
 
-  if (!isValidVerse(activeChapter, activeVerse)) {
+  // Verse 0 isn't a real verse — it's a sentinel representing the chapter's
+  // introductory discussion, which precedes its verse-by-verse commentary.
+  const isChapterIntro = activeVerse === 0
+  const isValid = isChapterIntro
+    ? chapters?.[activeChapter] != null
+    : isValidVerse(activeChapter, activeVerse)
+
+  if (!isValid) {
     return (
       <Outer>
         <Empty $theme={theme}>
@@ -113,7 +120,9 @@ export default function ExegesisPaperDialogContent({
     <Outer>
       <SplitPane
         orientation="horizontal"
-        initialSizeRatio={hasExegesis ? [0.3, 0.7] : [0.7, 0.3]}
+        initialSizeRatio={
+          isChapterIntro ? [0, 1] : hasExegesis ? [0.3, 0.7] : [0.7, 0.3]
+        }
         styles={{
           self: css`
             padding-left: 1em;
@@ -185,7 +194,7 @@ export default function ExegesisPaperDialogContent({
             `,
           }}
         >
-          {verseWords.length > 0 && (
+          {!isChapterIntro && verseWords.length > 0 && (
             <InterlinearText
               id={`exegesis-${activeChapter}-${activeVerse}`}
               arabicFont={fontArabic}
@@ -215,6 +224,7 @@ export default function ExegesisPaperDialogContent({
                   exegesisId={exegesisId}
                   chapterId={activeChapter}
                   verseNumber={activeVerse}
+                  isChapterIntro={isChapterIntro}
                   theme={theme}
                   onNavigate={setNavTarget}
                 />
@@ -235,13 +245,13 @@ export default function ExegesisPaperDialogContent({
         )}
         <CircleButton
           data-testid="prev-verse-btn"
-          disabled={activeVerse <= 1}
+          disabled={activeVerse <= 0}
           onClick={prevVerse}
         >
           <RiArrowDropLeftFill />
         </CircleButton>
         <VerseIndicator $theme={theme} data-testid="verse-indicator">
-          {activeVerse}
+          {isChapterIntro ? "Intro" : activeVerse}
         </VerseIndicator>
         <CircleButton
           data-testid="next-verse-btn"
@@ -259,12 +269,14 @@ function ExegesisEntry({
   exegesisId,
   chapterId,
   verseNumber,
+  isChapterIntro,
   theme,
   onNavigate,
 }: {
   exegesisId: string
   chapterId: number
   verseNumber: number
+  isChapterIntro: boolean
   theme: string
   onNavigate: (target: NavTarget) => void
 }) {
@@ -297,9 +309,12 @@ function ExegesisEntry({
 
   return (
     <Entry $theme={theme} onClick={handleClick}>
-      <SourceLabel $theme={theme}>{source?.name ?? exegesisId}</SourceLabel>
-      <TranslationText $theme={theme}>
-        <TranslationTextContent
+      <SourceLabel $theme={theme}>
+        {source?.name ?? exegesisId}
+        {isChapterIntro && " — Introduction"}
+      </SourceLabel>
+      {isChapterIntro ? (
+        <VerseText
           $theme={theme}
           $loaded={content != null}
           dangerouslySetInnerHTML={
@@ -314,7 +329,25 @@ function ExegesisEntry({
               : undefined
           }
         />
-      </TranslationText>
+      ) : (
+        <TranslationText $theme={theme}>
+          <TranslationTextContent
+            $theme={theme}
+            $loaded={content != null}
+            dangerouslySetInnerHTML={
+              content
+                ? {
+                    __html: String(
+                      marked(parseInlineMarkers(content.translation), {
+                        breaks: true,
+                      }),
+                    ),
+                  }
+                : undefined
+            }
+          />
+        </TranslationText>
+      )}
       {content?.exegesis && (
         <VerseText
           $theme={theme}

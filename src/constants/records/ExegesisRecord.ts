@@ -23,6 +23,7 @@ export interface ExegesisRecord {
 export interface ExegesisContentRecord {
   exegesisId: string
   chapterId: number
+  /** if verse number 0, it is a sentinel for chapter prelude/description/context */
   verseNumber: number
   translation: string
   /** Tafsir/commentary text, distinct from translation (not all sources have this) */
