@@ -413,6 +413,10 @@ const ExegesisScrollArea = styled.div`
   h4 {
     font-size: 1.6em;
   }
+
+  strong {
+    font-weight: bolder;
+  }
 `
 
 const TraversalColumn = styled.div`
@@ -496,6 +500,33 @@ const VerseText = styled.div<{ $theme: string; $loaded: boolean }>`
   p:last-child {
     margin-bottom: 0;
   }
+  em {
+    color: ${({ $theme }) => ($theme === "dark" ? "#9dc898" : "#3a5f8a")};
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.9em 0;
+    font-size: 0.92em;
+  }
+  th,
+  td {
+    border: 1px solid
+      ${({ $theme }) => ($theme === "dark" ? "#3a3226" : "#e2d6c3")};
+    padding: 6px 10px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    font-weight: 600;
+    background: ${({ $theme }) =>
+      $theme === "dark" ? "rgba(200, 169, 110, 0.12)" : "rgba(138, 96, 48, 0.08)"};
+  }
+  tbody tr:nth-child(even) td {
+    background: ${({ $theme }) =>
+      $theme === "dark" ? "rgba(255, 255, 255, 0.02)" : "rgba(0, 0, 0, 0.015)"};
+  }
 `
 
 const TranslationText = styled.div<{ $theme: string }>`
@@ -505,9 +536,13 @@ const TranslationText = styled.div<{ $theme: string }>`
   border-radius: 8px;
   border-left: 3px solid
     ${({ $theme }) =>
-      $theme === "dark" ? "rgba(200, 169, 110, 0.35)" : "rgba(138, 96, 48, 0.3)"};
+      $theme === "dark"
+        ? "rgba(200, 169, 110, 0.35)"
+        : "rgba(138, 96, 48, 0.3)"};
   background: ${({ $theme }) =>
-    $theme === "dark" ? "rgba(200, 169, 110, 0.05)" : "rgba(138, 96, 48, 0.05)"};
+    $theme === "dark"
+      ? "rgba(200, 169, 110, 0.05)"
+      : "rgba(138, 96, 48, 0.05)"};
 
   &::before {
     content: "\\201C";
