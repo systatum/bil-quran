@@ -193,6 +193,7 @@ export default function ExegesisPaperDialogContent({
               shownTranslations={userSettings.wbwTranslations}
               showMeaning
               compact
+              smaller
             />
           )}
         </SplitPane.Cell>
@@ -297,21 +298,23 @@ function ExegesisEntry({
   return (
     <Entry $theme={theme} onClick={handleClick}>
       <SourceLabel $theme={theme}>{source?.name ?? exegesisId}</SourceLabel>
-      <VerseText
-        $theme={theme}
-        $loaded={content != null}
-        dangerouslySetInnerHTML={
-          content
-            ? {
-                __html: String(
-                  marked(parseInlineMarkers(content.translation), {
-                    breaks: true,
-                  }),
-                ),
-              }
-            : undefined
-        }
-      />
+      <TranslationText $theme={theme}>
+        <TranslationTextContent
+          $theme={theme}
+          $loaded={content != null}
+          dangerouslySetInnerHTML={
+            content
+              ? {
+                  __html: String(
+                    marked(parseInlineMarkers(content.translation), {
+                      breaks: true,
+                    }),
+                  ),
+                }
+              : undefined
+          }
+        />
+      </TranslationText>
       {content?.exegesis && (
         <VerseText
           $theme={theme}
@@ -376,8 +379,8 @@ const VerseIndicator = styled.span<{ $theme: string }>`
 const Entry = styled.div<{ $theme: string }>`
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 12px 0;
+  gap: 16px;
+  padding: 16px 0;
   border-bottom: 1px solid
     ${({ $theme }) => ($theme === "dark" ? "#303030" : "#e2d6c3")};
 
@@ -421,7 +424,7 @@ const SourceLabel = styled.span<{ $theme: string }>`
 
 const VerseText = styled.div<{ $theme: string; $loaded: boolean }>`
   font-size: 0.95em;
-  line-height: 1.7;
+  line-height: 1.8;
   margin: 0;
   color: ${({ $theme, $loaded }) =>
     $loaded
@@ -431,6 +434,65 @@ const VerseText = styled.div<{ $theme: string; $loaded: boolean }>`
       : $theme === "dark"
         ? "#555"
         : "#bbb"};
+
+  p {
+    margin: 0 0 0.9em;
+  }
+  p:last-child {
+    margin-bottom: 0;
+  }
+`
+
+const TranslationText = styled.div<{ $theme: string }>`
+  position: relative;
+  overflow: hidden;
+  padding: 24px 18px 14px 36px;
+  border-radius: 8px;
+  border-left: 3px solid
+    ${({ $theme }) =>
+      $theme === "dark" ? "rgba(200, 169, 110, 0.35)" : "rgba(138, 96, 48, 0.3)"};
+  background: ${({ $theme }) =>
+    $theme === "dark" ? "rgba(200, 169, 110, 0.05)" : "rgba(138, 96, 48, 0.05)"};
+
+  &::before {
+    content: "\\201C";
+    position: absolute;
+    z-index: 0;
+    top: -0.1em;
+    left: 8px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-style: normal;
+    font-size: 6em;
+    line-height: 1;
+    color: ${({ $theme }) =>
+      $theme === "dark"
+        ? "rgba(200, 169, 110, 0.2)"
+        : "rgba(138, 96, 48, 0.16)"};
+    pointer-events: none;
+    user-select: none;
+  }
+`
+
+const TranslationTextContent = styled.div<{ $theme: string; $loaded: boolean }>`
+  position: relative;
+  z-index: 1;
+  font-size: 0.95em;
+  line-height: 1.8;
+  color: ${({ $theme, $loaded }) =>
+    $loaded
+      ? $theme === "dark"
+        ? "#d8c7a3"
+        : "#1f1f1f"
+      : $theme === "dark"
+        ? "#555"
+        : "#bbb"};
+
+  p {
+    margin: 0 0 0.9em;
+  }
+  p:last-child {
+    margin-bottom: 0;
+  }
 `
 
 const Empty = styled.p<{ $theme: string }>`

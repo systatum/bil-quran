@@ -34,6 +34,9 @@ interface InterlinearTextProps {
    */
   compact?: boolean
 
+  /** renders the Arabic text 25% smaller if set to true */
+  smaller?: boolean
+
   /**
    * If undefined, will detect whether the showing is for learning or not
    * based on the font type. Text for learning is displayed with more
@@ -53,6 +56,7 @@ export default function InterlinearText({
   shownTranslations,
   isForLearning,
   compact,
+  smaller = false,
   ...props
 }: InterlinearTextProps) {
   const {
@@ -63,9 +67,12 @@ export default function InterlinearText({
   })
   const isForLearningFont: boolean =
     isForLearning === undefined ? isLearningFont(font.family) : !!isForLearning
+  const effectiveFont: FontSetting = smaller
+    ? { ...font, size: font.size * 0.75 }
+    : font
 
   return (
-    <VerseText $font={font}>
+    <VerseText $font={effectiveFont}>
       {withBasmala && (
         <Word>
           <Bismillah />
