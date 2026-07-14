@@ -312,6 +312,19 @@ function ExegesisEntry({
             : undefined
         }
       />
+      {content?.exegesis && (
+        <VerseText
+          $theme={theme}
+          $loaded
+          dangerouslySetInnerHTML={{
+            __html: String(
+              marked(parseInlineMarkers(content.exegesis), {
+                breaks: true,
+              }),
+            ),
+          }}
+        />
+      )}
       {content && (
         <Footnotes
           content={content}
