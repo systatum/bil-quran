@@ -265,6 +265,50 @@ test.describe("ExegesisDialog", () => {
     })
   })
 
+  test.describe("with an exegesis source that includes commentary", () => {
+    test.beforeEach(async ({ page }) => {
+      await visitFresh(page)
+      await toggleExegesis("Mir Ahmad Ali", page)
+    })
+
+    test("renders both translation and commentary text for a verse", async ({
+      page,
+    }) => {
+      const dialog = await openExegesisDialog(page, "1:1")
+      await expect(dialog).toBeVisible({ timeout: 8_000 })
+
+      // Verse 1:1 translation text
+      await expect(
+        dialog.getByText(/All-beneficent, the All-merciful/i),
+      ).toBeVisible({ timeout: 8_000 })
+
+      // Verse 1:1 commentary text (the `exegesis` field), distinct from translation
+      await expect(
+        dialog.getByText(/wide and comprehending implications/i),
+      ).toBeVisible({ timeout: 8_000 })
+    })
+
+    test("renders the commentary after the translation", async ({ page }) => {
+      const dialog = await openExegesisDialog(page, "1:1")
+      await expect(dialog).toBeVisible({ timeout: 8_000 })
+
+      const translation = dialog
+        .getByText(/All-beneficent, the All-merciful/i)
+        .first()
+      const exegesis = dialog
+        .getByText(/wide and comprehending implications/i)
+        .first()
+      await expect(exegesis).toBeVisible({ timeout: 8_000 })
+
+      const [translationTop, exegesisTop] = await Promise.all([
+        translation.evaluate((el) => el.getBoundingClientRect().top),
+        exegesis.evaluate((el) => el.getBoundingClientRect().top),
+      ])
+
+      expect(exegesisTop).toBeGreaterThan(translationTop)
+    })
+  })
+
   test.describe("on first open", () => {
     test.beforeEach(async ({ page }) => {
       await visitFresh(page)
