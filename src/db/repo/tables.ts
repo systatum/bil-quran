@@ -69,6 +69,8 @@ export const exegesisContent = table(
     chapterId: integer({ mode: "number" }).notNull(),
     verseNumber: integer({ mode: "number" }).notNull(),
     translation: text().notNull(),
+    // tafsir/commentary text, distinct from translation (not all sources have this)
+    exegesis: text(),
     // footnote index → footnote text for this verse
     footnotes: text({ mode: "json" })
       .$type<Record<string, string>>()

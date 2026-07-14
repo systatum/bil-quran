@@ -25,6 +25,8 @@ export interface ExegesisContentRecord {
   chapterId: number
   verseNumber: number
   translation: string
+  /** Tafsir/commentary text, distinct from translation (not all sources have this) */
+  exegesis: string | null
   /** Footnote index → footnote text for this verse */
   footnotes: Record<string, string>
 }
@@ -69,6 +71,8 @@ export interface ExegesisChapterAsset {
 /** Resolved content for a single verse */
 export interface ExegesisVerseContent {
   translation: string
+  /** Tafsir/commentary text, distinct from translation (not all sources have this) */
+  exegesis?: string | null
   /** footnote index → footnote text (only the footnotes for this verse) */
   footnotes: Record<string, string>
 }

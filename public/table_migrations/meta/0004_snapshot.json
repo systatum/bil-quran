@@ -162,6 +162,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "exegesis": {
+          "name": "exegesis",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "footnotes": {
           "name": "footnotes",
           "type": "text",

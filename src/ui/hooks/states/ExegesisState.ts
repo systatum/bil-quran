@@ -127,6 +127,7 @@ async function doDownloadChapter(
       chapterId,
       verseNumber: Number(verseKey),
       translation,
+      exegesis: data.exegesis?.[verseKey] ?? null,
       footnotes: data.footnotes?.[verseKey] ?? {},
     }),
   )
@@ -138,7 +139,7 @@ async function doDownloadChapter(
   return Object.fromEntries(
     rows.map((r) => [
       r.verseNumber,
-      { translation: r.translation, footnotes: r.footnotes },
+      { translation: r.translation, exegesis: r.exegesis, footnotes: r.footnotes },
     ]),
   )
 }
