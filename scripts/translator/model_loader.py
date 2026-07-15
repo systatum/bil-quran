@@ -4,7 +4,7 @@ import huggingface_hub
 from pathlib import Path
 from settings import MODEL_DIR, AVAILABLE_MODELS, TEMP_DIR
 from model_source import ModelSource
-from translator import Model
+from model import Model
 
 def download_model_to_path(source: ModelSource, path: Path):
     os.makedirs(TEMP_DIR, exist_ok=True)

@@ -26,8 +26,8 @@ class PromptSetting:
 
 @dataclass(kw_only=True)
 class Prompt:
-    source_language: str = "english"
-    target_language: str = "indonesian"
+    source_language: str
+    target_language: str
     text: str
 
 
