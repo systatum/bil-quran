@@ -319,6 +319,122 @@ test.describe("ExegesisDialog", () => {
     })
   })
 
+  test.describe("with more than one exegesis source active", () => {
+    test.beforeEach(async ({ page }) => {
+      await visitFresh(page)
+      await toggleExegesis("Ali Quli Qara'i", page)
+      await toggleExegesis("Mir Ahmad Ali", page)
+    })
+
+    test("renders a swipeable carousel with no visible arrow controls", async ({
+      page,
+    }) => {
+      const dialog = await openExegesisDialog(page, "1:1")
+      await expect(dialog).toBeVisible({ timeout: 8_000 })
+
+      const carousel = dialog.getByRole("region", { name: "carousel" })
+      await expect(carousel).toBeVisible({ timeout: 8_000 })
+
+      // Exactly one slide visible at a time
+      await expect(
+        dialog.locator('[aria-roledescription="slide"][aria-hidden="false"]'),
+      ).toHaveCount(1)
+
+      // Arrow controls exist (disabled state etc.) but must not be visible —
+      // no `controller` prop is passed, so they're rendered display:none
+      await expect(
+        dialog.locator('[aria-label="carousel-previous-slide"]'),
+      ).toBeHidden()
+      await expect(
+        dialog.locator('[aria-label="carousel-next-slide"]'),
+      ).toBeHidden()
+    })
+
+    test("swiping changes both the header and the content", async ({
+      page,
+    }) => {
+      const dialog = await openExegesisDialog(page, "1:1")
+      await expect(dialog).toBeVisible({ timeout: 8_000 })
+
+      const carousel = dialog.getByRole("region", { name: "carousel" })
+      await expect(carousel).toBeVisible({ timeout: 8_000 })
+
+      const visibleSlide = () =>
+        dialog.locator('[aria-roledescription="slide"][aria-hidden="false"]')
+
+      const namesBefore = await Promise.all([
+        visibleSlide().getByText("Ali Quli Qara'i").count(),
+        visibleSlide().getByText("Mir Ahmad Ali").count(),
+      ])
+      // Exactly one of the two source names is showing before the swipe
+      expect(namesBefore[0] + namesBefore[1]).toBe(1)
+      const showingAliQuliFirst = namesBefore[0] === 1
+
+      const box = await carousel.boundingBox()
+      expect(box).not.toBeNull()
+      const startX = box!.x + box!.width / 2
+      const startY = box!.y + 20
+
+      // The carousel only reacts to pointer events (not plain mouse events),
+      // so the drag gesture must be dispatched as such directly.
+      await carousel.dispatchEvent("pointerdown", {
+        clientX: startX,
+        clientY: startY,
+        bubbles: true,
+        cancelable: true,
+      })
+      await carousel.dispatchEvent("pointermove", {
+        clientX: startX - 150,
+        clientY: startY,
+        bubbles: true,
+        cancelable: true,
+      })
+      await carousel.dispatchEvent("pointerup", {
+        clientX: startX - 150,
+        clientY: startY,
+        bubbles: true,
+        cancelable: true,
+      })
+      await page.waitForTimeout(500) // carousel slide transition
+
+      const other = showingAliQuliFirst ? "Mir Ahmad Ali" : "Ali Quli Qara'i"
+      await expect(visibleSlide().getByText(other)).toBeVisible({
+        timeout: 3_000,
+      })
+
+      const original = showingAliQuliFirst ? "Ali Quli Qara'i" : "Mir Ahmad Ali"
+      await expect(visibleSlide().getByText(original)).toHaveCount(0)
+    })
+
+    test("long commentary can still be scrolled", async ({ page }) => {
+      // shrink the viewport so the active slide's content overflows
+      await page.setViewportSize({ width: 1024, height: 320 })
+
+      const dialog = await openExegesisDialog(page, "1:1")
+      await expect(dialog).toBeVisible({ timeout: 8_000 })
+
+      const carousel = dialog.getByRole("region", { name: "carousel" })
+      await expect(carousel).toBeVisible({ timeout: 8_000 })
+      await page.waitForTimeout(300)
+
+      const scrolled = await dialog.evaluate((dialogEl) => {
+        const scrollable = Array.from(
+          dialogEl.querySelectorAll<HTMLElement>("*"),
+        ).find(
+          (el) =>
+            window.getComputedStyle(el).overflowY === "auto" &&
+            el.scrollHeight > el.clientHeight,
+        )
+        if (!scrollable) return null
+        scrollable.scrollBy(0, 300)
+        return { scrollTop: scrollable.scrollTop }
+      })
+
+      expect(scrolled).not.toBeNull()
+      expect(scrolled!.scrollTop).toBeGreaterThan(0)
+    })
+  })
+
   test.describe("on first open", () => {
     test.beforeEach(async ({ page }) => {
       await visitFresh(page)
