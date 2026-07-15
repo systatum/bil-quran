@@ -29,7 +29,7 @@ export function useNoteVerseDialog(verseKey: string): ModalDialogConfig {
         <Textarea
           rows={4}
           width="100%"
-          value={note}
+          defaultValue={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder={formatMessage({
             id: messages.dialog.noteVerse.input.placeholder,
