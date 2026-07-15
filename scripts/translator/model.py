@@ -33,7 +33,7 @@ class Prompt:
 
 class Model:
     def __init__(self, model_path: str):
-        self._model = llama_cpp.Llama(model_path=model_path, chat_format="llama-2")
+        self._model = llama_cpp.Llama(model_path=model_path)
 
     def prompt(self, setting: PromptSetting, prompt_object: Prompt) -> str | None:
         result: llama_cpp.CreateChatCompletionResponse = typing.cast(llama_cpp.CreateChatCompletionResponse,
