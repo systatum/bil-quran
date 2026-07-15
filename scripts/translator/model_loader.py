@@ -2,7 +2,7 @@ import os
 import shutil
 import huggingface_hub
 from pathlib import Path
-from settings import MODEL_DIR, AVAILABLE_MODELS, TEMP_DIR
+from settings import MODEL_DIR, TRANSLATION_MODELS, TEMP_DIR
 from model_source import ModelSource
 from model import Model
 
@@ -16,7 +16,7 @@ def load_models() -> dict[str, Model]:
 
     models = {}
 
-    for name, model_source in AVAILABLE_MODELS.items():
+    for name, model_source in TRANSLATION_MODELS.items():
         name_with_extension = name + ".gguf"
 
         if not (MODEL_DIR / name_with_extension).is_file():

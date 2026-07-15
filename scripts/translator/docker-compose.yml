@@ -5,3 +5,6 @@ services:
     build: .
     volumes:
       - ./models:/app/models:rw
+    ports:
+      - "8000:8000"
+    gpus: all
