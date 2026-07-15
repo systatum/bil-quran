@@ -3,7 +3,7 @@ import useUserSettingsState from "@hooks/states/UserSettingsState"
 import useToast from "@hooks/tools/useToast"
 import { messages } from "@i18n/message"
 import { Textarea } from "@systatum/coneto/textarea"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { useIntl } from "react-intl"
 import { css } from "styled-components"
 
@@ -11,13 +11,7 @@ export function useNoteVerseDialog(verseKey: string): ModalDialogConfig {
   const { formatMessage } = useIntl()
   const { userSettings, bookmarkVerse } = useUserSettingsState()
   const { errorToast } = useToast()
-  const [note, setNote] = useState("")
-
-  // recall the existing note on verse change, so re-opening edits instead of starting blank
-  useEffect(() => {
-    setNote(userSettings.bookmarks.list[verseKey]?.note ?? "")
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [verseKey])
+  const [note, setNote] = useState(userSettings.bookmarks.list[verseKey]?.note)
 
   // memoized to avoid an infinite loop in ModalDialog's report-up effect
   return useMemo<ModalDialogConfig>(
@@ -56,6 +50,6 @@ export function useNoteVerseDialog(verseKey: string): ModalDialogConfig {
           )
       },
     }),
-    [formatMessage, note, verseKey, bookmarkVerse],
+    [formatMessage, note, setNote, verseKey, bookmarkVerse],
   )
 }
