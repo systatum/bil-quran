@@ -70,15 +70,20 @@ export function preserveListContinuations(markdown: string): string {
 /**
  * Parses inline markers of the form <{[type, ...args]}> embedded in
  * exegesis translation text (e.g. <{["F", 1]}> for footnote,
- * <{["Q","1:2"]}> for a verse ref).
+ * <{["Q","1:2"]}> for a verse ref, <{["TQ","arabic","translation"]}> for a
+ * quoted Qur'an verse, <{["TH","arabic","translation"]}> for a quoted Hadith).
  *
- * Each marker is converted to an <a class="inline-marker"> element with:
- *   data-marker-type  — the type string ("F", "Q", …)
+ * "F" and "Q" are converted to an <a class="inline-marker"> element with:
+ *   data-marker-type  — the type string ("F", "Q")
  *   data-marker       — the full JSON array, HTML-attribute–encoded
  *
  * The rendered label is type-specific:
  *   "F" → <sup>N</sup>  (footnote superscript)
  *   "Q" → "chapter:verse" plain text (verse reference)
+ *
+ * "TQ"/"TH" are block quotes, not clickable markers: they render as a
+ * <blockquote> holding the Arabic text (RTL) and, when the second arg isn't
+ * null, its translation underneath.
  */
 export function parseInlineMarkers(text: string): string {
   return text.replace(/<\{(\[.*?\])\}>/g, (match, json: string) => {
@@ -90,6 +95,20 @@ export function parseInlineMarkers(text: string): string {
     }
 
     const [type, ...args] = marker as [string, ...unknown[]]
+
+    if (type === "TQ" || type === "TH") {
+      const arabic = escHtml(String(args[0] ?? ""))
+      const translation = args[1] == null ? null : escHtml(String(args[1]))
+      const kind = type === "TQ" ? "quran" : "hadith"
+      return (
+        `<blockquote class="scripture-quote scripture-quote-${kind}">` +
+        `<p class="scripture-arabic" dir="rtl" lang="ar">${arabic}</p>` +
+        (translation
+          ? `<p class="scripture-translation">${translation}</p>`
+          : "") +
+        `</blockquote>`
+      )
+    }
 
     let label: string
     if (type === "F") {
@@ -131,4 +150,11 @@ export function renderExegesisMarkdown(text: string): string {
 
 function encAttr(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;")
+}
+
+function escHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
 }

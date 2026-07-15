@@ -191,6 +191,39 @@ const VerseText = styled.div<{ $theme: string; $loaded: boolean }>`
     background: ${({ $theme }) =>
       $theme === "dark" ? "rgba(255, 255, 255, 0.02)" : "rgba(0, 0, 0, 0.015)"};
   }
+
+  blockquote.scripture-quote {
+    margin: 0.9em 0;
+    padding: 10px 16px;
+    border-radius: 6px;
+    border-left: 3px solid;
+  }
+  blockquote.scripture-quote-quran {
+    border-left-color: ${({ $theme }) =>
+      $theme === "dark" ? "#c8a96e" : "#8a6030"};
+    background: ${({ $theme }) =>
+      $theme === "dark"
+        ? "rgba(200, 169, 110, 0.07)"
+        : "rgba(138, 96, 48, 0.06)"};
+  }
+  blockquote.scripture-quote-hadith {
+    border-left-color: ${({ $theme }) =>
+      $theme === "dark" ? "#7fa87f" : "#4f7a4f"};
+    background: ${({ $theme }) =>
+      $theme === "dark" ? "rgba(127, 168, 127, 0.07)" : "rgba(79, 122, 79, 0.06)"};
+  }
+  blockquote.scripture-quote p.scripture-arabic {
+    font-family: "Times New Roman", serif;
+    font-size: 1.15em;
+    line-height: 2;
+    text-align: right;
+    margin: 0 0 0.4em;
+  }
+  blockquote.scripture-quote p.scripture-translation {
+    font-style: italic;
+    opacity: 0.85;
+    margin: 0;
+  }
 `
 
 const TranslationText = styled.div<{ $theme: string }>`
