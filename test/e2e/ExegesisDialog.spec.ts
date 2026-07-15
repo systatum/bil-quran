@@ -159,14 +159,24 @@ test.describe("ExegesisDialog", () => {
       await expect(verseIndicator).toHaveText("5", { timeout: 3_000 })
     })
 
-    test("prev button is disabled on first verse", async ({ page }) => {
+    test("prev button on first verse navigates to the chapter intro", async ({
+      page,
+    }) => {
       const dialog = await openExegesisDialog(page, "1:1")
       await expect(dialog).toBeVisible({ timeout: 8_000 })
 
       const verseIndicator = dialog.locator('[data-testid="verse-indicator"]')
       await expect(verseIndicator).toHaveText("1", { timeout: 5_000 })
 
-      // prev button must be disabled on verse 1
+      // prev button is enabled on verse 1 — it steps back to the intro (verse 0)
+      await expect(
+        dialog.locator('[data-testid="prev-verse-btn"]'),
+      ).toBeEnabled({ timeout: 5_000 })
+
+      await dialog.locator('[data-testid="prev-verse-btn"]').click()
+      await expect(verseIndicator).toHaveText("Intro", { timeout: 3_000 })
+
+      // prev button is disabled once at the intro
       await expect(
         dialog.locator('[data-testid="prev-verse-btn"]'),
       ).toBeDisabled({ timeout: 5_000 })
@@ -262,6 +272,207 @@ test.describe("ExegesisDialog", () => {
       })
 
       expect(exegesisHeight).toBeGreaterThan(50)
+    })
+
+    test("verse traversal controls remains visible", async ({ page }) => {
+      // shrink the viewport so the exegesis text overflows its scroll area
+      await page.setViewportSize({ width: 1024, height: 320 })
+
+      const dialog = await openExegesisDialog(page, "1:7")
+      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(
+        dialog.getByText(/the path of those whom You have blessed/i),
+      ).toBeVisible({ timeout: 8_000 })
+      // Let async content (interlinear words, footnotes) finish settling
+      await page.waitForTimeout(500)
+
+      const verseIndicator = dialog.locator('[data-testid="verse-indicator"]')
+      await expect(verseIndicator).toBeVisible({ timeout: 5_000 })
+      const boxBefore = await verseIndicator.boundingBox()
+      expect(boxBefore).not.toBeNull()
+
+      // scroll the actual overflowing content region
+      const scrolled = await dialog.evaluate((dialogEl) => {
+        const scrollable = Array.from(
+          dialogEl.querySelectorAll<HTMLElement>("*"),
+        ).find(
+          (el) =>
+            window.getComputedStyle(el).overflowY === "auto" &&
+            el.scrollHeight > el.clientHeight,
+        )
+        if (!scrollable) return false
+        scrollable.scrollBy(0, 300)
+        return true
+      })
+      expect(scrolled).toBe(true)
+      await page.waitForTimeout(200)
+
+      await expect(verseIndicator).toBeVisible({ timeout: 5_000 })
+      const boxAfter = await verseIndicator.boundingBox()
+      expect(boxAfter).not.toBeNull()
+
+      // Its position within the viewport must not have shifted with the scroll
+      expect(Math.abs(boxAfter!.y - boxBefore!.y)).toBeLessThan(5)
+    })
+  })
+
+  test.describe("with an exegesis source that includes commentary", () => {
+    test.beforeEach(async ({ page }) => {
+      await visitFresh(page)
+      await toggleExegesis("Mir Ahmad Ali", page)
+    })
+
+    test("renders both translation and commentary text for a verse", async ({
+      page,
+    }) => {
+      const dialog = await openExegesisDialog(page, "1:1")
+      await expect(dialog).toBeVisible({ timeout: 8_000 })
+
+      // Verse 1:1 translation text
+      await expect(
+        dialog.getByText(/All-beneficent, the All-merciful/i),
+      ).toBeVisible({ timeout: 8_000 })
+
+      // Verse 1:1 commentary text (the `exegesis` field), distinct from translation
+      await expect(
+        dialog.getByText(/wide and comprehending implications/i),
+      ).toBeVisible({ timeout: 8_000 })
+    })
+
+    test("renders the commentary after the translation", async ({ page }) => {
+      const dialog = await openExegesisDialog(page, "1:1")
+      await expect(dialog).toBeVisible({ timeout: 8_000 })
+
+      const translation = dialog
+        .getByText(/All-beneficent, the All-merciful/i)
+        .first()
+      const exegesis = dialog
+        .getByText(/wide and comprehending implications/i)
+        .first()
+      await expect(exegesis).toBeVisible({ timeout: 8_000 })
+
+      const [translationTop, exegesisTop] = await Promise.all([
+        translation.evaluate((el) => el.getBoundingClientRect().top),
+        exegesis.evaluate((el) => el.getBoundingClientRect().top),
+      ])
+
+      expect(exegesisTop).toBeGreaterThan(translationTop)
+    })
+  })
+
+  test.describe("with more than one exegesis source active", () => {
+    test.beforeEach(async ({ page }) => {
+      await visitFresh(page)
+      await toggleExegesis("Ali Quli Qara'i", page)
+      await toggleExegesis("Mir Ahmad Ali", page)
+    })
+
+    test("renders a swipeable carousel with no visible arrow controls", async ({
+      page,
+    }) => {
+      const dialog = await openExegesisDialog(page, "1:1")
+      await expect(dialog).toBeVisible({ timeout: 8_000 })
+
+      const carousel = dialog.getByRole("region", { name: "carousel" })
+      await expect(carousel).toBeVisible({ timeout: 8_000 })
+
+      // Exactly one slide visible at a time
+      await expect(
+        dialog.locator('[aria-roledescription="slide"][aria-hidden="false"]'),
+      ).toHaveCount(1)
+
+      // Arrow controls exist (disabled state etc.) but must not be visible —
+      // no `controller` prop is passed, so they're rendered display:none
+      await expect(
+        dialog.locator('[aria-label="carousel-previous-slide"]'),
+      ).toBeHidden()
+      await expect(
+        dialog.locator('[aria-label="carousel-next-slide"]'),
+      ).toBeHidden()
+    })
+
+    test("swiping changes both the header and the content", async ({
+      page,
+    }) => {
+      const dialog = await openExegesisDialog(page, "1:1")
+      await expect(dialog).toBeVisible({ timeout: 8_000 })
+
+      const carousel = dialog.getByRole("region", { name: "carousel" })
+      await expect(carousel).toBeVisible({ timeout: 8_000 })
+
+      const visibleSlide = () =>
+        dialog.locator('[aria-roledescription="slide"][aria-hidden="false"]')
+
+      const namesBefore = await Promise.all([
+        visibleSlide().getByText("Ali Quli Qara'i").count(),
+        visibleSlide().getByText("Mir Ahmad Ali").count(),
+      ])
+      // Exactly one of the two source names is showing before the swipe
+      expect(namesBefore[0] + namesBefore[1]).toBe(1)
+      const showingAliQuliFirst = namesBefore[0] === 1
+
+      const box = await carousel.boundingBox()
+      expect(box).not.toBeNull()
+      const startX = box!.x + box!.width / 2
+      const startY = box!.y + 20
+
+      // The carousel only reacts to pointer events (not plain mouse events),
+      // so the drag gesture must be dispatched as such directly.
+      await carousel.dispatchEvent("pointerdown", {
+        clientX: startX,
+        clientY: startY,
+        bubbles: true,
+        cancelable: true,
+      })
+      await carousel.dispatchEvent("pointermove", {
+        clientX: startX - 150,
+        clientY: startY,
+        bubbles: true,
+        cancelable: true,
+      })
+      await carousel.dispatchEvent("pointerup", {
+        clientX: startX - 150,
+        clientY: startY,
+        bubbles: true,
+        cancelable: true,
+      })
+      await page.waitForTimeout(500) // carousel slide transition
+
+      const other = showingAliQuliFirst ? "Mir Ahmad Ali" : "Ali Quli Qara'i"
+      await expect(visibleSlide().getByText(other)).toBeVisible({
+        timeout: 3_000,
+      })
+
+      const original = showingAliQuliFirst ? "Ali Quli Qara'i" : "Mir Ahmad Ali"
+      await expect(visibleSlide().getByText(original)).toHaveCount(0)
+    })
+
+    test("long commentary can still be scrolled", async ({ page }) => {
+      // shrink the viewport so the active slide's content overflows
+      await page.setViewportSize({ width: 1024, height: 320 })
+
+      const dialog = await openExegesisDialog(page, "1:1")
+      await expect(dialog).toBeVisible({ timeout: 8_000 })
+
+      const carousel = dialog.getByRole("region", { name: "carousel" })
+      await expect(carousel).toBeVisible({ timeout: 8_000 })
+      await page.waitForTimeout(300)
+
+      const scrolled = await dialog.evaluate((dialogEl) => {
+        const scrollable = Array.from(
+          dialogEl.querySelectorAll<HTMLElement>("*"),
+        ).find(
+          (el) =>
+            window.getComputedStyle(el).overflowY === "auto" &&
+            el.scrollHeight > el.clientHeight,
+        )
+        if (!scrollable) return null
+        scrollable.scrollBy(0, 300)
+        return { scrollTop: scrollable.scrollTop }
+      })
+
+      expect(scrolled).not.toBeNull()
+      expect(scrolled!.scrollTop).toBeGreaterThan(0)
     })
   })
 
@@ -408,6 +619,45 @@ test.describe("ExegesisDialog", () => {
       await expect(
         dialog.getByText("This verse could not be found."),
       ).toBeVisible({ timeout: 8_000 })
+    })
+
+    test("shows the chapter introduction for verse 0", async ({ page }) => {
+      await page.goto("/#/e/1/0")
+      await untilUsable(page)
+
+      const dialog = await getPaperDialog(page)
+      await expect(dialog).toBeVisible({ timeout: 8_000 })
+
+      const verseIndicator = dialog.locator('[data-testid="verse-indicator"]')
+      await expect(verseIndicator).toHaveText("Intro", { timeout: 5_000 })
+
+      // Ali Quli Qara'i's chapter 1 description text
+      await expect(dialog.getByText(/The Opening/i)).toBeVisible({
+        timeout: 8_000,
+      })
+
+      // Prev is disabled at the intro; next steps forward into verse 1
+      await expect(
+        dialog.locator('[data-testid="prev-verse-btn"]'),
+      ).toBeDisabled({ timeout: 5_000 })
+
+      // no interlinear text
+      await expect(dialog.locator(".arabic-lex")).toHaveCount(0)
+
+      // gives content area 100% height (no interlinear pane)
+      const ratio = await dialog.evaluate((dialogEl) => {
+        const outer = dialogEl.firstElementChild as HTMLElement | null
+        const mainContent = outer?.firstElementChild as HTMLElement | null
+        const exegesisArea = mainContent?.children[2] as HTMLElement | null
+        if (!mainContent || !exegesisArea) return null
+
+        const mainH = mainContent.clientHeight
+        const contentH = exegesisArea.clientHeight
+        return mainH > 0 ? contentH / mainH : null
+      })
+      expect(ratio).not.toBeNull()
+      // Allow a small margin for the SplitPane divider's own height
+      expect(ratio!).toBeGreaterThanOrEqual(0.9)
     })
 
     test("allow /e/ revisit to update dialog content", async ({ page }) => {

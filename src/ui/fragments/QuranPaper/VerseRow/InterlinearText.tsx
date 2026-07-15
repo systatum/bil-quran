@@ -34,6 +34,9 @@ interface InterlinearTextProps {
    */
   compact?: boolean
 
+  /** renders the Arabic text 25% smaller if set to true */
+  smaller?: boolean
+
   /**
    * If undefined, will detect whether the showing is for learning or not
    * based on the font type. Text for learning is displayed with more
@@ -53,6 +56,7 @@ export default function InterlinearText({
   shownTranslations,
   isForLearning,
   compact,
+  smaller = false,
   ...props
 }: InterlinearTextProps) {
   const {
@@ -63,9 +67,12 @@ export default function InterlinearText({
   })
   const isForLearningFont: boolean =
     isForLearning === undefined ? isLearningFont(font.family) : !!isForLearning
+  const effectiveFont: FontSetting = smaller
+    ? { ...font, size: font.size * 0.75 }
+    : font
 
   return (
-    <VerseText $font={font}>
+    <VerseText $font={effectiveFont}>
       {withBasmala && (
         <Word>
           <Bismillah />
@@ -75,7 +82,7 @@ export default function InterlinearText({
           )}
 
           {showMeaning && (
-            <Meanings>
+            <Meanings $smaller={smaller}>
               <Meaning $theme={theme} $marginTop="57px">
                 In the name of Allah, the Most Gracious, the Most Merciful
               </Meaning>
@@ -114,7 +121,7 @@ export default function InterlinearText({
           )}
 
           {showMeaning && (
-            <Meanings>
+            <Meanings $smaller={smaller}>
               {shownTranslations?.map((t, layer) => (
                 <Meaning
                   key={t}
@@ -177,7 +184,7 @@ const Transliteration = styled.span`
   text-align: center;
 `
 
-const Meaning = styled.div<{
+const Meaning = styled.div.attrs({ className: "meaning" })<{
   $theme: ThemeMode
   $minHeight?: number
   $marginTop?: string
@@ -187,7 +194,8 @@ const Meaning = styled.div<{
   display: block;
   color: ${({ $theme }) => ($theme === "dark" ? "#bebebe" : "#a09083")};
   font-family: "${"NotoNaskhArabic" satisfies ArabicFontFamily}", serif;
-  margin-top: ${({ $marginTop }) => $marginTop ?? "8px"};
+  ${({ $marginTop }) =>
+    $marginTop ? `margin-top: ${$marginTop} !important` : ""};
   direction: ltr;
   text-align: center;
   max-width: 120px;
@@ -197,7 +205,11 @@ const Meaning = styled.div<{
   overflow-wrap: anywhere;
 `
 
-const Meanings = styled.span`
+const Meanings = styled.span<{ $smaller: boolean }>`
   line-height: 16px;
-  margin-top: 3px;
+  margin-top: ${({ $smaller }) => ($smaller ? "0px" : "3px")};
+
+  .meaning {
+    margin-top: ${({ $smaller }) => ($smaller ? "5px" : "8px")};
+  }
 `

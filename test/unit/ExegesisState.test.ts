@@ -163,7 +163,19 @@ describe("getShortDesc", () => {
   })
 
   it("returns empty string when no DB record exists", async () => {
+    // No record ever appears (even after ensureMetadata's create attempt),
+    // so about.json still needs a valid shape for ensureMetadata to parse
+    // without throwing before getShortDesc falls through to "".
     mockFindAllBy.mockResolvedValue({ succeed: true, data: [] } as any)
+    mockReadJson.mockResolvedValue({
+      name: "Tafsir AliQuli",
+      thought: "shia-jafari",
+      authors: {},
+      locNames: {},
+      about: {},
+      source: "https://example.com",
+    } as any)
+
     const { result } = renderHook(() => useExegesisState())
     await expect(
       result.current.getShortDesc(EXEGESIS_ID, EN as any),
@@ -301,7 +313,11 @@ describe("loadChapter", () => {
       })
       expect(
         result.current.getVerseExegesis(EXEGESIS_ID, CHAPTER_ID, VERSE),
-      ).toEqual({ translation: "In the name of God", footnotes: {} })
+      ).toEqual({
+        translation: "In the name of God",
+        exegesis: null,
+        footnotes: {},
+      })
     })
   })
 
@@ -357,7 +373,11 @@ describe("loadChapter", () => {
       })
       expect(
         result.current.getVerseExegesis(EXEGESIS_ID, CHAPTER_ID, VERSE),
-      ).toEqual({ translation: "In the name of God", footnotes: {} })
+      ).toEqual({
+        translation: "In the name of God",
+        exegesis: null,
+        footnotes: {},
+      })
     })
   })
 })

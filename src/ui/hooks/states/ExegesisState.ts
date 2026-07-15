@@ -1,10 +1,12 @@
 import { Asset } from "@constants/assets"
 import {
+  ExegesisAuthor,
   ExegesisChapterAsset,
   ExegesisMetadata,
   ExegesisVerseContent,
 } from "@constants/records/ExegesisRecord"
 import { Locale } from "@constants/settings"
+import { ThoughtSchool } from "@constants/ThoughtSchool"
 import { repo } from "@db/repo"
 import { unpackIPC } from "@services/Converter"
 import {
@@ -125,9 +127,22 @@ async function doDownloadChapter(
       chapterId,
       verseNumber: Number(verseKey),
       translation,
+      exegesis: data.exegesis?.[verseKey] ?? null,
       footnotes: data.footnotes?.[verseKey] ?? {},
     }),
   )
+
+  // Chapter-level introductory discussion/description; 0 is used as sentinel/bait for such data
+  if (data.description) {
+    rows.push({
+      exegesisId,
+      chapterId,
+      verseNumber: 0,
+      translation: data.description,
+      exegesis: null,
+      footnotes: {},
+    })
+  }
 
   if (rows.length > 0) await repo.exegesisContent.createBulk(rows)
 
@@ -136,7 +151,11 @@ async function doDownloadChapter(
   return Object.fromEntries(
     rows.map((r) => [
       r.verseNumber,
-      { translation: r.translation, footnotes: r.footnotes },
+      {
+        translation: r.translation,
+        exegesis: r.exegesis,
+        footnotes: r.footnotes,
+      },
     ]),
   )
 }
@@ -154,16 +173,23 @@ async function ensureMetadata(exegesisId: string): Promise<void> {
 
   // Check again after the async fetch — a concurrent call may have already
   // inserted this row while we were waiting for about.json.
-  const afterFetch = unpackIPC(await repo.exegesis.findAllBy({ id: exegesisId }))
+  const afterFetch = unpackIPC(
+    await repo.exegesis.findAllBy({ id: exegesisId }),
+  )
   if (afterFetch.length > 0) return
+
+  const authors: ExegesisAuthor[] = Object.entries(about.authors).map(
+    ([name, { bio }]) => ({ name, bio }),
+  )
 
   await repo.exegesis.create({
     id: exegesisId,
     oriName: about.name,
     locNames: pickLocalized(about.locNames ?? {}, (v) => v),
     description: pickLocalized(about.about ?? {}, (v) => v.shortDesc),
-    author: about.author,
-    authorBio: pickLocalized(about.about ?? {}, (v) => v.author),
+    authors,
+    thoughtSchool: ThoughtSchool.fromNameString(about.thought),
+    source: about.source,
     downloadedChapters: [],
   })
 
