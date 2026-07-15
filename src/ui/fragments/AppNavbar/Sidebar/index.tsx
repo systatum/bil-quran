@@ -51,7 +51,7 @@ export default function Sidebar({
         />
       </div>
 
-      <div>
+      <ContentArea id="user-settings-content-area" $height={contentHeight}>
         {contentType === ContentType.Settings && (
           <>
             <UserSettingsForm
@@ -73,7 +73,7 @@ export default function Sidebar({
         {contentType === ContentType.Bookmarks && (
           <BookmarkList height={contentHeight} />
         )}
-      </div>
+      </ContentArea>
     </SidebarContainer>
   )
 }
@@ -105,6 +105,19 @@ const SidebarContainer = styled.aside<{
   @media (min-width: 370px) and (max-width: 700px) {
     width: 60vw;
     max-width: 350px;
+  }
+`
+
+const ContentArea = styled.div<{ $height: number }>`
+  height: ${({ $height }) => $height}px;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  /* allow vertical scrolling but hide scrollbar */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
   }
 `
 
