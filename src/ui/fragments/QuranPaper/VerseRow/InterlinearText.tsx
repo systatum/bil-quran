@@ -83,7 +83,7 @@ export default function InterlinearText({
 
           {showMeaning && (
             <Meanings $smaller={smaller}>
-              <Meaning $theme={theme} $marginTop="57px">
+              <Meaning $theme={theme} style={{ marginTop: "57px" }}>
                 In the name of Allah, the Most Gracious, the Most Merciful
               </Meaning>
             </Meanings>
@@ -187,15 +187,12 @@ const Transliteration = styled.span`
 const Meaning = styled.div.attrs({ className: "meaning" })<{
   $theme: ThemeMode
   $minHeight?: number
-  $marginTop?: string
 }>`
   min-height: ${({ $minHeight }) => ($minHeight ? `${$minHeight}px` : "auto")};
   font-size: 14px;
   display: block;
   color: ${({ $theme }) => ($theme === "dark" ? "#bebebe" : "#a09083")};
   font-family: "${"NotoNaskhArabic" satisfies ArabicFontFamily}", serif;
-  ${({ $marginTop }) =>
-    $marginTop ? `margin-top: ${$marginTop} !important` : ""};
   direction: ltr;
   text-align: center;
   max-width: 120px;
