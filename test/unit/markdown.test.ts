@@ -114,31 +114,19 @@ describe("renderExegesisMarkdown", () => {
 })
 
 describe("parseInlineMarkers", () => {
-  it("renders a TQ marker as a blockquote with Arabic and translation", () => {
-    const html = parseInlineMarkers('<{["TQ", "بِسْمِ اللَّهِ", "In the name of Allah"]}>')
+  it("renders an RT marker as an RTL blockquote with just the Arabic text", () => {
+    const html = parseInlineMarkers('<{["RT", "بِسْمِ اللَّهِ"]}>')
 
     expect(html).toBe(
-      '<blockquote class="scripture-quote scripture-quote-quran">' +
+      '<blockquote class="scripture-quote">' +
         '<p class="scripture-arabic" dir="rtl" lang="ar">بِسْمِ اللَّهِ</p>' +
-        '<p class="scripture-translation">In the name of Allah</p>' +
         "</blockquote>",
     )
   })
 
-  it("renders a TH marker without a translation when the second arg is null", () => {
-    const html = parseInlineMarkers('<{["TH", "قَالَ رَسُولُ اللَّهِ", null]}>')
-
-    expect(html).toBe(
-      '<blockquote class="scripture-quote scripture-quote-hadith">' +
-        '<p class="scripture-arabic" dir="rtl" lang="ar">قَالَ رَسُولُ اللَّهِ</p>' +
-        "</blockquote>",
-    )
-  })
-
-  it("escapes HTML-significant characters inside TQ/TH text", () => {
-    const html = parseInlineMarkers('<{["TQ", "A < B & C", "X > Y & Z"]}>')
+  it("escapes HTML-significant characters inside RT text", () => {
+    const html = parseInlineMarkers('<{["RT", "A < B & C"]}>')
 
     expect(html).toContain("A &lt; B &amp; C")
-    expect(html).toContain("X &gt; Y &amp; Z")
   })
 })

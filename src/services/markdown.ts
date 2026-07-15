@@ -69,9 +69,20 @@ export function preserveListContinuations(markdown: string): string {
 
 /**
  * Parses inline markers of the form <{[type, ...args]}> embedded in
- * exegesis translation text (e.g. <{["F", 1]}> for footnote,
- * <{["Q","1:2"]}> for a verse ref, <{["TQ","arabic","translation"]}> for a
- * quoted Qur'an verse, <{["TH","arabic","translation"]}> for a quoted Hadith).
+ * exegesis translation text:
+ *   <{["F", 1]}>          — footnote
+ *   <{["Q", "1:2"]}>      — verse ref
+ *   <{["RT", "arabic"]}>  — a chunk of right-to-left (Arabic) text quoted
+ *                           within the commentary — a Qur'an verse, a
+ *                           Hadith, or anything else in Arabic. No attempt
+ *                           is made to classify which, or to pair it with a
+ *                           translation: reliably telling a Qur'an quote
+ *                           from a Hadith quote, or extracting a gloss that
+ *                           genuinely translates just that quote, turned out
+ *                           not to be mechanically tractable from this
+ *                           source's structure. It renders as its own RTL
+ *                           block; any translation/paraphrase the source
+ *                           gives stays as ordinary surrounding prose.
  *
  * "F" and "Q" are converted to an <a class="inline-marker"> element with:
  *   data-marker-type  — the type string ("F", "Q")
@@ -80,10 +91,6 @@ export function preserveListContinuations(markdown: string): string {
  * The rendered label is type-specific:
  *   "F" → <sup>N</sup>  (footnote superscript)
  *   "Q" → "chapter:verse" plain text (verse reference)
- *
- * "TQ"/"TH" are block quotes, not clickable markers: they render as a
- * <blockquote> holding the Arabic text (RTL) and, when the second arg isn't
- * null, its translation underneath.
  */
 export function parseInlineMarkers(text: string): string {
   return text.replace(/<\{(\[.*?\])\}>/g, (match, json: string) => {
@@ -96,16 +103,11 @@ export function parseInlineMarkers(text: string): string {
 
     const [type, ...args] = marker as [string, ...unknown[]]
 
-    if (type === "TQ" || type === "TH") {
+    if (type === "RT") {
       const arabic = escHtml(String(args[0] ?? ""))
-      const translation = args[1] == null ? null : escHtml(String(args[1]))
-      const kind = type === "TQ" ? "quran" : "hadith"
       return (
-        `<blockquote class="scripture-quote scripture-quote-${kind}">` +
+        `<blockquote class="scripture-quote">` +
         `<p class="scripture-arabic" dir="rtl" lang="ar">${arabic}</p>` +
-        (translation
-          ? `<p class="scripture-translation">${translation}</p>`
-          : "") +
         `</blockquote>`
       )
     }

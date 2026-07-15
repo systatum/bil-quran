@@ -1,0 +1,43 @@
+{
+  "name": "Tafsir Ibn Kathir",
+  "thought": "sunni-salafi",
+  "authors": {
+    "Ibn Kathir": {
+      "bio": {
+        "en-US": "Isma'il ibn 'Umar ibn Kathir (c. 1300-1373) was a Sunni scholar of Hadith, history, and Qur'anic exegesis, born near Busra in Syria and based for most of his life in Damascus. A student of Ibn Taymiyyah and a Shafi'i jurist, he combined deep expertise in Hadith criticism with historical scholarship, authoring the multi-volume history Al-Bidayah wa an-Nihayah alongside his renowned Qur'an commentary, Tafsir al-Qur'an al-'Azim.",
+        "id-ID": "Isma'il bin 'Umar bin Katsir (sekitar 1300-1373) adalah seorang ulama Sunni ahli hadis, sejarah, dan tafsir Al-Qur'an yang lahir di dekat Bushra, Suriah, dan menghabiskan sebagian besar hidupnya di Damaskus. Sebagai murid Ibnu Taimiyah dan seorang fakih bermazhab Syafi'i, ia memadukan keahlian mendalam dalam kritik hadis dengan kajian sejarah, menulis karya sejarah multi-jilid Al-Bidayah wa an-Nihayah selain tafsirnya yang terkenal, Tafsir Al-Qur'an Al-'Azhim."
+      }
+    },
+    "Saheeh International": {
+      "bio": {
+        "en-US": "Saheeh International is the collective name for a team of English-speaking translators, led by Umm Muhammad (Aminah Assami), who produced this widely circulated English translation of the Qur'an, first published in 1997 by Abul-Qasim Publishing House in Jeddah, Saudi Arabia. Known for its precise, modern English idiom and its own explanatory footnotes, it has become one of the most widely distributed English Qur'an translations, especially among Salafi-oriented institutions.",
+        "id-ID": "Saheeh International adalah nama kolektif untuk tim penerjemah berbahasa Inggris, dipimpin oleh Umm Muhammad (Aminah Assami), yang menghasilkan terjemahan Al-Qur'an berbahasa Inggris ini, pertama kali diterbitkan pada tahun 1997 oleh Abul-Qasim Publishing House di Jeddah, Arab Saudi. Dikenal karena bahasa Inggrisnya yang tepat dan modern serta catatan kaki penjelasnya sendiri, terjemahan ini telah menjadi salah satu terjemahan Al-Qur'an berbahasa Inggris yang paling banyak beredar, terutama di kalangan lembaga yang berorientasi Salafi."
+      }
+    }
+  },
+  "locNames": {
+    "en-US": "Tafsir Ibn Kathir",
+    "id-ID": "Tafsir Ibnu Katsir"
+  },
+  "about": {
+    "en-US": {
+      "shortDesc": "One of the most widely read Sunni tafsirs, pairing the Saheeh International translation with excerpts from Ibn Kathir's classical commentary, prized for grounding each verse in the Qur'an, authentic Hadith, and the earliest generations of Muslim scholarship.",
+      "detailDesc": [
+        "Tafsir Ibn Kathir pairs the Saheeh International translation with commentary excerpts from Tafsir al-Qur'an al-'Azim, a classical Sunni commentary built on tafsir bi-l-ma'thur: explaining the Qur'an primarily through the Qur'an's own cross-references, Hadith attributed to the Prophet, and the reports of the Sahaba and the generations that followed them, rather than personal opinion or philosophical speculation.",
+        "What distinguishes it from many earlier tafsirs in this same tradition is how it handles its sources. Multiple narrations are gathered and compared for a given verse, often noting where a report is weak or disputed rather than presenting every tradition as equally reliable, and it is widely noted for being more cautious than much of the earlier exegetical literature about repeating Isra'iliyyat, narrations absorbed from Jewish and Christian sources that earlier commentators often passed on without comment.",
+        "Alongside its use of narrations, the tafsir also draws in linguistic notes, the occasions of revelation (asbab al-nuzul) behind many verses, and points of jurisprudence and theology, all within the framework of Sunni orthodoxy. This combination of breadth and source-critical care has made it one of the most widely read and taught Sunni tafsirs, commonly used in Islamic seminaries and recommended as a starting point for readers who want an exegesis grounded in transmitted evidence rather than speculative reasoning.",
+        "Its clear verse-by-verse structure makes it approachable for general readers, while the range of narrations, cross-references, and juristic discussion it gathers still rewards closer study by more advanced students, provided readers follow up on the authenticity of individual Hadith where a point of law or belief depends on it."
+      ]
+    },
+    "id-ID": {
+      "shortDesc": "Salah satu tafsir Al-Qur'an Sunni yang paling banyak dibaca, memadukan terjemahan Saheeh International dengan kutipan tafsir klasik karya Ibnu Katsir, yang dikenal karena berlandaskan erat pada Al-Qur'an, hadis sahih, dan generasi awal keilmuan Islam.",
+      "detailDesc": [
+        "Tafsir Ibnu Katsir memadukan terjemahan Saheeh International dengan kutipan tafsir dari Tafsir Al-Qur'an Al-'Azhim, sebuah tafsir Sunni klasik yang dibangun di atas metode tafsir bil-ma'tsur: menjelaskan Al-Qur'an terutama melalui rujukan silang Al-Qur'an itu sendiri, hadis yang dinisbatkan kepada Nabi, serta riwayat dari para Sahabat dan generasi setelah mereka, bukan pendapat pribadi atau spekulasi filosofis.",
+        "Yang membedakannya dari banyak tafsir bil-ma'tsur sebelumnya adalah cara ia memperlakukan sumber-sumbernya. Berbagai riwayat dikumpulkan dan dibandingkan untuk suatu ayat, sering kali dengan mencatat bila suatu riwayat lemah atau diperselisihkan, alih-alih memperlakukan semua riwayat sebagai sama kuatnya, dan tafsir ini dikenal luas lebih berhati-hati dibanding sebagian besar literatur tafsir sebelumnya dalam mengulang kisah Isra'iliyyat, yaitu riwayat yang diserap dari sumber Yahudi dan Kristen yang sering diteruskan oleh mufasir terdahulu tanpa catatan kritis.",
+        "Selain memanfaatkan riwayat, tafsir ini juga memuat catatan kebahasaan, sebab-sebab turunnya ayat (asbabun nuzul), serta poin-poin fikih dan akidah, semuanya dalam kerangka Sunni. Perpaduan antara keluasan cakupan dan kehati-hatian dalam menyaring sumber inilah yang menjadikannya salah satu tafsir Sunni yang paling banyak dibaca dan diajarkan, umum digunakan di pesantren dan lembaga keilmuan Islam, serta kerap direkomendasikan sebagai titik awal bagi pembaca yang menginginkan tafsir yang berpijak pada bukti yang diriwayatkan, bukan penalaran spekulatif.",
+        "Strukturnya yang jelas dan disusun ayat demi ayat membuatnya mudah diakses oleh pembaca umum, sementara keluasan riwayat, rujukan silang, dan pembahasan fikih yang dihimpunnya tetap bernilai bagi kajian yang lebih mendalam oleh pelajar tingkat lanjut, asalkan pembaca turut menelusuri keabsahan masing-masing hadis ketika suatu persoalan hukum atau akidah bergantung padanya."
+      ]
+    }
+  },
+  "source": "Qur'an Universal Library (QUL)"
+}
