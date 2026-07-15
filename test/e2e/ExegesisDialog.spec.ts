@@ -273,6 +273,47 @@ test.describe("ExegesisDialog", () => {
 
       expect(exegesisHeight).toBeGreaterThan(50)
     })
+
+    test("verse traversal controls remains visible", async ({ page }) => {
+      // shrink the viewport so the exegesis text overflows its scroll area
+      await page.setViewportSize({ width: 1024, height: 320 })
+
+      const dialog = await openExegesisDialog(page, "1:7")
+      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(
+        dialog.getByText(/the path of those whom You have blessed/i),
+      ).toBeVisible({ timeout: 8_000 })
+      // Let async content (interlinear words, footnotes) finish settling
+      await page.waitForTimeout(500)
+
+      const verseIndicator = dialog.locator('[data-testid="verse-indicator"]')
+      await expect(verseIndicator).toBeVisible({ timeout: 5_000 })
+      const boxBefore = await verseIndicator.boundingBox()
+      expect(boxBefore).not.toBeNull()
+
+      // scroll the actual overflowing content region
+      const scrolled = await dialog.evaluate((dialogEl) => {
+        const scrollable = Array.from(
+          dialogEl.querySelectorAll<HTMLElement>("*"),
+        ).find(
+          (el) =>
+            window.getComputedStyle(el).overflowY === "auto" &&
+            el.scrollHeight > el.clientHeight,
+        )
+        if (!scrollable) return false
+        scrollable.scrollBy(0, 300)
+        return true
+      })
+      expect(scrolled).toBe(true)
+      await page.waitForTimeout(200)
+
+      await expect(verseIndicator).toBeVisible({ timeout: 5_000 })
+      const boxAfter = await verseIndicator.boundingBox()
+      expect(boxAfter).not.toBeNull()
+
+      // Its position within the viewport must not have shifted with the scroll
+      expect(Math.abs(boxAfter!.y - boxBefore!.y)).toBeLessThan(5)
+    })
   })
 
   test.describe("with an exegesis source that includes commentary", () => {

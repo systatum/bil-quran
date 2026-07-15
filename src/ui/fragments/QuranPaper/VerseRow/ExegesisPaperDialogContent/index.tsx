@@ -340,6 +340,13 @@ const TraversalColumn = styled.div`
   gap: 6px;
   padding: 8px 10px;
   flex-shrink: 0;
+  /* Stays pinned to the top of whichever ancestor ends up scrolling (the
+     SplitPane cells scroll internally, but very long content can still push
+     the outer paper-dialog wrapper itself into scrolling) so the verse
+     traversal controls never scroll out of view. */
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
 `
 
 const VerseIndicator = styled.span<{ $theme: string }>`
