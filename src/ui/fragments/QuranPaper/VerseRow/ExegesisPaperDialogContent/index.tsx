@@ -216,7 +216,7 @@ export default function ExegesisPaperDialogContent({
           }}
         >
           {hasExegesis ? (
-            <ExegesisScrollArea>
+            <ExegesisScrollArea $theme={theme}>
               {activeIds.length > 1 ? (
                 <Carousel
                   exegesisIds={activeIds}
@@ -285,7 +285,7 @@ const Outer = styled.div`
   overflow: visible;
 `
 
-const ExegesisScrollArea = styled.div`
+const ExegesisScrollArea = styled.div<{ $theme: string }>`
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -317,6 +317,13 @@ const ExegesisScrollArea = styled.div`
   }
   h4 {
     font-size: 1.6em;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    color: ${({ $theme }) => ($theme === "dark" ? "#ccae6c" : "inherit")};
   }
 
   strong {

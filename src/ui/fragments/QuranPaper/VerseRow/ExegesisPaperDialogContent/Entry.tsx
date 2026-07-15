@@ -150,7 +150,7 @@ const VerseText = styled.div<{ $theme: string; $loaded: boolean }>`
   color: ${({ $theme, $loaded }) =>
     $loaded
       ? $theme === "dark"
-        ? "#d8c7a3"
+        ? "#ece0c8"
         : "#1f1f1f"
       : $theme === "dark"
         ? "#555"
@@ -163,7 +163,7 @@ const VerseText = styled.div<{ $theme: string; $loaded: boolean }>`
     margin-bottom: 0;
   }
   em {
-    color: ${({ $theme }) => ($theme === "dark" ? "#9dc898" : "#3a5f8a")};
+    color: ${({ $theme }) => ($theme === "dark" ? "#ccae6c" : "#3a5f8a")};
   }
 
   table {
