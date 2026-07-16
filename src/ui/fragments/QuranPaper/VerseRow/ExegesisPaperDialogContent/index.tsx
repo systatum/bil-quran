@@ -8,11 +8,12 @@ import {
   RiArrowDropLeftFill,
   RiArrowDropRightFill,
   RiArrowGoBackLine,
+  RiSkipUpLine,
 } from "@remixicon/react"
 import LOGGER from "@services/Logger"
 import { SplitPane } from "@systatum/coneto/split-pane"
 import { useTheme } from "@systatum/coneto/theme"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useIntl } from "react-intl"
 import styled, { css } from "styled-components"
 import CircleButton from "../../CircleButton"
@@ -31,8 +32,12 @@ export default function ExegesisPaperDialogContent({
 }) {
   const { mode: theme } = useTheme()
   const { formatMessage } = useIntl()
-  const { userSettings, setExegesis, setHasSeenExegesisDialog } =
-    useUserSettingsState()
+  const {
+    userSettings,
+    setExegesis,
+    setHasSeenExegesisDialog,
+    setScrollPosition,
+  } = useUserSettingsState()
   const { loadChapter } = useExegesisState()
   const { chapters, isValidVerse } = useChaptersState()
 
@@ -87,13 +92,32 @@ export default function ExegesisPaperDialogContent({
 
   const fontArabic = userSettings.font.arabic
 
+  const persistScrollPosition = (chapter: number, verse: number) => {
+    if (verse === 0) return // the "Intro" sentinel for chapter prelude/context
+    setScrollPosition(chapter, verse)
+  }
+
   const prevVerse = () => {
-    if (navTarget) setNavTarget((t) => t && { ...t, verse: t.verse - 1 })
-    else setCurrentVerse((v) => v - 1)
+    if (navTarget) {
+      const verse = navTarget.verse - 1
+      setNavTarget((t) => t && { ...t, verse })
+      persistScrollPosition(navTarget.chapterId, verse)
+    } else {
+      const verse = currentVerse - 1
+      setCurrentVerse(verse)
+      persistScrollPosition(activeChapter, verse)
+    }
   }
   const nextVerse = () => {
-    if (navTarget) setNavTarget((t) => t && { ...t, verse: t.verse + 1 })
-    else setCurrentVerse((v) => v + 1)
+    if (navTarget) {
+      const verse = navTarget.verse + 1
+      setNavTarget((t) => t && { ...t, verse })
+      persistScrollPosition(navTarget.chapterId, verse)
+    } else {
+      const verse = currentVerse + 1
+      setCurrentVerse(verse)
+      persistScrollPosition(activeChapter, verse)
+    }
   }
 
   const hasExegesis = activeIds.length > 0

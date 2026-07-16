@@ -182,6 +182,48 @@ test.describe("ExegesisDialog", () => {
       ).toBeDisabled({ timeout: 5_000 })
     })
 
+    test("prev/next traversal persists verse position", async ({ page }) => {
+      const dialog = await openExegesisDialog(page, "1:4")
+      await expect(dialog).toBeVisible({ timeout: 8_000 })
+
+      const verseIndicator = dialog.locator('[data-testid="verse-indicator"]')
+      await hasText("4", verseIndicator, { timeout: 5_000 })
+
+      await dialog.locator('[data-testid="next-verse-btn"]').click()
+      await hasText("5", verseIndicator, { timeout: 3_000 })
+
+      const savedScroll = await page.evaluate(() => {
+        const raw = localStorage.getItem("userSettings")
+        return raw ? JSON.parse(raw).lastScroll : null
+      })
+      expect(savedScroll).toEqual({ chapterId: 1, verse: 5 })
+    })
+
+    test("does not persist verse 0 for scroll position", async ({ page }) => {
+      const dialog = await openExegesisDialog(page, "1:1")
+      await expect(dialog).toBeVisible({ timeout: 8_000 })
+
+      const verseIndicator = dialog.locator('[data-testid="verse-indicator"]')
+      await hasText("1", verseIndicator, { timeout: 5_000 })
+
+      // Stepping into verse 1 itself should have persisted normally
+      const savedBefore = await page.evaluate(() => {
+        const raw = localStorage.getItem("userSettings")
+        return raw ? JSON.parse(raw).lastScroll : null
+      })
+
+      await dialog.locator('[data-testid="prev-verse-btn"]').click()
+      await hasText("Intro", verseIndicator, { timeout: 3_000 })
+
+      // Verse 0 ("Intro") isn't a real verse — the persisted scroll position
+      // must not change when navigating into it.
+      const savedAfter = await page.evaluate(() => {
+        const raw = localStorage.getItem("userSettings")
+        return raw ? JSON.parse(raw).lastScroll : null
+      })
+      expect(savedAfter).toEqual(savedBefore)
+    })
+
     test("next button is disabled on last verse of chapter", async ({
       page,
     }) => {

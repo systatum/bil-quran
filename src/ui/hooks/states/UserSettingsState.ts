@@ -79,6 +79,9 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
       userSettings: hydrated,
     })
 
+    // normalize localStorage to the current schema immediately
+    get().persistState()
+
     return hydrated
   },
 
