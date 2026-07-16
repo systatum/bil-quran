@@ -16,6 +16,7 @@ export default function ExegesisCarousel({
   isChapterIntro,
   theme,
   onNavigate,
+  onFootnoteClick,
 }: {
   exegesisIds: string[]
   chapterId: number
@@ -23,6 +24,7 @@ export default function ExegesisCarousel({
   isChapterIntro: boolean
   theme: string
   onNavigate: (target: NavTarget) => void
+  onFootnoteClick?: () => void
 }) {
   const [page, setPage] = useState(0)
 
@@ -56,6 +58,7 @@ export default function ExegesisCarousel({
           isChapterIntro={isChapterIntro}
           theme={theme}
           onNavigate={onNavigate}
+          onFootnoteClick={onFootnoteClick}
         />
       ))}
     </Coneto.Carousel>

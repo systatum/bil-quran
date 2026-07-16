@@ -1,8 +1,12 @@
 import { expect, test } from "@playwright/test"
 import {
+  clickOn,
   closePaperDialog,
   closeSidebar,
   getPaperDialog,
+  hasElement,
+  hasNoElement,
+  hasText,
   openExegesisDialog,
   openSidebar,
   selectComboBox,
@@ -87,6 +91,51 @@ test.describe("ExegesisDialog", () => {
       // The target footnote item should be present and visible
       const footnoteItem = dialog.locator("li").first()
       await expect(footnoteItem).toBeVisible({ timeout: 4_000 })
+    })
+
+    test.describe("footnote return button", () => {
+      test("shown upon clicking a footnote", async ({ page }) => {
+        const dialog = await openExegesisDialog(page, "1:7")
+        await expect(dialog).toBeVisible({ timeout: 8_000 })
+
+        await hasNoElement(undefined, dialog, {
+          ariaLabel: "footnote-return-btn",
+        })
+
+        // Footnote content loads asynchronously, same as elsewhere in this file
+        await clickOn(undefined, dialog, {
+          className: "marker-type-f",
+          timeout: 8_000,
+        })
+
+        const returnBtnLoc = {
+          ariaLabel: "footnote-return-btn",
+        }
+        const returnBtn = await hasElement(undefined, dialog, returnBtnLoc)
+        await returnBtn.click()
+        await hasNoElement(undefined, dialog, returnBtnLoc)
+      })
+
+      test("hidden after navigating to another verse", async ({ page }) => {
+        const dialog = await openExegesisDialog(page, "1:7")
+        await expect(dialog).toBeVisible({ timeout: 8_000 })
+
+        await clickOn(undefined, dialog, {
+          className: "marker-type-f",
+          timeout: 8_000,
+        })
+
+        await hasElement(undefined, dialog, {
+          ariaLabel: "footnote-return-btn",
+        })
+
+        // Verse 7 is the last verse of chapter 1 — next is disabled there, so
+        // use prev instead to exercise "navigating to another verse".
+        await dialog.locator('[data-testid="prev-verse-btn"]').click()
+        await hasNoElement(undefined, dialog, {
+          ariaLabel: "footnote-return-btn",
+        })
+      })
     })
 
     test("clicking a Q-marker changes the verse indicator", async ({

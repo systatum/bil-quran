@@ -54,6 +54,11 @@ export default function ExegesisPaperDialogContent({
 
   const [currentVerse, setCurrentVerse] = useState(verseNumber)
   const [navTarget, setNavTarget] = useState<NavTarget | null>(null)
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
+  // Scroll position to return to after a footnote jump
+  const [footnoteReturnScrollTop, setFootnoteReturnScrollTop] = useState<
+    number | null
+  >(null)
 
   useEffect(() => {
     setCurrentVerse(verseNumber)
@@ -62,6 +67,26 @@ export default function ExegesisPaperDialogContent({
 
   const activeChapter = navTarget?.chapterId ?? chapterId
   const activeVerse = navTarget?.verse ?? currentVerse
+
+  // Any change of verse/chapter — via prev/next or Q-marker navigation —
+  // invalidates the footnote-jump memory; the content it pointed into is
+  // gone.
+  useEffect(() => {
+    setFootnoteReturnScrollTop(null)
+  }, [activeChapter, activeVerse])
+
+  const handleFootnoteClick = () => {
+    if (footnoteReturnScrollTop != null) return
+    setFootnoteReturnScrollTop(scrollAreaRef.current?.scrollTop ?? 0)
+  }
+
+  const returnFromFootnote = () => {
+    scrollAreaRef.current?.scrollTo({
+      top: footnoteReturnScrollTop ?? 0,
+      behavior: "smooth",
+    })
+    setFootnoteReturnScrollTop(null)
+  }
 
   const activeIds = userSettings.exegesis
 
@@ -240,7 +265,7 @@ export default function ExegesisPaperDialogContent({
           }}
         >
           {hasExegesis ? (
-            <ExegesisScrollArea $theme={theme}>
+            <ExegesisScrollArea $theme={theme} ref={scrollAreaRef}>
               {activeIds.length > 1 ? (
                 <Carousel
                   exegesisIds={activeIds}
@@ -249,6 +274,7 @@ export default function ExegesisPaperDialogContent({
                   isChapterIntro={isChapterIntro}
                   theme={theme}
                   onNavigate={setNavTarget}
+                  onFootnoteClick={handleFootnoteClick}
                 />
               ) : (
                 <Entry
@@ -258,6 +284,7 @@ export default function ExegesisPaperDialogContent({
                   isChapterIntro={isChapterIntro}
                   theme={theme}
                   onNavigate={setNavTarget}
+                  onFootnoteClick={handleFootnoteClick}
                 />
               )}
             </ExegesisScrollArea>
@@ -291,6 +318,15 @@ export default function ExegesisPaperDialogContent({
         >
           <RiArrowDropRightFill />
         </CircleButton>
+        {footnoteReturnScrollTop != null && (
+          <CircleButton
+            data-testid="footnote-return-btn"
+            aria-label="footnote-return-btn"
+            onClick={returnFromFootnote}
+          >
+            <RiSkipUpLine size={18} />
+          </CircleButton>
+        )}
       </TraversalColumn>
     </Outer>
   )

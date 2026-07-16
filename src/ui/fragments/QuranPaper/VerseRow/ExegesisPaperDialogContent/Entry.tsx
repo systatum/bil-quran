@@ -13,6 +13,7 @@ export default function Entry({
   isChapterIntro,
   theme,
   onNavigate,
+  onFootnoteClick,
 }: {
   exegesisId: string
   chapterId: number
@@ -20,6 +21,7 @@ export default function Entry({
   isChapterIntro: boolean
   theme: string
   onNavigate: (target: NavTarget) => void
+  onFootnoteClick?: () => void
 }) {
   const { getVerseExegesis } = useExegesisState()
   const source = Asset.exegesisOf(exegesisId)
@@ -39,6 +41,7 @@ export default function Entry({
       clearTimeout(timerRef.current)
       setHighlightedFn(fn)
       timerRef.current = setTimeout(() => setHighlightedFn(null), 2000)
+      onFootnoteClick?.()
       document
         .getElementById(`fn-${exegesisId}-${fn}`)
         ?.scrollIntoView({ behavior: "smooth", block: "nearest" })
