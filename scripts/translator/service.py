@@ -41,6 +41,7 @@ class JobResult(Generic[V]):
 
     def __post_init__(self):
         assert self._value is None or self._error_message is None
+        assert self._value is not None or self._error_message is not None
         assert self._status == "ok" or self._status == "err"
 
     def is_ok(self) -> bool:

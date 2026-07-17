@@ -1,18 +1,56 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from translation import TranslateJob, Prompt, PromptSetting, TranslationService, TranslateJobResult
-from rating import RateJob, RateJobResult, RatingService
+from translation import TranslateJob, Prompt, PromptSetting, TranslationService
+from rating import RateJob, RatingService
 from dataclasses import dataclass
+from service import JobResult, Job
 import dataclasses
 import uuid
 import threading
 from time import sleep
 import settings
 
+class JobBoard:
+    _jobs: dict[uuid.UUID, Job]
+    _results: dict[uuid.UUID, JobResult]
+    _lock: threading.Lock
+
+    def __init__(self):
+        self._jobs = {}
+        self._results = {}
+        self._lock = threading.Lock()
+
+    def queue(self, job: Job):
+        if isinstance(job, TranslateJob):
+            appstate.get().translation_service.queue_job(job)
+        elif isinstance(job, RateJob):
+            appstate.get().rating_service.queue_job(job)
+        else:
+            raise AssertionError("Unknown job type: {}".format(type(job)))
+
+        with self._lock:
+            self._jobs[job.job_id] = job
+
+    def collect(self):
+        with self._lock:
+            self._results.update({result.job.job_id: result for result in appstate.get().translation_service.retrieve_results()})
+            self._results.update({result.job.job_id: result for result in appstate.get().rating_service.retrieve_results()})
+
+    def get_result(self, job_id: uuid.UUID) -> JobResult | None:
+        self.collect()
+        with self._lock:
+            return self._results.get(job_id)
+
+    def get_result_blocking(self, job_id: uuid.UUID) -> JobResult:
+        while (result := self.get_result(job_id)) is None:
+            sleep(0.5)
+        return result
+
 @dataclass(kw_only=True)
 class GlobalData:
     translation_service: TranslationService
     rating_service: RatingService
+    job_board: JobBoard
 
 @dataclass(kw_only=True)
 class Appstate:
@@ -29,14 +67,16 @@ class Appstate:
         return self.global_data
 
 appstate: Appstate = Appstate()
-finished_tl_jobs: dict[uuid.UUID, TranslateJobResult] = {}
-finished_tl_jobs_lock: threading.Lock = threading.Lock()
-finished_rate_jobs: dict[uuid.UUID, RateJobResult] = {}
-finished_rate_jobs_lock: threading.Lock = threading.Lock()
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    appstate.load(GlobalData(translation_service=TranslationService(), rating_service=RatingService()))
+    appstate.load(
+        GlobalData(
+            translation_service = TranslationService(),
+            rating_service = RatingService(),
+            job_board = JobBoard()
+        )
+    )
     appstate.get().translation_service.start()
     appstate.get().rating_service.start()
     yield
@@ -44,42 +84,6 @@ async def lifespan(_: FastAPI):
     appstate.get().translation_service.stop()
 
 app = FastAPI(lifespan=lifespan)
-
-def collect_tl_results():
-    with finished_tl_jobs_lock:
-        finished_tl_jobs.update({result.job.job_id: result for result in appstate.get().translation_service.retrieve_results()})
-
-def get_tl_result(job_id: uuid.UUID) -> TranslateJobResult | None:
-    collect_tl_results()
-    with finished_tl_jobs_lock:
-        return finished_tl_jobs.get(job_id)
-
-def get_tl_result_blocking(job_id: uuid.UUID) -> TranslateJobResult:
-    while (result := get_tl_result(job_id)) is None:
-        sleep(0.5)
-    return result
-
-def collect_rate_results():
-    with finished_rate_jobs_lock:
-        finished_rate_jobs.update({result.job.job_id: result for result in appstate.get().rating_service.retrieve_results()})
-
-def get_rate_result(job_id: uuid.UUID) -> RateJobResult | None:
-    collect_rate_results()
-    with finished_rate_jobs_lock:
-        return finished_rate_jobs.get(job_id)
-
-def get_rate_result_blocking(job_id: uuid.UUID) -> RateJobResult:
-    while (result := get_rate_result(job_id)) is None:
-        sleep(0.5)
-    return result
-
-@app.get("/test")
-def test():
-    job = TranslateJob(model="qwen2.5-1.5b", setting=PromptSetting(), prompt=Prompt(text="Who's that over there?", source_language="English", target_language="Indonesian"))
-    appstate.get().translation_service.queue_job(job)
-
-    result = get_tl_result_blocking(job.job_id)
-    return result
 
 @app.get("/models")
 def get_models():
@@ -94,9 +98,9 @@ class TranslateAPIRequest:
 @app.post("/translate")
 def translate(request: TranslateAPIRequest):
     job = TranslateJob(model=request.model, setting=request.setting, prompt=request.prompt)
-    appstate.get().translation_service.queue_job(job)
+    appstate.get().job_board.queue(job)
 
-    result = get_tl_result_blocking(job.job_id)
+    result = appstate.get().job_board.get_result_blocking(job.job_id)
     return result
 
 @dataclass(kw_only=True)
@@ -107,7 +111,7 @@ class RateAPIRequest:
 @app.post("/rate")
 def rate(request: RateAPIRequest):
     job = RateJob(source=request.source, translation=request.translation)
-    appstate.get().rating_service.queue_job(job)
+    appstate.get().job_board.queue(job)
 
-    result = get_rate_result_blocking(job.job_id)
+    result = appstate.get().job_board.get_result_blocking(job.job_id)
     return result
