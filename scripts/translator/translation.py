@@ -9,12 +9,12 @@ from typing import TypeAlias
 Translation: TypeAlias = str
 
 @dataclass(kw_only=True)
-class TranslationJob(Job[Translation]):
+class TranslateJob(Job[Translation]):
     prompt: Prompt
     setting: PromptSetting
     model: str
 
-TranslationJobResult: TypeAlias = JobResult[Translation]
+TranslateJobResult: TypeAlias = JobResult[Translation]
 
 class TranslationService(Service[Translation]):
     _models: dict[str, Model]
@@ -24,7 +24,7 @@ class TranslationService(Service[Translation]):
         self._models = load_models()
 
     def _run_job(self, job: Job[Translation]) -> JobResult[Translation]:
-        assert isinstance(job, TranslationJob)
+        assert isinstance(job, TranslateJob)
 
         try:
             model = self._models[job.model]

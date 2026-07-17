@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from translation import TranslationJob, Prompt, PromptSetting, TranslationService, TranslationJobResult
+from translation import TranslateJob, Prompt, PromptSetting, TranslationService, TranslateJobResult
 from rating import RateJob, RateJobResult, RatingService
 from dataclasses import dataclass
 import dataclasses
@@ -29,7 +29,7 @@ class Appstate:
         return self.global_data
 
 appstate: Appstate = Appstate()
-finished_tl_jobs: dict[uuid.UUID, TranslationJobResult] = {}
+finished_tl_jobs: dict[uuid.UUID, TranslateJobResult] = {}
 finished_tl_jobs_lock: threading.Lock = threading.Lock()
 finished_rate_jobs: dict[uuid.UUID, RateJobResult] = {}
 finished_rate_jobs_lock: threading.Lock = threading.Lock()
@@ -49,12 +49,12 @@ def collect_tl_results():
     with finished_tl_jobs_lock:
         finished_tl_jobs.update({result.job.job_id: result for result in appstate.get().translation_service.retrieve_results()})
 
-def get_tl_result(job_id: uuid.UUID) -> TranslationJobResult | None:
+def get_tl_result(job_id: uuid.UUID) -> TranslateJobResult | None:
     collect_tl_results()
     with finished_tl_jobs_lock:
         return finished_tl_jobs.get(job_id)
 
-def get_tl_result_blocking(job_id: uuid.UUID) -> TranslationJobResult:
+def get_tl_result_blocking(job_id: uuid.UUID) -> TranslateJobResult:
     while (result := get_tl_result(job_id)) is None:
         sleep(0.5)
     return result
@@ -75,7 +75,7 @@ def get_rate_result_blocking(job_id: uuid.UUID) -> RateJobResult:
 
 @app.get("/test")
 def test():
-    job = TranslationJob(model="qwen2.5-1.5b", setting=PromptSetting(), prompt=Prompt(text="Who's that over there?", source_language="English", target_language="Indonesian"))
+    job = TranslateJob(model="qwen2.5-1.5b", setting=PromptSetting(), prompt=Prompt(text="Who's that over there?", source_language="English", target_language="Indonesian"))
     appstate.get().translation_service.queue_job(job)
 
     result = get_tl_result_blocking(job.job_id)
@@ -93,7 +93,7 @@ class TranslateAPIRequest:
 
 @app.post("/translate")
 def translate(request: TranslateAPIRequest):
-    job = TranslationJob(model=request.model, setting=request.setting, prompt=request.prompt)
+    job = TranslateJob(model=request.model, setting=request.setting, prompt=request.prompt)
     appstate.get().translation_service.queue_job(job)
 
     result = get_tl_result_blocking(job.job_id)
