@@ -210,6 +210,18 @@ const VerseText = styled.div<{ $theme: string; $loaded: boolean }>`
     text-align: right;
     margin: 0;
   }
+  blockquote.scripture-quote hr.scripture-divider {
+    border: none;
+    border-top: 1px solid
+      ${({ $theme }) =>
+        $theme === "dark" ? "rgba(200, 169, 110, 0.25)" : "rgba(138, 96, 48, 0.2)"};
+    margin: 0.6em 0;
+  }
+  blockquote.scripture-quote p.scripture-meaning {
+    font-style: italic;
+    opacity: 0.85;
+    margin: 0;
+  }
 `
 
 const TranslationText = styled.div<{ $theme: string }>`
