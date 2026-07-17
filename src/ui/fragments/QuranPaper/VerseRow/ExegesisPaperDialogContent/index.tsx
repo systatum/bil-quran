@@ -17,6 +17,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { useIntl } from "react-intl"
 import styled, { css } from "styled-components"
 import CircleButton from "../../CircleButton"
+import VerseBookmarker from "../../VerseBookmarker"
 import InterlinearText from "../InterlinearText"
 import Carousel from "./Carousel"
 import Entry from "./Entry"
@@ -296,11 +297,6 @@ export default function ExegesisPaperDialogContent({
         </SplitPane.Cell>
       </SplitPane>
       <TraversalColumn>
-        {navTarget && (
-          <CircleButton onClick={() => setNavTarget(null)}>
-            <RiArrowGoBackLine size={18} />
-          </CircleButton>
-        )}
         <CircleButton
           data-testid="prev-verse-btn"
           disabled={activeVerse <= 0}
@@ -318,6 +314,18 @@ export default function ExegesisPaperDialogContent({
         >
           <RiArrowDropRightFill />
         </CircleButton>
+        {navTarget && (
+          <CircleButton
+            data-testid="nav-back-btn"
+            aria-label="nav-back-btn"
+            onClick={() => setNavTarget(null)}
+          >
+            <RiArrowGoBackLine size={18} />
+          </CircleButton>
+        )}
+        {!isChapterIntro && (
+          <VerseBookmarker chapterId={activeChapter} verseNumber={activeVerse} />
+        )}
         {footnoteReturnScrollTop != null && (
           <CircleButton
             data-testid="footnote-return-btn"
