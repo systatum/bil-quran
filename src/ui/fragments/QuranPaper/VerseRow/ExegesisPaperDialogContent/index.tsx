@@ -19,16 +19,17 @@ import CircleButton from "../../CircleButton"
 import InterlinearText from "../InterlinearText"
 import Carousel from "./Carousel"
 import Entry from "./Entry"
+import usePaperDialogState, {
+  ExegesisDialogContentProp,
+} from "@hooks/states/PaperDialogState"
 
 export type NavTarget = { chapterId: number; verse: number }
 
-export default function ExegesisPaperDialogContent({
-  chapterId,
-  verseNumber,
-}: {
-  chapterId: number
-  verseNumber: number
-}) {
+export default function ExegesisPaperDialogContent() {
+  const exegesisContent = usePaperDialogState.getState()
+    ?.content as ExegesisDialogContentProp
+  const { chapterId, verseNumber } = exegesisContent
+
   const { mode: theme } = useTheme()
   const { formatMessage } = useIntl()
   const { userSettings, setExegesis, setHasSeenExegesisDialog } =
