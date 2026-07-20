@@ -7,7 +7,7 @@ import { useIntl } from "react-intl"
 import styled, { css, CSSProp } from "styled-components"
 import Title from "./Title"
 import { ScreenProps } from "@systatum/coneto/screen-transition"
-import { Screen } from "./index"
+import { Screen } from "@ui/index"
 import { StatefulForm } from "@systatum/coneto/stateful-form"
 import {
   RiDownload2Line,

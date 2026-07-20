@@ -1,7 +1,7 @@
 import styled, { css, CSSProp } from "styled-components"
 import Title from "@ui/fragments/AppNavbar/Sidebar/Title"
 import { ScreenProps } from "@systatum/coneto/screen-transition"
-import { Screen } from "@ui/fragments/AppNavbar/Sidebar"
+import { Screen } from "@ui/index"
 import { Textarea } from "@systatum/coneto/textarea"
 import { useIntl } from "react-intl"
 import { messages } from "@i18n/message"
