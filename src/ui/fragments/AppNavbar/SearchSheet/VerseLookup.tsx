@@ -125,7 +125,7 @@ export default function VerseLookup({ onChange }: VerseLookupProps) {
   }, [chapters, locale, alphabeticalChaptersSorting])
 
   return (
-    <FlexContainer direction="column">
+    <FlexContainer $direction="column">
       <Combobox
         clearable
         mobile

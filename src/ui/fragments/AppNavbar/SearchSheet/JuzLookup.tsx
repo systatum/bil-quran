@@ -139,7 +139,7 @@ export default function JuzLookup({ onChange }: JuzLookupProps) {
   }, [locale, pgAbbrev, juzPages, getChapterTransliteratedName, isSmallScreen])
 
   return (
-    <FlexContainer direction="column">
+    <FlexContainer $direction="column">
       <Combobox
         clearable
         mobile
