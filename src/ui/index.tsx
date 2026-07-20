@@ -6,10 +6,44 @@ import AppNavbar from "./fragments/AppNavbar"
 import QuranPaper from "./fragments/QuranPaper"
 import usePaperDialogState from "./hooks/states/PaperDialogState"
 import useUserSettingsState from "./hooks/states/UserSettingsState"
+import {
+  ScreenEntry,
+  ScreenTransition,
+} from "@systatum/coneto/screen-transition"
+import { Export } from "./fragments/AppNavbar/Sidebar/Export"
+import { Import } from "./fragments/AppNavbar/Sidebar/Import"
+import useAppState from "@hooks/states/AppState"
+import { LexemeDetailPaperDialog } from "./fragments/QuranPaper/VerseRow/LexemeDetailPaperDialog"
+import { css } from "styled-components"
+import ExegesisPaperDialogContent from "./fragments/QuranPaper/VerseRow/ExegesisPaperDialogContent"
 
 interface UIIndexProps {
   /** When true, opens the exegesis paper dialog for the routed verse on mount. */
   openExegesisOnMount?: boolean
+}
+
+export const Screen = {
+  Exegesis: "exegesis",
+  Lexeme: "lexeme",
+  Export: "export",
+  Import: "import",
+} as const
+
+export type Screen = (typeof Screen)[keyof typeof Screen]
+
+const SCREENS: Record<Screen, ScreenEntry> = {
+  [Screen.Exegesis]: {
+    component: ExegesisPaperDialogContent,
+    sheet: true,
+    height: "55dvh",
+  },
+  [Screen.Lexeme]: {
+    component: LexemeDetailPaperDialog,
+    sheet: true,
+    height: "55dvh",
+  },
+  [Screen.Export]: { component: Export, width: "350px" },
+  [Screen.Import]: { component: Import, width: "350px" },
 }
 
 export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
@@ -18,6 +52,7 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
   const {
     userSettings: { theme, locale },
   } = useUserSettingsState()
+  const { activeScreens, setActiveScreens } = useAppState()
 
   const { loadPagination } = usePaginationState()
   useEffect(() => {
@@ -76,6 +111,19 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
         }}
         chapterId={chapterId}
         verseNumber={verseNumber}
+      />
+
+      <ScreenTransition
+        screens={SCREENS}
+        activeScreens={activeScreens}
+        onScreenChange={(activeScreens) =>
+          setActiveScreens(activeScreens as Screen[])
+        }
+        styles={{
+          contentStyle: css`
+            padding: 0px;
+          `,
+        }}
       />
     </>
   )
