@@ -42,8 +42,8 @@ const SCREENS: Record<Screen, ScreenEntry> = {
     sheet: true,
     height: "55dvh",
   },
-  [Screen.Export]: { component: Export, width: "350px" },
-  [Screen.Import]: { component: Import, width: "350px" },
+  [Screen.Export]: { component: Export, width: "350px", closable: true },
+  [Screen.Import]: { component: Import, width: "350px", closable: true },
 }
 
 export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
@@ -94,6 +94,8 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
     chapterId,
     verseNumber,
   )
+
+  console.log(activeScreens)
 
   const isImportOrExport =
     activeScreens.at(-1) === Screen.Export ||
