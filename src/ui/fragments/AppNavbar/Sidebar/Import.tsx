@@ -1,4 +1,3 @@
-import React from "react"
 import styled, { css, CSSProp } from "styled-components"
 import Title from "@ui/fragments/AppNavbar/Sidebar/Title"
 import { ScreenProps } from "@systatum/coneto/screen-transition"
@@ -6,9 +5,14 @@ import { Screen } from "@ui/fragments/AppNavbar/Sidebar"
 import { Textarea } from "@systatum/coneto/textarea"
 import { useIntl } from "react-intl"
 import { messages } from "@i18n/message"
+import { ThemeMode } from "@constants/theme"
+import useUserSettingsState from "@hooks/states/UserSettingsState"
 
 export function Import({ goBack }: Partial<ScreenProps<Screen>>) {
   const { formatMessage } = useIntl()
+  const {
+    userSettings: { theme },
+  } = useUserSettingsState()
 
   return (
     <>
@@ -20,7 +24,7 @@ export function Import({ goBack }: Partial<ScreenProps<Screen>>) {
         }}
       />
 
-      <Wrapper>
+      <Wrapper $theme={theme}>
         <Textarea
           rows={6}
           width="100%"
@@ -29,6 +33,9 @@ export function Import({ goBack }: Partial<ScreenProps<Screen>>) {
             id: messages.backup.import.description,
           })}
           styles={{
+            containerStyle: css`
+              height: fit-content;
+            `,
             self: css`
               font-size: 0.8em;
             `,
@@ -39,9 +46,11 @@ export function Import({ goBack }: Partial<ScreenProps<Screen>>) {
   )
 }
 
-const Wrapper = styled.div<{ $style?: CSSProp }>`
+const Wrapper = styled.div<{ $style?: CSSProp; $theme?: ThemeMode }>`
   display: flex;
   flex-direction: column;
   gap: 2px;
   padding: 20px;
+  background: ${({ $theme }) => ($theme === "dark" ? "#202b24" : "#e1dfda")};
+  height: 100%;
 `
