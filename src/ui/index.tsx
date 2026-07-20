@@ -95,6 +95,10 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
     verseNumber,
   )
 
+  const isImportOrExport =
+    activeScreens.at(-1) === Screen.Export ||
+    activeScreens.at(-1) === Screen.Import
+
   return (
     <>
       <AppNavbar theme={theme} title={navbarTitle} />
@@ -110,12 +114,23 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
       <ScreenTransition
         screens={SCREENS}
         activeScreens={activeScreens}
-        onScreenChange={(activeScreens) =>
+        onScreenChange={(activeScreens) => {
           setActiveScreens(activeScreens as Screen[])
-        }
+        }}
         styles={{
           indicatorStyle: css`
             height: 40px;
+          `,
+          containerStyle: css`
+            border: none;
+            ${isImportOrExport &&
+            css`
+              max-width: 400px;
+
+              @media (max-width: 800px) {
+                max-width: 350px;
+              }
+            `};
           `,
           contentStyle: css`
             padding: 0px;
