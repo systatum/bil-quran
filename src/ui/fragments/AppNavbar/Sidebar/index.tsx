@@ -76,19 +76,11 @@ export default function Sidebar({
         {contentType === ContentType.Settings && (
           <>
             <UserSettingsForm
+              onBackupOpen={() => {
+                setActiveScreens([Screen.Export])
+              }}
               key={String(visible) /* `key` forces re-mount */}
             />
-            <Button
-              aria-label="settings-backup-button"
-              onClick={() => setActiveScreens([Screen.Export])}
-              styles={{
-                containerStyle: css`
-                  margin: 0 24px 24px;
-                `,
-              }}
-            >
-              {formatMessage({ id: messages.backup.title })}
-            </Button>
 
             <ScreenTransition
               screens={SCREENS}
