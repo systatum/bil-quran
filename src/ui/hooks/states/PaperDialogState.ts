@@ -1,16 +1,19 @@
 import type { WordOccurrence } from "@constants/records/WordRecord"
 import { create } from "zustand"
 import type { WordCell } from "../../fragments/QuranPaper/VerseRow"
+import useAppState from "./AppState"
+import { Screen } from "@ui/index"
 
 const usePaperDialogState = create<PaperDialogState>((set) => ({
   content: null,
   openCount: 0,
 
-  openLexeme(word) {
-    set((s) => ({
+  async openLexeme(word) {
+    await set((s) => ({
       content: { type: "lexeme", word, occurrences: {} },
       openCount: s.openCount + 1,
     }))
+    await useAppState.setState({ activeScreens: [Screen.Lexeme] })
   },
 
   updateLexemeOccurrences(occurrences) {
@@ -20,11 +23,12 @@ const usePaperDialogState = create<PaperDialogState>((set) => ({
     })
   },
 
-  openExegesis(chapterId, verseNumber) {
-    set((s) => ({
+  async openExegesis(chapterId, verseNumber) {
+    await set((s) => ({
       content: { type: "exegesis", chapterId, verseNumber },
       openCount: s.openCount + 1,
     }))
+    await useAppState.setState({ activeScreens: [Screen.Exegesis] })
   },
 
   close() {
@@ -43,13 +47,13 @@ export interface PaperDialogState {
   close: () => void
 }
 
-type LexemeDetailDialogContentProp = {
+export type LexemeDetailDialogContentProp = {
   type: "lexeme"
   word: WordCell
   occurrences: Record<string, WordOccurrence>
 }
 
-type ExegesisDialogContentProp = {
+export type ExegesisDialogContentProp = {
   type: "exegesis"
   chapterId: number
   verseNumber: number
