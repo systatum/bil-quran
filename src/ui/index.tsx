@@ -48,7 +48,6 @@ const SCREENS: Record<Screen, ScreenEntry> = {
 
 export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
   const [chapter, setChapter] = useState<ChapterRecord | null>(null)
-  const [currentVerse, setCurrentVerse] = useState<number | null>(null)
   const {
     userSettings: { theme, locale },
   } = useUserSettingsState()
@@ -103,7 +102,6 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
         theme={theme}
         onScroll={(verseRow) => {
           setChapter(verseRow.chapter)
-          setCurrentVerse(verseRow.number)
         }}
         chapterId={chapterId}
         verseNumber={verseNumber}
