@@ -72,13 +72,14 @@
       "title": "Ekspor data anda",
       "description": "Salin atau unduh cadangan terenkripsi yang berisi pengaturan, catatan, dan data lainnya.",
       "copy": "Salin",
-      "download": "Unduh data anda",
+      "download": "Unduh",
       "copySuccess": "Berhasil disalin",
       "copyFailed": "Gagal menyalin"
     },
     "import": {
       "title": "Impor data anda",
-      "description": "Tempelkan data terenkripsi di sini"
+      "description": "Tempelkan data terenkripsi di sini",
+      "import": "Impor"
     }
   },
 

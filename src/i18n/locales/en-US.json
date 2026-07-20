@@ -65,7 +65,8 @@
     },
     "import": {
       "title": "Import your data",
-      "description": "Paste your encoded data here"
+      "description": "Paste your encoded data here",
+      "import": "Import"
     }
   },
 
