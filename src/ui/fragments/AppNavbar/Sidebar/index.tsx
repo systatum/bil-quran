@@ -8,24 +8,45 @@ import styled, { css } from "styled-components"
 import BookmarkList from "./BookmarkList"
 import Title from "./Title"
 import UserSettingsForm from "./UserSettingsForm"
+import {
+  ScreenTransition,
+  ScreenEntry,
+} from "@systatum/coneto/screen-transition"
+import { Export } from "./Export"
+import { Import } from "./Import"
 
 interface SidebarProps {
   theme: ThemeMode
   visible: boolean
   onClosingSidebarRequested: () => void
 }
+
+export const Screen = {
+  Export: "export",
+  Import: "import",
+} as const
+
+export type Screen = (typeof Screen)[keyof typeof Screen]
+
+const SCREENS: Record<Screen, ScreenEntry> = {
+  [Screen.Export]: Export,
+  [Screen.Import]: Import,
+}
+
 export default function Sidebar({
   theme,
   visible,
   onClosingSidebarRequested,
 }: SidebarProps) {
   const { formatMessage } = useIntl()
-  const { showBackupDialog } = useModalDialogState()
   const titleRef = useRef<HTMLDivElement>(null)
   const [contentHeight, setContentHeight] = useState(0)
   const [contentType, setContentType] = useState<ContentType>(
     ContentType.Settings,
   )
+
+  // This state temporary for active screen, you adjust the best code by yourself :)
+  const [activeScreens, setActiveScreens] = useState<Screen[]>([])
 
   useLayoutEffect(() => {
     const updateHeight = () => {
@@ -59,15 +80,23 @@ export default function Sidebar({
             />
             <Button
               aria-label="settings-backup-button"
-              onClick={() => showBackupDialog()}
+              onClick={() => setActiveScreens([Screen.Export])}
               styles={{
                 containerStyle: css`
                   margin: 0 24px 24px;
                 `,
               }}
             >
-              {formatMessage({ id: messages.backup })}
+              {formatMessage({ id: messages.backup.title })}
             </Button>
+
+            <ScreenTransition
+              screens={SCREENS}
+              activeScreens={activeScreens}
+              onScreenChange={(activeScreens) =>
+                setActiveScreens(activeScreens as Screen[])
+              }
+            />
           </>
         )}
         {contentType === ContentType.Bookmarks && (
@@ -111,6 +140,8 @@ const SidebarContainer = styled.aside<{
 export const ContentType = {
   Settings: "settings",
   Bookmarks: "bookmarks",
+  Export: "export",
+  Import: "import",
 } as const
 
 export type ContentType = (typeof ContentType)[keyof typeof ContentType]
