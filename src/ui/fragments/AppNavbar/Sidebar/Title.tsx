@@ -19,14 +19,18 @@ const LIGHT_BG_COLOR = "rgb(173, 156, 141)"
 
 interface TitleProps {
   onClosingSidebarRequested: () => void
-  onActionClicked: (action: ContentType) => void
+  onActionClicked?: (action: ContentType) => void
   contentType?: ContentType
+  rightSection?: Coneto.TitleSection[] | null
+  withAction?: boolean
 }
 
 export default function Title({
   onClosingSidebarRequested,
   onActionClicked,
   contentType,
+  withAction = true,
+  rightSection,
 }: TitleProps) {
   const { formatMessage } = useIntl()
   const {
@@ -42,6 +46,12 @@ export default function Title({
       break
     case ContentType.Settings:
       title = formatMessage({ id: messages.settings })
+      break
+    case ContentType.Export:
+      title = formatMessage({ id: messages.backup.export.title })
+      break
+    case ContentType.Import:
+      title = formatMessage({ id: messages.backup.import.title })
       break
   }
 
@@ -93,8 +103,9 @@ export default function Title({
                 color: TEXT_COLOR,
               },
               onClick: () => {
-                onActionClicked(ContentType.Settings)
+                onActionClicked?.(ContentType.Settings)
               },
+              hidden: !withAction,
             },
             {
               id: "bookmarks-button",
@@ -107,11 +118,13 @@ export default function Title({
                 color: TEXT_COLOR,
               },
               onClick: () => {
-                onActionClicked(ContentType.Bookmarks)
+                onActionClicked?.(ContentType.Bookmarks)
               },
+              hidden: !withAction,
             },
           ],
         },
+        ...(rightSection ?? []),
       ]}
     />
   )
