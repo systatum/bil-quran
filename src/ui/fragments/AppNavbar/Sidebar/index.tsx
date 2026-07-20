@@ -5,7 +5,6 @@ import BookmarkList from "./BookmarkList"
 import Title from "./Title"
 import UserSettingsForm from "./UserSettingsForm"
 import useAppState from "@hooks/states/AppState"
-import { Screen } from "@ui/index"
 
 interface SidebarProps {
   theme: ThemeMode
@@ -18,7 +17,6 @@ export default function Sidebar({
   visible,
   onClosingSidebarRequested,
 }: SidebarProps) {
-  const { setActiveScreens } = useAppState()
   const titleRef = useRef<HTMLDivElement>(null)
   const [contentHeight, setContentHeight] = useState(0)
   const [contentType, setContentType] = useState<ContentType>(
@@ -53,9 +51,6 @@ export default function Sidebar({
         {contentType === ContentType.Settings && (
           <>
             <UserSettingsForm
-              onBackupOpen={() => {
-                setActiveScreens([Screen.Export])
-              }}
               key={String(visible) /* `key` forces re-mount */}
             />
           </>

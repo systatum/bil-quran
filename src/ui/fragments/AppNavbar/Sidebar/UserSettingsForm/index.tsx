@@ -13,11 +13,12 @@ import { useMemo } from "react"
 import { useIntl } from "react-intl"
 import { css } from "styled-components"
 import useUserSettingsState from "../../../../hooks/states/UserSettingsState"
-export default function UserSettingsForm({
-  onBackupOpen,
-}: {
-  onBackupOpen?: () => void
-}) {
+import useAppState from "@hooks/states/AppState"
+import { Screen } from "@ui/index"
+
+export default function UserSettingsForm() {
+  const { setActiveScreens } = useAppState()
+
   const { formatMessage } = useIntl()
   const { mode } = useTheme()
   const {
@@ -185,7 +186,7 @@ export default function UserSettingsForm({
       },
       title: formatMessage({ id: messages.backup.title }),
       onClick: () => {
-        onBackupOpen?.()
+        setActiveScreens([Screen.Export])
       },
     },
   ]
