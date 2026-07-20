@@ -1,10 +1,12 @@
 import { stringifyError } from "@services/Converter"
+import { Screen } from "@ui/index"
 import { create } from "zustand"
 
 const useAppState = create<AppState>((set, get) => ({
   errors: [],
   isVersesLoaded: false,
   loadingText: "",
+  activeScreens: [],
 
   clearErrors() {
     set({ errors: [] })
@@ -23,6 +25,12 @@ const useAppState = create<AppState>((set, get) => ({
   setLoadingText(text) {
     set({ loadingText: text })
   },
+
+  setActiveScreens(activeScreens) {
+    set({
+      activeScreens,
+    })
+  },
 }))
 
 export interface AppState {
@@ -35,6 +43,9 @@ export interface AppState {
 
   loadingText: string
   setLoadingText: (text: string) => void
+
+  activeScreens: Screen[]
+  setActiveScreens: (activeScreens: Screen[]) => void
 }
 
 export default useAppState
