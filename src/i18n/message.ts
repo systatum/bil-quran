@@ -8,7 +8,6 @@ export const messages = {
   add: "add",
   cancel: "cancel",
   settings: "settings",
-  backup: "backup",
   bookmarks_and_notes: "bookmarks_and_notes",
   bookmark: "bookmark",
   note: "note",
@@ -49,6 +48,21 @@ export const messages = {
   fontOptions: {
     meQuranLearner: "fontOptions.meQuranLearner",
   },
+  backup: {
+    title: "backup.title",
+    export: {
+      title: "backup.export.title",
+      description: "backup.export.description",
+      copy: "backup.export.copy",
+      download: "backup.export.download",
+      copySuccess: "backup.export.copySuccess",
+      copyFailed: "backup.export.copyFailed",
+    },
+    import: {
+      title: "backup.import.title",
+      description: "backup.import.description",
+    },
+  },
   searchSheet: {
     byChapter: "searchSheet.byChapter",
     byJuz: "searchSheet.byJuz",
@@ -65,14 +79,6 @@ export const messages = {
     highlightVerse: {
       title: "dialog.highlightVerse.title",
       colorLabel: "dialog.highlightVerse.colorLabel",
-    },
-    backup: {
-      title: "dialog.backup.title",
-      description: "dialog.backup.description",
-      copy: "dialog.backup.copy",
-      download: "dialog.backup.download",
-      copySuccess: "dialog.backup.copySuccess",
-      copyFailed: "dialog.backup.copyFailed",
     },
   },
   notice: {
