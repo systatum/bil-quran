@@ -14,6 +14,8 @@ import {
   RiFileCopy2Line,
   RiUpload2Line,
 } from "@remixicon/react"
+import { ThemeMode } from "@constants/theme"
+import useUserSettingsState from "@hooks/states/UserSettingsState"
 
 function backupFilename(date: Date): string {
   const yy = String(date.getFullYear()).slice(-2)
@@ -32,14 +34,22 @@ function downloadTextFile(filename: string, content: string) {
   URL.revokeObjectURL(url)
 }
 
+const DARK_TEXT_COLOR = "#354526"
+const LIGHT_TEXT_COLOR = "rgb(89, 77, 67)"
+
 export function Export({ goBack, goToScreen }: Partial<ScreenProps<Screen>>) {
   const { formatMessage } = useIntl()
   const { successToast, errorToast } = useToast()
+  const {
+    userSettings: { theme },
+  } = useUserSettingsState()
 
   const encoded = useMemo(
     () => encodeBase64Unicode(localStorage.getItem("userSettings") ?? "{}"),
     [],
   )
+
+  const TEXT_COLOR = theme === "dark" ? DARK_TEXT_COLOR : LIGHT_TEXT_COLOR
 
   return (
     <>
@@ -56,6 +66,11 @@ export function Export({ goBack, goToScreen }: Partial<ScreenProps<Screen>>) {
                   image: RiUpload2Line,
                 },
                 onClick: () => goToScreen?.(Screen.Import),
+                styles: {
+                  self: css`
+                    color: ${TEXT_COLOR};
+                  `,
+                },
               },
             ],
           },
@@ -65,7 +80,7 @@ export function Export({ goBack, goToScreen }: Partial<ScreenProps<Screen>>) {
         }}
       />
 
-      <Wrapper>
+      <Wrapper $theme={theme}>
         <Description>
           {formatMessage({ id: messages.backup.export.description })}
         </Description>
@@ -75,6 +90,9 @@ export function Export({ goBack, goToScreen }: Partial<ScreenProps<Screen>>) {
           value={encoded}
           readOnly
           styles={{
+            containerStyle: css`
+              height: fit-content;
+            `,
             self: css`
               font-size: 0.8em;
             `,
@@ -142,11 +160,13 @@ export function Export({ goBack, goToScreen }: Partial<ScreenProps<Screen>>) {
   )
 }
 
-const Wrapper = styled.div<{ $style?: CSSProp }>`
+const Wrapper = styled.div<{ $style?: CSSProp; $theme?: ThemeMode }>`
   display: flex;
   flex-direction: column;
   gap: 2px;
   padding: 20px;
+  background: ${({ $theme }) => ($theme === "dark" ? "#202b24" : "#e1dfda")};
+  height: 100%;
 `
 
 const Description = styled.p`
