@@ -4,7 +4,6 @@
   "add": "Tambah",
   "cancel": "Batal",
   "settings": "Pengaturan",
-  "backup": "Backup",
   "bookmarks_and_notes": "Markah dan Catatan",
   "bookmark": "Markah",
   "note": "Catatan",
@@ -64,14 +63,22 @@
     "highlightVerse": {
       "title": "Sorot ayat ini",
       "colorLabel": "Warna"
-    },
-    "backup": {
-      "title": "Backup data Anda",
-      "description": "Salin atau unduh data pengaturan, catatan, dan data lain-lain Anda di bil-Qur'an.",
+    }
+  },
+
+  "backup": {
+    "title": "Cadangan",
+    "export": {
+      "title": "Ekspor data anda",
+      "description": "Salin atau unduh cadangan terenkripsi yang berisi pengaturan, catatan, dan data lainnya.",
       "copy": "Salin",
-      "download": "Unduh",
-      "copySuccess": "Berhasil disalin ke clipboard",
+      "download": "Unduh data anda",
+      "copySuccess": "Berhasil disalin",
       "copyFailed": "Gagal menyalin"
+    },
+    "import": {
+      "title": "Impor data anda",
+      "description": "Tempelkan data terenkripsi di sini"
     }
   },
 

@@ -4,7 +4,6 @@
   "add": "إضافة",
   "cancel": "إلغاء",
   "settings": "الإعدادات",
-  "backup": "نسخ احتياطي",
   "bookmarks_and_notes": "العلامات والملاحظات",
   "bookmark": "علامة",
   "note": "ملاحظة",
@@ -64,14 +63,22 @@
     "highlightVerse": {
       "title": "تمييز هذه الآية",
       "colorLabel": "اللون"
-    },
-    "backup": {
+    }
+  },
+
+  "backup": {
+    "title": "النسخ الاحتياطي",
+    "export": {
       "title": "نسخ بياناتك احتياطيًا",
       "description": "انسخ أو نزّل نسخة مشفّرة من إعدادات bil-Qur'an وملاحظاتك وبياناتك الأخرى.",
       "copy": "نسخ",
       "download": "تنزيل",
       "copySuccess": "تم النسخ إلى الحافظة",
       "copyFailed": "فشل النسخ"
+    },
+    "import": {
+      "title": "استيراد بياناتك",
+      "description": "ألصق بياناتك المشفرة هنا"
     }
   },
 
