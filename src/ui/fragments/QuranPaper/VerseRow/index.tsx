@@ -17,7 +17,6 @@ import LOGGER from "@services/Logger"
 import { makeSnippet } from "@services/mutator"
 import { haptic } from "ios-haptics"
 import { useEffect, useRef } from "react"
-import { useIntl } from "react-intl"
 import styled from "styled-components"
 import { Bismillah } from "./Bismillah"
 import InterlinearText from "./InterlinearText"
@@ -78,8 +77,6 @@ export default function VerseRow({
 
   const markerColumnRef = useRef<HTMLDivElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
-
-  const { formatMessage } = useIntl()
 
   useEffect(() => {
     const scrollEl = virtualizer.scrollElement as HTMLElement
