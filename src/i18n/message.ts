@@ -61,6 +61,7 @@ export const messages = {
     import: {
       title: "backup.import.title",
       description: "backup.import.description",
+      import: "backup.import.import",
     },
   },
   searchSheet: {
