@@ -13,7 +13,11 @@ import { useMemo } from "react"
 import { useIntl } from "react-intl"
 import { css } from "styled-components"
 import useUserSettingsState from "../../../../hooks/states/UserSettingsState"
-export default function UserSettingsForm() {
+export default function UserSettingsForm({
+  onBackupOpen,
+}: {
+  onBackupOpen?: () => void
+}) {
   const { formatMessage } = useIntl()
   const { mode } = useTheme()
   const {
@@ -168,6 +172,22 @@ export default function UserSettingsForm() {
         },
       },
     ],
+    {
+      type: "button",
+      name: "backup",
+      button: {
+        "aria-label": "settings-backup-button",
+        styles: {
+          self: css`
+            background: ${mode === "dark" ? "#1a211d" : "#ededed"} !important;
+          `,
+        },
+      },
+      title: formatMessage({ id: messages.backup.title }),
+      onClick: () => {
+        onBackupOpen?.()
+      },
+    },
   ]
 
   return (
