@@ -7,6 +7,8 @@ import { useIntl } from "react-intl"
 import { messages } from "@i18n/message"
 import { ThemeMode } from "@constants/theme"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
+import { StatefulForm } from "@systatum/coneto/stateful-form"
+import { RiUpload2Line } from "@remixicon/react"
 
 export function Import({ goBack }: Partial<ScreenProps<Screen>>) {
   const { formatMessage } = useIntl()
@@ -40,6 +42,29 @@ export function Import({ goBack }: Partial<ScreenProps<Screen>>) {
               font-size: 0.8em;
             `,
           }}
+        />
+        <StatefulForm
+          mobile
+          styles={{
+            containerStyle: css`
+              margin-top: 10px;
+            `,
+          }}
+          formValues={{}}
+          fields={[
+            {
+              name: "text",
+              title: formatMessage({ id: messages.backup.import.import }),
+              type: "button",
+              onClick: () => {},
+              button: {
+                variant: "primary",
+                icon: {
+                  image: RiUpload2Line,
+                },
+              },
+            },
+          ]}
         />
       </Wrapper>
     </>
