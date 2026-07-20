@@ -18,22 +18,20 @@ import { Transliteration, WordCell } from "."
 import ClippedContent from "../../ClippedContent"
 import InfoTile from "./InfoTile"
 import InterlinearText from "./InterlinearText"
+import usePaperDialogState, {
+  LexemeDetailDialogContentProp,
+} from "@hooks/states/PaperDialogState"
 
-interface LexemeDetailPaperDialogProps {
-  content: WordCell
-  arabicFont: string
-  occurrences: Record<string, WordOccurrence>
-}
+export function LexemeDetailPaperDialog() {
+  const lexemeContent = usePaperDialogState.getState()
+    ?.content as LexemeDetailDialogContentProp
+  const { occurrences, word: content } = lexemeContent
 
-export function LexemeDetailPaperDialog({
-  content,
-  arabicFont,
-  occurrences,
-}: LexemeDetailPaperDialogProps) {
   const { mode: theme } = useTheme()
   const {
     userSettings: { locale, wbwTranslations, font },
   } = useUserSettingsState()
+  const arabicFont = font.arabic.family
   const { getChapterTransliteratedName, getChapterMeaning } = useChaptersState()
 
   const isTranslated =
@@ -76,7 +74,6 @@ export function LexemeDetailPaperDialog({
         token={content.token}
         transliteration={transliteration}
       />
-
       <ScrollContainer ref={scrollRef} onScroll={handleScroll}>
         <Grid preset="2-col">
           <InfoTile theme={theme} label="Meaning" value={meaning ?? "?"} />
@@ -223,8 +220,8 @@ const RootPair = styled.span`
 
 const RootLetter = styled.span<{ $font: string }>`
   font-family:
-    "${({ $font }) => $font}", "${"NotoNaskhArabic" satisfies ArabicFontFamily}",
-    serif;
+    "${({ $font }) => $font}",
+    "${"NotoNaskhArabic" satisfies ArabicFontFamily}", serif;
   font-size: 18px;
 `
 
