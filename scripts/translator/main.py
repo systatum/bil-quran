@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from translation import TranslateJob, Prompt, PromptSetting, TranslationService
 from rating import RateJob, RatingService
+from comparison import CompareJob, ComparisonService
 from dataclasses import dataclass
 from service import JobResult, Job
 import dataclasses
@@ -25,6 +26,8 @@ class JobBoard:
             appstate.get().translation_service.queue_job(job)
         elif isinstance(job, RateJob):
             appstate.get().rating_service.queue_job(job)
+        elif isinstance(job, CompareJob):
+            appstate.get().comparison_service.queue_job(job)
         else:
             raise AssertionError("Unknown job type: {}".format(type(job)))
 
@@ -35,6 +38,7 @@ class JobBoard:
         with self._lock:
             self._results.update({result.job.job_id: result for result in appstate.get().translation_service.retrieve_results()})
             self._results.update({result.job.job_id: result for result in appstate.get().rating_service.retrieve_results()})
+            self._results.update({result.job.job_id: result for result in appstate.get().comparison_service.retrieve_results()})
 
     def get_result(self, job_id: uuid.UUID) -> JobResult | None:
         self.collect()
@@ -50,6 +54,7 @@ class JobBoard:
 class GlobalData:
     translation_service: TranslationService
     rating_service: RatingService
+    comparison_service: ComparisonService
     job_board: JobBoard
 
 @dataclass(kw_only=True)
@@ -74,14 +79,17 @@ async def lifespan(_: FastAPI):
         GlobalData(
             translation_service = TranslationService(),
             rating_service = RatingService(),
-            job_board = JobBoard()
+            comparison_service = ComparisonService(),
+            job_board = JobBoard(),
         )
     )
     appstate.get().translation_service.start()
     appstate.get().rating_service.start()
+    appstate.get().comparison_service.start()
     yield
     appstate.get().rating_service.stop()
     appstate.get().translation_service.stop()
+    appstate.get().comparison_service.stop()
 
 app = FastAPI(lifespan=lifespan)
 
@@ -111,6 +119,20 @@ class RateAPIRequest:
 @app.post("/rate")
 def rate(request: RateAPIRequest):
     job = RateJob(source=request.source, translation=request.translation)
+    appstate.get().job_board.queue(job)
+
+    result = appstate.get().job_board.get_result_blocking(job.job_id)
+    return result
+
+@dataclass(kw_only=True)
+class CompareAPIRequest:
+    source: str
+    translation0: str
+    translation1: str
+
+@app.post("/compare")
+def compare(request: CompareAPIRequest):
+    job = CompareJob(source=request.source, translation0=request.translation0, translation1=request.translation1)
     appstate.get().job_board.queue(job)
 
     result = appstate.get().job_board.get_result_blocking(job.job_id)

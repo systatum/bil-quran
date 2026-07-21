@@ -1,18 +1,14 @@
 from __future__ import annotations
-from settings import MODEL_DIR
-from comet import load_from_checkpoint
+from comet import download_model, load_from_checkpoint
 from comet.models import CometModel
-from huggingface_hub import snapshot_download
 from dataclasses import dataclass
 import traceback
 from service import JobResult, Job, Service
 from typing import TypeAlias
 
-def download_model():
-    snapshot_download("Unbabel/wmt20-comet-qe-da", local_dir=MODEL_DIR / "comet-qe-da")
-
 def load_model() -> CometModel:
-    return load_from_checkpoint(str(MODEL_DIR / "comet-qe-da" / "checkpoints" / "model.ckpt"))
+    path = download_model("Unbabel/wmt20-comet-qe-da")
+    return load_from_checkpoint(path)
 
 def rate(model: CometModel, source: str, translation: str) -> float:
     data = [
@@ -39,8 +35,7 @@ class RatingService(Service[Rating]):
 
     def __init__(self):
         super().__init__()
-        download_model()
-        self._model = load_model()
+        # self._model = load_model()
 
     def _run_job(self, job: Job[Rating]) -> JobResult[Rating]:
         assert isinstance(job, RateJob)

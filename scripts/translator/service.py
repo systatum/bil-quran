@@ -27,33 +27,33 @@ class Job(Generic[V]):
     job_id: uuid.UUID = dataclasses.field(default_factory = lambda: uuid.uuid4())
 
     def ok(self, result: V) -> JobResult[V]:
-        return JobResult(job=self, _status="ok", _value=result, _error_message=None)
+        return JobResult(job=self, status="ok", value=result, error_message=None)
 
     def err(self, error_message: str) -> JobResult[V]:
-        return JobResult(job=self, _status="err", _value=None, _error_message=error_message)
+        return JobResult(job=self, status="err", value=None, error_message=error_message)
 
 @dataclass(kw_only=True)
 class JobResult(Generic[V]):
     job: Job[V]
-    _value: V | None
-    _status: str
-    _error_message: str | None
+    value: V | None
+    status: str
+    error_message: str | None
 
     def __post_init__(self):
-        assert self._value is None or self._error_message is None
-        assert self._value is not None or self._error_message is not None
-        assert self._status == "ok" or self._status == "err"
+        assert self.value is None or self.error_message is None
+        assert self.value is not None or self.error_message is not None
+        assert self.status == "ok" or self.status == "err"
 
     def is_ok(self) -> bool:
-        return self._status == "ok"
+        return self.status == "ok"
 
     def get(self) -> V:
-        assert self._value is not None
-        return self._value
+        assert self.value is not None
+        return self.value
 
     def get_error_message(self) -> str:
-        assert self._error_message is not None
-        return self._error_message
+        assert self.error_message is not None
+        return self.error_message
 
 class Service(Generic[V], ABC):
     _job_queue: Queue[Job[V]]

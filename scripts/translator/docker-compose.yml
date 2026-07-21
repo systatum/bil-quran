@@ -5,6 +5,9 @@ services:
     build: .
     volumes:
       - ./models:/app/models:rw
+      - ./hf_cache:/app/hf_cache:rw
     ports:
       - "8000:8000"
     gpus: all
+    environment:
+      - HF_HOME=/app/hf_cache
