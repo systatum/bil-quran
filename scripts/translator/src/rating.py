@@ -35,7 +35,7 @@ class RatingService(Service[Rating]):
 
     def __init__(self):
         super().__init__()
-        # self._model = load_model()
+        self._model = load_model()
 
     def _run_job(self, job: Job[Rating]) -> JobResult[Rating]:
         assert isinstance(job, RateJob)

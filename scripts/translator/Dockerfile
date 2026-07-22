@@ -7,6 +7,6 @@ RUN pip install unbabel-comet
 
 WORKDIR /app
 
-COPY *.py ./
+COPY src/*.py ./
 
 ENTRYPOINT ["fastapi", "run"]
