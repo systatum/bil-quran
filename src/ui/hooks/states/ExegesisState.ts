@@ -3,6 +3,7 @@ import {
   ExegesisAuthor,
   ExegesisChapterAsset,
   ExegesisMetadata,
+  ExegesisRecord,
   ExegesisVerseContent,
 } from "@constants/records/ExegesisRecord"
 import { Locale } from "@constants/settings"
@@ -20,9 +21,86 @@ import { create } from "zustand"
 
 const useExegesisState = create<ExegesisState>((set, get) => ({
   exegesis: {},
+  exegesisDetail: {},
+  selectedExegesisId: null,
+
+  setSelectedExegesisId(exegesisId) {
+    set((s) => ({
+      ...s,
+      selectedExegesisId: exegesisId,
+    }))
+  },
 
   getVerseExegesis(exegesisId, chapterId, verseNumber) {
     return get().exegesis[exegesisId]?.[chapterId]?.[verseNumber] ?? null
+  },
+
+  async getExegesisDetail(exegesisId: string, locale: Locale) {
+    set({ selectedExegesisId: exegesisId })
+
+    const cached = get().exegesisDetail[exegesisId]
+    if (cached) {
+      return {
+        name: cached.name,
+        source: cached.source,
+        longDescription:
+          cached.longDescription[locale] ??
+          cached.longDescription[Locale.IntEnglish] ??
+          Object.values(cached.longDescription).find(Boolean) ??
+          [],
+        authors: cached.authors.map((a) => ({
+          name: a.name,
+          bio:
+            a.bio[locale] ??
+            a.bio[Locale.IntEnglish] ??
+            Object.values(a.bio).find(Boolean) ??
+            "",
+        })),
+      }
+    }
+
+    await ensureMetadata(exegesisId)
+
+    const [record] = unpackIPC(
+      await repo.exegesis.findAllBy({ id: exegesisId }),
+    )
+    if (!record)
+      return { name: "", source: "", longDescription: [], authors: [] }
+
+    const detail = {
+      name: record.locNames as Partial<Record<Locale, string>>,
+      longDescription: record.longDescription as Partial<
+        Record<Locale, string[]>
+      >,
+      source: record.source,
+      authors: record.authors as ExegesisAuthor[],
+    }
+
+    set((s) => ({
+      exegesisDetail: { ...s.exegesisDetail, [exegesisId]: detail },
+    }))
+
+    return {
+      name:
+        detail.name[locale] ??
+        detail.name[Locale.IntEnglish] ??
+        Object.values(detail.name).find(Boolean) ??
+        "",
+      source: detail.source,
+      longDescription:
+        detail.longDescription[locale] ??
+        detail.longDescription[Locale.IntEnglish] ??
+        Object.values(detail.longDescription).find(Boolean) ??
+        [],
+      authors: detail.authors.map((a) => ({
+        name: a.name,
+        bio:
+          a.bio[locale] ??
+          a.bio[Locale.IntEnglish] ??
+          Object.values(a.bio).find(Boolean) ??
+          "",
+      })),
+    }
   },
 
   async getShortDesc(exegesisId, locale) {
@@ -187,6 +265,7 @@ async function ensureMetadata(exegesisId: string): Promise<void> {
     oriName: about.name,
     locNames: pickLocalized(about.locNames ?? {}, (v) => v),
     description: pickLocalized(about.about ?? {}, (v) => v.shortDesc),
+    longDescription: pickLocalized(about.about ?? {}, (v) => v.detailDesc),
     authors,
     thoughtSchool: ThoughtSchool.fromNameString(about.thought),
     source: about.source,
@@ -202,6 +281,20 @@ type ChapterExegesis = Record<number, VerseExegesis>
 export interface ExegesisState {
   /** In-memory cache of verse content, keyed by exegesisId → chapterId → verseNumber. */
   exegesis: Record<string, ChapterExegesis>
+  exegesisDetail: Record<string, ExegesisDetail>
+  selectedExegesisId: string | null
+
+  /**
+   * Fetch an exegesis's detail (long description + source) for the given locale.
+   * Long description falls back to English, then any available locale, then [].
+   * Serves from cache on subsequent calls.
+   */
+  getExegesisDetail: (
+    exegesisId: string,
+    locale: Locale,
+  ) => Promise<ExegesisDetail>
+
+  setSelectedExegesisId: (exegesisId: string | null) => void
 
   /**
    * Fetch the short description for an exegesis source in the given locale,
@@ -224,6 +317,13 @@ export interface ExegesisState {
    * replaced before re-populating the cache.
    */
   loadChapter: (exegesisId: string, chapterId: number) => Promise<void>
+}
+
+interface ExegesisDetail extends Pick<
+  ExegesisRecord,
+  "authors" | "longDescription" | "source"
+> {
+  name: ExegesisRecord["locNames"]
 }
 
 export default useExegesisState
