@@ -48,7 +48,7 @@ const H2 = styled.h2<StyleProp>`
 `
 
 const H3 = styled.h3<StyleProp>`
-  font-size: 20px;
+  font-size: 16px;
 
   ${({ $style }) => $style}
 `
