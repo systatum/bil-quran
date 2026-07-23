@@ -15,6 +15,7 @@ export interface ExegesisRecord {
   oriName: string
   locNames: Partial<Record<Locale, string>>
   description: Partial<Record<Locale, string>>
+  longDescription: Partial<Record<Locale, string[]>>
   authors: ExegesisAuthor[]
   /** Chapter IDs whose verse content has been fully fetched and stored locally */
   downloadedChapters: number[]
