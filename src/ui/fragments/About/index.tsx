@@ -1,4 +1,3 @@
-import { ThemeMode } from "@constants/theme"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import { RiArrowLeftLine, RiArrowRightSLine } from "@remixicon/react"
 import { ScreenProps } from "@systatum/coneto/screen-transition"
@@ -10,11 +9,15 @@ import useExegesisOptions from "@hooks/tools/useExegesisOptions"
 import useExegesisState from "@hooks/states/ExegesisState"
 import { resolveLocale } from "@i18n"
 import { H2, Item, SubItem, Text, Wrapper } from "@ui/fragments"
+import { useIntl } from "react-intl"
+import { messages } from "@i18n/message"
+import { ENV } from "@constants/env"
 
 export default function About({
   goBack,
   goToScreen,
 }: Partial<ScreenProps<Screen>>) {
+  const { formatMessage } = useIntl()
   const {
     userSettings: { theme, locale: rawLocal },
   } = useUserSettingsState()
@@ -54,8 +57,12 @@ export default function About({
           `}
         >
           <H2>bil-Quran</H2>
-          <Text>Version 1.0.0</Text>
-          <Text>Released June 19, 2026</Text>
+          <Text>
+            {formatMessage({ id: messages.about.version })} {ENV.version}
+          </Text>
+          <Text>
+            {formatMessage({ id: messages.about.released })} {ENV.releasedDate}
+          </Text>
         </SubItem>
       </Item>
 

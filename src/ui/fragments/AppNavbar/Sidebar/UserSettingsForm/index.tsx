@@ -213,7 +213,7 @@ export default function UserSettingsForm({
           `,
         },
       },
-      title: formatMessage({ id: messages.about }),
+      title: formatMessage({ id: messages.about.title }),
       onClick: () => {
         goToScreen?.(Screen.About)
       },

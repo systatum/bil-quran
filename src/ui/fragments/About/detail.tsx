@@ -2,15 +2,18 @@ import useExegesisState from "@hooks/states/ExegesisState"
 import { ScreenProps } from "@systatum/coneto/screen-transition"
 import { Screen } from "@ui/index"
 import Title from "../AppNavbar/Sidebar/Title"
-import { H2, H3, Item, SubItem, Text, Wrapper } from ".."
+import { H3, SubItem, Text, Wrapper } from "@ui/fragments"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import { resolveLocale } from "@i18n"
 import { css } from "styled-components"
 import { StatefulForm } from "@systatum/coneto/stateful-form"
+import { useIntl } from "react-intl"
+import { messages } from "@i18n/message"
 
 export default function ExegesisDetail({
   goBack,
 }: Partial<ScreenProps<Screen>>) {
+  const { formatMessage } = useIntl()
   const {
     userSettings: { theme, locale: rawLocale },
   } = useUserSettingsState()
@@ -20,7 +23,7 @@ export default function ExegesisDetail({
   const locale = resolveLocale(rawLocale)
   const detail = selectedExegesisId ? exegesisDetail[selectedExegesisId] : null
 
-  const authorName = detail?.authors.map((a) => a.name).join(", ")
+  const bookName = detail?.name?.[locale] ?? []
   const descriptionParagraphs = detail?.longDescription?.[locale] ?? []
 
   return (
@@ -95,13 +98,13 @@ export default function ExegesisDetail({
                     gap: 14px;
                   `}
                 >
-                  {authorName && (
+                  {bookName && (
                     <H3
                       $style={css`
                         font-weight: 600;
                       `}
                     >
-                      {authorName}
+                      {bookName}
                     </H3>
                   )}
                   {descriptionParagraphs.map((paragraph, i) => (
@@ -120,7 +123,7 @@ export default function ExegesisDetail({
                       font-weight: 600;
                     `}
                   >
-                    Source
+                    {formatMessage({ id: messages.about.source })}
                   </H3>
                   <Text>{detail.source}</Text>
                 </SubItem>
