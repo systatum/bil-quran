@@ -24,13 +24,7 @@ export default function ExegesisDetail({
   const descriptionParagraphs = detail?.longDescription?.[locale] ?? []
 
   return (
-    <Wrapper
-      $theme={theme}
-      $style={css`
-        min-height: max-content;
-        justify-content: start;
-      `}
-    >
+    <>
       <Title
         contentType="exegesis-detail"
         onClosingSidebarRequested={() => {
@@ -40,69 +34,109 @@ export default function ExegesisDetail({
           }, 300)
         }}
         withAction={false}
-      />
-
-      <StatefulForm
-        mobile
         styles={{
           containerStyle: css`
-            padding: 10px 20px 40px 20px;
-            gap: 20px;
-          `,
-          mobileFieldGroupStyle: css`
-            gap: 20px;
-            border-radius: 10px;
-            padding-top: 20px;
-            padding-bottom: 20px;
-
-            background: ${theme === "dark" ? "#1a211d" : "#ededed"};
+            position: fixed;
+            top: 0px;
           `,
         }}
-        formValues={{}}
-        fields={[
-          {
-            name: "longDesc",
-            type: "custom",
+      />
 
-            render: (
-              <SubItem
-                $style={css`
-                  gap: 14px;
-                `}
-              >
-                {authorName && (
+      <Wrapper
+        $theme={theme}
+        $style={css`
+          justify-content: start;
+          overflow: auto;
+          min-height: 0;
+          margin-top: 140px;
+          padding-top: 20px;
+
+          /* Firefox */
+          scrollbar-width: thin;
+          scrollbar-color: ${theme === "dark" ? "#555" : "#bbb"} transparent;
+
+          /* Chrome, Edge, Safari */
+          &::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+          }
+
+          &::-webkit-scrollbar-track {
+            background: transparent;
+          }
+
+          &::-webkit-scrollbar-thumb {
+            background: ${theme === "dark" ? "#555" : "#bbb"};
+            border-radius: 999px;
+          }
+
+          &::-webkit-scrollbar-thumb:hover {
+            background: ${theme === "dark" ? "#777" : "#999"};
+          }
+        `}
+      >
+        <StatefulForm
+          mobile
+          styles={{
+            containerStyle: css`
+              padding: 10px 20px 40px 20px;
+              gap: 20px;
+            `,
+            mobileFieldGroupStyle: css`
+              gap: 20px;
+              border-radius: 10px;
+              padding-top: 20px;
+              padding-bottom: 20px;
+
+              background: ${theme === "dark" ? "#1a211d" : "#ededed"};
+            `,
+          }}
+          formValues={{}}
+          fields={[
+            {
+              name: "longDesc",
+              type: "custom",
+
+              render: (
+                <SubItem
+                  $style={css`
+                    gap: 14px;
+                  `}
+                >
+                  {authorName && (
+                    <H3
+                      $style={css`
+                        font-weight: 600;
+                      `}
+                    >
+                      {authorName}
+                    </H3>
+                  )}
+                  {descriptionParagraphs.map((paragraph, i) => (
+                    <Text key={i}>{paragraph}</Text>
+                  ))}
+                </SubItem>
+              ),
+            },
+            {
+              name: "longDesc",
+              type: "custom",
+              render: detail && (
+                <SubItem>
                   <H3
                     $style={css`
                       font-weight: 600;
                     `}
                   >
-                    {authorName}
+                    Source
                   </H3>
-                )}
-                {descriptionParagraphs.map((paragraph, i) => (
-                  <Text key={i}>{paragraph}</Text>
-                ))}
-              </SubItem>
-            ),
-          },
-          {
-            name: "longDesc",
-            type: "custom",
-            render: detail && (
-              <SubItem>
-                <H3
-                  $style={css`
-                    font-weight: 600;
-                  `}
-                >
-                  Source
-                </H3>
-                <Text>{detail.source}</Text>
-              </SubItem>
-            ),
-          },
-        ]}
-      />
-    </Wrapper>
+                  <Text>{detail.source}</Text>
+                </SubItem>
+              ),
+            },
+          ]}
+        />
+      </Wrapper>
+    </>
   )
 }
