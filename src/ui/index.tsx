@@ -139,6 +139,7 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
             `};
           `,
           contentStyle: css`
+            background-color: ${theme === "dark" ? "#202b24" : "#e1dfda"};
             padding: 0px;
           `,
         }}
