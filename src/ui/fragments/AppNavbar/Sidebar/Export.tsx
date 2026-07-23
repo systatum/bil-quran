@@ -133,6 +133,13 @@ export function Export({ goBack, goToScreen }: Partial<ScreenProps<Screen>>) {
                     )
                 },
                 button: {
+                  styles: {
+                    self: css`
+                      background: ${theme === "dark"
+                        ? "#1a211d"
+                        : "#ededed"} !important;
+                    `,
+                  },
                   icon: {
                     image: RiFileCopy2Line,
                   },
