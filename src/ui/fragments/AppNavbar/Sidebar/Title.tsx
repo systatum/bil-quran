@@ -11,6 +11,7 @@ import * as Coneto from "@systatum/coneto/title"
 import { useIntl } from "react-intl"
 import { css } from "styled-components"
 import { ContentType } from "."
+import useExegesisState from "@hooks/states/ExegesisState"
 
 const DARK_TEXT_COLOR = "#354526"
 const LIGHT_TEXT_COLOR = "rgb(89, 77, 67)"
@@ -36,6 +37,10 @@ export default function Title({
   const {
     userSettings: { theme },
   } = useUserSettingsState()
+  const { exegesisDetail, selectedExegesisId } = useExegesisState()
+
+  const detail = selectedExegesisId ? exegesisDetail[selectedExegesisId] : null
+  const authorName = detail?.authors.map((a) => a.name).join(", ")
 
   const TEXT_COLOR = theme === "dark" ? DARK_TEXT_COLOR : LIGHT_TEXT_COLOR
 
@@ -52,6 +57,9 @@ export default function Title({
       break
     case ContentType.Import:
       title = formatMessage({ id: messages.backup.import.title })
+      break
+    case ContentType.ExegesisDetail:
+      title = String(authorName)
       break
   }
 
