@@ -15,6 +15,7 @@ import { css } from "styled-components"
 import useUserSettingsState from "../../../../hooks/states/UserSettingsState"
 import useAppState from "@hooks/states/AppState"
 import { Screen } from "@ui/index"
+import { RiArrowRightSLine, RiBookOpenLine } from "@remixicon/react"
 
 export default function UserSettingsForm() {
   const { setActiveScreens } = useAppState()
@@ -177,16 +178,44 @@ export default function UserSettingsForm() {
       type: "button",
       name: "backup",
       button: {
+        icon: {
+          image: RiBookOpenLine,
+          size: 18,
+        },
         "aria-label": "settings-backup-button",
         styles: {
           self: css`
             background: ${mode === "dark" ? "#1a211d" : "#ededed"} !important;
+            flex-direction: row-reverse;
+            justify-content: space-between;
           `,
         },
       },
       title: formatMessage({ id: messages.backup.title }),
       onClick: () => {
         setActiveScreens([Screen.Export])
+      },
+    },
+    {
+      type: "button",
+      name: "about",
+      button: {
+        icon: {
+          image: RiArrowRightSLine,
+          size: 18,
+        },
+        "aria-label": "settings-about-button",
+        styles: {
+          self: css`
+            background: ${mode === "dark" ? "#1a211d" : "#ededed"} !important;
+            flex-direction: row-reverse;
+            justify-content: space-between;
+          `,
+        },
+      },
+      title: formatMessage({ id: messages.about }),
+      onClick: () => {
+        setActiveScreens([Screen.About])
       },
     },
   ]
