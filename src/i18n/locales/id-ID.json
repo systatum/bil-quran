@@ -9,7 +9,13 @@
   "note": "Catatan",
   "highlight": "Sorotan",
   "exegesis": "Tafsir",
-  "about": "Tentang",
+
+  "about": {
+    "title": "Tentang",
+    "version": "Versi",
+    "released": "Dirilis",
+    "source": "Sumber"
+  },
 
   "lookup": {
     "title": "Lompat ke ayat",

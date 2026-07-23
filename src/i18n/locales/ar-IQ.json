@@ -9,7 +9,13 @@
   "note": "ملاحظة",
   "highlight": "تمييز",
   "exegesis": "التفسير",
-  "about": "حول",
+
+  "about": {
+    "title": "حول",
+    "version": "الإصدار",
+    "released": "تاريخ الإصدار",
+    "source": "المصدر"
+  },
 
   "lookup": {
     "title": "الانتقال إلى آية",

@@ -9,7 +9,13 @@
   "note": "Note",
   "highlight": "Highlight",
   "exegesis": "Exegesis",
-  "about": "About",
+
+  "about": {
+    "title": "About",
+    "version": "Version",
+    "released": "Released",
+    "source": "Source"
+  },
 
   "lookup": {
     "title": "Verse lookup",
