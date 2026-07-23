@@ -24,6 +24,7 @@ interface TitleProps {
   contentType?: ContentType
   rightSection?: Coneto.TitleSection[] | null
   withAction?: boolean
+  styles?: Coneto.TitleStyles
 }
 
 export default function Title({
@@ -32,6 +33,7 @@ export default function Title({
   contentType,
   withAction = true,
   rightSection,
+  styles,
 }: TitleProps) {
   const { formatMessage } = useIntl()
   const {
@@ -69,15 +71,19 @@ export default function Title({
       text={title}
       pretitle="Bil-Quran"
       styles={{
+        ...styles,
         containerStyle: css`
           background: ${theme === "dark" ? DARK_BG_COLOR : LIGHT_BG_COLOR};
           padding: 10px;
+          ${styles?.containerStyle}
         `,
         titleStyle: css`
           color: ${TEXT_COLOR};
+          ${styles?.titleStyle}
         `,
         pretitleStyle: css`
           color: ${TEXT_COLOR};
+          ${styles?.pretitleStyle}
         `,
       }}
       leftSection={[
