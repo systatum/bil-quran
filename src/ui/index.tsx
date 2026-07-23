@@ -16,6 +16,8 @@ import useAppState from "@hooks/states/AppState"
 import { LexemeDetailPaperDialog } from "./fragments/QuranPaper/VerseRow/LexemeDetailPaperDialog"
 import { css } from "styled-components"
 import ExegesisPaperDialogContent from "./fragments/QuranPaper/VerseRow/ExegesisPaperDialogContent"
+import About from "./fragments/About"
+import ExegesisDetail from "./fragments/About/detail"
 
 interface UIIndexProps {
   /** When true, opens the exegesis paper dialog for the routed verse on mount. */
@@ -23,10 +25,12 @@ interface UIIndexProps {
 }
 
 export const Screen = {
+  ExegesisDetail: "exegesis-detail",
   Exegesis: "exegesis",
   Lexeme: "lexeme",
   Export: "export",
   Import: "import",
+  About: "about",
 } as const
 
 export type Screen = (typeof Screen)[keyof typeof Screen]
@@ -44,6 +48,8 @@ const SCREENS: Record<Screen, ScreenEntry> = {
   },
   [Screen.Export]: { component: Export, width: "350px", closable: true },
   [Screen.Import]: { component: Import, width: "350px", closable: true },
+  [Screen.About]: About,
+  [Screen.ExegesisDetail]: ExegesisDetail,
 }
 
 export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
@@ -94,8 +100,6 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
     chapterId,
     verseNumber,
   )
-
-  console.log(activeScreens)
 
   const isImportOrExport =
     activeScreens.at(-1) === Screen.Export ||
