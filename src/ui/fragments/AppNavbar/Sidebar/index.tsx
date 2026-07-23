@@ -47,9 +47,9 @@ export default function Sidebar({
         {contentType === ContentType.Settings && (
           <>
             <UserSettingsForm
-              goToScreen={async (key) => {
+              goToScreen={async (screen) => {
                 await setIsSearchOpen(false)
-                await goToScreen?.(key as Screen)
+                await goToScreen?.(screen as Screen)
               }}
             />
           </>
