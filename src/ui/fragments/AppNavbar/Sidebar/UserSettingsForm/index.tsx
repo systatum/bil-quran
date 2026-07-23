@@ -231,6 +231,7 @@ export default function UserSettingsForm() {
         `,
         mobileFieldGroupStyle: css`
           background: ${mode === "dark" ? "#1a211d" : "#ededed"} !important;
+          min-height: fit-content;
         `,
         mobileFieldGroupRowDividerStyle: css`
           background: ${mode === "dark" ? "#1e3c2b" : "#dfdfdf"} !important;
