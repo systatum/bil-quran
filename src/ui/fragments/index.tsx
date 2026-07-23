@@ -17,6 +17,7 @@ const Wrapper = styled.div<StyleProp>`
   align-items: center;
   gap: 20px;
   background: ${({ $theme }) => ($theme === "dark" ? "#202b24" : "#e1dfda")};
+  position: relative;
 
   ${({ $style }) => $style}
 `
