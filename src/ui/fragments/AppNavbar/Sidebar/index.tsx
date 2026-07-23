@@ -1,23 +1,18 @@
-import { ThemeMode } from "@constants/theme"
 import { useLayoutEffect, useRef, useState } from "react"
 import styled, { css } from "styled-components"
 import BookmarkList from "./BookmarkList"
 import Title from "./Title"
 import UserSettingsForm from "./UserSettingsForm"
+import { ScreenProps } from "@systatum/coneto/screen-transition"
+import { Screen } from "@ui/index"
 import useAppState from "@hooks/states/AppState"
-import { Item, Wrapper } from "@ui/fragments"
-
-interface SidebarProps {
-  theme: ThemeMode
-  visible: boolean
-  onClosingSidebarRequested: () => void
-}
 
 export default function Sidebar({
-  theme,
-  visible,
-  onClosingSidebarRequested,
-}: SidebarProps) {
+  goBack,
+  goToScreen,
+}: Partial<ScreenProps<Screen>>) {
+  const { setIsSearchOpen } = useAppState()
+
   const titleRef = useRef<HTMLDivElement>(null)
   const [contentHeight, setContentHeight] = useState(0)
   const [contentType, setContentType] = useState<ContentType>(
@@ -39,11 +34,11 @@ export default function Sidebar({
   }, [])
 
   return (
-    <SidebarContainer theme={theme} $visible={visible}>
+    <>
       <div ref={titleRef}>
         <Title
           contentType={contentType}
-          onClosingSidebarRequested={onClosingSidebarRequested}
+          onClosingSidebarRequested={() => goBack?.()}
           onActionClicked={(c) => setContentType(c)}
         />
       </div>
@@ -52,7 +47,10 @@ export default function Sidebar({
         {contentType === ContentType.Settings && (
           <>
             <UserSettingsForm
-              key={String(visible) /* `key` forces re-mount */}
+              goToScreen={async (key) => {
+                await setIsSearchOpen(false)
+                await goToScreen?.(key as Screen)
+              }}
             />
           </>
         )}
@@ -60,44 +58,9 @@ export default function Sidebar({
           <BookmarkList height={contentHeight} />
         )}
       </Content>
-    </SidebarContainer>
+    </>
   )
 }
-
-const SidebarContainer = styled.aside<{
-  theme: ThemeMode
-  $visible: boolean
-}>`
-  background: ${({ theme }) => (theme === "dark" ? "#202b24" : "#e1dfda")};
-  position: fixed;
-  inset: 0 0 0 auto;
-
-  top: 0;
-  right: 0;
-  height: 100dvh;
-  width: 40vw;
-  min-width: 350px;
-  max-width: 400px;
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.08);
-  transform: translateX(${(p) => (p.$visible ? "0%" : "100%")});
-  transition: transform 0.22s ease;
-  z-index: 9991999;
-
-  display: flex;
-  flex-direction: column;
-
-  /* 0-450px */
-  @media (max-width: 370px) {
-    width: 80vw;
-    min-width: 300px;
-  }
-
-  /* 450-700px */
-  @media (min-width: 370px) and (max-width: 700px) {
-    width: 60vw;
-    max-width: 350px;
-  }
-`
 
 const Content = styled.div`
   flex: 1;
