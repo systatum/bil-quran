@@ -5,6 +5,7 @@ import BookmarkList from "./BookmarkList"
 import Title from "./Title"
 import UserSettingsForm from "./UserSettingsForm"
 import useAppState from "@hooks/states/AppState"
+import { Item, Wrapper } from "@ui/fragments"
 
 interface SidebarProps {
   theme: ThemeMode
@@ -47,7 +48,7 @@ export default function Sidebar({
         />
       </div>
 
-      <div>
+      <Content>
         {contentType === ContentType.Settings && (
           <>
             <UserSettingsForm
@@ -58,7 +59,7 @@ export default function Sidebar({
         {contentType === ContentType.Bookmarks && (
           <BookmarkList height={contentHeight} />
         )}
-      </div>
+      </Content>
     </SidebarContainer>
   )
 }
@@ -69,9 +70,11 @@ const SidebarContainer = styled.aside<{
 }>`
   background: ${({ theme }) => (theme === "dark" ? "#202b24" : "#e1dfda")};
   position: fixed;
+  inset: 0 0 0 auto;
+
   top: 0;
   right: 0;
-  height: 100vh;
+  height: 100dvh;
   width: 40vw;
   min-width: 350px;
   max-width: 400px;
@@ -79,6 +82,9 @@ const SidebarContainer = styled.aside<{
   transform: translateX(${(p) => (p.$visible ? "0%" : "100%")});
   transition: transform 0.22s ease;
   z-index: 9991999;
+
+  display: flex;
+  flex-direction: column;
 
   /* 0-450px */
   @media (max-width: 370px) {
@@ -91,6 +97,12 @@ const SidebarContainer = styled.aside<{
     width: 60vw;
     max-width: 350px;
   }
+`
+
+const Content = styled.div`
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
 `
 
 export const ContentType = {
