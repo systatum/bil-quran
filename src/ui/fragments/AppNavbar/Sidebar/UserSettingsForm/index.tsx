@@ -13,13 +13,13 @@ import { useMemo } from "react"
 import { useIntl } from "react-intl"
 import { css } from "styled-components"
 import useUserSettingsState from "../../../../hooks/states/UserSettingsState"
-import useAppState from "@hooks/states/AppState"
 import { Screen } from "@ui/index"
 import { RiArrowRightSLine, RiBookOpenLine } from "@remixicon/react"
+import { ScreenProps } from "@systatum/coneto/screen-transition"
 
-export default function UserSettingsForm() {
-  const { setActiveScreens } = useAppState()
-
+export default function UserSettingsForm({
+  goToScreen,
+}: Partial<ScreenProps<Screen>>) {
   const { formatMessage } = useIntl()
   const { mode } = useTheme()
   const {
@@ -193,7 +193,7 @@ export default function UserSettingsForm() {
       },
       title: formatMessage({ id: messages.backup.title }),
       onClick: () => {
-        setActiveScreens([Screen.Export])
+        goToScreen?.(Screen.Export)
       },
     },
     {
@@ -215,7 +215,7 @@ export default function UserSettingsForm() {
       },
       title: formatMessage({ id: messages.about }),
       onClick: () => {
-        setActiveScreens([Screen.About])
+        goToScreen?.(Screen.About)
       },
     },
   ]
