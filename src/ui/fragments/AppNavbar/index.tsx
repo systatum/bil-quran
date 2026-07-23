@@ -24,7 +24,6 @@ interface AppNavbarProps {
  * burger menu on the navbar.
  */
 export default function AppNavbar({ theme, title }: AppNavbarProps) {
-  const intl = useIntl()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const fontColor = theme === "dark" ? "#6e9370" : "#fff0d3"
@@ -78,7 +77,11 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
       {(isSidebarOpen || isSearchOpen) && (
         <OverlayBlocker
           ref={overlayBlockerRef}
-          exemptRegions={["#combo-list", "#bookmark-list"]}
+          exemptRegions={[
+            "#combo-list",
+            "#bookmark-list",
+            ".coneto-stateful-form",
+          ]}
           show={isSidebarOpen || isSearchOpen}
           onClick={({ close }) => {
             setIsSidebarOpen(false)
