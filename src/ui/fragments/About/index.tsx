@@ -35,7 +35,7 @@ export default function About({
         mobile
         styles={{
           containerStyle: css`
-            position: fixed;
+            position: absolute;
             top: 10px;
             left: 10px;
           `,
@@ -64,8 +64,8 @@ export default function About({
         mobile
         styles={{
           containerStyle: css`
-            min-width: 350px;
-            max-width: 400px;
+            min-width: 300px;
+            max-width: 350px;
 
             @media (max-width: 370px) {
               width: 80vw;
@@ -74,7 +74,7 @@ export default function About({
 
             @media (min-width: 370px) and (max-width: 700px) {
               width: 60vw;
-              max-width: 350px;
+              max-width: 300px;
             }
             gap: 4px;
           `,
