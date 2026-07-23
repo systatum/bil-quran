@@ -34,12 +34,6 @@ export default function ExegesisDetail({
           }, 300)
         }}
         withAction={false}
-        styles={{
-          containerStyle: css`
-            position: fixed;
-            top: 0px;
-          `,
-        }}
       />
 
       <Wrapper
@@ -48,8 +42,7 @@ export default function ExegesisDetail({
           justify-content: start;
           overflow: auto;
           min-height: 0;
-          margin-top: 140px;
-          padding-top: 20px;
+          padding: 40px 20px;
 
           /* Firefox */
           scrollbar-width: thin;
@@ -79,7 +72,6 @@ export default function ExegesisDetail({
           mobile
           styles={{
             containerStyle: css`
-              padding: 10px 20px 40px 20px;
               gap: 20px;
             `,
             mobileFieldGroupStyle: css`
