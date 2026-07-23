@@ -13,7 +13,12 @@ export const messages = {
   note: "note",
   highlight: "highlight",
   exegesis: "exegesis",
-  about: "about",
+  about: {
+    title: "about.title",
+    version: "about.version",
+    source: "about.source",
+    released: "about.released",
+  },
   lookup: {
     title: "lookup.title",
     go: "lookup.go",
