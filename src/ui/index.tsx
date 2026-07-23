@@ -18,6 +18,7 @@ import { css } from "styled-components"
 import ExegesisPaperDialogContent from "./fragments/QuranPaper/VerseRow/ExegesisPaperDialogContent"
 import About from "./fragments/About"
 import ExegesisDetail from "./fragments/About/detail"
+import Sidebar from "./fragments/AppNavbar/Sidebar"
 
 interface UIIndexProps {
   /** When true, opens the exegesis paper dialog for the routed verse on mount. */
@@ -31,6 +32,7 @@ export const Screen = {
   Export: "export",
   Import: "import",
   About: "about",
+  Sidebar: "sidebar",
 } as const
 
 export type Screen = (typeof Screen)[keyof typeof Screen]
@@ -46,10 +48,14 @@ const SCREENS: Record<Screen, ScreenEntry> = {
     sheet: true,
     height: "55dvh",
   },
-  [Screen.Export]: { component: Export, width: "350px", closable: true },
-  [Screen.Import]: { component: Import, width: "350px", closable: true },
-  [Screen.About]: About,
-  [Screen.ExegesisDetail]: ExegesisDetail,
+  [Screen.Sidebar]: { component: Sidebar, closable: true },
+  [Screen.Export]: { component: Export, closable: true },
+  [Screen.Import]: { component: Import, closable: true },
+  [Screen.About]: { component: About, closable: true },
+  [Screen.ExegesisDetail]: {
+    component: ExegesisDetail,
+    closable: true,
+  },
 }
 
 export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
@@ -101,9 +107,18 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
     verseNumber,
   )
 
-  const isImportOrExport =
-    activeScreens.at(-1) === Screen.Export ||
-    activeScreens.at(-1) === Screen.Import
+  const currentScreen = activeScreens.at(-1)
+
+  const fullLayoutScreens: Screen[] = [
+    Screen.Export,
+    Screen.Import,
+    Screen.About,
+    Screen.ExegesisDetail,
+    Screen.Sidebar,
+  ]
+
+  const shouldUseFullLayout =
+    currentScreen !== undefined && fullLayoutScreens.includes(currentScreen)
 
   return (
     <>
@@ -129,11 +144,20 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
           `,
           containerStyle: css`
             border: none;
-            ${isImportOrExport &&
+            ${shouldUseFullLayout &&
             css`
+              min-width: 400px;
               max-width: 400px;
 
-              @media (max-width: 800px) {
+              /* 0-450px */
+              @media (max-width: 370px) {
+                width: 80vw;
+                min-width: 300px;
+              }
+
+              /* 450-700px */
+              @media (min-width: 370px) and (max-width: 700px) {
+                width: 60vw;
                 max-width: 350px;
               }
             `};
