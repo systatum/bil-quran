@@ -16,13 +16,12 @@ export default function About({
   goToScreen,
 }: Partial<ScreenProps<Screen>>) {
   const {
-    userSettings: { theme },
+    userSettings: { theme, locale: rawLocal },
   } = useUserSettingsState()
   const exegesisOptions = useExegesisOptions()
   const { getExegesisDetail } = useExegesisState()
 
-  const { userSettings } = useUserSettingsState()
-  const locale = resolveLocale(userSettings.locale)
+  const locale = resolveLocale(rawLocal)
 
   return (
     <Wrapper $theme={theme}>
