@@ -98,6 +98,7 @@ export const ContentType = {
   Bookmarks: "bookmarks",
   Export: "export",
   Import: "import",
+  ExegesisDetail: "exegesis-detail",
 } as const
 
 export type ContentType = (typeof ContentType)[keyof typeof ContentType]
