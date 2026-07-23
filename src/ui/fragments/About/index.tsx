@@ -64,7 +64,19 @@ export default function About({
         mobile
         styles={{
           containerStyle: css`
-            width: 400px;
+            min-width: 350px;
+            max-width: 400px;
+
+            @media (max-width: 370px) {
+              width: 80vw;
+              min-width: 300px;
+            }
+
+            @media (min-width: 370px) and (max-width: 700px) {
+              width: 60vw;
+              max-width: 350px;
+            }
+            gap: 4px;
           `,
         }}
         fields={exegesisOptions.flatMap((exegesisOption) =>
@@ -80,9 +92,7 @@ export default function About({
               "aria-label": "exegesis",
               styles: {
                 self: css`
-                  background: ${theme === "dark"
-                    ? "#1a211d"
-                    : "#ededed"} !important;
+                  background: ${theme === "dark" ? "#1a211d" : "#ededed"};
                   flex-direction: row-reverse;
                   justify-content: space-between;
                 `,
