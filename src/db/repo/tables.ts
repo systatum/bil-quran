@@ -52,6 +52,10 @@ export const exegesis = table("exegesis", {
   locNames: text({ mode: "json" }).$type<Record<Locale, string>>().notNull(),
   // a short description
   description: text({ mode: "json" }).$type<Record<Locale, string>>().notNull(),
+  // a long description
+  longDescription: text({ mode: "json" })
+    .$type<Record<Locale, string>>()
+    .notNull(),
   authors: text({ mode: "json" }).$type<Array<ExegesisAuthor>>().notNull(),
   // chapter IDs whose verse content has been fully fetched and stored locally
   downloadedChapters: text({ mode: "json" })
