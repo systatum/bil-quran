@@ -78,6 +78,9 @@ export function preserveListContinuations(markdown: string): string {
  *     - a chunk of right-to-left (Arabic) text quoted within the commentary, can be
  *       a Qur'an verse, a Hadith, or anything else in Arabic. The third argument
  *       `meaning` is optional aka left out when absent, attached to the RTL text.
+ *       The `meaning` block itself can contain another RT-block, so RT can nest.
+ *   <{["IRT", "arabic", meaning]}>
+ *     - like RT, but sitting inline in the middle of an ordinary sentence
  *
  * "F" and "Q" are converted to an <a class="inline-marker"> element with:
  *   data-marker-type  — the type string ("F", "Q")
@@ -193,13 +196,33 @@ function renderMarker(json: string): string | null {
   if (type === "RT") {
     const arabic = escHtml(String(args[0] ?? ""))
     const meaning = args[1] == null ? null : scanMarkers(String(args[1]), true)
+    const meaningBlock = meaning
+      ? // A `<div>`, as `<p>` can't allow for a nested block-level `<blockquote>`
+        `<hr class="scripture-divider" /><div class="scripture-meaning">${meaning}</div>`
+      : ""
+
     return (
       `<blockquote class="scripture-quote">` +
       `<p class="scripture-arabic" dir="rtl" lang="ar">${arabic}</p>` +
-      (meaning
-        ? `<hr class="scripture-divider" /><p class="scripture-meaning">${meaning}</p>`
-        : "") +
+      meaningBlock +
       `</blockquote>`
+    )
+  }
+
+  if (type === "IRT") {
+    const arabic = escHtml(String(args[0] ?? ""))
+    const meaning = args[1] == null ? null : scanMarkers(String(args[1]), true)
+    // The "(" / ")" are added here for display only — `meaning` itself is
+    // stored without them, same convention as RT's own `meaning` argument.
+    const meaningSpan = meaning
+      ? ` <span class="scripture-inline-meaning">(${meaning})</span>`
+      : ""
+
+    return (
+      `<span class="scripture-inline">` +
+      `<span class="scripture-inline-arabic" dir="rtl" lang="ar">${arabic}</span>` +
+      meaningSpan +
+      `</span>`
     )
   }
 
@@ -207,7 +230,11 @@ function renderMarker(json: string): string | null {
   if (type === "F") {
     label = `<sup>${args[0]}</sup>`
   } else if (type === "Q") {
-    label = String(args[0])
+    // args[1], when present, overrides the displayed label (still args[0]
+    // — the "c:v" string — for navigation) e.g. a verse range like
+    // "71:26-27" renders as two adjacent Q markers, the second one
+    // showing just "27" rather than the redundant "71:27".
+    label = args[1] != null ? String(args[1]) : String(args[0])
   } else {
     return null
   }
