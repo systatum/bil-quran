@@ -72,6 +72,11 @@ export const Asset: Asset = {
       path: `${exegesisBasePath}/mirali`,
       availableLocales: [Locale.IntEnglish],
     },
+    {
+      name: "Ibn Kathir",
+      path: `${exegesisBasePath}/ibnkathir`,
+      availableLocales: [Locale.IntEnglish],
+    },
   ],
 
   exegesisOf(id) {

@@ -29,6 +29,13 @@ App unique features:
 - Make it easy to learn tajwid on the app
 - Add a feature to report an issue
 - Rate translation feature (this needs Ligo backend).
+- Ability to find by text: type in the text of the ayah, in Arabic or English, no matter how bad/wrong or how partially correct, can still give estimate
+- When clicking > and < in exegesis dialog, rewrite the URL as well
+- Remove "See exegesis" on exegesis dialog paper
+- Add "copy link" on verse marker and on exegesis dialog, to copy link to respective path
+- Revert button position top is > and bottom is <
+- Auto add \_\_\_ on words like SAW SWT RA with tooltip displaying localized meaning.
+  -Add site / guess tracker google web service style
 
 ## Stack
 
