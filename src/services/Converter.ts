@@ -44,6 +44,13 @@ export function encodeBase64Unicode(str: string): string {
   return btoa(binary)
 }
 
+/** Inverse of {@link encodeBase64Unicode}. Throws if `str` isn't valid base64. */
+export function decodeBase64Unicode(str: string): string {
+  const binary = atob(str)
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0))
+  return new TextDecoder().decode(bytes)
+}
+
 // ===== OBJECT =====================================
 
 export function flattenObject(

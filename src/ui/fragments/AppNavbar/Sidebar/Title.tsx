@@ -91,6 +91,7 @@ export default function Title({
           type: "actions",
           actions: [
             {
+              id: contentType && `${contentType}-back-button`,
               icon: {
                 image: RiArrowLeftLine,
                 color: TEXT_COLOR,

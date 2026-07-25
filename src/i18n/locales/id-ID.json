@@ -86,7 +86,9 @@
     "import": {
       "title": "Impor data anda",
       "description": "Tempelkan data terenkripsi di sini",
-      "import": "Impor"
+      "import": "Impor",
+      "selectFile": "Pilih berkas",
+      "invalid": "Ini bukan berkas cadangan yang valid"
     }
   },
 

@@ -12,7 +12,7 @@ import { StatefulForm } from "@systatum/coneto/stateful-form"
 import {
   RiDownload2Line,
   RiFileCopy2Line,
-  RiUpload2Line,
+  RiFileDownloadLine,
 } from "@remixicon/react"
 import { ThemeMode } from "@constants/theme"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
@@ -61,9 +61,10 @@ export function Export({ goBack, goToScreen }: Partial<ScreenProps<Screen>>) {
             type: "actions",
             actions: [
               {
-                caption: "Import",
+                id: "open-import-button",
+                caption: formatMessage({ id: messages.backup.import.import }),
                 icon: {
-                  image: RiUpload2Line,
+                  image: RiFileDownloadLine,
                 },
                 onClick: () => goToScreen?.(Screen.Import),
                 styles: {
@@ -85,6 +86,7 @@ export function Export({ goBack, goToScreen }: Partial<ScreenProps<Screen>>) {
           {formatMessage({ id: messages.backup.export.description })}
         </Description>
         <Textarea
+          id="export-textarea"
           rows={6}
           width="100%"
           value={encoded}

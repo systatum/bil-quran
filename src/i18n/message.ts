@@ -68,6 +68,8 @@ export const messages = {
       title: "backup.import.title",
       description: "backup.import.description",
       import: "backup.import.import",
+      selectFile: "backup.import.selectFile",
+      invalid: "backup.import.invalid",
     },
   },
   searchSheet: {

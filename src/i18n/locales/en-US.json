@@ -73,7 +73,9 @@
     "import": {
       "title": "Import your data",
       "description": "Paste your encoded data here",
-      "import": "Import"
+      "import": "Import",
+      "selectFile": "Select file",
+      "invalid": "This doesn't look like a valid backup file"
     }
   },
 
