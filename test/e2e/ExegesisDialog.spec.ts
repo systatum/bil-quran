@@ -102,11 +102,7 @@ test.describe("ExegesisDialog", () => {
           ariaLabel: "footnote-return-btn",
         })
 
-        // Footnote content loads asynchronously, same as elsewhere in this file
-        await clickOn(undefined, dialog, {
-          className: "marker-type-f",
-          timeout: 8_000,
-        })
+        await clickOn(undefined, dialog, { className: "marker-type-f" })
 
         const returnBtnLoc = {
           ariaLabel: "footnote-return-btn",
@@ -120,10 +116,7 @@ test.describe("ExegesisDialog", () => {
         const dialog = await openExegesisDialog(page, "1:7")
         await expect(dialog).toBeVisible({ timeout: 8_000 })
 
-        await clickOn(undefined, dialog, {
-          className: "marker-type-f",
-          timeout: 8_000,
-        })
+        await clickOn(undefined, dialog, { className: "marker-type-f" })
 
         await hasElement(undefined, dialog, {
           ariaLabel: "footnote-return-btn",
@@ -161,27 +154,25 @@ test.describe("ExegesisDialog", () => {
       const dialog = await openExegesisDialog(page, "1:7")
       await expect(dialog).toBeVisible({ timeout: 8_000 })
 
-      // Without Q-navigation there are only 2 traversal buttons (prev + next)
-      await expect(dialog.locator("button")).toHaveCount(2, { timeout: 5_000 })
+      // no Q-navigation yet
+      await hasNoElement(undefined, dialog, { ariaLabel: "nav-back-btn" })
 
-      // Click the first Q-marker (navigates to e.g. 4:69)
-      const qMarker = dialog.locator("a.marker-type-q").first()
-      await expect(qMarker).toBeVisible({ timeout: 8_000 })
-      await qMarker.click()
+      // click the first Q-marker
+      await clickOn(undefined, dialog, { className: "marker-type-q" })
 
-      // A back button is now visible (3 buttons: back + prev + next)
-      await expect(dialog.locator("button")).toHaveCount(3, { timeout: 3_000 })
+      // a back button is now visible
+      await hasElement(undefined, dialog, { ariaLabel: "nav-back-btn" })
 
-      // Verse indicator has changed
+      // verse indicator has changed
       const verseIndicator = dialog.locator('[data-testid="verse-indicator"]')
-      await expect(verseIndicator).not.toHaveText("7", { timeout: 3_000 })
+      await expect(verseIndicator).not.toHaveText("7")
 
-      // Click the first button (back)
-      await dialog.locator("button").first().click()
+      // Click the back button
+      await clickOn(undefined, dialog, { ariaLabel: "nav-back-btn" })
 
-      // Verse indicator returns to 7 and back button disappears
-      await expect(verseIndicator).toHaveText("7", { timeout: 3_000 })
-      await expect(dialog.locator("button")).toHaveCount(2, { timeout: 3_000 })
+      // verse indicator returns to 7 and back button disappears
+      await hasText("7", verseIndicator)
+      await hasNoElement(undefined, dialog, { ariaLabel: "nav-back-btn" })
     })
 
     // ── Prev / Next navigation ───────────────────────────────────────────────
