@@ -2,7 +2,7 @@ import { Asset } from "@constants/assets"
 import useChaptersState from "@hooks/states/ChaptersState"
 import useExegesisState from "@hooks/states/ExegesisState"
 import usePaperDialogState, {
-  ExegesisDialogContentProp,
+  assertPaperDialogContent,
 } from "@hooks/states/PaperDialogState"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import { useTranslatedWords, useWords } from "@hooks/tools/useWordTranslations"
@@ -26,8 +26,8 @@ import Entry from "./Entry"
 export type NavTarget = { chapterId: number; verse: number }
 
 export default function ExegesisPaperDialogContent() {
-  const exegesisContent = usePaperDialogState.getState()
-    ?.content as ExegesisDialogContentProp
+  const exegesisContent = usePaperDialogState((s) => s.content)
+  assertPaperDialogContent(exegesisContent, "exegesis")
   const { chapterId, verseNumber } = exegesisContent
 
   const { mode: theme } = useTheme()

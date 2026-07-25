@@ -19,12 +19,12 @@ import ClippedContent from "../../ClippedContent"
 import InfoTile from "./InfoTile"
 import InterlinearText from "./InterlinearText"
 import usePaperDialogState, {
-  LexemeDetailDialogContentProp,
+  assertPaperDialogContent,
 } from "@hooks/states/PaperDialogState"
 
 export function LexemeDetailPaperDialog() {
-  const lexemeContent = usePaperDialogState.getState()
-    ?.content as LexemeDetailDialogContentProp
+  const lexemeContent = usePaperDialogState((s) => s.content)
+  assertPaperDialogContent(lexemeContent, "lexeme")
   const { occurrences, word: content } = lexemeContent
 
   const { mode: theme } = useTheme()

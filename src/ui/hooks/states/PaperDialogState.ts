@@ -1,8 +1,8 @@
 import type { WordOccurrence } from "@constants/records/WordRecord"
+import { Screen } from "@ui/index"
 import { create } from "zustand"
 import type { WordCell } from "../../fragments/QuranPaper/VerseRow"
 import useAppState from "./AppState"
-import { Screen } from "@ui/index"
 
 const usePaperDialogState = create<PaperDialogState>((set) => ({
   content: null,
@@ -62,5 +62,14 @@ export type ExegesisDialogContentProp = {
 export type PaperDialogContent =
   | LexemeDetailDialogContentProp
   | ExegesisDialogContentProp
+
+/** Narrows `content` to one dialog type, since each screen only ever renders its own. */
+export function assertPaperDialogContent<T extends PaperDialogContent["type"]>(
+  content: PaperDialogContent | null,
+  type: T,
+): asserts content is Extract<PaperDialogContent, { type: T }> {
+  if (content?.type !== type)
+    throw new Error(`Type "${type}" expected, got "${content?.type}"`)
+}
 
 export default usePaperDialogState
