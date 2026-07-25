@@ -1,6 +1,9 @@
 import { Asset } from "@constants/assets"
 import useChaptersState from "@hooks/states/ChaptersState"
 import useExegesisState from "@hooks/states/ExegesisState"
+import usePaperDialogState, {
+  ExegesisDialogContentProp,
+} from "@hooks/states/PaperDialogState"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import { useTranslatedWords, useWords } from "@hooks/tools/useWordTranslations"
 import { messages } from "@i18n/message"
@@ -19,9 +22,6 @@ import CircleButton from "../../CircleButton"
 import InterlinearText from "../InterlinearText"
 import Carousel from "./Carousel"
 import Entry from "./Entry"
-import usePaperDialogState, {
-  ExegesisDialogContentProp,
-} from "@hooks/states/PaperDialogState"
 
 export type NavTarget = { chapterId: number; verse: number }
 
@@ -45,7 +45,6 @@ export default function ExegesisPaperDialogContent() {
       if (defaultId) setExegesis([defaultId])
     }
     setHasSeenExegesisDialog(true)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const [currentVerse, setCurrentVerse] = useState(verseNumber)

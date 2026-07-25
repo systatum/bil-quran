@@ -10,8 +10,8 @@ import { ThoughtSchool } from "@constants/ThoughtSchool"
 import { repo } from "@db/repo"
 import { unpackIPC } from "@services/Converter"
 import { FingerprintedAsset } from "@services/fingerprinter"
-import { pickLocalized } from "@services/mutator"
 import LOGGER from "@services/Logger"
+import { pickLocalized } from "@services/mutator"
 import { useEffect, useState } from "react"
 import useUserSettingsState from "../states/UserSettingsState"
 
@@ -66,7 +66,6 @@ export default function useExegesis(
       cancels.push(() => {
         cancelled = true
       })
-
       ;(async () => {
         try {
           await fetchExegesis(id, source.path)
@@ -98,7 +97,6 @@ export default function useExegesis(
 
     return () => cancels.forEach((c) => c())
     // activeKey is a stable string derived from the array, avoids reference churn
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeKey, chapterId, verseNumber])
 
   return exegesis.map((id) => ({
