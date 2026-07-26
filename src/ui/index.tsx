@@ -15,9 +15,8 @@ interface UIIndexProps {
 export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
   const [chapter, setChapter] = useState<ChapterRecord | null>(null)
   const [currentVerse, setCurrentVerse] = useState<number | null>(null)
-  const {
-    userSettings: { theme, locale },
-  } = useUserSettingsState()
+  const theme = useUserSettingsState((s) => s.userSettings.theme)
+  const locale = useUserSettingsState((s) => s.userSettings.locale)
 
   const { loadPagination } = usePaginationState()
   useEffect(() => {
@@ -29,7 +28,7 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
   const chapterId = params.chapter ? parseInt(params.chapter) : null
   const verseNumber = params.verse ? parseInt(params.verse) : null
 
-  const { openExegesis } = usePaperDialogState()
+  const openExegesis = usePaperDialogState((s) => s.openExegesis)
   const openedExegesisForRef = useRef<string | null>(null)
   useEffect(() => {
     if (!openExegesisOnMount) return

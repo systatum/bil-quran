@@ -58,10 +58,13 @@ export default function QuranPaper({
   const parentRef = useRef<HTMLDivElement>(null)
 
   const { chapters } = useChaptersState()
-  const { setScrollPosition, userSettings } = useUserSettingsState()
+  const wbwTranslations = useUserSettingsState(
+    (s) => s.userSettings.wbwTranslations,
+  )
+  const setScrollPosition = useUserSettingsState((s) => s.setScrollPosition)
 
   const rawWords = useWords()
-  const words = useTranslatedWords(rawWords, userSettings.wbwTranslations)
+  const words = useTranslatedWords(rawWords, wbwTranslations)
 
   // some flags about the rendering
   const [showTransliteration, setShowTransliteration] = useState(false)
@@ -272,7 +275,7 @@ export default function QuranPaper({
     }
 
     async function restoreScroll() {
-      const { lastScroll } = userSettings
+      const { lastScroll } = useUserSettingsState.getState().userSettings
       if (lastScroll.chapterId > 0) {
         await waitForMeasurements()
         await scrollToVerse(lastScroll.chapterId, lastScroll.verse)
@@ -295,7 +298,8 @@ export default function QuranPaper({
   // resize effect (empty deps, no re-registration) can call it.
   const scrollRestoreRef = useRef<(() => Promise<void>) | null>(null)
   scrollRestoreRef.current = async () => {
-    const { chapterId, verse } = userSettings.lastScroll
+    const { chapterId, verse } =
+      useUserSettingsState.getState().userSettings.lastScroll
     if (chapterId > 0) {
       await waitForMeasurements()
       await scrollToVerse(chapterId, verse)

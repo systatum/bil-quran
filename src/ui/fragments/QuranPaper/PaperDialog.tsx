@@ -9,7 +9,11 @@ import { LexemeDetailPaperDialog } from "./VerseRow/LexemeDetailPaperDialog"
 export default function PaperDialog() {
   const paperDialogRef = useRef<Coneto.PaperDialogRef>(null)
   const { content, openCount } = usePaperDialogState()
-  const { userSettings } = useUserSettingsState()
+  // Selector instead of destructuring the whole store, so this always-mounted
+  // component only re-renders when the Arabic font actually changes.
+  const arabicFontFamily = useUserSettingsState(
+    (s) => s.userSettings.font.arabic.family,
+  )
 
   useEffect(() => {
     if (openCount > 0) paperDialogRef.current?.openDialog()
@@ -43,7 +47,7 @@ export default function PaperDialog() {
         <LexemeDetailPaperDialog
           occurrences={content.occurrences}
           content={content.word}
-          arabicFont={userSettings.font.arabic.family}
+          arabicFont={arabicFontFamily}
         />
       )}
       {content?.type === "exegesis" && (
