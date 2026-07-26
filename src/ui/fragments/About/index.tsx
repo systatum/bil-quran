@@ -1,17 +1,17 @@
-import useUserSettingsState from "@hooks/states/UserSettingsState"
-import { RiArrowLeftLine, RiArrowRightSLine } from "@remixicon/react"
-import { ScreenProps } from "@systatum/coneto/screen-transition"
-import { css } from "styled-components"
-import { Screen } from "@ui/index"
-import { Button } from "@systatum/coneto/button"
-import { StatefulForm } from "@systatum/coneto/stateful-form"
-import useExegesisOptions from "@hooks/tools/useExegesisOptions"
-import useExegesisState from "@hooks/states/ExegesisState"
-import { resolveLocale } from "@i18n"
-import { H2, Item, SubItem, Text, Wrapper } from "@ui/fragments"
-import { useIntl } from "react-intl"
-import { messages } from "@i18n/message"
 import { ENV } from "@constants/env"
+import useExegesisState from "@hooks/states/ExegesisState"
+import useUserSettingsState from "@hooks/states/UserSettingsState"
+import useExegesisOptions from "@hooks/tools/useExegesisOptions"
+import { resolveLocale } from "@i18n"
+import { messages } from "@i18n/message"
+import { RiArrowLeftLine, RiArrowRightSLine } from "@remixicon/react"
+import { Button } from "@systatum/coneto/button"
+import { ScreenProps } from "@systatum/coneto/screen-transition"
+import { StatefulForm } from "@systatum/coneto/stateful-form"
+import { H2, Item, SubItem, Text, Wrapper } from "@ui/fragments"
+import { Screen } from "@ui/index"
+import { useIntl } from "react-intl"
+import { css } from "styled-components"
 
 export default function About({
   goBack,
@@ -56,7 +56,7 @@ export default function About({
             align-items: center;
           `}
         >
-          <H2>bil-Quran</H2>
+          <H2>bil-Qur'an</H2>
           <Text>
             {formatMessage({ id: messages.about.version })} {ENV.version}
           </Text>

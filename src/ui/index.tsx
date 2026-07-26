@@ -1,24 +1,24 @@
-import { ChapterRecord } from "@constants/records/ChapterRecord"
+import useAppState from "@hooks/states/AppState"
 import usePaginationState from "@hooks/states/PaginationState"
-import { useParams } from "@tanstack/react-router"
-import { useEffect, useMemo, useRef, useState } from "react"
-import AppNavbar from "./fragments/AppNavbar"
-import QuranPaper from "./fragments/QuranPaper"
-import usePaperDialogState from "./hooks/states/PaperDialogState"
-import useUserSettingsState from "./hooks/states/UserSettingsState"
+import useFirstVisibleVerse from "@hooks/tools/useFirstVisibleVerse"
 import {
   ScreenEntry,
   ScreenTransition,
 } from "@systatum/coneto/screen-transition"
-import { Export } from "./fragments/AppNavbar/Sidebar/Export"
-import { Import } from "./fragments/AppNavbar/Sidebar/Import"
-import useAppState from "@hooks/states/AppState"
-import { LexemeDetailPaperDialog } from "./fragments/QuranPaper/VerseRow/LexemeDetailPaperDialog"
+import { useParams } from "@tanstack/react-router"
+import { useEffect, useMemo, useRef } from "react"
 import { css } from "styled-components"
-import ExegesisPaperDialogContent from "./fragments/QuranPaper/VerseRow/ExegesisPaperDialogContent"
 import About from "./fragments/About"
 import ExegesisDetail from "./fragments/About/ExegesisDetail"
+import AppNavbar from "./fragments/AppNavbar"
 import Sidebar from "./fragments/AppNavbar/Sidebar"
+import { Export } from "./fragments/AppNavbar/Sidebar/Export"
+import { Import } from "./fragments/AppNavbar/Sidebar/Import"
+import QuranPaper from "./fragments/QuranPaper"
+import ExegesisPaperDialogContent from "./fragments/QuranPaper/VerseRow/ExegesisPaperDialogContent"
+import { LexemeDetailPaperDialog } from "./fragments/QuranPaper/VerseRow/LexemeDetailPaperDialog"
+import usePaperDialogState from "./hooks/states/PaperDialogState"
+import useUserSettingsState from "./hooks/states/UserSettingsState"
 
 interface UIIndexProps {
   /** When true, opens the exegesis paper dialog for the routed verse on mount. */
@@ -59,7 +59,7 @@ const SCREENS: Record<Screen, ScreenEntry> = {
 }
 
 export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
-  const [chapter, setChapter] = useState<ChapterRecord | null>(null)
+  const { chapter } = useFirstVisibleVerse()
   // Selectors instead of destructuring the whole store, so this component
   // only re-renders when theme/locale actually change, not on every
   // unrelated settings update (e.g. lastScroll on every exegesis dialog click).
@@ -131,9 +131,6 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
       <AppNavbar theme={theme} title={navbarTitle} />
       <QuranPaper
         theme={theme}
-        onScroll={(verseRow) => {
-          setChapter(verseRow.chapter)
-        }}
         chapterId={chapterId}
         verseNumber={verseNumber}
       />

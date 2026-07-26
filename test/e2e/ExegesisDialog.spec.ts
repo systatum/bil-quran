@@ -159,6 +159,9 @@ test.describe("ExegesisDialog", () => {
 
       await clickOn(undefined, dialog, { ariaLabel: "prev-verse-btn" })
       await hasText("3", verseIndicator)
+      await expect(page.locator('[aria-label="title-title"]')).toContainText(
+        "Al-Faatiha",
+      )
     })
 
     test("next button increments the verse number", async ({ page }) => {
@@ -172,6 +175,9 @@ test.describe("ExegesisDialog", () => {
 
       await clickOn(undefined, dialog, { ariaLabel: "next-verse-btn" })
       await hasText("5", verseIndicator)
+      await expect(page.locator('[aria-label="title-title"]')).toContainText(
+        "Al-Faatiha",
+      )
     })
 
     test("prev button on first verse navigates to the chapter intro", async ({
@@ -721,12 +727,15 @@ test.describe("ExegesisDialog", () => {
         ariaLabel: "verse-indicator",
       })
       await hasText("2", verseIndicator)
+      const title = page.locator('[aria-label="title-title"]')
+      await expect(title).toContainText("Al-Faatiha")
 
       // manually navigate to a different /e/ target, an in-app hash change
       await page.goto("/#/e/4/8")
       await page.waitForTimeout(500)
 
       await hasText("8", verseIndicator)
+      await expect(title).toContainText("An-Nisaa")
     })
   })
 })

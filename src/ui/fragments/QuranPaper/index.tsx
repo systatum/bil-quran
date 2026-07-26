@@ -36,7 +36,6 @@ function isVerseRow(row: RenderRow): row is RenderableVerseRow {
 }
 
 interface QuranBrowserProps {
-  onScroll: (verseRow: Verse) => void
   theme: ThemeMode
 
   // if given, will scroll to this location
@@ -49,7 +48,6 @@ interface QuranBrowserProps {
  * It defines the coordinate system for all offset calculations.
  */
 export default function QuranPaper({
-  onScroll,
   theme = "dark",
   chapterId: requestedChapterId,
   verseNumber: requestedVerseNumber,
@@ -169,7 +167,6 @@ export default function QuranPaper({
 
         if (!row || row.type !== "verse") return
         const verse = row.verse
-        if (onScroll) onScroll(row.verse)
 
         setScrollPosition(verse.chapter.id, verse.number)
       }, 120)
