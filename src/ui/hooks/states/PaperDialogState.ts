@@ -13,7 +13,9 @@ const usePaperDialogState = create<PaperDialogState>((set) => ({
       content: { type: "lexeme", word, occurrences: {} },
       openCount: s.openCount + 1,
     }))
-    await useAppState.setState({ activeScreens: [Screen.Lexeme] })
+    await useAppState.setState((s) => ({
+      activeScreens: pushScreen(s.activeScreens, Screen.Lexeme),
+    }))
   },
 
   updateLexemeOccurrences(occurrences) {
@@ -28,13 +30,25 @@ const usePaperDialogState = create<PaperDialogState>((set) => ({
       content: { type: "exegesis", chapterId, verseNumber },
       openCount: s.openCount + 1,
     }))
-    await useAppState.setState({ activeScreens: [Screen.Exegesis] })
+    await useAppState.setState((s) => ({
+      activeScreens: pushScreen(s.activeScreens, Screen.Exegesis),
+    }))
   },
 
   close() {
     set({ content: null })
   },
 }))
+
+/**
+ * Pushes `screen` onto the stack, unless it's already on top so revisiting a different
+ * `/e/:chapter/:verse` updates the existing screen's content in place
+ * instead of stacking a duplicate.
+ */
+function pushScreen(activeScreens: Screen[], screen: Screen): Screen[] {
+  if (activeScreens.at(-1) === screen) return activeScreens
+  return [...activeScreens, screen]
+}
 
 export interface PaperDialogState {
   content: PaperDialogContent | null
