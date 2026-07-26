@@ -31,7 +31,6 @@ export function useHighlightVerseDialog(verseKey: string): ModalDialogConfig {
   // this hook stays mounted, so reset on verse change or it'd leak selection
   useEffect(() => {
     setSelectedColor(existingColor ?? HighlightColor.Primary)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [verseKey])
 
   const colorOptions: ComboboxOption[] = useMemo(() => {

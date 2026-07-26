@@ -5,7 +5,6 @@ import useModalDialogState, {
 import { Dialog } from "@systatum/coneto/dialog"
 import { useEffect, useState } from "react"
 import styled from "styled-components"
-import { useBackupDialog } from "../AppNavbar/Sidebar/BackupDialog"
 import { useHighlightVerseDialog } from "./VerseRow/HighlightVerseDialog"
 import { useNoteVerseDialog } from "./VerseRow/NoteVerseDialog"
 
@@ -18,7 +17,6 @@ const DIALOG_HOOKS: Record<
     useNoteVerseDialog((content as { verseKey: string }).verseKey),
   highlight: (content) =>
     useHighlightVerseDialog((content as { verseKey: string }).verseKey),
-  backup: () => useBackupDialog(),
 }
 
 // Calls only the active type's hook (remounts via `key` on type change,

@@ -8,7 +8,6 @@ import useChaptersState from "../../hooks/states/ChaptersState"
 import useUserSettingsState from "../../hooks/states/UserSettingsState"
 import ChapterRow from "./ChapterRow"
 import ModalDialog from "./ModalDialog"
-import PaperDialog from "./PaperDialog"
 import VerseRow, { Verse } from "./VerseRow"
 import { Bismillah } from "./VerseRow/Bismillah"
 
@@ -349,7 +348,6 @@ export default function QuranPaper({
         }}
       >
         <ModalDialog />
-        <PaperDialog />
 
         {items.map((item) => {
           const row = renderRows[item.index]

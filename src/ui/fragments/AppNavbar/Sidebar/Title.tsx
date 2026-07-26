@@ -11,6 +11,7 @@ import * as Coneto from "@systatum/coneto/title"
 import { useIntl } from "react-intl"
 import { css } from "styled-components"
 import { ContentType } from "."
+import useExegesisState from "@hooks/states/ExegesisState"
 
 const DARK_TEXT_COLOR = "#354526"
 const LIGHT_TEXT_COLOR = "rgb(89, 77, 67)"
@@ -19,19 +20,29 @@ const LIGHT_BG_COLOR = "rgb(173, 156, 141)"
 
 interface TitleProps {
   onClosingSidebarRequested: () => void
-  onActionClicked: (action: ContentType) => void
+  onActionClicked?: (action: ContentType) => void
   contentType?: ContentType
+  rightSection?: Coneto.TitleSection[] | null
+  withAction?: boolean
+  styles?: Coneto.TitleStyles
 }
 
 export default function Title({
   onClosingSidebarRequested,
   onActionClicked,
   contentType,
+  withAction = true,
+  rightSection,
+  styles,
 }: TitleProps) {
   const { formatMessage } = useIntl()
   const {
     userSettings: { theme },
   } = useUserSettingsState()
+  const { exegesisDetail, selectedExegesisId } = useExegesisState()
+
+  const detail = selectedExegesisId ? exegesisDetail[selectedExegesisId] : null
+  const authorName = detail?.authors.map((a) => a.name).join(", ")
 
   const TEXT_COLOR = theme === "dark" ? DARK_TEXT_COLOR : LIGHT_TEXT_COLOR
 
@@ -43,6 +54,15 @@ export default function Title({
     case ContentType.Settings:
       title = formatMessage({ id: messages.settings })
       break
+    case ContentType.Export:
+      title = formatMessage({ id: messages.backup.export.title })
+      break
+    case ContentType.Import:
+      title = formatMessage({ id: messages.backup.import.title })
+      break
+    case ContentType.ExegesisDetail:
+      title = String(authorName)
+      break
   }
 
   return (
@@ -51,15 +71,19 @@ export default function Title({
       text={title}
       pretitle="Bil-Quran"
       styles={{
+        ...styles,
         containerStyle: css`
           background: ${theme === "dark" ? DARK_BG_COLOR : LIGHT_BG_COLOR};
           padding: 10px;
+          ${styles?.containerStyle}
         `,
         titleStyle: css`
           color: ${TEXT_COLOR};
+          ${styles?.titleStyle}
         `,
         pretitleStyle: css`
           color: ${TEXT_COLOR};
+          ${styles?.pretitleStyle}
         `,
       }}
       leftSection={[
@@ -67,6 +91,7 @@ export default function Title({
           type: "actions",
           actions: [
             {
+              id: contentType && `${contentType}-back-button`,
               icon: {
                 image: RiArrowLeftLine,
                 color: TEXT_COLOR,
@@ -93,8 +118,9 @@ export default function Title({
                 color: TEXT_COLOR,
               },
               onClick: () => {
-                onActionClicked(ContentType.Settings)
+                onActionClicked?.(ContentType.Settings)
               },
+              hidden: !withAction,
             },
             {
               id: "bookmarks-button",
@@ -107,11 +133,13 @@ export default function Title({
                 color: TEXT_COLOR,
               },
               onClick: () => {
-                onActionClicked(ContentType.Bookmarks)
+                onActionClicked?.(ContentType.Bookmarks)
               },
+              hidden: !withAction,
             },
           ],
         },
+        ...(rightSection ?? []),
       ]}
     />
   )

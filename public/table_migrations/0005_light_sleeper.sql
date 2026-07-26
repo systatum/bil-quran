@@ -1,0 +1,1 @@
+ALTER TABLE `exegesis` ADD `long_description` text NOT NULL;

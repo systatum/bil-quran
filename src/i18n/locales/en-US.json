@@ -4,12 +4,18 @@
   "add": "Add",
   "cancel": "Cancel",
   "settings": "Settings",
-  "backup": "Backup",
   "bookmarks_and_notes": "Bookmarks and Notes",
   "bookmark": "Bookmark",
   "note": "Note",
   "highlight": "Highlight",
   "exegesis": "Exegesis",
+
+  "about": {
+    "title": "About",
+    "version": "Version",
+    "released": "Released",
+    "source": "Source"
+  },
 
   "lookup": {
     "title": "Verse lookup",
@@ -54,6 +60,25 @@
     "pageAbbreviation": "pg."
   },
 
+  "backup": {
+    "title": "Backup",
+    "export": {
+      "title": "Export your data",
+      "description": "Copy or download an encoded backup of your bil-Qur'an settings, notes, and other data.",
+      "copy": "Copy",
+      "download": "Download",
+      "copySuccess": "Copied to clipboard",
+      "copyFailed": "Failed to copy"
+    },
+    "import": {
+      "title": "Import your data",
+      "description": "Paste your encoded data here",
+      "import": "Import",
+      "selectFile": "Select file",
+      "invalid": "This doesn't look like a valid backup file"
+    }
+  },
+
   "dialog": {
     "noteVerse": {
       "title": "Note this verse",
@@ -64,14 +89,6 @@
     "highlightVerse": {
       "title": "Highlight this verse",
       "colorLabel": "Color"
-    },
-    "backup": {
-      "title": "Backup your data",
-      "description": "Copy or download an encoded backup of your bil-Qur'an settings, notes, and other data.",
-      "copy": "Copy",
-      "download": "Download",
-      "copySuccess": "Copied to clipboard",
-      "copyFailed": "Failed to copy"
     }
   },
 

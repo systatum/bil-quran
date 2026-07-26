@@ -133,8 +133,8 @@ const Wrapper = styled.div<{ $theme: string }>`
     text-decoration-style: dotted;
     text-decoration-thickness: 2px;
     text-underline-offset: 3px;
-    margin-left: 5px;
-    margin-right: 2px;
+    margin-left: 3px;
+    margin-right: 3px;
   }
 `
 
@@ -193,6 +193,86 @@ const VerseText = styled.div<{ $theme: string; $loaded: boolean }>`
   tbody tr:nth-child(even) td {
     background: ${({ $theme }) =>
       $theme === "dark" ? "rgba(255, 255, 255, 0.02)" : "rgba(0, 0, 0, 0.015)"};
+  }
+
+  blockquote.scripture-quote {
+    margin: 0.9em 0;
+    padding: 10px 16px;
+    border-radius: 6px;
+    background: ${({ $theme }) =>
+      $theme === "dark"
+        ? "rgba(200, 169, 110, 0.07)"
+        : "rgba(138, 96, 48, 0.06)"};
+  }
+  blockquote.scripture-quote p.scripture-arabic {
+    font-family: "Times New Roman", serif;
+    font-size: 1.25em;
+    line-height: 2;
+    text-align: right;
+    margin: 0;
+  }
+  blockquote.scripture-quote hr.scripture-divider {
+    border: none;
+    border-top: 1px solid
+      ${({ $theme }) =>
+        $theme === "dark"
+          ? "rgba(200, 169, 110, 0.25)"
+          : "rgba(138, 96, 48, 0.2)"};
+    margin: 0.6em 0;
+  }
+  blockquote.scripture-quote div.scripture-meaning {
+    font-style: italic;
+    opacity: 0.85;
+    margin: 0;
+  }
+
+  /* Like RT but inline (IRT) */
+  span.scripture-inline {
+    padding: 1px 0px;
+  }
+  span.scripture-inline-arabic {
+    font-family: "Times New Roman", serif;
+  }
+  span.scripture-inline-meaning {
+    font-style: italic;
+    opacity: 0.85;
+  }
+
+  /* If wider than a phone: show the Arabic and its meaning side by side
+     instead of stacked. When side-by-side, there'll be a pseudo-element
+     that is the divider */
+  @media (min-width: 520px) {
+    blockquote.scripture-quote:has(div.scripture-meaning) {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 20px;
+      /* Top-align both columns so the shorter text (arabic/trans) not float-centered. */
+      align-items: start;
+      position: relative;
+    }
+    blockquote.scripture-quote:has(div.scripture-meaning)::before {
+      content: "";
+      position: absolute;
+      left: calc(50% - 0.5px);
+      top: 10px;
+      bottom: 10px;
+      width: 1px;
+      background: ${({ $theme }) =>
+        $theme === "dark"
+          ? "rgba(200, 169, 110, 0.25)"
+          : "rgba(138, 96, 48, 0.2)"};
+    }
+    blockquote.scripture-quote:has(div.scripture-meaning) hr.scripture-divider {
+      display: none;
+    }
+    blockquote.scripture-quote:has(div.scripture-meaning) p.scripture-arabic {
+      order: 2;
+      padding-left: 20px;
+    }
+    blockquote.scripture-quote:has(div.scripture-meaning)
+      div.scripture-meaning {
+      order: 1;
+    }
   }
 `
 

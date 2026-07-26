@@ -3,6 +3,7 @@
  */
 
 import {
+  parseInlineMarkers,
   preserveListContinuations,
   renderExegesisMarkdown,
 } from "../../src/services/markdown"
@@ -109,5 +110,92 @@ describe("renderExegesisMarkdown", () => {
     expect(html.match(/<ol/g)).toHaveLength(1)
     expect(html.match(/<li>/g)).toHaveLength(2)
     expect(html).toMatch(/<p>A wholly unrelated closing paragraph\.<\/p>/)
+  })
+})
+
+describe("parseInlineMarkers", () => {
+  it("renders an RT marker as an RTL blockquote with just the Arabic text", () => {
+    const html = parseInlineMarkers('<{["RT", "بِسْمِ اللَّهِ"]}>')
+
+    expect(html).toBe(
+      '<blockquote class="scripture-quote">' +
+        '<p class="scripture-arabic" dir="rtl" lang="ar">بِسْمِ اللَّهِ</p>' +
+        "</blockquote>",
+    )
+  })
+
+  it("renders an RT marker with a meaning as a divider plus a second paragraph", () => {
+    const html = parseInlineMarkers(
+      '<{["RT", "بِسْمِ اللَّهِ", "In the name of Allah"]}>',
+    )
+
+    expect(html).toBe(
+      '<blockquote class="scripture-quote">' +
+        '<p class="scripture-arabic" dir="rtl" lang="ar">بِسْمِ اللَّهِ</p>' +
+        '<hr class="scripture-divider" />' +
+        '<p class="scripture-meaning">In the name of Allah</p>' +
+        "</blockquote>",
+    )
+  })
+
+  it("omits the divider/meaning entirely when the second arg is null", () => {
+    const html = parseInlineMarkers('<{["RT", "بِسْمِ اللَّهِ", null]}>')
+
+    expect(html).not.toContain("scripture-divider")
+    expect(html).not.toContain("scripture-meaning")
+  })
+
+  it("escapes HTML-significant characters inside RT text", () => {
+    const html = parseInlineMarkers('<{["RT", "A < B & C"]}>')
+
+    expect(html).toContain("A &lt; B &amp; C")
+  })
+
+  it("renders a Q marker as a clickable link", () => {
+    const html = parseInlineMarkers('<{["Q", "1:2"]}>')
+
+    expect(html).toBe(
+      '<a class="inline-marker marker-type-q" data-marker-type="Q" data-marker="[&quot;Q&quot;, &quot;1:2&quot;]">1:2</a>',
+    )
+  })
+
+  it("renders an F marker as a footnote superscript link", () => {
+    const html = parseInlineMarkers('<{["F", 3]}>')
+
+    expect(html).toBe(
+      '<a class="inline-marker marker-type-f" data-marker-type="F" data-marker="[&quot;F&quot;, 3]"><sup>3</sup></a>',
+    )
+  })
+
+  it("renders a Q marker nested inside RT's meaning as a real clickable link, not literal text", () => {
+    const html = parseInlineMarkers(
+      '<{["RT", "بِسْمِ اللَّهِ", "(<{[\\"Q\\", \\"15:87\\"]}>)"]}>',
+    )
+
+    expect(html).toBe(
+      '<blockquote class="scripture-quote">' +
+        '<p class="scripture-arabic" dir="rtl" lang="ar">بِسْمِ اللَّهِ</p>' +
+        '<hr class="scripture-divider" />' +
+        '<p class="scripture-meaning">(' +
+        '<a class="inline-marker marker-type-q" data-marker-type="Q" data-marker="[&quot;Q&quot;, &quot;15:87&quot;]">15:87</a>' +
+        ")</p>" +
+        "</blockquote>",
+    )
+  })
+
+  it("escapes plain text surrounding a nested marker inside RT's meaning", () => {
+    const html = parseInlineMarkers(
+      '<{["RT", "arabic", "A < B <{[\\"Q\\", \\"1:1\\"]}> C & D"]}>',
+    )
+
+    expect(html).toContain("A &lt; B ")
+    expect(html).toContain(" C &amp; D")
+    expect(html).toContain('class="inline-marker marker-type-q"')
+  })
+
+  it("does not let a plain '<' in ordinary text break the scan (falls back to literal)", () => {
+    const html = parseInlineMarkers("5 < 10 and A & B")
+
+    expect(html).toBe("5 < 10 and A & B")
   })
 })

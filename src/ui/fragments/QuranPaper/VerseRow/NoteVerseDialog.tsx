@@ -13,10 +13,9 @@ export function useNoteVerseDialog(verseKey: string): ModalDialogConfig {
   const { errorToast } = useToast()
   const [note, setNote] = useState("")
 
-  // recall the existing note on verse change, so re-opening edits instead of starting blank
+  // this hook stays mounted, so reset on verse change or it'd leak the note
   useEffect(() => {
     setNote(userSettings.bookmarks.list[verseKey]?.note ?? "")
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [verseKey])
 
   // memoized to avoid an infinite loop in ModalDialog's report-up effect
@@ -33,9 +32,10 @@ export function useNoteVerseDialog(verseKey: string): ModalDialogConfig {
       ],
       body: (
         <Textarea
+          key={verseKey /* reset per verse */}
           rows={4}
           width="100%"
-          value={note}
+          defaultValue={note /* avoid caret-reset */}
           onChange={(e) => setNote(e.target.value)}
           placeholder={formatMessage({
             id: messages.dialog.noteVerse.input.placeholder,
@@ -56,6 +56,6 @@ export function useNoteVerseDialog(verseKey: string): ModalDialogConfig {
           )
       },
     }),
-    [formatMessage, note, verseKey, bookmarkVerse],
+    [formatMessage, note, setNote, verseKey, bookmarkVerse],
   )
 }
