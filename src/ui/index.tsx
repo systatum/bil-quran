@@ -155,16 +155,13 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
               min-width: 400px;
               max-width: 400px;
 
-              /* 0-450px */
-              @media (max-width: 370px) {
-                width: 80vw;
-                min-width: 300px;
-              }
-
-              /* 450-700px */
-              @media (min-width: 370px) and (max-width: 700px) {
-                width: 60vw;
-                max-width: 350px;
+              /* Phone-class widths (iPhone 13 mini through the largest Pro
+                 Max, ~375-430px): scale with the viewport so the panel never
+                 overflows it. Above that, it's a static 400px regardless of
+                 how much wider the screen gets. */
+              @media (max-width: 430px) {
+                min-width: 90vw;
+                max-width: 90vw;
               }
             `};
           `,
