@@ -1,0 +1,136 @@
+import useUserSettingsState from "@hooks/states/UserSettingsState"
+import { RiArrowLeftLine, RiArrowRightSLine } from "@remixicon/react"
+import { ScreenProps } from "@systatum/coneto/screen-transition"
+import { css } from "styled-components"
+import { Screen } from "@ui/index"
+import { Button } from "@systatum/coneto/button"
+import { StatefulForm } from "@systatum/coneto/stateful-form"
+import useExegesisOptions from "@hooks/tools/useExegesisOptions"
+import useExegesisState from "@hooks/states/ExegesisState"
+import { resolveLocale } from "@i18n"
+import { H2, Item, SubItem, Text, Wrapper } from "@ui/fragments"
+import { useIntl } from "react-intl"
+import { messages } from "@i18n/message"
+import { ENV } from "@constants/env"
+
+export default function About({
+  goBack,
+  goToScreen,
+}: Partial<ScreenProps<Screen>>) {
+  const { formatMessage } = useIntl()
+  const {
+    userSettings: { theme, locale: rawLocal },
+  } = useUserSettingsState()
+  const exegesisOptions = useExegesisOptions()
+  const { getExegesisDetail } = useExegesisState()
+
+  const locale = resolveLocale(rawLocal)
+
+  return (
+    <Wrapper $theme={theme}>
+      <Button
+        icon={{
+          image: RiArrowLeftLine,
+          size: 30,
+        }}
+        variant="ghost"
+        size="icon"
+        mobile
+        styles={{
+          containerStyle: css`
+            position: absolute;
+            top: 10px;
+            left: 10px;
+          `,
+        }}
+        onClick={() => {
+          goBack?.()
+        }}
+      />
+
+      <Item>
+        <img src="/logo_full.png" alt="logo" width={180} height={180} />
+
+        <SubItem
+          $style={css`
+            align-items: center;
+          `}
+        >
+          <H2>bil-Quran</H2>
+          <Text>
+            {formatMessage({ id: messages.about.version })} {ENV.version}
+          </Text>
+          <Text>
+            {formatMessage({ id: messages.about.released })} {ENV.releasedDate}
+          </Text>
+        </SubItem>
+      </Item>
+
+      <StatefulForm
+        formValues={{}}
+        mobile
+        styles={{
+          containerStyle: css`
+            min-width: 300px;
+            max-width: 350px;
+
+            @media (max-width: 370px) {
+              width: 80vw;
+              min-width: 300px;
+            }
+
+            @media (min-width: 370px) and (max-width: 700px) {
+              width: 60vw;
+              max-width: 300px;
+            }
+            gap: 4px;
+          `,
+        }}
+        fields={exegesisOptions.flatMap((exegesisOption) =>
+          (exegesisOption.groupOptions ?? []).map((option) => ({
+            type: "button",
+            name: option.text,
+            title: option.text,
+            button: {
+              icon: {
+                image: RiArrowRightSLine,
+                size: 18,
+              },
+              "aria-label": "exegesis",
+              styles: {
+                self: css`
+                  background: ${theme === "dark" ? "#1a211d" : "#ededed"};
+                  flex-direction: row-reverse;
+                  justify-content: space-between;
+                `,
+              },
+            },
+            onClick: async () => {
+              await getExegesisDetail(String(option.value), locale)
+              await goToScreen?.(Screen.ExegesisDetail)
+            },
+          })),
+        )}
+      />
+
+      <Item
+        $style={css`
+          display: flex;
+          position: fixed;
+          bottom: 30px;
+          gap: 10px;
+          flex-direction: row;
+        `}
+      >
+        <img src={"./systatum.png"} width={40} height={40} />
+        <H2
+          $style={css`
+            font-family: "MontHeavy", sans-serif;
+          `}
+        >
+          Systatum
+        </H2>
+      </Item>
+    </Wrapper>
+  )
+}

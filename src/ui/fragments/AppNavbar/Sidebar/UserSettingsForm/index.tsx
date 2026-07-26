@@ -13,7 +13,13 @@ import { useMemo } from "react"
 import { useIntl } from "react-intl"
 import { css } from "styled-components"
 import useUserSettingsState from "../../../../hooks/states/UserSettingsState"
-export default function UserSettingsForm() {
+import { Screen } from "@ui/index"
+import { RiArrowRightSLine, RiBookOpenLine } from "@remixicon/react"
+import { ScreenProps } from "@systatum/coneto/screen-transition"
+
+export default function UserSettingsForm({
+  goToScreen,
+}: Partial<ScreenProps<Screen>>) {
   const { formatMessage } = useIntl()
   const { mode } = useTheme()
   const {
@@ -168,6 +174,50 @@ export default function UserSettingsForm() {
         },
       },
     ],
+    {
+      type: "button",
+      name: "backup",
+      button: {
+        icon: {
+          image: RiBookOpenLine,
+          size: 18,
+        },
+        "aria-label": "settings-backup-button",
+        styles: {
+          self: css`
+            background: ${mode === "dark" ? "#1a211d" : "#ededed"} !important;
+            flex-direction: row-reverse;
+            justify-content: space-between;
+          `,
+        },
+      },
+      title: formatMessage({ id: messages.backup.title }),
+      onClick: () => {
+        goToScreen?.(Screen.Export)
+      },
+    },
+    {
+      type: "button",
+      name: "about",
+      button: {
+        icon: {
+          image: RiArrowRightSLine,
+          size: 18,
+        },
+        "aria-label": "settings-about-button",
+        styles: {
+          self: css`
+            background: ${mode === "dark" ? "#1a211d" : "#ededed"} !important;
+            flex-direction: row-reverse;
+            justify-content: space-between;
+          `,
+        },
+      },
+      title: formatMessage({ id: messages.about.title }),
+      onClick: () => {
+        goToScreen?.(Screen.About)
+      },
+    },
   ]
 
   return (
@@ -181,6 +231,7 @@ export default function UserSettingsForm() {
         `,
         mobileFieldGroupStyle: css`
           background: ${mode === "dark" ? "#1a211d" : "#ededed"} !important;
+          min-height: fit-content;
         `,
         mobileFieldGroupRowDividerStyle: css`
           background: ${mode === "dark" ? "#1e3c2b" : "#dfdfdf"} !important;

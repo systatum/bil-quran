@@ -258,6 +258,64 @@ test.describe("VerseMarker", () => {
       })
     })
 
+    test("don't show previous verse's note when reopened on different verse", async ({
+      page,
+    }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const rows = page.locator("[data-verse]")
+      const firstVerseRow = rows.first()
+      const secondVerseRow = rows.nth(1)
+
+      // Add a note to the first verse
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Note", page, { ariaLabel: "tip-menu-item" })
+      await page.locator("textarea").fill("Note for first verse")
+      await clickOn("Add", page, { role: "button" })
+
+      // Open the note dialog for a different, unbookmarked verse
+      await secondVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Note", page, { ariaLabel: "tip-menu-item" })
+
+      // This verse has no saved note, so the textarea must start empty,
+      // not carry over the first verse's note
+      await expect(page.locator("textarea")).toHaveValue("", {
+        timeout: 5000,
+      })
+    })
+
+    // ensuring that the UI/UX experience of editing a note in the text area is flawless
+    test("backspacing mid-text keeps the caret in place", async ({ page }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const firstVerseRow = page.locator("[data-verse]").first()
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Note", page, { ariaLabel: "tip-menu-item" })
+
+      const textarea = page.locator("textarea")
+      await textarea.fill("This verse  is")
+      await page.waitForTimeout(200)
+
+      // place the caret right after "This verse " (index 11, between the
+      // two spaces), then delete the extra space
+      await textarea.click()
+      await textarea.press("Home")
+      for (let i = 0; i < 11; i++) await textarea.press("ArrowRight")
+      await textarea.press("Backspace")
+      await page.waitForTimeout(200)
+
+      const result = await textarea.evaluate((el: HTMLTextAreaElement) => ({
+        value: el.value,
+        selectionStart: el.selectionStart,
+      }))
+      expect(result.value).toBe("This verse is")
+      expect(result.selectionStart).toBe(10)
+    })
+
     test("cancelling the note dialog adds no bookmark", async ({ page }) => {
       await waitUntilVisible(page.locator("[data-verse]").first(), {
         timeout: 15_000,

@@ -4,12 +4,18 @@
   "add": "Tambah",
   "cancel": "Batal",
   "settings": "Pengaturan",
-  "backup": "Backup",
   "bookmarks_and_notes": "Markah dan Catatan",
   "bookmark": "Markah",
   "note": "Catatan",
   "highlight": "Sorotan",
   "exegesis": "Tafsir",
+
+  "about": {
+    "title": "Tentang",
+    "version": "Versi",
+    "released": "Dirilis",
+    "source": "Sumber"
+  },
 
   "lookup": {
     "title": "Lompat ke ayat",
@@ -64,14 +70,25 @@
     "highlightVerse": {
       "title": "Sorot ayat ini",
       "colorLabel": "Warna"
-    },
-    "backup": {
-      "title": "Backup data Anda",
-      "description": "Salin atau unduh data pengaturan, catatan, dan data lain-lain Anda di bil-Qur'an.",
+    }
+  },
+
+  "backup": {
+    "title": "Cadangan",
+    "export": {
+      "title": "Ekspor data anda",
+      "description": "Salin atau unduh cadangan terenkripsi yang berisi pengaturan, catatan, dan data lainnya.",
       "copy": "Salin",
       "download": "Unduh",
-      "copySuccess": "Berhasil disalin ke clipboard",
+      "copySuccess": "Berhasil disalin",
       "copyFailed": "Gagal menyalin"
+    },
+    "import": {
+      "title": "Impor data anda",
+      "description": "Tempelkan data terenkripsi di sini",
+      "import": "Impor",
+      "selectFile": "Pilih berkas",
+      "invalid": "Ini bukan berkas cadangan yang valid"
     }
   },
 
