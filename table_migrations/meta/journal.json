@@ -14,6 +14,9 @@
     },
     {
       "tag": "0004_create_exegesis_table"
+    },
+    {
+      "tag": "0005_light_sleeper"
     }
   ]
 }
