@@ -22,82 +22,64 @@ test.describe("ExegesisDialog", () => {
       await toggleExegesis("Ali Quli Qara'i", page)
     })
 
-    // ── Rendering ────────────────────────────────────────────────────────────
-
     test("opens on long-press and shows exegesis content", async ({ page }) => {
       const dialog = await openExegesisDialog(page, "1:7")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
-      // Verse 7 translation text is rendered inside the dialog
+      // verse 7 translation text
       await expect(
         dialog.getByText(/the path of those whom You have blessed/i),
-      ).toBeVisible({ timeout: 8_000 })
+      ).toBeVisible()
     })
 
     test("interlinear section renders Arabic words", async ({ page }) => {
       const dialog = await openExegesisDialog(page, "1:7")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
-      // At least one Arabic word should appear in the interlinear section
-      await expect(dialog.locator(".arabic-lex").first()).toBeVisible({
-        timeout: 8_000,
-      })
+      await hasElement(undefined, dialog, { className: "arabic-lex" })
     })
 
     test("footnotes render for verse with footnote markers", async ({
       page,
     }) => {
       const dialog = await openExegesisDialog(page, "1:7")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
-      // Verse 1:7 has 4 footnotes; F-marker superscripts are visible in the text
-      await expect(dialog.locator("a.marker-type-f").first()).toBeVisible({
-        timeout: 8_000,
-      })
+      await hasElement(undefined, dialog, { className: "marker-type-f" })
 
-      // Footnote 1 of verse 7 starts with "For further Qur'anic references…"
-      await expect(dialog.getByText(/For further Qur/i)).toBeVisible({
-        timeout: 8_000,
-      })
+      // footnote 1 of verse 7 starts with "For further Qur'anic references..."
+      await expect(dialog.getByText(/For further Qur/i)).toBeVisible()
     })
 
     test("Q-markers render as dotted-underline links", async ({ page }) => {
       const dialog = await openExegesisDialog(page, "1:7")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
-      // Footnote 1 of verse 7 contains Q-markers like "4:69" and "19:58"
-      const qMarker = dialog.locator("a.marker-type-q").first()
-      await expect(qMarker).toBeVisible({ timeout: 8_000 })
-
-      // Confirm the dotted-underline CSS is applied
+      const qMarker = await hasElement(undefined, dialog, {
+        className: "marker-type-q",
+      })
       const textDecorationStyle = await qMarker.evaluate(
         (el) => window.getComputedStyle(el).textDecorationStyle,
       )
       expect(textDecorationStyle).toBe("dotted")
     })
 
-    // ── Click and navigation ─────────────────────────────────────────────────
-
     test("clicking a footnote superscript scrolls to the footnote", async ({
       page,
     }) => {
       const dialog = await openExegesisDialog(page, "1:7")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
-      // Click the first footnote superscript in the translation text
-      const fMarker = dialog.locator("a.marker-type-f").first()
-      await expect(fMarker).toBeVisible({ timeout: 8_000 })
-      await fMarker.click()
+      await clickOn(undefined, dialog, { className: "marker-type-f" })
 
-      // The target footnote item should be present and visible
-      const footnoteItem = dialog.locator("li").first()
-      await expect(footnoteItem).toBeVisible({ timeout: 4_000 })
+      // the target footnote item is present and visible
+      await expect(dialog.locator("li").first()).toBeVisible()
     })
 
     test.describe("footnote return button", () => {
       test("shown upon clicking a footnote", async ({ page }) => {
         const dialog = await openExegesisDialog(page, "1:7")
-        await expect(dialog).toBeVisible({ timeout: 8_000 })
+        await expect(dialog).toBeVisible()
 
         await hasNoElement(undefined, dialog, {
           ariaLabel: "footnote-return-btn",
@@ -105,9 +87,7 @@ test.describe("ExegesisDialog", () => {
 
         await clickOn(undefined, dialog, { className: "marker-type-f" })
 
-        const returnBtnLoc = {
-          ariaLabel: "footnote-return-btn",
-        }
+        const returnBtnLoc = { ariaLabel: "footnote-return-btn" }
         const returnBtn = await hasElement(undefined, dialog, returnBtnLoc)
         await returnBtn.click()
         await hasNoElement(undefined, dialog, returnBtnLoc)
@@ -115,17 +95,15 @@ test.describe("ExegesisDialog", () => {
 
       test("hidden after navigating to another verse", async ({ page }) => {
         const dialog = await openExegesisDialog(page, "1:7")
-        await expect(dialog).toBeVisible({ timeout: 8_000 })
+        await expect(dialog).toBeVisible()
 
         await clickOn(undefined, dialog, { className: "marker-type-f" })
-
         await hasElement(undefined, dialog, {
           ariaLabel: "footnote-return-btn",
         })
 
-        // Verse 7 is the last verse of chapter 1 — next is disabled there, so
-        // use prev instead to exercise "navigating to another verse".
-        await dialog.locator('[data-testid="prev-verse-btn"]').click()
+        // verse 7 is the last verse of chapter 1, next is disabled there
+        await clickOn(undefined, dialog, { ariaLabel: "prev-verse-btn" })
         await hasNoElement(undefined, dialog, {
           ariaLabel: "footnote-return-btn",
         })
@@ -136,91 +114,88 @@ test.describe("ExegesisDialog", () => {
       page,
     }) => {
       const dialog = await openExegesisDialog(page, "1:7")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
-      // Verse indicator starts at 7
-      const verseIndicator = dialog.locator('[data-testid="verse-indicator"]')
-      await expect(verseIndicator).toHaveText("7", { timeout: 5_000 })
+      const verseIndicator = await hasElement(undefined, dialog, {
+        ariaLabel: "verse-indicator",
+      })
+      await hasText("7", verseIndicator)
 
-      // Footnote 1 of verse 7 has Q-marker "4:69" — click it
-      const qMarker = dialog.locator("a.marker-type-q").first()
-      await expect(qMarker).toBeVisible({ timeout: 8_000 })
-      await qMarker.click()
+      // footnote 1 of verse 7 has Q-marker "4:69"
+      await clickOn(undefined, dialog, { className: "marker-type-q" })
 
-      // After navigation the verse indicator no longer shows 7
-      await expect(verseIndicator).not.toHaveText("7", { timeout: 5_000 })
+      await hasNoText("7", verseIndicator)
     })
 
     test("back button returns user to original verse", async ({ page }) => {
       const dialog = await openExegesisDialog(page, "1:7")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
       // no Q-navigation yet
       await hasNoElement(undefined, dialog, { ariaLabel: "nav-back-btn" })
 
-      // click the first Q-marker
       await clickOn(undefined, dialog, { className: "marker-type-q" })
-
-      // a back button is now visible
       await hasElement(undefined, dialog, { ariaLabel: "nav-back-btn" })
 
-      // verse indicator has changed
-      const verseIndicator = dialog.locator('[data-testid="verse-indicator"]')
-      await expect(verseIndicator).not.toHaveText("7")
+      const verseIndicator = await hasElement(undefined, dialog, {
+        ariaLabel: "verse-indicator",
+      })
+      await hasNoText("7", verseIndicator)
 
-      // Click the back button
       await clickOn(undefined, dialog, { ariaLabel: "nav-back-btn" })
 
-      // verse indicator returns to 7 and back button disappears
       await hasText("7", verseIndicator)
       await hasNoElement(undefined, dialog, { ariaLabel: "nav-back-btn" })
     })
 
-    // ── Prev / Next navigation ───────────────────────────────────────────────
-
     test("prev button decrements the verse number", async ({ page }) => {
       const dialog = await openExegesisDialog(page, "1:4")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
-      const verseIndicator = dialog.locator('[data-testid="verse-indicator"]')
-      await expect(verseIndicator).toHaveText("4", { timeout: 5_000 })
+      const verseIndicator = await hasElement(undefined, dialog, {
+        ariaLabel: "verse-indicator",
+      })
+      await hasText("4", verseIndicator)
 
-      await dialog.locator('[data-testid="prev-verse-btn"]').click()
-      await expect(verseIndicator).toHaveText("3", { timeout: 3_000 })
+      await clickOn(undefined, dialog, { ariaLabel: "prev-verse-btn" })
+      await hasText("3", verseIndicator)
     })
 
     test("next button increments the verse number", async ({ page }) => {
       const dialog = await openExegesisDialog(page, "1:4")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
-      const verseIndicator = dialog.locator('[data-testid="verse-indicator"]')
-      await expect(verseIndicator).toHaveText("4", { timeout: 5_000 })
+      const verseIndicator = await hasElement(undefined, dialog, {
+        ariaLabel: "verse-indicator",
+      })
+      await hasText("4", verseIndicator)
 
-      await dialog.locator('[data-testid="next-verse-btn"]').click()
-      await expect(verseIndicator).toHaveText("5", { timeout: 3_000 })
+      await clickOn(undefined, dialog, { ariaLabel: "next-verse-btn" })
+      await hasText("5", verseIndicator)
     })
 
     test("prev button on first verse navigates to the chapter intro", async ({
       page,
     }) => {
       const dialog = await openExegesisDialog(page, "1:1")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
-      const verseIndicator = dialog.locator('[data-testid="verse-indicator"]')
-      await expect(verseIndicator).toHaveText("1", { timeout: 5_000 })
+      const verseIndicator = await hasElement(undefined, dialog, {
+        ariaLabel: "verse-indicator",
+      })
+      await hasText("1", verseIndicator)
 
-      // prev button is enabled on verse 1 — it steps back to the intro (verse 0)
-      await expect(
-        dialog.locator('[data-testid="prev-verse-btn"]'),
-      ).toBeEnabled({ timeout: 5_000 })
+      // prev is enabled on verse 1, it steps back to the intro (verse 0)
+      const prevBtn = await hasElement(undefined, dialog, {
+        ariaLabel: "prev-verse-btn",
+      })
+      await expect(prevBtn).toBeEnabled()
 
-      await dialog.locator('[data-testid="prev-verse-btn"]').click()
-      await expect(verseIndicator).toHaveText("Intro", { timeout: 3_000 })
+      await prevBtn.click()
+      await hasText("Intro", verseIndicator)
 
-      // prev button is disabled once at the intro
-      await expect(
-        dialog.locator('[data-testid="prev-verse-btn"]'),
-      ).toBeDisabled({ timeout: 5_000 })
+      await expect(prevBtn).toBeDisabled()
+    })
 
     test("prev/next rewrite URL to match current verse", async ({ page }) => {
       const dialog = await openExegesisDialog(page, "1:1")
@@ -243,13 +218,15 @@ test.describe("ExegesisDialog", () => {
 
     test("prev/next traversal persists verse position", async ({ page }) => {
       const dialog = await openExegesisDialog(page, "1:4")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
-      const verseIndicator = dialog.locator('[data-testid="verse-indicator"]')
-      await hasText("4", verseIndicator, { timeout: 5_000 })
+      const verseIndicator = await hasElement(undefined, dialog, {
+        ariaLabel: "verse-indicator",
+      })
+      await hasText("4", verseIndicator)
 
-      await dialog.locator('[data-testid="next-verse-btn"]').click()
-      await hasText("5", verseIndicator, { timeout: 3_000 })
+      await clickOn(undefined, dialog, { ariaLabel: "next-verse-btn" })
+      await hasText("5", verseIndicator)
 
       const savedScroll = await page.evaluate(() => {
         const raw = localStorage.getItem("userSettings")
@@ -260,22 +237,22 @@ test.describe("ExegesisDialog", () => {
 
     test("does not persist verse 0 for scroll position", async ({ page }) => {
       const dialog = await openExegesisDialog(page, "1:1")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
-      const verseIndicator = dialog.locator('[data-testid="verse-indicator"]')
-      await hasText("1", verseIndicator, { timeout: 5_000 })
+      const verseIndicator = await hasElement(undefined, dialog, {
+        ariaLabel: "verse-indicator",
+      })
+      await hasText("1", verseIndicator)
 
-      // Stepping into verse 1 itself should have persisted normally
       const savedBefore = await page.evaluate(() => {
         const raw = localStorage.getItem("userSettings")
         return raw ? JSON.parse(raw).lastScroll : null
       })
 
-      await dialog.locator('[data-testid="prev-verse-btn"]').click()
-      await hasText("Intro", verseIndicator, { timeout: 3_000 })
+      await clickOn(undefined, dialog, { ariaLabel: "prev-verse-btn" })
+      await hasText("Intro", verseIndicator)
 
-      // Verse 0 ("Intro") isn't a real verse — the persisted scroll position
-      // must not change when navigating into it.
+      // verse 0 is not a real verse, the saved position must not change
       const savedAfter = await page.evaluate(() => {
         const raw = localStorage.getItem("userSettings")
         return raw ? JSON.parse(raw).lastScroll : null
@@ -287,32 +264,31 @@ test.describe("ExegesisDialog", () => {
       page,
     }) => {
       const dialog = await openExegesisDialog(page, "1:7")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
-      const verseIndicator = dialog.locator('[data-testid="verse-indicator"]')
-      await expect(verseIndicator).toHaveText("7", { timeout: 5_000 })
+      const verseIndicator = await hasElement(undefined, dialog, {
+        ariaLabel: "verse-indicator",
+      })
+      await hasText("7", verseIndicator)
 
-      // Chapter 1 has 7 verses — next button should be disabled
-      await expect(
-        dialog.locator('[data-testid="next-verse-btn"]'),
-      ).toBeDisabled({ timeout: 5_000 })
+      // chapter 1 has 7 verses
+      const nextBtn = await hasElement(undefined, dialog, {
+        ariaLabel: "next-verse-btn",
+      })
+      await expect(nextBtn).toBeDisabled()
     })
-
-    // ── Scroll / overflow guards ─────────────────────────────────────────────
 
     test("exegesis can be scrolled", async ({ page }) => {
       const dialog = await openExegesisDialog(page, "1:7")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
-      // Wait for content to load before measuring
+      // wait for content to load before measuring
       await expect(
         dialog.getByText(/the path of those whom You have blessed/i),
-      ).toBeVisible({ timeout: 8_000 })
+      ).toBeVisible()
 
-      // The ExegesisScrollArea must have overflow-y: auto — it's the second
-      // direct child of MainContent (after InterlinearSection)
+      // the exegesis scroll area must have overflow-y: auto
       const hasScrollableArea = await dialog.evaluate((dialogEl) => {
-        // Walk all descendants; find ones with overflow-y: auto
         return Array.from(dialogEl.querySelectorAll<HTMLElement>("*")).some(
           (el) => window.getComputedStyle(el).overflowY === "auto",
         )
@@ -323,23 +299,18 @@ test.describe("ExegesisDialog", () => {
 
     test("interlinear section default to 30% height", async ({ page }) => {
       const dialog = await openExegesisDialog(page, "1:7")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
-      // Wait for Arabic words to render before measuring heights
-      await expect(dialog.locator(".arabic-lex").first()).toBeVisible({
-        timeout: 8_000,
-      })
+      // wait for Arabic words to render before measuring heights
+      await hasElement(undefined, dialog, { className: "arabic-lex" })
 
       const ratio = await dialog.evaluate((dialogEl) => {
-        // Outer is the first element child of paper-dialog-content
         const outer = dialogEl.firstElementChild as HTMLElement | null
         if (!outer) return null
 
-        // MainContent is the first child of Outer
         const mainContent = outer.firstElementChild as HTMLElement | null
         if (!mainContent) return null
 
-        // InterlinearSection is the first child of MainContent; it contains .arabic-lex
         const interlinear = mainContent.firstElementChild as HTMLElement | null
         if (!interlinear || !interlinear.querySelector(".arabic-lex"))
           return null
@@ -350,21 +321,19 @@ test.describe("ExegesisDialog", () => {
       })
 
       expect(ratio).not.toBeNull()
-      // Allow 35% to accommodate subpixel rounding
+      // allow 35% for subpixel rounding
       expect(ratio!).toBeLessThanOrEqual(0.35)
     })
 
     test("exegesis content area has non-zero height", async ({ page }) => {
       const dialog = await openExegesisDialog(page, "1:7")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
-      // Wait for content to load
       await expect(
         dialog.getByText(/the path of those whom You have blessed/i),
-      ).toBeVisible({ timeout: 8_000 })
+      ).toBeVisible()
 
       // SplitPane structure: Container > [Cell(interlinear), Divider, Cell(exegesis)]
-      // The exegesis cell is children[2] (children[1] is the Divider).
       const exegesisHeight = await dialog.evaluate((dialogEl) => {
         const outer = dialogEl.firstElementChild as HTMLElement | null
         const mainContent = outer?.firstElementChild as HTMLElement | null
@@ -376,19 +345,20 @@ test.describe("ExegesisDialog", () => {
     })
 
     test("verse traversal controls remains visible", async ({ page }) => {
-      // shrink the viewport so the exegesis text overflows its scroll area
+      // shrink the viewport so exegesis text overflows its scroll area
       await page.setViewportSize({ width: 1024, height: 320 })
 
       const dialog = await openExegesisDialog(page, "1:7")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
       await expect(
         dialog.getByText(/the path of those whom You have blessed/i),
-      ).toBeVisible({ timeout: 8_000 })
-      // Let async content (interlinear words, footnotes) finish settling
+      ).toBeVisible()
+      // let async content (interlinear words, footnotes) finish settling
       await page.waitForTimeout(500)
 
-      const verseIndicator = dialog.locator('[data-testid="verse-indicator"]')
-      await expect(verseIndicator).toBeVisible({ timeout: 5_000 })
+      const verseIndicator = await hasElement(undefined, dialog, {
+        ariaLabel: "verse-indicator",
+      })
       const boxBefore = await verseIndicator.boundingBox()
       expect(boxBefore).not.toBeNull()
 
@@ -408,11 +378,10 @@ test.describe("ExegesisDialog", () => {
       expect(scrolled).toBe(true)
       await page.waitForTimeout(200)
 
-      await expect(verseIndicator).toBeVisible({ timeout: 5_000 })
       const boxAfter = await verseIndicator.boundingBox()
       expect(boxAfter).not.toBeNull()
 
-      // Its position within the viewport must not have shifted with the scroll
+      // its position must not shift with the scroll
       expect(Math.abs(boxAfter!.y - boxBefore!.y)).toBeLessThan(5)
     })
   })
@@ -427,22 +396,22 @@ test.describe("ExegesisDialog", () => {
       page,
     }) => {
       const dialog = await openExegesisDialog(page, "1:1")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
-      // Verse 1:1 translation text
+      // verse 1:1 translation text
       await expect(
         dialog.getByText(/All-beneficent, the All-merciful/i),
-      ).toBeVisible({ timeout: 8_000 })
+      ).toBeVisible()
 
-      // Verse 1:1 commentary text (the `exegesis` field), distinct from translation
+      // verse 1:1 commentary text, distinct from translation
       await expect(
         dialog.getByText(/wide and comprehending implications/i),
-      ).toBeVisible({ timeout: 8_000 })
+      ).toBeVisible()
     })
 
     test("renders the commentary after the translation", async ({ page }) => {
       const dialog = await openExegesisDialog(page, "1:1")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
       const translation = dialog
         .getByText(/All-beneficent, the All-merciful/i)
@@ -450,7 +419,7 @@ test.describe("ExegesisDialog", () => {
       const exegesis = dialog
         .getByText(/wide and comprehending implications/i)
         .first()
-      await expect(exegesis).toBeVisible({ timeout: 8_000 })
+      await expect(exegesis).toBeVisible()
 
       const [translationTop, exegesisTop] = await Promise.all([
         translation.evaluate((el) => el.getBoundingClientRect().top),
@@ -472,18 +441,16 @@ test.describe("ExegesisDialog", () => {
       page,
     }) => {
       const dialog = await openExegesisDialog(page, "1:1")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
-      const carousel = dialog.getByRole("region", { name: "carousel" })
-      await expect(carousel).toBeVisible({ timeout: 8_000 })
+      await hasElement("carousel", dialog, { role: "region" })
 
-      // Exactly one slide visible at a time
+      // exactly one slide visible at a time
       await expect(
         dialog.locator('[aria-roledescription="slide"][aria-hidden="false"]'),
       ).toHaveCount(1)
 
-      // Arrow controls exist (disabled state etc.) but must not be visible —
-      // no `controller` prop is passed, so they're rendered display:none
+      // arrow controls exist but stay hidden, no controller prop is passed
       await expect(
         dialog.locator('[aria-label="carousel-previous-slide"]'),
       ).toBeHidden()
@@ -496,10 +463,9 @@ test.describe("ExegesisDialog", () => {
       page,
     }) => {
       const dialog = await openExegesisDialog(page, "1:1")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
-      const carousel = dialog.getByRole("region", { name: "carousel" })
-      await expect(carousel).toBeVisible({ timeout: 8_000 })
+      const carousel = await hasElement("carousel", dialog, { role: "region" })
 
       const visibleSlide = () =>
         dialog.locator('[aria-roledescription="slide"][aria-hidden="false"]')
@@ -508,7 +474,7 @@ test.describe("ExegesisDialog", () => {
         visibleSlide().getByText("Ali Quli Qara'i").count(),
         visibleSlide().getByText("Mir Ahmad Ali").count(),
       ])
-      // Exactly one of the two source names is showing before the swipe
+      // exactly one source name shows before the swipe
       expect(namesBefore[0] + namesBefore[1]).toBe(1)
       const showingAliQuliFirst = namesBefore[0] === 1
 
@@ -517,8 +483,7 @@ test.describe("ExegesisDialog", () => {
       const startX = box!.x + box!.width / 2
       const startY = box!.y + 20
 
-      // The carousel only reacts to pointer events (not plain mouse events),
-      // so the drag gesture must be dispatched as such directly.
+      // the carousel only reacts to pointer events, dispatch the drag directly
       await carousel.dispatchEvent("pointerdown", {
         clientX: startX,
         clientY: startY,
@@ -540,9 +505,7 @@ test.describe("ExegesisDialog", () => {
       await page.waitForTimeout(500) // carousel slide transition
 
       const other = showingAliQuliFirst ? "Mir Ahmad Ali" : "Ali Quli Qara'i"
-      await expect(visibleSlide().getByText(other)).toBeVisible({
-        timeout: 3_000,
-      })
+      await expect(visibleSlide().getByText(other)).toBeVisible()
 
       const original = showingAliQuliFirst ? "Ali Quli Qara'i" : "Mir Ahmad Ali"
       await expect(visibleSlide().getByText(original)).toHaveCount(0)
@@ -553,10 +516,9 @@ test.describe("ExegesisDialog", () => {
       await page.setViewportSize({ width: 1024, height: 320 })
 
       const dialog = await openExegesisDialog(page, "1:1")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
-      const carousel = dialog.getByRole("region", { name: "carousel" })
-      await expect(carousel).toBeVisible({ timeout: 8_000 })
+      await hasElement("carousel", dialog, { role: "region" })
       await page.waitForTimeout(300)
 
       const scrolled = await dialog.evaluate((dialogEl) => {
@@ -584,11 +546,9 @@ test.describe("ExegesisDialog", () => {
 
     test("defaults to Ali Quli in English", async ({ page }) => {
       const dialog = await openExegesisDialog(page, "1:1")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
-      await expect(dialog.getByText(/In the Name of Allah/i)).toBeVisible({
-        timeout: 8_000,
-      })
+      await expect(dialog.getByText(/In the Name of Allah/i)).toBeVisible()
 
       const settings = await page.evaluate(() =>
         JSON.parse(localStorage.getItem("userSettings") || "{}"),
@@ -606,10 +566,8 @@ test.describe("ExegesisDialog", () => {
       await page.waitForTimeout(300)
 
       const dialog = await openExegesisDialog(page, "1:1")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
-      await expect(dialog.getByText(/In the Name of Allah/i)).toBeVisible({
-        timeout: 8_000,
-      })
+      await expect(dialog).toBeVisible()
+      await expect(dialog.getByText(/In the Name of Allah/i)).toBeVisible()
 
       const settings = await page.evaluate(() =>
         JSON.parse(localStorage.getItem("userSettings") || "{}"),
@@ -620,12 +578,11 @@ test.describe("ExegesisDialog", () => {
     test("does not override a selection made before the dialog was ever opened", async ({
       page,
     }) => {
-      // Simulate a user who picked an exegesis via Settings without ever
-      // long-pressing a verse first.
+      // a user who picked an exegesis via Settings without long-pressing a verse first
       await toggleExegesis("Ali Quli Qara'i", page)
 
       const dialog = await openExegesisDialog(page, "1:1")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
       const settings = await page.evaluate(() =>
         JSON.parse(localStorage.getItem("userSettings") || "{}"),
@@ -639,40 +596,33 @@ test.describe("ExegesisDialog", () => {
     test.beforeEach(async ({ page }) => {
       await visitFresh(page)
 
-      // Trigger the one-time default selection, then deselect it via Settings
-      // so the empty state can be exercised through real UI interactions.
+      // trigger the default selection, then deselect it via Settings
       const dialog = await openExegesisDialog(page, "1:1")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
       await closePaperDialog(page)
       await toggleExegesis("Ali Quli Qara'i", page)
     })
 
     test("still shows the interlinear text", async ({ page }) => {
       const dialog = await openExegesisDialog(page, "1:7")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
-      await expect(dialog.locator(".arabic-lex").first()).toBeVisible({
-        timeout: 8_000,
-      })
+      await hasElement(undefined, dialog, { className: "arabic-lex" })
     })
 
     test("shows the 'no exegesis selected' message", async ({ page }) => {
       const dialog = await openExegesisDialog(page, "1:7")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
-      await expect(
-        dialog.getByText("No exegesis selected — enable one in Settings."),
-      ).toBeVisible({ timeout: 8_000 })
+      await hasText("No exegesis selected — enable one in Settings.", dialog)
     })
 
     test("gives the interlinear pane 70% height instead of 30%", async ({
       page,
     }) => {
       const dialog = await openExegesisDialog(page, "1:7")
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
-      await expect(dialog.locator(".arabic-lex").first()).toBeVisible({
-        timeout: 8_000,
-      })
+      await expect(dialog).toBeVisible()
+      await hasElement(undefined, dialog, { className: "arabic-lex" })
 
       const ratio = await dialog.evaluate((dialogEl) => {
         const outer = dialogEl.firstElementChild as HTMLElement | null
@@ -689,7 +639,7 @@ test.describe("ExegesisDialog", () => {
       })
 
       expect(ratio).not.toBeNull()
-      // Allow 5% to accommodate subpixel rounding, mirroring the 30% test above
+      // allow 5% for subpixel rounding, mirroring the 30% test above
       expect(ratio!).toBeGreaterThanOrEqual(0.65)
     })
   })
@@ -700,26 +650,26 @@ test.describe("ExegesisDialog", () => {
       await untilUsable(page)
 
       const dialog = await getPaperDialog(page)
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
-      const verseIndicator = dialog.locator('[data-testid="verse-indicator"]')
-      await expect(verseIndicator).toHaveText("7", { timeout: 5_000 })
+      const verseIndicator = await hasElement(undefined, dialog, {
+        ariaLabel: "verse-indicator",
+      })
+      await hasText("7", verseIndicator)
 
-      // The always-mounted VerseLookup combobox must not silently rewrite the URL
+      // the always-mounted VerseLookup combobox must not silently rewrite the URL
       await page.waitForTimeout(500)
       expect(page.url()).toContain("/#/e/1/7")
     })
 
     test("shows not-found on an empty dialog", async ({ page }) => {
-      // Chapter 1 (Al-Faatiha) only has 7 verses
+      // chapter 1 only has 7 verses
       await page.goto("/#/e/1/999")
       await untilUsable(page)
 
       const dialog = await getPaperDialog(page)
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
-      await expect(
-        dialog.getByText("This verse could not be found."),
-      ).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
+      await hasText("This verse could not be found.", dialog)
     })
 
     test("shows the chapter introduction for verse 0", async ({ page }) => {
@@ -727,25 +677,25 @@ test.describe("ExegesisDialog", () => {
       await untilUsable(page)
 
       const dialog = await getPaperDialog(page)
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(dialog).toBeVisible()
 
-      const verseIndicator = dialog.locator('[data-testid="verse-indicator"]')
-      await expect(verseIndicator).toHaveText("Intro", { timeout: 5_000 })
+      const verseIndicator = await hasElement(undefined, dialog, {
+        ariaLabel: "verse-indicator",
+      })
+      await hasText("Intro", verseIndicator)
 
       // Ali Quli Qara'i's chapter 1 description text
-      await expect(dialog.getByText(/The Opening/i)).toBeVisible({
-        timeout: 8_000,
-      })
+      await expect(dialog.getByText(/The Opening/i)).toBeVisible()
 
-      // Prev is disabled at the intro; next steps forward into verse 1
-      await expect(
-        dialog.locator('[data-testid="prev-verse-btn"]'),
-      ).toBeDisabled({ timeout: 5_000 })
+      const prevBtn = await hasElement(undefined, dialog, {
+        ariaLabel: "prev-verse-btn",
+      })
+      await expect(prevBtn).toBeDisabled()
 
       // no interlinear text
       await expect(dialog.locator(".arabic-lex")).toHaveCount(0)
 
-      // gives content area 100% height (no interlinear pane)
+      // content area gets 100% height, no interlinear pane
       const ratio = await dialog.evaluate((dialogEl) => {
         const outer = dialogEl.firstElementChild as HTMLElement | null
         const mainContent = outer?.firstElementChild as HTMLElement | null
@@ -757,7 +707,7 @@ test.describe("ExegesisDialog", () => {
         return mainH > 0 ? contentH / mainH : null
       })
       expect(ratio).not.toBeNull()
-      // Allow a small margin for the SplitPane divider's own height
+      // small margin for the SplitPane divider's own height
       expect(ratio!).toBeGreaterThanOrEqual(0.9)
     })
 
@@ -766,16 +716,17 @@ test.describe("ExegesisDialog", () => {
       await untilUsable(page)
 
       const dialog = await getPaperDialog(page)
-      await expect(dialog).toBeVisible({ timeout: 8_000 })
-      const verseIndicator = dialog.locator('[data-testid="verse-indicator"]')
-      await expect(verseIndicator).toHaveText("2", { timeout: 5_000 })
+      await expect(dialog).toBeVisible()
+      const verseIndicator = await hasElement(undefined, dialog, {
+        ariaLabel: "verse-indicator",
+      })
+      await hasText("2", verseIndicator)
 
-      // Manually navigate to a different /e/ target within the same tab,
-      // aka an in-app hash change, not a full reload
+      // manually navigate to a different /e/ target, an in-app hash change
       await page.goto("/#/e/4/8")
       await page.waitForTimeout(500)
 
-      await expect(verseIndicator).toHaveText("8", { timeout: 5_000 })
+      await hasText("8", verseIndicator)
     })
   })
 })
