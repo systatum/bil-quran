@@ -16,7 +16,8 @@ import {
   saveFingerprints,
 } from "@services/fingerprinter"
 import LOGGER from "@services/Logger"
-import { mergeKeys, pickLocalized } from "@services/mutator"
+import { mergeKeys } from "@services/mutator"
+import { pickLocalized } from "@services/picker"
 import { create } from "zustand"
 
 const useExegesisState = create<ExegesisState>((set, get) => ({

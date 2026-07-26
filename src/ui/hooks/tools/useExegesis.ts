@@ -11,7 +11,7 @@ import { repo } from "@db/repo"
 import { unpackIPC } from "@services/Converter"
 import { FingerprintedAsset } from "@services/fingerprinter"
 import LOGGER from "@services/Logger"
-import { pickLocalized } from "@services/mutator"
+import { pickLocalized } from "@services/picker"
 import { useEffect, useState } from "react"
 import useUserSettingsState from "../states/UserSettingsState"
 

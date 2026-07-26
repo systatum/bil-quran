@@ -17,7 +17,7 @@ import { LexemeDetailPaperDialog } from "./fragments/QuranPaper/VerseRow/LexemeD
 import { css } from "styled-components"
 import ExegesisPaperDialogContent from "./fragments/QuranPaper/VerseRow/ExegesisPaperDialogContent"
 import About from "./fragments/About"
-import ExegesisDetail from "./fragments/About/detail"
+import ExegesisDetail from "./fragments/About/ExegesisDetail"
 import Sidebar from "./fragments/AppNavbar/Sidebar"
 
 interface UIIndexProps {

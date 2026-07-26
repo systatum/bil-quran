@@ -5,6 +5,8 @@ import Title from "../AppNavbar/Sidebar/Title"
 import { H3, SubItem, Text, Wrapper } from "@ui/fragments"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import { resolveLocale } from "@i18n"
+import { Locale } from "@constants/settings"
+import { safePick } from "@services/picker"
 import { css } from "styled-components"
 import { StatefulForm } from "@systatum/coneto/stateful-form"
 import { useIntl } from "react-intl"
@@ -23,8 +25,9 @@ export default function ExegesisDetail({
   const locale = resolveLocale(rawLocale)
   const detail = selectedExegesisId ? exegesisDetail[selectedExegesisId] : null
 
-  const bookName = detail?.name?.[locale] ?? []
-  const descriptionParagraphs = detail?.longDescription?.[locale] ?? []
+  const bookName = safePick(detail?.name, locale, Locale.IntEnglish) ?? ""
+  const descriptionParagraphs: string[] =
+    safePick(detail?.longDescription, locale, Locale.IntEnglish) ?? []
 
   return (
     <>
@@ -114,7 +117,7 @@ export default function ExegesisDetail({
               ),
             },
             {
-              name: "longDesc",
+              name: "source",
               type: "custom",
               render: detail && (
                 <SubItem>
