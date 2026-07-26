@@ -1,13 +1,13 @@
 from __future__ import annotations
 from time import sleep
 from queue import Queue
-import queue
 from dataclasses import dataclass
+from typing import Generic, TypeVar
+from abc import abstractmethod, ABC
+import queue
 import dataclasses
 import uuid
 import threading
-from typing import Generic, TypeVar
-from abc import abstractmethod, ABC
 
 """
 I couldn't really get to make something like rust associated types

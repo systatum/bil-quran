@@ -1,9 +1,10 @@
-import torch
+from src.shared import Comparison
+from src.service import JobResult, Job, Service
 from transformers import AutoTokenizer, MT5EncoderModel, PretrainedConfig, PreTrainedModel
 from huggingface_hub import snapshot_download
 from dataclasses import dataclass
-from typing import Any, TypeAlias
-from service import JobResult, Job, Service
+from typing import Any
+import torch
 import traceback
 
 # NOTE: MT-RANKER code has very incomplete documentation, so this code is simply what seems to work as suggested by CHATGPT
@@ -46,11 +47,6 @@ def load_model() -> ModelSetup:
 
     return ModelSetup(tokenizer=tokenizer, ranker=ranker)
 
-@dataclass(kw_only=True)
-class Comparison:
-    probabilities: tuple[float, float]
-    choice: int
-
 def compare(model: ModelSetup, source: str, translation0: str, translation1: str) -> Comparison:
     assert not any(
         any(keyword in text for keyword in DISALLOWED_KEYWORDS)
@@ -82,8 +78,6 @@ class CompareJob(Job[Comparison]):
     source: str
     translation0: str
     translation1: str
-
-CompareJobResult: TypeAlias = JobResult[Comparison]
 
 class ComparisonService(Service[Comparison]):
     _model: ModelSetup

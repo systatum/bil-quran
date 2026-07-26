@@ -1,15 +1,15 @@
+from src.translation import TranslateJob, TranslationService
+from src.rating import RateJob, RatingService
+from src.comparison import CompareJob, ComparisonService
+from src.service import JobResult, Job
+from src.shared import RateAPIRequest, CompareAPIRequest, TranslateAPIRequest
+from src.settings import LLM_MODELS
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from translation import TranslateJob, Prompt, PromptSetting, TranslationService
-from rating import RateJob, RatingService
-from comparison import CompareJob, ComparisonService
 from dataclasses import dataclass
-from service import JobResult, Job
-import dataclasses
+from time import sleep
 import uuid
 import threading
-from time import sleep
-import settings
 
 class JobBoard:
     _jobs: dict[uuid.UUID, Job]
@@ -95,26 +95,15 @@ app = FastAPI(lifespan=lifespan)
 
 @app.get("/models")
 def get_models():
-    return list(settings.TRANSLATION_MODELS.keys())
-
-@dataclass(kw_only=True)
-class TranslateAPIRequest:
-    prompt: Prompt
-    setting: PromptSetting = dataclasses.field(default_factory = lambda: PromptSetting())
-    model: str
+    return list(LLM_MODELS.keys())
 
 @app.post("/translate")
 def translate(request: TranslateAPIRequest):
-    job = TranslateJob(model=request.model, setting=request.setting, prompt=request.prompt)
+    job = TranslateJob(model=request.model, setting=request.setting, prompt=request.translate_input)
     appstate.get().job_board.queue(job)
 
     result = appstate.get().job_board.get_result_blocking(job.job_id)
     return result
-
-@dataclass(kw_only=True)
-class RateAPIRequest:
-    source: str
-    translation: str
 
 @app.post("/rate")
 def rate(request: RateAPIRequest):
@@ -123,12 +112,6 @@ def rate(request: RateAPIRequest):
 
     result = appstate.get().job_board.get_result_blocking(job.job_id)
     return result
-
-@dataclass(kw_only=True)
-class CompareAPIRequest:
-    source: str
-    translation0: str
-    translation1: str
 
 @app.post("/compare")
 def compare(request: CompareAPIRequest):

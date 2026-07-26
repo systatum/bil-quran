@@ -1,3 +1,3 @@
 #!/bin/bash
 export HF_HOME=./hf_cache
-fastapi dev src/main.py --reload-dir src
+fastapi dev --entrypoint src.main:app --reload-dir src

@@ -1,10 +1,10 @@
 from __future__ import annotations
+from src.service import JobResult, Job, Service
+from src.shared import Rating
 from comet import download_model, load_from_checkpoint
 from comet.models import CometModel
 from dataclasses import dataclass
 import traceback
-from service import JobResult, Job, Service
-from typing import TypeAlias
 
 def load_model() -> CometModel:
     path = download_model("Unbabel/wmt20-comet-qe-da")
@@ -21,14 +21,10 @@ def rate(model: CometModel, source: str, translation: str) -> float:
     # num_workers is set to 0 as a workaround
     return model.predict(data, num_workers=0)[0][0]
 
-Rating: TypeAlias = float
-
 @dataclass(kw_only=True)
 class RateJob(Job[Rating]):
     source: str
     translation: str
-
-RateJobResult: TypeAlias = JobResult[Rating]
 
 class RatingService(Service[Rating]):
     _model: CometModel

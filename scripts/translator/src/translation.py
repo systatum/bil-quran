@@ -1,23 +1,19 @@
 from __future__ import annotations
+from src.llm_model import TranslateInput, PromptSetting, LLMModel
+from src.llm_model_loader import load_models
+from src.service import Job, JobResult, Service
+from src.shared import Translation
 from dataclasses import dataclass
-from model import Prompt, PromptSetting, Model
-from model_loader import load_models
-from service import Job, JobResult, Service
 import traceback
-from typing import TypeAlias
-
-Translation: TypeAlias = str
 
 @dataclass(kw_only=True)
 class TranslateJob(Job[Translation]):
-    prompt: Prompt
+    prompt: TranslateInput
     setting: PromptSetting
     model: str
 
-TranslateJobResult: TypeAlias = JobResult[Translation]
-
 class TranslationService(Service[Translation]):
-    _models: dict[str, Model]
+    _models: dict[str, LLMModel]
 
     def __init__(self):
         super().__init__()
@@ -32,7 +28,7 @@ class TranslationService(Service[Translation]):
             return job.err(f"Model {job.model} is not available")
 
         try:
-            answer = model.prompt(setting=job.setting, prompt_object=job.prompt)
+            answer = model.prompt(setting=job.setting, translate_input=job.prompt)
             if answer is None:
                 return job.err("Query returned an empty response")
         except Exception as e:
