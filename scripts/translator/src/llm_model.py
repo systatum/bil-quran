@@ -1,11 +1,11 @@
 from src.shared import PromptSetting, TranslateInput
-from src.settings import LLM_GPU_ENABLED
+from src.settings import LLM_GPU_ENABLED, LLM_CONTEXT_SIZE
 import typing
 import llama_cpp
 
 class LLMModel:
     def __init__(self, model_path: str):
-        self._model = llama_cpp.Llama(model_path=model_path, n_gpu_layers=-1 if LLM_GPU_ENABLED else 0, n_ctx=4096)
+        self._model = llama_cpp.Llama(model_path=model_path, n_gpu_layers=-1 if LLM_GPU_ENABLED else 0, n_ctx=LLM_CONTEXT_SIZE)
 
     def prompt(self, setting: PromptSetting, translate_input: TranslateInput) -> str | None:
         result: llama_cpp.CreateChatCompletionResponse = typing.cast(llama_cpp.CreateChatCompletionResponse,

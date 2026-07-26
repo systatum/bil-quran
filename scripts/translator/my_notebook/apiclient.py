@@ -1,7 +1,7 @@
 import src.shared as api
 from typing import Callable, Any
 import requests
-from sys import stderr
+import sys
 from dataclasses import dataclass, asdict
 import traceback
 
@@ -12,6 +12,7 @@ class APIClient:
         base_url: str = "http://localhost:8000"
         max_retry: int = 5
         timeout: float = 60.0
+        authorization: str | None = None
 
     class RetryException(Exception):
         pass
@@ -38,37 +39,38 @@ class APIClient:
             raise ValueError(f"Path {path} does not start with /")
 
         setting = self.setting
+        auth_header = {"Authorization": setting.authorization} if setting.authorization is not None else {}
 
         for _ in range(setting.max_retry):
             try:
                 if data is None:
                     response = requests.get(
-                        setting.base_url + path, timeout=setting.timeout
+                        setting.base_url + path, timeout=setting.timeout, headers=auth_header
                     )
                 else:
                     response = requests.post(
                         setting.base_url + path,
                         json=data,
-                        headers={"Content-Type": "application/json"},
+                        headers={"Content-Type": "application/json"} | auth_header,
                         timeout=setting.timeout,
                     )
             except requests.RequestException as e:
                 print(
                     f"Unexpected error {type(e).__name__}: {traceback.format_exc()}",
-                    file=stderr,
+                    file=sys.stderr,
                 )
                 continue
 
             if not 200 <= response.status_code <= 299:
                 print(
-                    "Request error:", response.status_code, response.text, file=stderr
+                    "Request error:", response.status_code, response.text, file=sys.stderr
                 )
                 continue
 
             try:
                 json_body = response.json()
             except requests.JSONDecodeError:
-                print("Invalid JSON:", response.text, file=stderr)
+                print("Invalid JSON:", response.text, file=sys.stderr)
                 continue
 
             if transformer is None:
@@ -77,7 +79,7 @@ class APIClient:
             try:
                 return transformer(json_body)
             except self.RetryException as e:
-                print(f"Transform requested retry: {e}", file=stderr)
+                print(f"Transform requested retry: {e}", file=sys.stderr)
                 continue
 
         raise RuntimeError(
