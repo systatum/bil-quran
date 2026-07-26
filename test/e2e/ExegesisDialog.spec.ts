@@ -6,6 +6,7 @@ import {
   getPaperDialog,
   hasElement,
   hasNoElement,
+  hasNoText,
   hasText,
   openExegesisDialog,
   openSidebar,
@@ -220,6 +221,24 @@ test.describe("ExegesisDialog", () => {
       await expect(
         dialog.locator('[data-testid="prev-verse-btn"]'),
       ).toBeDisabled({ timeout: 5_000 })
+
+    test("prev/next rewrite URL to match current verse", async ({ page }) => {
+      const dialog = await openExegesisDialog(page, "1:1")
+      await expect(dialog).toBeVisible()
+
+      await clickOn(undefined, dialog, { ariaLabel: "next-verse-btn" })
+      await expect(page).toHaveURL(/#\/e\/1\/2$/)
+
+      await clickOn(undefined, dialog, { ariaLabel: "prev-verse-btn" })
+      await expect(page).toHaveURL(/#\/e\/1\/1$/)
+    })
+
+    test("prev/next rewrite URL for the chapter intro", async ({ page }) => {
+      const dialog = await openExegesisDialog(page, "1:1")
+      await expect(dialog).toBeVisible()
+
+      await clickOn(undefined, dialog, { ariaLabel: "prev-verse-btn" })
+      await expect(page).toHaveURL(/#\/e\/1\/0$/)
     })
 
     test("prev/next traversal persists verse position", async ({ page }) => {

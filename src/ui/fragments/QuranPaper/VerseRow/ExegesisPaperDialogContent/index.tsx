@@ -13,6 +13,7 @@ import {
 import LOGGER from "@services/Logger"
 import { SplitPane } from "@systatum/coneto/split-pane"
 import { useTheme } from "@systatum/coneto/theme"
+import { useNavigate } from "@tanstack/react-router"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useIntl } from "react-intl"
 import styled, { css } from "styled-components"
@@ -33,6 +34,7 @@ export default function ExegesisPaperDialogContent({
 }) {
   const { mode: theme } = useTheme()
   const { formatMessage } = useIntl()
+  const navigate = useNavigate()
   const {
     userSettings,
     setExegesis,
@@ -69,9 +71,8 @@ export default function ExegesisPaperDialogContent({
   const activeChapter = navTarget?.chapterId ?? chapterId
   const activeVerse = navTarget?.verse ?? currentVerse
 
-  // Any change of verse/chapter — via prev/next or Q-marker navigation —
-  // invalidates the footnote-jump memory; the content it pointed into is
-  // gone.
+  // Any verse/chapter change (prev/next or Q-marker navigation) invalidates
+  // the footnote-jump memory; the content it pointed into is gone.
   useEffect(() => {
     setFootnoteReturnScrollTop(null)
   }, [activeChapter, activeVerse])
@@ -123,33 +124,23 @@ export default function ExegesisPaperDialogContent({
     setScrollPosition(chapter, verse)
   }
 
-  const prevVerse = () => {
-    if (navTarget) {
-      const verse = navTarget.verse - 1
-      setNavTarget((t) => t && { ...t, verse })
-      persistScrollPosition(navTarget.chapterId, verse)
-    } else {
-      const verse = currentVerse - 1
-      setCurrentVerse(verse)
-      persistScrollPosition(activeChapter, verse)
-    }
+  const goToVerse = (delta: number) => {
+    const verse = activeVerse + delta
+    if (navTarget) setNavTarget((t) => t && { ...t, verse })
+    else setCurrentVerse(verse)
+    persistScrollPosition(activeChapter, verse)
+    navigate({
+      to: "/e/$chapter/$verse",
+      params: { chapter: String(activeChapter), verse: String(verse) },
+      replace: true,
+    })
   }
-  const nextVerse = () => {
-    if (navTarget) {
-      const verse = navTarget.verse + 1
-      setNavTarget((t) => t && { ...t, verse })
-      persistScrollPosition(navTarget.chapterId, verse)
-    } else {
-      const verse = currentVerse + 1
-      setCurrentVerse(verse)
-      persistScrollPosition(activeChapter, verse)
-    }
-  }
+  const prevVerse = () => goToVerse(-1)
+  const nextVerse = () => goToVerse(1)
 
   const hasExegesis = activeIds.length > 0
 
-  // Verse 0 isn't a real verse — it's a sentinel representing the chapter's
-  // introductory discussion, which precedes its verse-by-verse commentary.
+  // Verse 0 is a sentinel for the chapter's introductory discussion.
   const isChapterIntro = activeVerse === 0
   const isValid = isChapterIntro
     ? chapters?.[activeChapter] != null
@@ -298,21 +289,27 @@ export default function ExegesisPaperDialogContent({
       </SplitPane>
       <TraversalColumn>
         <CircleButton
-          data-testid="prev-verse-btn"
-          disabled={activeVerse <= 0}
-          onClick={prevVerse}
-        >
-          <RiArrowDropLeftFill />
-        </CircleButton>
-        <VerseIndicator $theme={theme} data-testid="verse-indicator">
-          {isChapterIntro ? "Intro" : activeVerse}
-        </VerseIndicator>
-        <CircleButton
           data-testid="next-verse-btn"
+          aria-label="next-verse-btn"
           disabled={activeVerse >= maxVerse}
           onClick={nextVerse}
         >
           <RiArrowDropRightFill />
+        </CircleButton>
+        <VerseIndicator
+          $theme={theme}
+          data-testid="verse-indicator"
+          aria-label="verse-indicator"
+        >
+          {isChapterIntro ? "Intro" : activeVerse}
+        </VerseIndicator>
+        <CircleButton
+          data-testid="prev-verse-btn"
+          aria-label="prev-verse-btn"
+          disabled={activeVerse <= 0}
+          onClick={prevVerse}
+        >
+          <RiArrowDropLeftFill />
         </CircleButton>
         {navTarget && (
           <CircleButton
@@ -345,11 +342,7 @@ const Outer = styled.div`
   flex-direction: row;
   flex: 1;
   min-height: 0;
-  /* Deliberately NOT overflow:hidden — that establishes its own scroll
-     container per the CSS Overflow spec, which "steals" the sticky
-     containing block for TraversalColumn away from the paper-dialog's own
-     scrolling wrapper (see TraversalColumn below). The inner SplitPane
-     cells already scope their own scrolling via overflow-y: auto. */
+  /* No overflow:hidden here, it would steal the sticky containing block from TraversalColumn. */
   overflow: visible;
 `
 

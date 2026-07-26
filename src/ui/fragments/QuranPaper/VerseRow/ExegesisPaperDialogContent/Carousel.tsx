@@ -4,11 +4,7 @@ import { css } from "styled-components"
 import Entry from "./Entry"
 import { NavTarget } from "./index"
 
-/**
- * Swipeable carousel over each active exegesis source's entry, one slide
- * per source. Arrow/dot controls are intentionally omitted (no `controller`
- * prop) — navigation is via swipe/drag or arrow keys only.
- */
+/** One slide per active exegesis source, swipe/drag or arrow keys to navigate, no visible controller. */
 export default function ExegesisCarousel({
   exegesisIds,
   chapterId,
