@@ -35,8 +35,13 @@ export default function ExegesisDetail({
         contentType="exegesis-detail"
         onClosingSidebarRequested={() => {
           goBack?.()
+          // only clear if nothing reopened a (possibly different) exegesis
+          // detail in the meantime, or this stale timeout would clobber it
+          const closingId = selectedExegesisId
           setTimeout(() => {
-            setSelectedExegesisId(null)
+            if (useExegesisState.getState().selectedExegesisId === closingId) {
+              setSelectedExegesisId(null)
+            }
           }, 300)
         }}
         withAction={false}
