@@ -1,3 +1,4 @@
+import useExegesisState from "@hooks/states/ExegesisState"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import { messages } from "@i18n/message"
 import {
@@ -11,7 +12,6 @@ import * as Coneto from "@systatum/coneto/title"
 import { useIntl } from "react-intl"
 import { css } from "styled-components"
 import { ContentType } from "."
-import useExegesisState from "@hooks/states/ExegesisState"
 
 const DARK_TEXT_COLOR = "#354526"
 const LIGHT_TEXT_COLOR = "rgb(89, 77, 67)"
@@ -62,6 +62,9 @@ export default function Title({
       break
     case ContentType.ExegesisDetail:
       title = String(authorName)
+      break
+    case ContentType.ProstrationVersesDetail:
+      title = formatMessage({ id: messages.sajdah.about.entryTitle })
       break
   }
 

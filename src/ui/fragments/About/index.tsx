@@ -7,11 +7,15 @@ import { messages } from "@i18n/message"
 import { RiArrowLeftLine, RiArrowRightSLine } from "@remixicon/react"
 import { Button } from "@systatum/coneto/button"
 import { ScreenProps } from "@systatum/coneto/screen-transition"
-import { StatefulForm } from "@systatum/coneto/stateful-form"
-import { H2, Item, SubItem, Text, Wrapper } from "@ui/fragments"
+import {
+  FormFieldGroup,
+  StatefulForm,
+} from "@systatum/coneto/stateful-form"
+import { Item, SubItem, Text, Wrapper } from "@ui/fragments"
 import { Screen } from "@ui/index"
 import { useIntl } from "react-intl"
 import { css } from "styled-components"
+import Headings from "../Headings"
 
 export default function About({
   goBack,
@@ -56,7 +60,7 @@ export default function About({
             align-items: center;
           `}
         >
-          <H2>bil-Qur'an</H2>
+          <Headings.Second>bil-Qur'an</Headings.Second>
           <Text>
             {formatMessage({ id: messages.about.version })} {ENV.version}
           </Text>
@@ -86,17 +90,47 @@ export default function About({
             gap: 4px;
           `,
         }}
-        fields={exegesisOptions.flatMap((exegesisOption) =>
-          (exegesisOption.groupOptions ?? []).map((option) => ({
+        fields={[
+          ...exegesisOptions.flatMap((exegesisOption) =>
+            (exegesisOption.groupOptions ?? []).map(
+              (option) =>
+                ({
+                  type: "button",
+                  name: option.text,
+                  title: option.text,
+                  button: {
+                    icon: {
+                      image: RiArrowRightSLine,
+                      size: 18,
+                    },
+                    "aria-label": "exegesis",
+                    styles: {
+                      self: css`
+                        background: ${theme === "dark"
+                          ? "#1a211d"
+                          : "#ededed"};
+                        flex-direction: row-reverse;
+                        justify-content: space-between;
+                      `,
+                    },
+                  },
+                  onClick: async () => {
+                    await getExegesisDetail(String(option.value), locale)
+                    await goToScreen?.(Screen.ExegesisDetail)
+                  },
+                }) satisfies FormFieldGroup,
+            ),
+          ),
+          {
             type: "button",
-            name: option.text,
-            title: option.text,
+            name: "sajdah",
+            title: formatMessage({ id: messages.sajdah.about.entryTitle }),
             button: {
               icon: {
                 image: RiArrowRightSLine,
                 size: 18,
               },
-              "aria-label": "exegesis",
+              "aria-label": "sajdah-detail",
               styles: {
                 self: css`
                   background: ${theme === "dark" ? "#1a211d" : "#ededed"};
@@ -106,11 +140,10 @@ export default function About({
               },
             },
             onClick: async () => {
-              await getExegesisDetail(String(option.value), locale)
-              await goToScreen?.(Screen.ExegesisDetail)
+              await goToScreen?.(Screen.ProstrationVersesDetail)
             },
-          })),
-        )}
+          } satisfies FormFieldGroup,
+        ]}
       />
 
       <Item
@@ -123,13 +156,9 @@ export default function About({
         `}
       >
         <img src={"./systatum.png"} width={40} height={40} />
-        <H2
-          $style={css`
-            font-family: "MontHeavy", sans-serif;
-          `}
-        >
+        <Headings.Second $fontFamily='"MontHeavy", sans-serif'>
           Systatum
-        </H2>
+        </Headings.Second>
       </Item>
     </Wrapper>
   )

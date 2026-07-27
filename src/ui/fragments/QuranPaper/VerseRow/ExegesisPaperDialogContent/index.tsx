@@ -1,4 +1,5 @@
 import { Asset } from "@constants/assets"
+import { getSajdahRuling } from "@constants/SajdahVerse"
 import useChaptersState from "@hooks/states/ChaptersState"
 import useExegesisState from "@hooks/states/ExegesisState"
 import usePaperDialogState, {
@@ -140,6 +141,12 @@ export default function ExegesisPaperDialogContent() {
 
   const hasExegesis = activeIds.length > 0
 
+  const sajdahRuling = getSajdahRuling(
+    activeChapter,
+    activeVerse,
+    userSettings.prostrationVersesSchools,
+  )
+
   // Verse 0 is a sentinel for the chapter's introductory discussion.
   const isChapterIntro = activeVerse === 0
   const isValid = isChapterIntro
@@ -239,6 +246,7 @@ export default function ExegesisPaperDialogContent() {
               id={`exegesis-${activeChapter}-${activeVerse}`}
               arabicFont={fontArabic}
               words={verseWords}
+              sajdahRuling={sajdahRuling}
               shownTranslations={userSettings.wbwTranslations}
               showMeaning
               compact
@@ -321,7 +329,11 @@ export default function ExegesisPaperDialogContent() {
           </CircleButton>
         )}
         {!isChapterIntro && (
-          <VerseBookmarker chapterId={activeChapter} verseNumber={activeVerse} />
+          <VerseBookmarker
+            chapterId={activeChapter}
+            verseNumber={activeVerse}
+            showExegesisOption={false}
+          />
         )}
         {footnoteReturnScrollTop != null && (
           <CircleButton

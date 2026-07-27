@@ -1,5 +1,6 @@
 import { ArabicFontFamily, isLearningFont } from "@constants/fonts"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
+import { SajdahRuling } from "@constants/SajdahVerse"
 import { DEFAULT_LOCALE } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import useUserSettingsState, {
@@ -7,7 +8,7 @@ import useUserSettingsState, {
 } from "@hooks/states/UserSettingsState"
 import useAligner from "@hooks/tools/useAligner"
 import { RefObject } from "react"
-import styled from "styled-components"
+import styled, { css } from "styled-components"
 import { WordCell } from "."
 import { Bismillah } from "./Bismillah"
 
@@ -21,6 +22,8 @@ interface InterlinearTextProps {
   showTransliteration?: boolean
   showMeaning?: boolean
   words: WordCell[]
+  /** When set, renders the sajdah marker after the verse's last word. */
+  sajdahRuling?: SajdahRuling | null
   lastWordRef?: RefObject<HTMLSpanElement>
   onMouseDown?: (w: WordCell) => void
   onPointerDown?: (w: WordCell) => void
@@ -52,6 +55,7 @@ export default function InterlinearText({
   showTransliteration,
   showMeaning,
   words,
+  sajdahRuling,
   lastWordRef,
   shownTranslations,
   isForLearning,
@@ -114,6 +118,15 @@ export default function InterlinearText({
             onPointerCancel={() => props.onPointerCancel?.(word)}
           >
             {word.token}
+            {i === words.length - 1 && sajdahRuling && (
+              <SajdahMarker
+                $ruling={sajdahRuling}
+                $theme={theme}
+                $size={effectiveFont.size * 0.75}
+              >
+                ۩
+              </SajdahMarker>
+            )}
           </Arabic>
 
           {showTransliteration && (
@@ -165,9 +178,40 @@ const Word = styled.span<{ $usingLearningFont?: boolean; $compact?: boolean }>`
   user-select: none;
 `
 
+const SajdahMarker = styled.span.attrs({ "aria-label": "sajdah-marker" })<{
+  $ruling: SajdahRuling
+  $theme: ThemeMode
+  $size: number
+}>`
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  transform: translateY(-50%);
+  margin-right: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: ${({ $size }) => $size}px;
+  line-height: 1;
+
+  ${({ $ruling, $theme, $size }) =>
+    $ruling === SajdahRuling.Obligatory
+      ? css`
+          width: ${$size}px;
+          height: ${$size}px;
+          border-radius: 50%;
+          color: #fff;
+          background: #7e6e5c;
+        `
+      : css`
+          color: ${$theme === "dark" ? "#f1daa8" : "#fff"};
+        `}
+`
+
 const Arabic = styled.span.attrs({ className: "arabic-lex" })<{
   $highlighted?: boolean
 }>`
+  position: relative;
   line-height: 1.6;
   cursor: pointer;
   ${({ $highlighted }) =>

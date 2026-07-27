@@ -23,6 +23,8 @@ interface VerseBookmarkerProps {
   children?: ReactNode
   /** Extra CSS applied to the CircleButton container (e.g. baseline alignment). */
   containerStyle?: CSSProp
+  /** Whether to offer "Exegesis"; the exegesis dialog itself passes false. */
+  showExegesisOption?: boolean
 }
 
 /**
@@ -36,6 +38,7 @@ export default function VerseBookmarker({
   verseNumber,
   children,
   containerStyle,
+  showExegesisOption = true,
 }: VerseBookmarkerProps) {
   const { formatMessage } = useIntl()
   const { bookmarkVerse } = useUserSettingsState()
@@ -82,6 +85,7 @@ export default function VerseBookmarker({
           {
             caption: formatMessage({ id: messages.exegesis }),
             icon: { image: RiBookOpenLine },
+            hidden: !showExegesisOption,
             onClick: () => {
               LOGGER.debug("Showing exegesis dialog for", verseKey)
               openExegesis(chapterId, verseNumber)

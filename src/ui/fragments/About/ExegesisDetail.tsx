@@ -1,16 +1,17 @@
+import { Locale } from "@constants/settings"
 import useExegesisState from "@hooks/states/ExegesisState"
-import { ScreenProps } from "@systatum/coneto/screen-transition"
-import { Screen } from "@ui/index"
-import Title from "../AppNavbar/Sidebar/Title"
-import { H3, SubItem, Text, Wrapper } from "@ui/fragments"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import { resolveLocale } from "@i18n"
-import { Locale } from "@constants/settings"
-import { safePick } from "@services/picker"
-import { css } from "styled-components"
-import { StatefulForm } from "@systatum/coneto/stateful-form"
-import { useIntl } from "react-intl"
 import { messages } from "@i18n/message"
+import { safePick } from "@services/picker"
+import { ScreenProps } from "@systatum/coneto/screen-transition"
+import { StatefulForm } from "@systatum/coneto/stateful-form"
+import { SubItem, Text, Wrapper } from "@ui/fragments"
+import { Screen } from "@ui/index"
+import { useIntl } from "react-intl"
+import { css } from "styled-components"
+import Title from "../AppNavbar/Sidebar/Title"
+import Headings from "../Headings"
 
 export default function ExegesisDetail({
   goBack,
@@ -107,13 +108,13 @@ export default function ExegesisDetail({
                   `}
                 >
                   {bookName && (
-                    <H3
+                    <Headings.Third
                       $style={css`
                         font-weight: 600;
                       `}
                     >
                       {bookName}
-                    </H3>
+                    </Headings.Third>
                   )}
                   {descriptionParagraphs.map((paragraph, i) => (
                     <Text key={i}>{paragraph}</Text>
@@ -126,13 +127,9 @@ export default function ExegesisDetail({
               type: "custom",
               render: detail && (
                 <SubItem>
-                  <H3
-                    $style={css`
-                      font-weight: 600;
-                    `}
-                  >
+                  <Headings.Third $fontWeight="600">
                     {formatMessage({ id: messages.about.source })}
-                  </H3>
+                  </Headings.Third>
                   <Text>{detail.source}</Text>
                 </SubItem>
               ),

@@ -1,6 +1,6 @@
+import { ThemeMode } from "@constants/theme"
 import { type BodyThemeConfig } from "@systatum/coneto/theme"
 import styled, { type CSSProp } from "styled-components"
-import { ThemeMode } from "@constants/theme"
 
 interface StyleProp {
   $style?: CSSProp
@@ -41,19 +41,6 @@ const SubItem = styled.div<StyleProp>`
   ${({ $style }) => $style}
 `
 
-const H2 = styled.h2<StyleProp>`
-  font-size: 24px;
-  font-weight: 500;
-
-  ${({ $style }) => $style}
-`
-
-const H3 = styled.h3<StyleProp>`
-  font-size: 16px;
-
-  ${({ $style }) => $style}
-`
-
 const Span = styled.span<StyleProp>`
   flex-direction: ${({ $flexDirection }) => $flexDirection ?? "column"};
   display: flex;
@@ -88,4 +75,4 @@ const Divider = styled.div<{
     `${$size}px solid ${$theme?.borderColor ?? "black"}`};
 `
 
-export { Wrapper, Item, SubItem, H2, H3, Text, Form, Divider, Span }
+export { Divider, Form, Item, Span, SubItem, Text, Wrapper }

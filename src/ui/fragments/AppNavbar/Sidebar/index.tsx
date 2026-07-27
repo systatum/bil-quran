@@ -1,11 +1,11 @@
+import useAppState from "@hooks/states/AppState"
+import { ScreenProps } from "@systatum/coneto/screen-transition"
+import { Screen } from "@ui/index"
 import { useLayoutEffect, useRef, useState } from "react"
-import styled, { css } from "styled-components"
+import styled from "styled-components"
 import BookmarkList from "./BookmarkList"
 import Title from "./Title"
 import UserSettingsForm from "./UserSettingsForm"
-import { ScreenProps } from "@systatum/coneto/screen-transition"
-import { Screen } from "@ui/index"
-import useAppState from "@hooks/states/AppState"
 
 export default function Sidebar({
   goBack,
@@ -88,6 +88,7 @@ export const ContentType = {
   Export: "export",
   Import: "import",
   ExegesisDetail: "exegesis-detail",
+  ProstrationVersesDetail: "prostverses-detail",
 } as const
 
 export type ContentType = (typeof ContentType)[keyof typeof ContentType]

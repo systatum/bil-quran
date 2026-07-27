@@ -10,6 +10,7 @@ import { useEffect, useMemo, useRef } from "react"
 import { css } from "styled-components"
 import About from "./fragments/About"
 import ExegesisDetail from "./fragments/About/ExegesisDetail"
+import ProstrationVersesDetail from "./fragments/About/ProstrationVersesDetail"
 import AppNavbar from "./fragments/AppNavbar"
 import Sidebar from "./fragments/AppNavbar/Sidebar"
 import { Export } from "./fragments/AppNavbar/Sidebar/Export"
@@ -27,6 +28,7 @@ interface UIIndexProps {
 
 export const Screen = {
   ExegesisDetail: "exegesis-detail",
+  ProstrationVersesDetail: "prostverses-detail",
   Exegesis: "exegesis",
   Lexeme: "lexeme",
   Export: "export",
@@ -54,6 +56,10 @@ const SCREENS: Record<Screen, ScreenEntry> = {
   [Screen.About]: { component: About, closable: true },
   [Screen.ExegesisDetail]: {
     component: ExegesisDetail,
+    closable: true,
+  },
+  [Screen.ProstrationVersesDetail]: {
+    component: ProstrationVersesDetail,
     closable: true,
   },
 }
@@ -120,6 +126,7 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
     Screen.Import,
     Screen.About,
     Screen.ExegesisDetail,
+    Screen.ProstrationVersesDetail,
     Screen.Sidebar,
   ]
 

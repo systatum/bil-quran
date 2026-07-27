@@ -13,8 +13,6 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
   Then, the app will be visible at: [systatum.github.io/bil-quran](https://systatum.github.io/bil-quran/)
 
-Scrolling works by using hash router, ie: https://bil-quran.com/#/c/11/12
-
 App unique features:
 
 - Allow you to learn word-by-word
@@ -30,10 +28,7 @@ App unique features:
 - Add a feature to report an issue
 - Rate translation feature (this needs Ligo backend).
 - Ability to find by text: type in the text of the ayah, in Arabic or English, no matter how bad/wrong or how partially correct, can still give estimate
-- When clicking > and < in exegesis dialog, rewrite the URL as well
-- Remove "See exegesis" on exegesis dialog paper
 - Add "copy link" on verse marker and on exegesis dialog, to copy link to respective path
-- Revert button position top is > and bottom is <
 - Auto add \_\_\_ on words like SAW SWT RA with tooltip displaying localized meaning.
   -Add site / guess tracker google web service style
 
@@ -50,9 +45,6 @@ App unique features:
 - [ ] Add madhab mode (shia/sunni)
 - [ ] Check overlay behavior: if sidebar is opened, has overlay, and clicking overlay close the sidebar. Same expected behavior with search bar.
 - [ ] Fix 2:204 word 16 buggy cannot scroll down
-- [ ] And if adding on a bookmarked verse, will edit instead of insert. Also check that each bookmark, whenever not specified, will add to default (but the localstorage should always have 1 default category)
-- [ ] Add functionality to backup (when click, then show export and import screen).
-- [ ] When adding note, add at the head, so we see newer notes first.
 - [ ] Test bookmark can click and go to that verse.
 - [ ] When having bookmark data, ensure that scrollbar is shown and user can scroll when there are a lot of bookmark.
 
