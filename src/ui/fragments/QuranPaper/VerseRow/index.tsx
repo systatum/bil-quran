@@ -5,6 +5,7 @@ import {
   WordWithLexemeRecord,
 } from "@constants/records/WordRecord"
 import { TranslatedWord } from "@constants/records/WordTranslationRecord"
+import { getSajdahRuling } from "@constants/SajdahVerse"
 import { BasmalaPosition } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import { repo } from "@db/repo"
@@ -190,6 +191,12 @@ export default function VerseRow({
     ? HighlightColor.on(theme)[highlightColor]
     : undefined
 
+  const sajdahRuling = getSajdahRuling(
+    verse.chapter.id,
+    verse.number,
+    userSettings.prostrationVersesSchools,
+  )
+
   return (
     <VerseRowWrapper
       data-index={index}
@@ -221,6 +228,7 @@ export default function VerseRow({
         id={`${verse.chapter.id}-${verse.id}`}
         arabicFont={userSettings.font.arabic}
         words={verse.words}
+        sajdahRuling={sajdahRuling}
         shownTranslations={wbwTranslations}
         withBasmala={
           basmalaPosition === BasmalaPosition.Embedded &&

@@ -9,6 +9,7 @@ import { HighlightColor } from "@constants/highlight"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
 import { BasmalaPosition, DEFAULT_LOCALE, Locale } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
+import { ThoughtSchool } from "@constants/ThoughtSchool"
 import { resolveLocale } from "@i18n"
 import { isPlainObject } from "@services/checker"
 import LOGGER from "@services/Logger"
@@ -34,6 +35,7 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
   alphabeticalChaptersSorting: false,
   exegesis: [],
   hasSeenExegesisDialog: false,
+  prostrationVersesSchools: [],
   font: {
     arabic: {
       family: "NotoNaskhArabic",
@@ -78,6 +80,9 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
     set({
       userSettings: hydrated,
     })
+
+    // normalize localStorage to the current schema immediately
+    get().persistState()
 
     return hydrated
   },
@@ -143,6 +148,10 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
 
   setExegesis(ids) {
     get().partialUpdate({ exegesis: ids })
+  },
+
+  setProstrationVersesSchools(schools) {
+    get().partialUpdate({ prostrationVersesSchools: schools })
   },
 
   setHasSeenExegesisDialog(seen) {
@@ -311,6 +320,7 @@ export interface UserSettingsState {
   setShowPageIndicator(show: boolean): void
   setAlphabeticalChaptersSorting(sort: boolean): void
   setExegesis(ids: string[]): void
+  setProstrationVersesSchools(schools: ThoughtSchool[]): void
   setHasSeenExegesisDialog(seen: boolean): void
   setWordByWordTranslations(wbwTranslation: WordTranslationOption[]): void
   setScrollPosition(chapterId: number, verse: number): void
@@ -364,6 +374,9 @@ export interface UserSettings {
 
   /** Whether ever seen exegesis paper dialog. Used to set default exegesis selection. */
   hasSeenExegesisDialog: boolean
+
+  /** According to which juristic schools the sajdah-verses-to-be-marked are */
+  prostrationVersesSchools: ThoughtSchool[]
 
   /**
    * To record bookmarks

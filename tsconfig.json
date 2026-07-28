@@ -29,5 +29,5 @@
       "@ui/*": ["./src/ui/*"]
     }
   },
-  "include": ["src", "scripts"]
+  "include": ["src", "scripts", "global.ts"]
 }

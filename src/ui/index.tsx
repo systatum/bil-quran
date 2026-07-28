@@ -1,24 +1,25 @@
-import { ChapterRecord } from "@constants/records/ChapterRecord"
+import useAppState from "@hooks/states/AppState"
 import usePaginationState from "@hooks/states/PaginationState"
-import { useParams } from "@tanstack/react-router"
-import { useEffect, useMemo, useRef, useState } from "react"
-import AppNavbar from "./fragments/AppNavbar"
-import QuranPaper from "./fragments/QuranPaper"
-import usePaperDialogState from "./hooks/states/PaperDialogState"
-import useUserSettingsState from "./hooks/states/UserSettingsState"
+import useFirstVisibleVerse from "@hooks/tools/useFirstVisibleVerse"
 import {
   ScreenEntry,
   ScreenTransition,
 } from "@systatum/coneto/screen-transition"
-import { Export } from "./fragments/AppNavbar/Sidebar/Export"
-import { Import } from "./fragments/AppNavbar/Sidebar/Import"
-import useAppState from "@hooks/states/AppState"
-import { LexemeDetailPaperDialog } from "./fragments/QuranPaper/VerseRow/LexemeDetailPaperDialog"
+import { useParams } from "@tanstack/react-router"
+import { useEffect, useMemo, useRef } from "react"
 import { css } from "styled-components"
-import ExegesisPaperDialogContent from "./fragments/QuranPaper/VerseRow/ExegesisPaperDialogContent"
 import About from "./fragments/About"
 import ExegesisDetail from "./fragments/About/ExegesisDetail"
+import ProstrationVersesDetail from "./fragments/About/ProstrationVersesDetail"
+import AppNavbar from "./fragments/AppNavbar"
 import Sidebar from "./fragments/AppNavbar/Sidebar"
+import { Export } from "./fragments/AppNavbar/Sidebar/Export"
+import { Import } from "./fragments/AppNavbar/Sidebar/Import"
+import QuranPaper from "./fragments/QuranPaper"
+import ExegesisPaperDialogContent from "./fragments/QuranPaper/VerseRow/ExegesisPaperDialogContent"
+import { LexemeDetailPaperDialog } from "./fragments/QuranPaper/VerseRow/LexemeDetailPaperDialog"
+import usePaperDialogState from "./hooks/states/PaperDialogState"
+import useUserSettingsState from "./hooks/states/UserSettingsState"
 
 interface UIIndexProps {
   /** When true, opens the exegesis paper dialog for the routed verse on mount. */
@@ -27,6 +28,7 @@ interface UIIndexProps {
 
 export const Screen = {
   ExegesisDetail: "exegesis-detail",
+  ProstrationVersesDetail: "prostverses-detail",
   Exegesis: "exegesis",
   Lexeme: "lexeme",
   Export: "export",
@@ -56,13 +58,19 @@ const SCREENS: Record<Screen, ScreenEntry> = {
     component: ExegesisDetail,
     closable: true,
   },
+  [Screen.ProstrationVersesDetail]: {
+    component: ProstrationVersesDetail,
+    closable: true,
+  },
 }
 
 export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
-  const [chapter, setChapter] = useState<ChapterRecord | null>(null)
-  const {
-    userSettings: { theme, locale },
-  } = useUserSettingsState()
+  const { chapter } = useFirstVisibleVerse()
+  // Selectors instead of destructuring the whole store, so this component
+  // only re-renders when theme/locale actually change, not on every
+  // unrelated settings update (e.g. lastScroll on every exegesis dialog click).
+  const theme = useUserSettingsState((s) => s.userSettings.theme)
+  const locale = useUserSettingsState((s) => s.userSettings.locale)
   const { activeScreens, setActiveScreens } = useAppState()
 
   const { loadPagination } = usePaginationState()
@@ -75,12 +83,16 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
   const chapterId = params.chapter ? parseInt(params.chapter) : null
   const verseNumber = params.verse ? parseInt(params.verse) : null
 
-  const { openExegesis } = usePaperDialogState()
-
+  const openExegesis = usePaperDialogState((s) => s.openExegesis)
+  const openedExegesisForRef = useRef<string | null>(null)
   useEffect(() => {
     if (!openExegesisOnMount) return
     if (chapterId == null || verseNumber == null) return
 
+    const target = `${chapterId}:${verseNumber}`
+    if (openedExegesisForRef.current === target) return
+
+    openedExegesisForRef.current = target
     openExegesis(chapterId, verseNumber)
   }, [openExegesisOnMount, chapterId, verseNumber, openExegesis])
 
@@ -114,6 +126,7 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
     Screen.Import,
     Screen.About,
     Screen.ExegesisDetail,
+    Screen.ProstrationVersesDetail,
     Screen.Sidebar,
   ]
 
@@ -125,9 +138,6 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
       <AppNavbar theme={theme} title={navbarTitle} />
       <QuranPaper
         theme={theme}
-        onScroll={(verseRow) => {
-          setChapter(verseRow.chapter)
-        }}
         chapterId={chapterId}
         verseNumber={verseNumber}
       />
@@ -149,16 +159,13 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
               min-width: 400px;
               max-width: 400px;
 
-              /* 0-450px */
-              @media (max-width: 370px) {
-                width: 80vw;
-                min-width: 300px;
-              }
-
-              /* 450-700px */
-              @media (min-width: 370px) and (max-width: 700px) {
-                width: 60vw;
-                max-width: 350px;
+              /* Phone-class widths (iPhone 13 mini through the largest Pro
+                 Max, ~375-430px): scale with the viewport so the panel never
+                 overflows it. Above that, it's a static 400px regardless of
+                 how much wider the screen gets. */
+              @media (max-width: 430px) {
+                min-width: 90vw;
+                max-width: 90vw;
               }
             `};
           `,

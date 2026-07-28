@@ -2,6 +2,8 @@ import { expect, Page, test } from "@playwright/test"
 import {
   clickOn,
   getPaperDialog,
+  hasElement,
+  hasNoElement,
   openSidebar,
   scrollCertainPixels,
   scrollDown,
@@ -497,6 +499,30 @@ test.describe("VerseMarker", () => {
       await expect(
         dialog.locator('[data-testid="verse-indicator"]'),
       ).toHaveText(verseId, { timeout: 5_000 })
+    })
+
+    test("exegesis dialog's own bookmark menu does not offer Exegesis (it would just reopen itself)", async ({
+      page,
+    }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const firstVerseRow = page.locator("[data-verse]").first()
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Exegesis", page, { ariaLabel: "tip-menu-item" })
+
+      const dialog = await getPaperDialog(page)
+      await expect(dialog).toBeVisible({ timeout: 8_000 })
+
+      await dialog.locator('[aria-label="verse-bookmarker-btn"]').click()
+
+      // the other three actions are still offered...
+      await hasElement("Bookmark", page, { ariaLabel: "tip-menu-item" })
+      await hasElement("Note", page, { ariaLabel: "tip-menu-item" })
+      await hasElement("Highlight", page, { ariaLabel: "tip-menu-item" })
+      // ...but not Exegesis, since we're already inside the exegesis dialog
+      await hasNoElement("Exegesis", page, { ariaLabel: "tip-menu-item" })
     })
   })
 })

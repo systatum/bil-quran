@@ -1,6 +1,9 @@
 import { Dict } from "styled-components/dist/types"
 import { isPlainObject } from "./checker"
 
+// Re-exported for backward compat: pickLocalized itself now lives in ./picker.
+export { pickLocalized } from "./picker"
+
 export type DeepPartial<T> = {
   [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K]
 }

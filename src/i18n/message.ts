@@ -102,6 +102,25 @@ export const messages = {
   },
   highlightAction: "highlightAction",
   removeHighlight: "removeHighlight",
+  thoughtSchool: {
+    "100": "thoughtSchool.100",
+    "200": "thoughtSchool.200",
+    "210": "thoughtSchool.210",
+    "220": "thoughtSchool.220",
+  },
+  sajdah: {
+    title: "sajdah.title",
+    wajib: "sajdah.wajib",
+    mustahab: "sajdah.mustahab",
+    about: {
+      entryTitle: "sajdah.about.entryTitle",
+      desc: {
+        general: "sajdah.about.desc.general",
+        generalSunni: "sajdah.about.desc.generalSunni",
+        generalShia: "sajdah.about.desc.generalShia",
+      },
+    },
+  },
   errors: {
     bookmarkCreationFailed: "errors.bookmarkCreationFailed",
     bookmarkDataNotFound: "errors.bookmarkDataNotFound",

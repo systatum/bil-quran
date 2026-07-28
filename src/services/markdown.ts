@@ -196,9 +196,11 @@ function renderMarker(json: string): string | null {
   if (type === "RT") {
     const arabic = escHtml(String(args[0] ?? ""))
     const meaning = args[1] == null ? null : scanMarkers(String(args[1]), true)
+    // `<p>` can't contain a nested block-level `<blockquote>`, so only fall
+    // back to `<div>` when the meaning itself nests another RT block.
+    const meaningTag = meaning?.includes("<blockquote") ? "div" : "p"
     const meaningBlock = meaning
-      ? // A `<div>`, as `<p>` can't allow for a nested block-level `<blockquote>`
-        `<hr class="scripture-divider" /><div class="scripture-meaning">${meaning}</div>`
+      ? `<hr class="scripture-divider" /><${meaningTag} class="scripture-meaning">${meaning}</${meaningTag}>`
       : ""
 
     return (

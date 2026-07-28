@@ -13,6 +13,7 @@ export default function Entry({
   isChapterIntro,
   theme,
   onNavigate,
+  onFootnoteClick,
 }: {
   exegesisId: string
   chapterId: number
@@ -20,6 +21,7 @@ export default function Entry({
   isChapterIntro: boolean
   theme: string
   onNavigate: (target: NavTarget) => void
+  onFootnoteClick?: () => void
 }) {
   const { getVerseExegesis } = useExegesisState()
   const source = Asset.exegesisOf(exegesisId)
@@ -39,6 +41,7 @@ export default function Entry({
       clearTimeout(timerRef.current)
       setHighlightedFn(fn)
       timerRef.current = setTimeout(() => setHighlightedFn(null), 2000)
+      onFootnoteClick?.()
       document
         .getElementById(`fn-${exegesisId}-${fn}`)
         ?.scrollIntoView({ behavior: "smooth", block: "nearest" })
@@ -150,7 +153,7 @@ const VerseText = styled.div<{ $theme: string; $loaded: boolean }>`
   color: ${({ $theme, $loaded }) =>
     $loaded
       ? $theme === "dark"
-        ? "#d8c7a3"
+        ? "#ece0c8"
         : "#1f1f1f"
       : $theme === "dark"
         ? "#555"
@@ -163,7 +166,7 @@ const VerseText = styled.div<{ $theme: string; $loaded: boolean }>`
     margin-bottom: 0;
   }
   em {
-    color: ${({ $theme }) => ($theme === "dark" ? "#9dc898" : "#3a5f8a")};
+    color: ${({ $theme }) => ($theme === "dark" ? "#ccae6c" : "#3a5f8a")};
   }
 
   table {
