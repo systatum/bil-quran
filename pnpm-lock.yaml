@@ -17,6 +17,9 @@ importers:
       '@capacitor/core':
         specifier: ^8.3.4
         version: 8.3.4
+      '@capacitor/haptics':
+        specifier: ^8.0.2
+        version: 8.0.2(@capacitor/core@8.3.4)
       '@electric-sql/pglite':
         specifier: ^0.4.5
         version: 0.4.5
@@ -876,6 +879,11 @@ packages:
 
   '@capacitor/core@8.3.4':
     resolution: {integrity: sha512-CqRQCkb6HXxcx/N7s+hHTN6ef2CmamFiRMITwm4qB840ph56mS42bzUgn6tKCP+RZjdDweiRHj9ytDDeN6jFag==}
+
+  '@capacitor/haptics@8.0.2':
+    resolution: {integrity: sha512-c2hZzRR5Fk1tbTvhG1jhh2XBAf3EhnIerMIb2sl7Mt41Gxx1fhBJFDa0/BI1IbY4loVepyyuqNC9820/GZuoWQ==}
+    peerDependencies:
+      '@capacitor/core': '>=8.0.0'
 
   '@craco/craco@7.1.0':
     resolution: {integrity: sha512-oRAcPIKYrfPXp9rSzlsDNeOaVtDiKhoyqSXUoqiK24jCkHr4T8m/a2f74yXIzCbIheoUWDOIfWZyRgFgT+cpqA==}
@@ -7958,6 +7966,10 @@ snapshots:
   '@capacitor/core@8.3.4':
     dependencies:
       tslib: 2.8.1
+
+  '@capacitor/haptics@8.0.2(@capacitor/core@8.3.4)':
+    dependencies:
+      '@capacitor/core': 8.3.4
 
   '@craco/craco@7.1.0(@types/node@16.18.126)(postcss@8.5.14)(react-scripts@5.0.1(@babel/plugin-syntax-flow@7.28.6(@babel/core@7.29.0))(@babel/plugin-transform-react-jsx@7.28.6(@babel/core@7.29.0))(@types/babel__core@7.20.5)(eslint@8.57.1)(react@19.2.6)(ts-node@10.9.2(@types/node@16.18.126)(typescript@4.9.5))(tsx@4.21.0)(type-fest@0.21.3)(typescript@4.9.5))(typescript@4.9.5)':
     dependencies:

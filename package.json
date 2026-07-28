@@ -28,6 +28,7 @@
     "@capacitor/android": "^8.3.4",
     "@capacitor/cli": "^8.3.4",
     "@capacitor/core": "^8.3.4",
+    "@capacitor/haptics": "^8.0.2",
     "@electric-sql/pglite": "^0.4.5",
     "@remixicon/react": "^4.9.0",
     "@systatum/coneto": "file:./../coneto",
