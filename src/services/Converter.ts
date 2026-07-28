@@ -30,6 +30,27 @@ export function unpackIPC<T>(resp: IPCResponse<T>): T {
   throw new Error(message)
 }
 
+// ===== STRING ====================================
+
+export function arabicLetterToLatin(letter: string): string {
+  return ROOT_LETTER_LATIN[letter] ?? letter
+}
+
+/** Base64-encodes a Unicode string (plain `btoa` only handles Latin1). */
+export function encodeBase64Unicode(str: string): string {
+  const bytes = new TextEncoder().encode(str)
+  let binary = ""
+  bytes.forEach((b) => (binary += String.fromCharCode(b)))
+  return btoa(binary)
+}
+
+/** Inverse of {@link encodeBase64Unicode}. Throws if `str` isn't valid base64. */
+export function decodeBase64Unicode(str: string): string {
+  const binary = atob(str)
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0))
+  return new TextDecoder().decode(bytes)
+}
+
 // ===== OBJECT =====================================
 
 export function flattenObject(
@@ -50,4 +71,35 @@ export function flattenObject(
     },
     {} as Record<string, string>,
   )
+}
+
+const ROOT_LETTER_LATIN: Record<string, string> = {
+  ا: "a",
+  ب: "b",
+  ت: "t",
+  ث: "th",
+  ج: "j",
+  ح: "ḥ",
+  خ: "kh",
+  د: "d",
+  ذ: "dh",
+  ر: "r",
+  ز: "z",
+  س: "s",
+  ش: "sh",
+  ص: "ṣ",
+  ض: "ḍ",
+  ط: "ṭ",
+  ظ: "ẓ",
+  ع: "ʿa",
+  غ: "gh",
+  ف: "f",
+  ق: "q",
+  ك: "k",
+  ل: "l",
+  م: "m",
+  ن: "n",
+  ه: "h",
+  و: "w",
+  ي: "y",
 }

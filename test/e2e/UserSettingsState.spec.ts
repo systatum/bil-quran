@@ -1,6 +1,7 @@
 import { Locale } from "@constants/settings"
 import { USER_SETTINGS_VERSION } from "@hooks/states/UserSettingsState"
 import { expect, Page, test } from "@playwright/test"
+import { chapterNameSortKey } from "@services/chapters"
 import { ArabicFontId, ArabicFonts } from "../../src/constants/fonts"
 import enUS from "../../src/i18n/locales/en-US.json"
 import {
@@ -14,9 +15,11 @@ import {
   closeSidebar,
   findVisibleTarget,
   openExegesisDialog,
+  openSearchSheet,
   openSidebar,
   scrollDown,
   selectComboBox,
+  toggleWbwTranslation,
   waitUntilVisible,
 } from "./tools/interactivity"
 import {
@@ -235,6 +238,89 @@ test.describe("UserSettingsState", () => {
     })
   })
 
+  test.describe("alphabeticalChaptersSorting", () => {
+    test("chapter lookup list sorts alphabetically once enabled via the settings toggle", async ({
+      page,
+    }) => {
+      await openSearchSheet(page)
+
+      const chapterCombobox = page
+        .locator('[role="combobox"]:not(aside *)')
+        .filter({ visible: true })
+        .first()
+      // Same trigger icon toggles the drawer open/closed either way, which is
+      // more reliable than Escape here — the drawer's own dismiss listener
+      // doesn't reliably fire once a tree-list item has taken focus.
+      const chapterOpener = chapterCombobox.locator(
+        '[aria-label="selectbox-opener"]',
+      )
+
+      // Default: natural mushaf (chapter-id) order — 1, 2, 3, ...
+      await chapterOpener.click()
+      let drawer = page
+        .locator('[aria-label="combobox-drawer"]')
+        .filter({ visible: true })
+      await expect(drawer).toBeVisible({ timeout: 5000 })
+
+      let groupTitles = drawer.locator('[aria-label="tree-list-group-title"]')
+      await expect(groupTitles.first()).toContainText("Al-Faatiha", {
+        timeout: 3000,
+      })
+      await expect(groupTitles.nth(1)).toContainText("Al-Baqara")
+      await expect(groupTitles.nth(2)).toContainText("Aal-i-Imraan")
+
+      await chapterOpener.click()
+      await expect(drawer).toBeHidden({ timeout: 3000 })
+
+      // Close the search sheet itself — its own overlay blocker otherwise
+      // keeps intercepting clicks on the navbar's sidebar toggle below.
+      await page
+        .locator('[aria-label="title-action"]:not(aside *)')
+        .first()
+        .dispatchEvent("click")
+      await page.waitForTimeout(300)
+
+      // Enable the toggle from the settings sidebar
+      await openSidebar(page)
+      const toggleLabel = page
+        .locator('[aria-label="stateful-form-label-wrapper"]')
+        .filter({ hasText: "Alphabetical chapters sorting" })
+        .first()
+      await expect(toggleLabel).toBeVisible({ timeout: 5000 })
+      await toggleLabel.click()
+      await closeSidebar(page)
+      await page.waitForTimeout(300)
+
+      // Re-open the "by chapter" lookup — order should now be alphabetical,
+      // ignoring leading "Al-"/"An-"/etc. prefixes (e.g. "Al-Waqiah" under W)
+      await openSearchSheet(page)
+      await chapterOpener.click()
+      drawer = page
+        .locator('[aria-label="combobox-drawer"]')
+        .filter({ visible: true })
+      await expect(drawer).toBeVisible({ timeout: 5000 })
+
+      groupTitles = drawer.locator('[aria-label="tree-list-group-title"]')
+      const texts = await groupTitles.allTextContents()
+      expect(texts).toHaveLength(114)
+
+      // No longer in chapter-id order — Al-Faatiha (chapter 1) sorts under "F"
+      expect(texts[0]).not.toContain("Al-Faatiha")
+
+      // Sorted rows drop the leading chapter number (it moves to the far
+      // right instead), so the latin name is simply the first token.
+      const sortKeys = texts.map((text) => {
+        const latinName = text.match(/^(\S+)/)?.[1] ?? text
+        return chapterNameSortKey(latinName)
+      })
+      for (let i = 1; i < sortKeys.length; i++) {
+        expect(
+          sortKeys[i].localeCompare(sortKeys[i - 1]),
+        ).toBeGreaterThanOrEqual(0)
+      }
+    })
+  })
+
   test.describe("version", () => {
     test("stamps persisted settings with the current schema version", async ({
       page,
@@ -249,7 +335,6 @@ test.describe("UserSettingsState", () => {
       )
       expect(settings.version).toBe(USER_SETTINGS_VERSION)
     })
-
   })
 
   test.describe("hasSeenExegesisDialog", () => {
@@ -296,6 +381,29 @@ test.describe("UserSettingsState", () => {
         JSON.parse(localStorage.getItem("userSettings")!),
       )
       expect(settingsAfterReload.hasSeenExegesisDialog).toBe(true)
+    })
+  })
+
+  test.describe("wbwTranslations", () => {
+    test("does not re-fetch a translation's locale file after a page refresh", async ({
+      page,
+    }) => {
+      const requests: string[] = []
+      page.on("request", (req) => {
+        if (req.url().includes("/wbw_translations/id-ID.json"))
+          requests.push(req.url())
+      })
+
+      await toggleWbwTranslation("Indonesian", page)
+      await page.waitForTimeout(500)
+      expect(requests.length).toBe(1)
+
+      await page.reload()
+      await untilUsable(page)
+      await page.waitForTimeout(500)
+
+      // still just the one fetch from before toggling — persisted DB serves it now
+      expect(requests.length).toBe(1)
     })
   })
 

@@ -8,6 +8,14 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "MontHeavy";
+  src: url("./../public/fonts/mont-heavy/Mont-Heavy.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Ubuntu font for Arabic */
 @font-face {
   font-family: "SurahName";

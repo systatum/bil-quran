@@ -1,4 +1,5 @@
 import { ChapterPartDivision } from "@constants/records/ChapterRecord"
+import { ExegesisAuthor } from "@constants/records/ExegesisRecord"
 import { QuranPage } from "@constants/records/Pagination"
 import { Locale } from "@constants/settings"
 import {
@@ -43,14 +44,19 @@ export const paginations = table("paginations", {
 export const exegesis = table("exegesis", {
   // the folder name containing the exegesis
   id: text({ length: 15 }).notNull().primaryKey(),
+  source: text({ length: 55 }).notNull(),
+  thoughtSchool: integer({ mode: "number" }).notNull(),
   // the original name
   oriName: text({ length: 30 }).notNull().unique(),
   // local names
   locNames: text({ mode: "json" }).$type<Record<Locale, string>>().notNull(),
   // a short description
   description: text({ mode: "json" }).$type<Record<Locale, string>>().notNull(),
-  author: text({ length: 30 }).notNull(),
-  authorBio: text({ mode: "json" }).$type<Record<Locale, string>>().notNull(),
+  // a long description
+  longDescription: text({ mode: "json" })
+    .$type<Record<Locale, string>>()
+    .notNull(),
+  authors: text({ mode: "json" }).$type<Array<ExegesisAuthor>>().notNull(),
   // chapter IDs whose verse content has been fully fetched and stored locally
   downloadedChapters: text({ mode: "json" })
     .$type<number[]>()
@@ -67,6 +73,8 @@ export const exegesisContent = table(
     chapterId: integer({ mode: "number" }).notNull(),
     verseNumber: integer({ mode: "number" }).notNull(),
     translation: text().notNull(),
+    // tafsir/commentary text, distinct from translation (not all sources have this)
+    exegesis: text(),
     // footnote index → footnote text for this verse
     footnotes: text({ mode: "json" })
       .$type<Record<string, string>>()

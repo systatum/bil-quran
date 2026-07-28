@@ -13,8 +13,6 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
   Then, the app will be visible at: [systatum.github.io/bil-quran](https://systatum.github.io/bil-quran/)
 
-Scrolling works by using hash router, ie: https://bil-quran.com/#/c/11/12
-
 App unique features:
 
 - Allow you to learn word-by-word
@@ -23,13 +21,16 @@ App unique features:
 
 ## If I had more time
 
-- Better scroll preservation (both saving and restoring the position)
 - Ability to bookmark any verse and go to that any moment
-- Can lookup by: juz, root word, and verse theme.
+- Can lookup by: root word, and verse theme.
 - Normalize such as in baqarah 10: اَلِیْمٌۢ بِمَا the mim at the first word has indicator of mim
 - Make it easy to learn tajwid on the app
 - Add a feature to report an issue
 - Rate translation feature (this needs Ligo backend).
+- Ability to find by text: type in the text of the ayah, in Arabic or English, no matter how bad/wrong or how partially correct, can still give estimate
+- Add "copy link" on verse marker and on exegesis dialog, to copy link to respective path
+- Auto add \_\_\_ on words like SAW SWT RA with tooltip displaying localized meaning.
+  -Add site / guess tracker google web service style
 
 ## Stack
 
@@ -41,13 +42,9 @@ App unique features:
 - [ ] Test when user translations has English and Indonesian, both are shown fine on first load (Indonesian is not the default). This is to test first pre-flight translation downloading and insertion works.
 - [ ] Try raising error at the translator-level (ie at the i18n's formatMessage) and ensure that we see an error screen; otherwise we miss a locale, and the user is not seeing any error. Another simple way is inject into `WordTranslationOption` some fake value, where there's no corresponding i18n key for that in locale files, and so the lookup will generate a null/undefined, causing error on formatMessage-part automatically.
 - [ ] If we add another locale, and then refresh the page, we should not redownload the locale (this proves that database persisting works for all new-locale)
-- [ ] Work on all the to-do
 - [ ] Add madhab mode (shia/sunni)
 - [ ] Check overlay behavior: if sidebar is opened, has overlay, and clicking overlay close the sidebar. Same expected behavior with search bar.
-- [ ] Make sure pressing on the word show the occurrences across different verses
 - [ ] Fix 2:204 word 16 buggy cannot scroll down
-- [ ] Add a new bookmark note. And if adding on a bookmarked verse, will edit instead of insert. Also check that each bookmark, whenever not specified, will add to default (but the localstorage should always have 1 default category)
-- [ ] Can change and update setting and ensure it makes effect (test one by one, ie adding and removing word transation option also one by one)
 - [ ] Test bookmark can click and go to that verse.
 - [ ] When having bookmark data, ensure that scrollbar is shown and user can scroll when there are a lot of bookmark.
 

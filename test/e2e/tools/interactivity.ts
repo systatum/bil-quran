@@ -396,10 +396,65 @@ export async function getPaperDialog(page: Page | Locator) {
   return paperDialog
 }
 
-export async function closePaperDialog(page: Page | Locator) {
-  await clickOn(undefined, page, {
-    ariaLabel: "paper-dialog-toggle-close",
+/** Drags the paper dialog's indicator down fast enough to slide it off-screen. */
+async function dragDownFastToClose(page: Page) {
+  const indicator = page
+    .locator('[aria-label="paper-dialog-drag-indicator"]')
+    .first()
+
+  await indicator.dispatchEvent("pointerdown", {
+    clientY: 0,
+    bubbles: true,
+    cancelable: true,
   })
+  await indicator.dispatchEvent("pointermove", {
+    clientY: 20,
+    bubbles: true,
+    cancelable: true,
+  })
+  await page.waitForTimeout(16) // real gap so velocity tracking sees it as a fast flick
+  await indicator.dispatchEvent("pointermove", {
+    clientY: 200,
+    bubbles: true,
+    cancelable: true,
+  })
+  await indicator.dispatchEvent("pointerup", {
+    clientY: 200,
+    bubbles: true,
+    cancelable: true,
+  })
+}
+
+/**
+ * Dismisses the paper dialog (no close button); rotates deterministically
+ * across Escape, backdrop click, and fast drag-down based on the caller's
+ * source line
+ */
+export async function closePaperDialog(page: Page | Locator) {
+  const actualPage = "keyboard" in page ? page : page.page()
+
+  const callerLine = new Error().stack?.split("\n")[2] ?? ""
+  const hash = Array.from(callerLine).reduce(
+    (sum, ch) => sum + ch.charCodeAt(0),
+    0,
+  )
+
+  switch (hash % 3) {
+    case 0:
+      await actualPage.keyboard.press("Escape")
+      break
+    case 1:
+      await actualPage
+        .locator('[aria-label="overlay-blocker"]')
+        .first()
+        .click({ position: { x: 5, y: 5 } })
+      break
+    default:
+      await dragDownFastToClose(actualPage)
+      break
+  }
+
+  await actualPage.waitForTimeout(300)
 }
 
 // ==== TIMER ======================================================
@@ -423,8 +478,11 @@ export async function openSidebar(page: Page) {
 }
 
 export async function closeSidebar(page: Page) {
+  // The back/close button is the only title-action with caption="Left" —
+  // stable regardless of which sidebar content type (Settings, Bookmarks,
+  // Export, Import, ...) is currently showing.
   await page
-    .locator('[aria-label="title-action"]:not(aside *)')
+    .locator('[aria-label="title-action"][caption="Left"]')
     .last()
     .dispatchEvent("click")
   await page.waitForTimeout(300) // sidebar CSS transition is 220ms
@@ -455,13 +513,7 @@ export async function toggleWbwTranslation(label: string, page: Page) {
 
   await page.keyboard.press("Escape") // close drawer
   await page.waitForTimeout(150)
-  // dispatchEvent fires directly on the DOM node, bypassing the aside overlay
-  // that intercepts physical mouse clicks at the same screen coordinates.
-  await page
-    .locator('[aria-label="title-action"]:not(aside *)')
-    .last()
-    .dispatchEvent("click")
-  await page.waitForTimeout(300)
+  await closeSidebar(page)
 }
 
 /**
@@ -499,13 +551,7 @@ export async function toggleExegesis(label: string, page: Page) {
 
   await page.keyboard.press("Escape") // close drawer
   await page.waitForTimeout(150)
-  // dispatchEvent fires directly on the DOM node, bypassing the aside overlay
-  // that intercepts physical mouse clicks at the same screen coordinates.
-  await page
-    .locator('[aria-label="title-action"]:not(aside *)')
-    .last()
-    .dispatchEvent("click")
-  await page.waitForTimeout(300)
+  await closeSidebar(page)
 }
 
 /** Long-press a verse row (by "chapterId:verseNumber") to open the exegesis dialog. */

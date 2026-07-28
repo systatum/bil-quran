@@ -62,6 +62,22 @@ const useChaptersState = create<ChaptersState>((set, get) => ({
       chapter.transliterations[DEFAULT_LOCALE]
     )
   },
+
+  isValidVerse(chapterId, verseNumber) {
+    try {
+      const chapterNumber = Number(String(chapterId))
+      const verse = Number(String(verseNumber))
+      if (!Number.isInteger(chapterNumber) || !Number.isInteger(verse))
+        return false
+
+      const chapter = get().getChapter(chapterNumber)
+      return chapter.partitioning.some(
+        ({ start, end }) => verse >= start && verse <= end,
+      )
+    } catch {
+      return false
+    }
+  },
 }))
 
 export interface ChaptersState {
@@ -71,6 +87,10 @@ export interface ChaptersState {
   getChapterMeaning: (chapterNumber: number) => string | null
   getChapterArabicName: (chapterNumber: number) => string | null
   getChapterTransliteratedName: (chapterNumber: number) => string | null
+  isValidVerse: (
+    chapterId: string | number,
+    verseNumber: string | number,
+  ) => boolean
 }
 
 export default useChaptersState

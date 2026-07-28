@@ -1,7 +1,5 @@
 // ===== NUMBER ======================================
 
-import useChaptersState from "@hooks/states/ChaptersState"
-
 export function isProperNumber(value: unknown) {
   return typeof value === "number" && !Number.isNaN(value)
 }
@@ -43,27 +41,4 @@ export function isEqualShallow(
  */
 export function isPlainObject(value: unknown) {
   return typeof value === "object" && value !== null && !Array.isArray(value)
-}
-
-// ===== QURANI ======================================
-
-export function isValidVerse(
-  chapterId: string | number,
-  verseNumber: string | number,
-) {
-  try {
-    chapterId = Number(String(chapterId))
-    verseNumber = Number(String(verseNumber))
-    if (!Number.isInteger(chapterId) || !Number.isInteger(verseNumber)) {
-      return false
-    }
-
-    const chapter = useChaptersState.getState().getChapter(chapterId)
-    return chapter.partitioning.some(
-      ({ start, end }) =>
-        (verseNumber as number) >= start && (verseNumber as number) <= end,
-    )
-  } catch (e) {
-    return false
-  }
 }

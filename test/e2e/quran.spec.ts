@@ -2,7 +2,7 @@ import { Rendering } from "@constants/records/RenderingRecord"
 import { expect, Page, test } from "@playwright/test"
 import { loadQuranWords } from "./tools/data"
 import { scrollDown, waitUntilVisible } from "./tools/interactivity"
-import { untilUsable, visitFresh } from "./tools/state"
+import { getTopMostVerse, untilUsable, visitFresh } from "./tools/state"
 
 test.describe("Quran paper", () => {
   test.beforeEach(async ({ page }) => await visitFresh(page))
@@ -144,6 +144,57 @@ test.describe("Quran paper", () => {
         `[data-verse="${savedScroll!.chapterId}:${savedScroll!.verse}"]`,
       )
       await expect(verseLocator).toBeVisible({ timeout: 6000 })
+    })
+
+    test("scrolls the target verse to the top of the viewport", async ({
+      page,
+    }) => {
+      await page.goto("/#/c/12/5")
+      await untilUsable(page)
+
+      const verseLocator = page.locator('[data-verse="12:5"]')
+      await expect(verseLocator).toBeVisible({ timeout: 10_000 })
+      // Let the scroll-restoration debounce (3 rAFs + 300ms) fully settle.
+      await page.waitForTimeout(800)
+
+      const offsetFromTop = await verseLocator.evaluate((el) => {
+        let container = el.parentElement
+        while (
+          container &&
+          window.getComputedStyle(container).overflowY !== "auto"
+        ) {
+          container = container.parentElement
+        }
+        if (!container) return null
+        return (
+          el.getBoundingClientRect().top - container.getBoundingClientRect().top
+        )
+      })
+
+      expect(offsetFromTop).not.toBeNull()
+      // The verse row must be flush with the top of the scroll container —
+      // previously an extra row's height was tacked on, pushing it ~1 verse
+      // too far down and requiring a manual scroll-up to see it.
+      expect(Math.abs(offsetFromTop!)).toBeLessThan(5)
+    })
+
+    test("URL parameter takes precedence", async ({ page }) => {
+      // Fabricate a persisted scroll position far from the verse we're to visit
+      await page.evaluate(() => {
+        const raw = localStorage.getItem("userSettings")
+        const settings = raw ? JSON.parse(raw) : {}
+        settings.lastScroll = { chapterId: 50, verse: 1 }
+        localStorage.setItem("userSettings", JSON.stringify(settings))
+        window.location.hash = "#/c/2/21"
+      })
+      await page.reload()
+      await untilUsable(page)
+
+      // Let both the persisted-restore and requested-verse effects race and settle.
+      await page.waitForTimeout(1000)
+
+      const topmostVerse = await getTopMostVerse(page)
+      expect(topmostVerse).toBe("2:21")
     })
   })
 })

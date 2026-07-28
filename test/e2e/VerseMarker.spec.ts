@@ -1,9 +1,13 @@
 import { expect, Page, test } from "@playwright/test"
 import {
   clickOn,
+  getPaperDialog,
+  hasElement,
+  hasNoElement,
   openSidebar,
   scrollCertainPixels,
   scrollDown,
+  selectComboBox,
   toggleWbwTranslation,
   waitUntilVisible,
 } from "./tools/interactivity"
@@ -205,6 +209,115 @@ test.describe("VerseMarker", () => {
       })
     })
 
+    test("clicking Bookmark after adding a note does not erase the note", async ({
+      page,
+    }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const firstVerseRow = page.locator("[data-verse]").first()
+
+      // Add a note first
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Note", page, { ariaLabel: "tip-menu-item" })
+      const NOTE_TEXT = "Remember this verse"
+      await page.locator("textarea").fill(NOTE_TEXT)
+      await clickOn("Add", page, { role: "button" })
+
+      // Plain re-bookmark (no note passed) must not wipe the note out
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Bookmark", page, { ariaLabel: "tip-menu-item" })
+
+      await openBookmarkPanel(page)
+
+      const bookmarkList = page.locator("#bookmark-list")
+      await expect(bookmarkList).toBeVisible({ timeout: 5000 })
+      await expect(bookmarkList.getByText(NOTE_TEXT)).toBeVisible({
+        timeout: 5000,
+      })
+    })
+
+    test("recalls existing note text for edit", async ({ page }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const firstVerseRow = page.locator("[data-verse]").first()
+
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Note", page, { ariaLabel: "tip-menu-item" })
+      const NOTE_TEXT = "My first draft"
+      await page.locator("textarea").fill(NOTE_TEXT)
+      await clickOn("Add", page, { role: "button" })
+
+      // reopening should recall the saved text
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Note", page, { ariaLabel: "tip-menu-item" })
+
+      await expect(page.locator("textarea")).toHaveValue(NOTE_TEXT, {
+        timeout: 5000,
+      })
+    })
+
+    test("don't show previous verse's note when reopened on different verse", async ({
+      page,
+    }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const rows = page.locator("[data-verse]")
+      const firstVerseRow = rows.first()
+      const secondVerseRow = rows.nth(1)
+
+      // Add a note to the first verse
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Note", page, { ariaLabel: "tip-menu-item" })
+      await page.locator("textarea").fill("Note for first verse")
+      await clickOn("Add", page, { role: "button" })
+
+      // Open the note dialog for a different, unbookmarked verse
+      await secondVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Note", page, { ariaLabel: "tip-menu-item" })
+
+      // This verse has no saved note, so the textarea must start empty,
+      // not carry over the first verse's note
+      await expect(page.locator("textarea")).toHaveValue("", {
+        timeout: 5000,
+      })
+    })
+
+    // ensuring that the UI/UX experience of editing a note in the text area is flawless
+    test("backspacing mid-text keeps the caret in place", async ({ page }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const firstVerseRow = page.locator("[data-verse]").first()
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Note", page, { ariaLabel: "tip-menu-item" })
+
+      const textarea = page.locator("textarea")
+      await textarea.fill("This verse  is")
+      await page.waitForTimeout(200)
+
+      // place the caret right after "This verse " (index 11, between the
+      // two spaces), then delete the extra space
+      await textarea.click()
+      await textarea.press("Home")
+      for (let i = 0; i < 11; i++) await textarea.press("ArrowRight")
+      await textarea.press("Backspace")
+      await page.waitForTimeout(200)
+
+      const result = await textarea.evaluate((el: HTMLTextAreaElement) => ({
+        value: el.value,
+        selectionStart: el.selectionStart,
+      }))
+      expect(result.value).toBe("This verse is")
+      expect(result.selectionStart).toBe(10)
+    })
+
     test("cancelling the note dialog adds no bookmark", async ({ page }) => {
       await waitUntilVisible(page.locator("[data-verse]").first(), {
         timeout: 15_000,
@@ -221,9 +334,9 @@ test.describe("VerseMarker", () => {
       await openBookmarkPanel(page)
 
       // No bookmark was saved — the "no bookmarks" notice should appear instead
-      await expect(
-        page.getByText(/No bookmarks yet/i),
-      ).toBeVisible({ timeout: 5000 })
+      await expect(page.getByText(/No bookmarks yet/i)).toBeVisible({
+        timeout: 5000,
+      })
       await expect(page.locator("#bookmark-list")).not.toBeVisible()
 
       // localStorage confirms no bookmarks were persisted
@@ -234,6 +347,182 @@ test.describe("VerseMarker", () => {
         return settings?.bookmarks?.list ?? null
       })
       expect(bookmarks).toBeNull()
+    })
+  })
+
+  // visitFresh (called in beforeEach) removes "userSettings" from localStorage,
+  // which holds highlightedVerses — so every test below starts unhighlighted.
+  test.describe("highlighting a verse", () => {
+    async function getHighlightedVerses(page: Page) {
+      return page.evaluate(() => {
+        const raw = localStorage.getItem("userSettings")
+        if (!raw) return null
+        return JSON.parse(raw)?.highlightedVerses ?? null
+      })
+    }
+
+    async function getRowBackgroundColor(row: ReturnType<Page["locator"]>) {
+      return row.evaluate((el) => window.getComputedStyle(el).backgroundColor)
+    }
+
+    test("shows Highlight option in the verse marker dropdown", async ({
+      page,
+    }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      await page
+        .locator("[data-verse]")
+        .first()
+        .locator("[data-vmark] button")
+        .click()
+
+      await expect(
+        page
+          .locator('[aria-label="tip-menu-item"]')
+          .filter({ hasText: "Highlight" }),
+      ).toBeVisible({ timeout: 5000 })
+    })
+
+    test("highlighting with the default color persists Green and colors the row", async ({
+      page,
+    }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const firstVerseRow = page.locator("[data-verse]").first()
+      const verseKey = await firstVerseRow.getAttribute("data-verse")
+      expect(verseKey).toBeDefined()
+
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Highlight", page, { ariaLabel: "tip-menu-item" })
+
+      await expect(page.getByText("Highlight this verse")).toBeVisible({
+        timeout: 5000,
+      })
+      await clickOn("Highlight", page, { role: "button" })
+
+      const highlighted = await getHighlightedVerses(page)
+      expect(highlighted?.[verseKey!]).toBe(1)
+
+      // Primary color, light theme (default) → #c8e6c9
+      await expect
+        .poll(() => getRowBackgroundColor(firstVerseRow))
+        .toBe("rgb(200, 230, 201)")
+    })
+
+    test("selecting a different color persists that color", async ({
+      page,
+    }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const firstVerseRow = page.locator("[data-verse]").first()
+      const verseKey = await firstVerseRow.getAttribute("data-verse")
+
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Highlight", page, { ariaLabel: "tip-menu-item" })
+
+      await selectComboBox("Red", page, { formLabel: "Color" })
+      await clickOn("Highlight", page, { role: "button" })
+
+      const highlighted = await getHighlightedVerses(page)
+      expect(highlighted?.[verseKey!]).toBe(3)
+
+      // Tertiary color, light theme (default) → #f9c6c6
+      await expect
+        .poll(() => getRowBackgroundColor(firstVerseRow))
+        .toBe("rgb(249, 198, 198)")
+    })
+
+    test("cancelling the highlight dialog does not persist a highlight", async ({
+      page,
+    }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const firstVerseRow = page.locator("[data-verse]").first()
+
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Highlight", page, { ariaLabel: "tip-menu-item" })
+      await clickOn("Cancel", page, { role: "button" })
+
+      const highlighted = await getHighlightedVerses(page)
+      expect(highlighted).toBeNull()
+    })
+
+    test("removing an existing highlight clears it", async ({ page }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const firstVerseRow = page.locator("[data-verse]").first()
+      const verseKey = await firstVerseRow.getAttribute("data-verse")
+
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Highlight", page, { ariaLabel: "tip-menu-item" })
+      await clickOn("Highlight", page, { role: "button" })
+      expect((await getHighlightedVerses(page))?.[verseKey!]).toBe(1)
+
+      // reopening now shows a "Remove highlight" action
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Highlight", page, { ariaLabel: "tip-menu-item" })
+      await clickOn("Remove highlight", page, { role: "button" })
+
+      const highlighted = await getHighlightedVerses(page)
+      expect(highlighted?.[verseKey!]).toBeUndefined()
+    })
+  })
+
+  test.describe("opening exegesis from the verse marker", () => {
+    test("clicking Exegesis opens the paper dialog for that verse", async ({
+      page,
+    }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const firstVerseRow = page.locator("[data-verse]").first()
+      const verseKey = await firstVerseRow.getAttribute("data-verse")
+      expect(verseKey).toBeDefined()
+      const [, verseId] = verseKey!.split(":")
+
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Exegesis", page, { ariaLabel: "tip-menu-item" })
+
+      const dialog = await getPaperDialog(page)
+      await expect(dialog).toBeVisible({ timeout: 8_000 })
+      await expect(
+        dialog.locator('[data-testid="verse-indicator"]'),
+      ).toHaveText(verseId, { timeout: 5_000 })
+    })
+
+    test("exegesis dialog's own bookmark menu does not offer Exegesis (it would just reopen itself)", async ({
+      page,
+    }) => {
+      await waitUntilVisible(page.locator("[data-verse]").first(), {
+        timeout: 15_000,
+      })
+
+      const firstVerseRow = page.locator("[data-verse]").first()
+      await firstVerseRow.locator("[data-vmark] button").click()
+      await clickOn("Exegesis", page, { ariaLabel: "tip-menu-item" })
+
+      const dialog = await getPaperDialog(page)
+      await expect(dialog).toBeVisible({ timeout: 8_000 })
+
+      await dialog.locator('[aria-label="verse-bookmarker-btn"]').click()
+
+      // the other three actions are still offered...
+      await hasElement("Bookmark", page, { ariaLabel: "tip-menu-item" })
+      await hasElement("Note", page, { ariaLabel: "tip-menu-item" })
+      await hasElement("Highlight", page, { ariaLabel: "tip-menu-item" })
+      // ...but not Exegesis, since we're already inside the exegesis dialog
+      await hasNoElement("Exegesis", page, { ariaLabel: "tip-menu-item" })
     })
   })
 })

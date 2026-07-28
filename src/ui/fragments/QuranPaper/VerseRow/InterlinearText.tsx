@@ -1,5 +1,6 @@
 import { ArabicFontFamily, isLearningFont } from "@constants/fonts"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
+import { SajdahRuling } from "@constants/SajdahVerse"
 import { DEFAULT_LOCALE } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import useUserSettingsState, {
@@ -7,7 +8,7 @@ import useUserSettingsState, {
 } from "@hooks/states/UserSettingsState"
 import useAligner from "@hooks/tools/useAligner"
 import { RefObject } from "react"
-import styled from "styled-components"
+import styled, { css } from "styled-components"
 import { WordCell } from "."
 import { Bismillah } from "./Bismillah"
 
@@ -21,6 +22,8 @@ interface InterlinearTextProps {
   showTransliteration?: boolean
   showMeaning?: boolean
   words: WordCell[]
+  /** When set, renders the sajdah marker after the verse's last word. */
+  sajdahRuling?: SajdahRuling | null
   lastWordRef?: RefObject<HTMLSpanElement>
   onMouseDown?: (w: WordCell) => void
   onPointerDown?: (w: WordCell) => void
@@ -33,6 +36,9 @@ interface InterlinearTextProps {
    * If compact, text is shown more closer to each other
    */
   compact?: boolean
+
+  /** renders the Arabic text 25% smaller if set to true */
+  smaller?: boolean
 
   /**
    * If undefined, will detect whether the showing is for learning or not
@@ -49,10 +55,12 @@ export default function InterlinearText({
   showTransliteration,
   showMeaning,
   words,
+  sajdahRuling,
   lastWordRef,
   shownTranslations,
   isForLearning,
   compact,
+  smaller = false,
   ...props
 }: InterlinearTextProps) {
   const {
@@ -63,9 +71,12 @@ export default function InterlinearText({
   })
   const isForLearningFont: boolean =
     isForLearning === undefined ? isLearningFont(font.family) : !!isForLearning
+  const effectiveFont: FontSetting = smaller
+    ? { ...font, size: font.size * 0.75 }
+    : font
 
   return (
-    <VerseText $font={font}>
+    <VerseText $font={effectiveFont}>
       {withBasmala && (
         <Word>
           <Bismillah />
@@ -75,8 +86,8 @@ export default function InterlinearText({
           )}
 
           {showMeaning && (
-            <Meanings>
-              <Meaning $theme={theme} $marginTop="57px">
+            <Meanings $smaller={smaller}>
+              <Meaning $theme={theme} style={{ marginTop: "57px" }}>
                 In the name of Allah, the Most Gracious, the Most Merciful
               </Meaning>
             </Meanings>
@@ -107,6 +118,15 @@ export default function InterlinearText({
             onPointerCancel={() => props.onPointerCancel?.(word)}
           >
             {word.token}
+            {i === words.length - 1 && sajdahRuling && (
+              <SajdahMarker
+                $ruling={sajdahRuling}
+                $theme={theme}
+                $size={effectiveFont.size * 0.75}
+              >
+                ۩
+              </SajdahMarker>
+            )}
           </Arabic>
 
           {showTransliteration && (
@@ -114,7 +134,7 @@ export default function InterlinearText({
           )}
 
           {showMeaning && (
-            <Meanings>
+            <Meanings $smaller={smaller}>
               {shownTranslations?.map((t, layer) => (
                 <Meaning
                   key={t}
@@ -158,9 +178,40 @@ const Word = styled.span<{ $usingLearningFont?: boolean; $compact?: boolean }>`
   user-select: none;
 `
 
+const SajdahMarker = styled.span.attrs({ "aria-label": "sajdah-marker" })<{
+  $ruling: SajdahRuling
+  $theme: ThemeMode
+  $size: number
+}>`
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  transform: translateY(-50%);
+  margin-right: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: ${({ $size }) => $size}px;
+  line-height: 1;
+
+  ${({ $ruling, $theme, $size }) =>
+    $ruling === SajdahRuling.Obligatory
+      ? css`
+          width: ${$size}px;
+          height: ${$size}px;
+          border-radius: 50%;
+          color: #fff;
+          background: #7e6e5c;
+        `
+      : css`
+          color: ${$theme === "dark" ? "#f1daa8" : "#fff"};
+        `}
+`
+
 const Arabic = styled.span.attrs({ className: "arabic-lex" })<{
   $highlighted?: boolean
 }>`
+  position: relative;
   line-height: 1.6;
   cursor: pointer;
   ${({ $highlighted }) =>
@@ -177,17 +228,15 @@ const Transliteration = styled.span`
   text-align: center;
 `
 
-const Meaning = styled.div<{
+const Meaning = styled.div.attrs({ className: "meaning" })<{
   $theme: ThemeMode
   $minHeight?: number
-  $marginTop?: string
 }>`
   min-height: ${({ $minHeight }) => ($minHeight ? `${$minHeight}px` : "auto")};
   font-size: 14px;
   display: block;
   color: ${({ $theme }) => ($theme === "dark" ? "#bebebe" : "#a09083")};
   font-family: "${"NotoNaskhArabic" satisfies ArabicFontFamily}", serif;
-  margin-top: ${({ $marginTop }) => $marginTop ?? "8px"};
   direction: ltr;
   text-align: center;
   max-width: 120px;
@@ -197,7 +246,11 @@ const Meaning = styled.div<{
   overflow-wrap: anywhere;
 `
 
-const Meanings = styled.span`
+const Meanings = styled.span<{ $smaller: boolean }>`
   line-height: 16px;
-  margin-top: 3px;
+  margin-top: ${({ $smaller }) => ($smaller ? "0px" : "3px")};
+
+  .meaning {
+    margin-top: ${({ $smaller }) => ($smaller ? "5px" : "8px")};
+  }
 `

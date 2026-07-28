@@ -31,7 +31,17 @@ const verseRoute = createRoute({
   component: UIIndex,
 })
 
-const routeTree = rootRoute.addChildren([indexRoute, verseRoute])
+const exegesisRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/e/$chapter/$verse",
+  component: () => <UIIndex openExegesisOnMount />,
+})
+
+const routeTree = rootRoute.addChildren([
+  indexRoute,
+  verseRoute,
+  exegesisRoute,
+])
 
 export const router = createRouter({
   routeTree,

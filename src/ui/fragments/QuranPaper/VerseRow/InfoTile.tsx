@@ -1,10 +1,11 @@
 import { ArabicFontFamily } from "@constants/fonts"
 import { Grid } from "@systatum/coneto/grid"
+import { ReactNode } from "react"
 import styled, { css } from "styled-components"
 
 interface InfoTileProps {
   label: string
-  value: string
+  value: ReactNode
   theme: string
   arabic?: boolean
   arabicFont?: string
@@ -19,6 +20,7 @@ export default function InfoTile({
 }: InfoTileProps) {
   return (
     <Grid.Card
+      data-label={label}
       styles={{
         self: css`
           background: ${theme === "dark" ? "#353f34" : "#ede6d9"};

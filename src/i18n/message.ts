@@ -9,6 +9,16 @@ export const messages = {
   cancel: "cancel",
   settings: "settings",
   bookmarks_and_notes: "bookmarks_and_notes",
+  bookmark: "bookmark",
+  note: "note",
+  highlight: "highlight",
+  exegesis: "exegesis",
+  about: {
+    title: "about.title",
+    version: "about.version",
+    source: "about.source",
+    released: "about.released",
+  },
   lookup: {
     title: "lookup.title",
     go: "lookup.go",
@@ -32,6 +42,10 @@ export const messages = {
     title: "showPageIndicator.title",
     helper: "showPageIndicator.helper",
   },
+  alphabeticalChaptersSorting: {
+    title: "alphabeticalChaptersSorting.title",
+    helper: "alphabeticalChaptersSorting.helper",
+  },
   fontCategory: {
     shaddaStacked: "fontCategory.shaddaStacked",
     shaddaSeparable: "fontCategory.shaddaSeparable",
@@ -39,6 +53,24 @@ export const messages = {
   },
   fontOptions: {
     meQuranLearner: "fontOptions.meQuranLearner",
+  },
+  backup: {
+    title: "backup.title",
+    export: {
+      title: "backup.export.title",
+      description: "backup.export.description",
+      copy: "backup.export.copy",
+      download: "backup.export.download",
+      copySuccess: "backup.export.copySuccess",
+      copyFailed: "backup.export.copyFailed",
+    },
+    import: {
+      title: "backup.import.title",
+      description: "backup.import.description",
+      import: "backup.import.import",
+      selectFile: "backup.import.selectFile",
+      invalid: "backup.import.invalid",
+    },
   },
   searchSheet: {
     byChapter: "searchSheet.byChapter",
@@ -53,20 +85,48 @@ export const messages = {
         placeholder: "dialog.noteVerse.input.placeholder",
       },
     },
+    highlightVerse: {
+      title: "dialog.highlightVerse.title",
+      colorLabel: "dialog.highlightVerse.colorLabel",
+    },
   },
   notice: {
     bookmark: {
       noDataYet: "notice.bookmark.noDataYet",
     },
   },
-  tipMenu: {
-    verseMarker: {
-      bookmark: "tipMenu.verseMarker.bookmark",
-      note: "tipMenu.verseMarker.note",
+  highlightColor: {
+    "1": "highlightColor.1",
+    "2": "highlightColor.2",
+    "3": "highlightColor.3",
+  },
+  highlightAction: "highlightAction",
+  removeHighlight: "removeHighlight",
+  thoughtSchool: {
+    "100": "thoughtSchool.100",
+    "200": "thoughtSchool.200",
+    "210": "thoughtSchool.210",
+    "220": "thoughtSchool.220",
+  },
+  sajdah: {
+    title: "sajdah.title",
+    wajib: "sajdah.wajib",
+    mustahab: "sajdah.mustahab",
+    about: {
+      entryTitle: "sajdah.about.entryTitle",
+      desc: {
+        general: "sajdah.about.desc.general",
+        generalSunni: "sajdah.about.desc.generalSunni",
+        generalShia: "sajdah.about.desc.generalShia",
+      },
     },
   },
   errors: {
+    bookmarkCreationFailed: "errors.bookmarkCreationFailed",
     bookmarkDataNotFound: "errors.bookmarkDataNotFound",
+    bookmarkFetchFailed: "errors.bookmarkFetchFailed",
+    highlightingFailed: "errors.highlightingFailed",
+    verseNotFound: "errors.verseNotFound",
   },
 } as const
 

@@ -1,20 +1,18 @@
-import { ThemeMode } from "@constants/theme"
+import useAppState from "@hooks/states/AppState"
+import { ScreenProps } from "@systatum/coneto/screen-transition"
+import { Screen } from "@ui/index"
 import { useLayoutEffect, useRef, useState } from "react"
 import styled from "styled-components"
 import BookmarkList from "./BookmarkList"
 import Title from "./Title"
 import UserSettingsForm from "./UserSettingsForm"
 
-interface SidebarProps {
-  theme: ThemeMode
-  visible: boolean
-  onClosingSidebarRequested: () => void
-}
 export default function Sidebar({
-  theme,
-  visible,
-  onClosingSidebarRequested,
-}: SidebarProps) {
+  goBack,
+  goToScreen,
+}: Partial<ScreenProps<Screen>>) {
+  const { setIsSearchOpen } = useAppState()
+
   const titleRef = useRef<HTMLDivElement>(null)
   const [contentHeight, setContentHeight] = useState(0)
   const [contentType, setContentType] = useState<ContentType>(
@@ -36,60 +34,61 @@ export default function Sidebar({
   }, [])
 
   return (
-    <SidebarContainer theme={theme} $visible={visible}>
+    <Aside>
       <div ref={titleRef}>
         <Title
           contentType={contentType}
-          onClosingSidebarRequested={onClosingSidebarRequested}
+          onClosingSidebarRequested={() => goBack?.()}
           onActionClicked={(c) => setContentType(c)}
         />
       </div>
 
-      <div>
+      <Content>
         {contentType === ContentType.Settings && (
-          <UserSettingsForm key={String(visible) /* `key` forces re-mount */} />
+          <>
+            <UserSettingsForm
+              goToScreen={async (screen) => {
+                await setIsSearchOpen(false)
+                await goToScreen?.(screen as Screen)
+              }}
+            />
+          </>
         )}
         {contentType === ContentType.Bookmarks && (
           <BookmarkList height={contentHeight} />
         )}
-      </div>
-    </SidebarContainer>
+      </Content>
+    </Aside>
   )
 }
 
-const SidebarContainer = styled.aside<{
-  theme: ThemeMode
-  $visible: boolean
-}>`
-  background: ${({ theme }) => (theme === "dark" ? "#202b24" : "#e1dfda")};
-  position: fixed;
-  top: 0;
-  right: 0;
-  height: 100vh;
-  width: 40vw;
-  min-width: 350px;
-  max-width: 400px;
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.08);
-  transform: translateX(${(p) => (p.$visible ? "0%" : "100%")});
-  transition: transform 0.22s ease;
-  z-index: 9992999;
+// `display: contents` keeps this an invisible layout passthrough (identical
+// to the fragment it replaces) while giving the sidebar an addressable
+// `<aside>` landmark in the DOM.
+const Aside = styled.aside`
+  display: contents;
+`
 
-  /* 0-450px */
-  @media (max-width: 370px) {
-    width: 80vw;
-    min-width: 300px;
-  }
+const Content = styled.div`
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
 
-  /* 450-700px */
-  @media (min-width: 370px) and (max-width: 700px) {
-    width: 60vw;
-    max-width: 350px;
+  /* allow vertical scrolling but hide the scrollbar */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
   }
 `
 
 export const ContentType = {
   Settings: "settings",
   Bookmarks: "bookmarks",
+  Export: "export",
+  Import: "import",
+  ExegesisDetail: "exegesis-detail",
+  ProstrationVersesDetail: "prostverses-detail",
 } as const
 
 export type ContentType = (typeof ContentType)[keyof typeof ContentType]

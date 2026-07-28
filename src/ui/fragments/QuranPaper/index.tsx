@@ -7,10 +7,9 @@ import { useVirtualizer, VirtualItem } from "@tanstack/react-virtual"
 import useChaptersState from "../../hooks/states/ChaptersState"
 import useUserSettingsState from "../../hooks/states/UserSettingsState"
 import ChapterRow from "./ChapterRow"
-import PaperDialog from "./PaperDialog"
+import ModalDialog from "./ModalDialog"
 import VerseRow, { Verse } from "./VerseRow"
 import { Bismillah } from "./VerseRow/Bismillah"
-import NoteVerseDialog from "./VerseRow/NoteDialog"
 
 // This module contains the content browser of the Quran.
 // It includes various components to build the verse, and
@@ -37,7 +36,6 @@ function isVerseRow(row: RenderRow): row is RenderableVerseRow {
 }
 
 interface QuranBrowserProps {
-  onScroll: (verseRow: Verse) => void
   theme: ThemeMode
 
   // if given, will scroll to this location
@@ -50,7 +48,6 @@ interface QuranBrowserProps {
  * It defines the coordinate system for all offset calculations.
  */
 export default function QuranPaper({
-  onScroll,
   theme = "dark",
   chapterId: requestedChapterId,
   verseNumber: requestedVerseNumber,
@@ -58,10 +55,13 @@ export default function QuranPaper({
   const parentRef = useRef<HTMLDivElement>(null)
 
   const { chapters } = useChaptersState()
-  const { setScrollPosition, userSettings } = useUserSettingsState()
+  const wbwTranslations = useUserSettingsState(
+    (s) => s.userSettings.wbwTranslations,
+  )
+  const setScrollPosition = useUserSettingsState((s) => s.setScrollPosition)
 
   const rawWords = useWords()
-  const words = useTranslatedWords(rawWords, userSettings.wbwTranslations)
+  const words = useTranslatedWords(rawWords, wbwTranslations)
 
   // some flags about the rendering
   const [showTransliteration, setShowTransliteration] = useState(false)
@@ -167,7 +167,6 @@ export default function QuranPaper({
 
         if (!row || row.type !== "verse") return
         const verse = row.verse
-        if (onScroll) onScroll(row.verse)
 
         setScrollPosition(verse.chapter.id, verse.number)
       }, 120)
@@ -239,20 +238,12 @@ export default function QuranPaper({
           requestAnimationFrame(() => {
             const virtualItems = virtualizer.getVirtualItems()
             const item = virtualItems.find((x) => x.index === targetIndex)
-            const previousItem = virtualItems.find(
-              (x) => x.index === targetIndex - 1,
-            )
             const parentContainer = parentRef.current
 
             // last scrolling, trying to make the verse fully visible
             if (item && parentContainer) {
               parentContainer.scrollTo({
-                top:
-                  item.start +
-                  (previousItem
-                    ? Math.abs(item.start - previousItem.start)
-                    : 0),
-
+                top: item.start,
                 behavior: "instant",
               })
             }
@@ -268,13 +259,19 @@ export default function QuranPaper({
     })
   }
 
-  // restore persisted scroll position ONCE.
+  // restore persisted scroll position ONCE — unless a specific chapter/verse
+  // was requested (e.g. via URL), which always wins over the last position.
   useEffect(() => {
     if (hasRestoredScrollRef.current) return
     if (renderRows.length === 0) return
 
+    if (requestedChapterId && requestedVerseNumber) {
+      hasRestoredScrollRef.current = true
+      return
+    }
+
     async function restoreScroll() {
-      const { lastScroll } = userSettings
+      const { lastScroll } = useUserSettingsState.getState().userSettings
       if (lastScroll.chapterId > 0) {
         await waitForMeasurements()
         await scrollToVerse(lastScroll.chapterId, lastScroll.verse)
@@ -283,7 +280,7 @@ export default function QuranPaper({
     }
 
     restoreScroll()
-  }, [renderRows])
+  }, [renderRows, requestedChapterId, requestedVerseNumber])
 
   useEffect(() => {
     // must have rows on the page
@@ -297,7 +294,8 @@ export default function QuranPaper({
   // resize effect (empty deps, no re-registration) can call it.
   const scrollRestoreRef = useRef<(() => Promise<void>) | null>(null)
   scrollRestoreRef.current = async () => {
-    const { chapterId, verse } = userSettings.lastScroll
+    const { chapterId, verse } =
+      useUserSettingsState.getState().userSettings.lastScroll
     if (chapterId > 0) {
       await waitForMeasurements()
       await scrollToVerse(chapterId, verse)
@@ -346,8 +344,7 @@ export default function QuranPaper({
           position: "relative",
         }}
       >
-        <NoteVerseDialog />
-        <PaperDialog />
+        <ModalDialog />
 
         {items.map((item) => {
           const row = renderRows[item.index]

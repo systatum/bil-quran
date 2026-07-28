@@ -16,6 +16,8 @@ interface CircleButtonProps {
   showSubMenuOn?: ButtonShowSubMenuPosition
   /** Extra CSS applied to the Button container (e.g. margin-top). */
   containerStyle?: CSSProp
+  /** Forwarded verbatim to the underlying Button (e.g. data-testid, aria-label). */
+  [key: `data-${string}` | `aria-${string}`]: string | undefined
 }
 
 export default function CircleButton({
@@ -25,12 +27,14 @@ export default function CircleButton({
   subMenu,
   showSubMenuOn,
   containerStyle,
+  ...rest
 }: CircleButtonProps) {
   const { mode: theme } = useTheme()
   const [isOpen, setIsOpen] = useState(false)
 
   return (
     <Button
+      {...rest}
       subMenu={subMenu}
       showSubMenuOn={showSubMenuOn}
       open={isOpen}

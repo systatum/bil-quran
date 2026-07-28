@@ -86,3 +86,35 @@ export async function getPageLuminance(page: Page): Promise<number> {
     return (r * 299 + g * 587 + b * 114) / 1000
   })
 }
+
+export async function getTopMostVerse(
+  page: Page,
+): Promise<string | null | undefined> {
+  const val = await page.evaluate(() => {
+    const rows = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-verse]"),
+    )
+    if (rows.length === 0) return null
+
+    let container: HTMLElement | null = rows[0].parentElement
+    while (
+      container &&
+      window.getComputedStyle(container).overflowY !== "auto"
+    ) {
+      container = container.parentElement
+    }
+    if (!container) return null
+
+    const containerTop = container.getBoundingClientRect().top
+    const visible = rows
+      .map((row) => ({
+        verse: row.getAttribute("data-verse"),
+        top: row.getBoundingClientRect().top - containerTop,
+      }))
+      .filter((row) => row.top > -50)
+      .sort((a, b) => a.top - b.top)
+
+    return visible[0]?.verse ?? null
+  })
+  return val
+}

@@ -1,9 +1,11 @@
+import { HighlightColor } from "@constants/highlight"
 import { ChapterRecord } from "@constants/records/ChapterRecord"
 import {
   WordOccurrence,
   WordWithLexemeRecord,
 } from "@constants/records/WordRecord"
 import { TranslatedWord } from "@constants/records/WordTranslationRecord"
+import { getSajdahRuling } from "@constants/SajdahVerse"
 import { BasmalaPosition } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import { repo } from "@db/repo"
@@ -16,7 +18,6 @@ import LOGGER from "@services/Logger"
 import { makeSnippet } from "@services/mutator"
 import { haptic } from "ios-haptics"
 import { useEffect, useRef } from "react"
-import { useIntl } from "react-intl"
 import styled from "styled-components"
 import { Bismillah } from "./Bismillah"
 import InterlinearText from "./InterlinearText"
@@ -77,8 +78,6 @@ export default function VerseRow({
 
   const markerColumnRef = useRef<HTMLDivElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
-
-  const { formatMessage } = useIntl()
 
   useEffect(() => {
     const scrollEl = virtualizer.scrollElement as HTMLElement
@@ -187,6 +186,17 @@ export default function VerseRow({
       .catch((e) => LOGGER.error("Failed getting occurrences data", e))
   }
 
+  const highlightColor = userSettings.highlightedVerses[verse.id]
+  const highlightHex = highlightColor
+    ? HighlightColor.on(theme)[highlightColor]
+    : undefined
+
+  const sajdahRuling = getSajdahRuling(
+    verse.chapter.id,
+    verse.number,
+    userSettings.prostrationVersesSchools,
+  )
+
   return (
     <VerseRowWrapper
       data-index={index}
@@ -197,6 +207,7 @@ export default function VerseRow({
         ref(el)
       }}
       $theme={theme}
+      $highlightHex={highlightHex}
       style={{ transform: style.transform }}
       onPointerDown={() => {
         verseTimeoutRef.current = setTimeout(() => {
@@ -217,6 +228,7 @@ export default function VerseRow({
         id={`${verse.chapter.id}-${verse.id}`}
         arabicFont={userSettings.font.arabic}
         words={verse.words}
+        sajdahRuling={sajdahRuling}
         shownTranslations={wbwTranslations}
         withBasmala={
           basmalaPosition === BasmalaPosition.Embedded &&
@@ -271,7 +283,10 @@ VerseRow.groupVerse = (
   return Array.from(Object.values(grouped))
 }
 
-const VerseRowWrapper = styled.div<{ $theme: ThemeMode }>`
+const VerseRowWrapper = styled.div<{
+  $theme: ThemeMode
+  $highlightHex?: string
+}>`
   position: absolute;
   top: 0;
   left: 0;
@@ -285,7 +300,8 @@ const VerseRowWrapper = styled.div<{ $theme: ThemeMode }>`
   overflow: hidden;
 
   color: ${({ $theme }) => ($theme === "dark" ? "#d8c7a3" : "#1f1f1f")};
-  background: ${({ $theme }) => ($theme === "dark" ? "#181818" : "#f6f1e7")};
+  background: ${({ $theme, $highlightHex }) =>
+    $highlightHex ?? ($theme === "dark" ? "#181818" : "#f6f1e7")};
   border-bottom: 1px solid
     ${({ $theme }) => ($theme === "dark" ? "#303030" : "#bfbfbf")};
 `
