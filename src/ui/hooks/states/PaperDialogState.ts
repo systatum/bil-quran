@@ -25,9 +25,14 @@ const usePaperDialogState = create<PaperDialogState>((set) => ({
     })
   },
 
-  async openExegesis(chapterId, verseNumber) {
+  async openExegesis(chapterId, verseNumber, overrides) {
     await set((s) => ({
-      content: { type: "exegesis", chapterId, verseNumber },
+      content: {
+        type: "exegesis",
+        chapterId,
+        verseNumber,
+        override: overrides,
+      },
       openCount: s.openCount + 1,
     }))
     await useAppState.setState((s) => ({
@@ -57,7 +62,11 @@ export interface PaperDialogState {
   openLexeme: (word: WordCell) => void
   /** Update occurrences in-place after the async DB fetch completes. */
   updateLexemeOccurrences: (occurrences: Record<string, WordOccurrence>) => void
-  openExegesis: (chapterId: number, verseNumber: number) => void
+  openExegesis: (
+    chapterId: number,
+    verseNumber: number,
+    overrides?: ExegesisOverrides,
+  ) => void
   close: () => void
 }
 
@@ -67,10 +76,18 @@ export type LexemeDetailDialogContentProp = {
   occurrences: Record<string, WordOccurrence>
 }
 
+export interface ExegesisOverrides {
+  /** Show exclusively this exegesisId (e.g. "ibnkathir/en-US") for this view. */
+  exegesisId?: string
+  /** Force transliteration on for this view. */
+  showTransliteration?: boolean
+}
+
 export type ExegesisDialogContentProp = {
   type: "exegesis"
   chapterId: number
   verseNumber: number
+  override?: ExegesisOverrides
 }
 
 export type PaperDialogContent =

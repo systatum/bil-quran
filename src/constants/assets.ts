@@ -52,6 +52,8 @@ export interface Asset {
   exegesisAssetUrlOf: (id: string, locale: Locale, chapterId: number) => string
   /** Find default exegesis id for first-time. */
   defaultExegesisId: (locale: Locale) => string | null
+  /** Resolve a full exegesisId ("slug/locale") for the given work, falling back to en-US if unavailable in `locale`. Null if the work isn't a known source. */
+  resolveExegesisId: (work: ExegesisWork, locale: Locale) => string | null
 }
 
 export const basePath = `${typeof window !== "undefined" ? window.location.origin : ""}${process.env.PUBLIC_URL}`
@@ -107,13 +109,15 @@ export const Asset: Asset = {
     if (!source) throw new Error(`Unknown exegesis source: ${id.split("/")[0]}`)
     return `${source.path}/${locale}/${chapterId}.json`
   },
-  defaultExegesisId(locale) {
-    const source = Asset.exegesisOf("aliquli")
+  resolveExegesisId(work, locale) {
+    const source = Asset.exegesisOf(work)
     if (!source) return null
-    const slug = source.path.split("/").pop()!
     const resolvedLocale = source.availableLocales.includes(locale)
       ? locale
       : Locale.IntEnglish
-    return `${slug}/${resolvedLocale}`
+    return `${work}/${resolvedLocale}`
+  },
+  defaultExegesisId(locale) {
+    return Asset.resolveExegesisId(ExegesisWork.AliQuli, locale)
   },
 }

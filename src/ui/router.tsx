@@ -34,6 +34,13 @@ const verseRoute = createRoute({
 const exegesisRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/e/$chapter/$verse",
+  validateSearch: (search: Record<string, unknown>) => ({
+    tafsir: typeof search.tafsir === "string" ? search.tafsir : undefined,
+    transliteration:
+      typeof search.transliteration === "string"
+        ? search.transliteration
+        : undefined,
+  }),
   component: () => <UIIndex openExegesisOnMount />,
 })
 
