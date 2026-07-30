@@ -48,6 +48,18 @@ module.exports = {
         "^@i18n(.*)$": "<rootDir>/src/i18n$1",
         "^@services(.*)$": "<rootDir>/src/services$1",
       }
+      // `marked` ships ESM-only (no CJS build) — carve it out of CRA's
+      // default node_modules ignore so babel-jest transforms it to CJS.
+      // pnpm nests packages as node_modules/.pnpm/marked@x/node_modules/marked/…,
+      // so the exemption must scan the whole path, not just past the first
+      // "node_modules/" segment.
+      jestConfig.transformIgnorePatterns = (
+        jestConfig.transformIgnorePatterns ?? []
+      ).map((pattern) =>
+        pattern === "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|mjs|cjs|ts|tsx)$"
+          ? "^(?!.*node_modules[/\\\\]marked[/\\\\]).*node_modules[/\\\\].+\\.(js|jsx|mjs|cjs|ts|tsx)$"
+          : pattern,
+      )
       return jestConfig
     },
   },

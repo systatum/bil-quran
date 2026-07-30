@@ -5,6 +5,7 @@ import {
   WordWithLexemeRecord,
 } from "@constants/records/WordRecord"
 import { TranslatedWord } from "@constants/records/WordTranslationRecord"
+import { getSajdahRuling } from "@constants/SajdahVerse"
 import { BasmalaPosition } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import { repo } from "@db/repo"
@@ -17,7 +18,6 @@ import LOGGER from "@services/Logger"
 import { makeSnippet } from "@services/mutator"
 import { haptic } from "ios-haptics"
 import { useEffect, useRef } from "react"
-import { useIntl } from "react-intl"
 import styled from "styled-components"
 import { Bismillah } from "./Bismillah"
 import InterlinearText from "./InterlinearText"
@@ -78,8 +78,6 @@ export default function VerseRow({
 
   const markerColumnRef = useRef<HTMLDivElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
-
-  const { formatMessage } = useIntl()
 
   useEffect(() => {
     const scrollEl = virtualizer.scrollElement as HTMLElement
@@ -193,6 +191,12 @@ export default function VerseRow({
     ? HighlightColor.on(theme)[highlightColor]
     : undefined
 
+  const sajdahRuling = getSajdahRuling(
+    verse.chapter.id,
+    verse.number,
+    userSettings.prostrationVersesSchools,
+  )
+
   return (
     <VerseRowWrapper
       data-index={index}
@@ -224,6 +228,7 @@ export default function VerseRow({
         id={`${verse.chapter.id}-${verse.id}`}
         arabicFont={userSettings.font.arabic}
         words={verse.words}
+        sajdahRuling={sajdahRuling}
         shownTranslations={wbwTranslations}
         withBasmala={
           basmalaPosition === BasmalaPosition.Embedded &&

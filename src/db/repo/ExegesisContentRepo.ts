@@ -49,6 +49,7 @@ class ExegesisContentRepo extends Repository<
       for (const row of rows) {
         result[row.verseNumber] = {
           translation: row.translation,
+          exegesis: row.exegesis,
           footnotes: row.footnotes,
         }
       }

@@ -1,15 +1,17 @@
 import { Asset } from "@constants/assets"
 import {
+  ExegesisAuthor,
   ExegesisChapterAsset,
   ExegesisMetadata,
   ExegesisVerseContent,
 } from "@constants/records/ExegesisRecord"
 import { Locale } from "@constants/settings"
+import { ThoughtSchool } from "@constants/ThoughtSchool"
 import { repo } from "@db/repo"
 import { unpackIPC } from "@services/Converter"
 import { FingerprintedAsset } from "@services/fingerprinter"
-import { pickLocalized } from "@services/mutator"
 import LOGGER from "@services/Logger"
+import { pickLocalized } from "@services/picker"
 import { useEffect, useState } from "react"
 import useUserSettingsState from "../states/UserSettingsState"
 
@@ -64,7 +66,6 @@ export default function useExegesis(
       cancels.push(() => {
         cancelled = true
       })
-
       ;(async () => {
         try {
           await fetchExegesis(id, source.path)
@@ -96,7 +97,6 @@ export default function useExegesis(
 
     return () => cancels.forEach((c) => c())
     // activeKey is a stable string derived from the array, avoids reference churn
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeKey, chapterId, verseNumber])
 
   return exegesis.map((id) => ({
@@ -119,15 +119,18 @@ async function fetchExegesis(
 
   const locNames = pickLocalized(about.locNames ?? {}, (v) => v)
   const description = pickLocalized(about.about ?? {}, (v) => v.shortDesc)
-  const authorBio = pickLocalized(about.about ?? {}, (v) => v.author)
+  const authors: ExegesisAuthor[] = Object.entries(about.authors).map(
+    ([name, { bio }]) => ({ name, bio }),
+  )
 
   await repo.exegesis.create({
     id: exegesisId,
     oriName: about.name,
     locNames,
     description,
-    author: about.author,
-    authorBio,
+    authors,
+    thoughtSchool: ThoughtSchool.fromNameString(about.thought),
+    source: about.source,
   })
 
   LOGGER.debug(`Stored exegesis: ${exegesisId}`)

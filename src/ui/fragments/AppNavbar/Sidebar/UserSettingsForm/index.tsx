@@ -1,19 +1,27 @@
 import { Asset } from "@constants/assets"
 import { ArabicFonts, getAllPossibleFontSizeOptions } from "@constants/fonts"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
+import { SAJDAH_SCHOOLS } from "@constants/SajdahVerse"
 import { BasmalaPosition, Locale } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import useExegesisOptions from "@hooks/tools/useExegesisOptions"
 import useFonts from "@hooks/tools/useFonts"
+import useProstrationVersesSchoolOptions from "@hooks/tools/useProstrationVersesSchoolOptions"
 import { isProperThemeValue, messages } from "@i18n/message"
+import { RiArrowRightSLine, RiBookOpenLine } from "@remixicon/react"
 import { ComboboxOption } from "@systatum/coneto/combobox"
+import { ScreenProps } from "@systatum/coneto/screen-transition"
 import { FormFieldGroup, StatefulForm } from "@systatum/coneto/stateful-form"
 import { useTheme } from "@systatum/coneto/theme"
+import { Screen } from "@ui/index"
 import { useMemo } from "react"
 import { useIntl } from "react-intl"
 import { css } from "styled-components"
 import useUserSettingsState from "../../../../hooks/states/UserSettingsState"
-export default function UserSettingsForm() {
+
+export default function UserSettingsForm({
+  goToScreen,
+}: Partial<ScreenProps<Screen>>) {
   const { formatMessage } = useIntl()
   const { mode } = useTheme()
   const {
@@ -25,6 +33,7 @@ export default function UserSettingsForm() {
     setShowPageIndicator,
     setAlphabeticalChaptersSorting,
     setExegesis,
+    setProstrationVersesSchools,
     userSettings,
   } = useUserSettingsState()
 
@@ -42,11 +51,13 @@ export default function UserSettingsForm() {
     alphabeticalChaptersSorting:
       userSettings.alphabeticalChaptersSorting ?? false,
     exegesis: userSettings.exegesis,
+    prostvSchools: userSettings.prostrationVersesSchools.map(String),
   }
 
   const { arabicFontOptions } = useFonts()
   const arabicFontSizeOptions = useMemo(getAllPossibleFontSizeOptions, [])
   const exegesisOptions = useExegesisOptions()
+  const sajdahSchoolOptions = useProstrationVersesSchoolOptions()
 
   const FIELDS: FormFieldGroup[] = [
     {
@@ -130,18 +141,31 @@ export default function UserSettingsForm() {
       },
     ],
 
-    {
-      name: "basmalaPosition",
-      title: formatMessage({ id: messages.basmalaPosition.title }),
-      type: "combo",
-      combobox: {
-        mobile: true,
-        options: Object.values(BasmalaPosition).map((p) => ({
-          text: formatMessage({ id: messages.basmalaPosition[p] }),
-          value: p,
-        })),
+    [
+      {
+        name: "basmalaPosition",
+        title: formatMessage({ id: messages.basmalaPosition.title }),
+        type: "combo",
+        combobox: {
+          mobile: true,
+          options: Object.values(BasmalaPosition).map((p) => ({
+            text: formatMessage({ id: messages.basmalaPosition[p] }),
+            value: p,
+          })),
+        },
       },
-    },
+
+      {
+        name: "prostvSchools",
+        title: formatMessage({ id: messages.sajdah.title }),
+        type: "combo",
+        combobox: {
+          mobile: true,
+          multiple: true,
+          options: sajdahSchoolOptions,
+        },
+      },
+    ],
 
     [
       {
@@ -168,6 +192,50 @@ export default function UserSettingsForm() {
         },
       },
     ],
+    {
+      type: "button",
+      name: "backup",
+      button: {
+        icon: {
+          image: RiBookOpenLine,
+          size: 18,
+        },
+        "aria-label": "settings-backup-button",
+        styles: {
+          self: css`
+            background: ${mode === "dark" ? "#1a211d" : "#ededed"} !important;
+            flex-direction: row-reverse;
+            justify-content: space-between;
+          `,
+        },
+      },
+      title: formatMessage({ id: messages.backup.title }),
+      onClick: () => {
+        goToScreen?.(Screen.Export)
+      },
+    },
+    {
+      type: "button",
+      name: "about",
+      button: {
+        icon: {
+          image: RiArrowRightSLine,
+          size: 18,
+        },
+        "aria-label": "settings-about-button",
+        styles: {
+          self: css`
+            background: ${mode === "dark" ? "#1a211d" : "#ededed"} !important;
+            flex-direction: row-reverse;
+            justify-content: space-between;
+          `,
+        },
+      },
+      title: formatMessage({ id: messages.about.title }),
+      onClick: () => {
+        goToScreen?.(Screen.About)
+      },
+    },
   ]
 
   return (
@@ -181,6 +249,7 @@ export default function UserSettingsForm() {
         `,
         mobileFieldGroupStyle: css`
           background: ${mode === "dark" ? "#1a211d" : "#ededed"} !important;
+          min-height: fit-content;
         `,
         mobileFieldGroupRowDividerStyle: css`
           background: ${mode === "dark" ? "#1e3c2b" : "#dfdfdf"} !important;
@@ -241,6 +310,13 @@ export default function UserSettingsForm() {
           )
           if (!values.every((v) => validIds.includes(v))) return
           setExegesis(values)
+        } else if (FormState.ProstrationVersesSchools in currentState) {
+          const values: string[] =
+            currentState[FormState.ProstrationVersesSchools]
+          if (!Array.isArray(values)) return
+          const validSchools = SAJDAH_SCHOOLS.map(String)
+          if (!values.every((v) => validSchools.includes(v))) return
+          setProstrationVersesSchools(values.map(Number))
         }
       }}
     />
@@ -257,6 +333,7 @@ export const FormState = {
   ShowPageIndicator: "showPageIndicator",
   AlphabeticalChaptersSorting: "alphabeticalChaptersSorting",
   Exegesis: "exegesis",
+  ProstrationVersesSchools: "prostvSchools",
 } as const
 
 type FormState = {
@@ -269,4 +346,5 @@ type FormState = {
   [FormState.ShowPageIndicator]: boolean
   [FormState.AlphabeticalChaptersSorting]: boolean
   [FormState.Exegesis]: string[]
+  [FormState.ProstrationVersesSchools]: string[]
 }

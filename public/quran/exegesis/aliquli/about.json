@@ -1,6 +1,28 @@
 {
   "name": "The Qur'an With a Phrase-by-Phrase English Translation",
-  "author": "Ali Quli Qara'i",
+  "thought": "shia-jafari",
+  "authors": {
+    "Ali Quli Qara'i": {
+      "bio": {
+        "en-US": "Ali Quli Qara'i is a Muslim scholar, translator, and researcher known for his translations of classical Islamic works. His areas of study include Qur'anic studies, hadith, Islamic philosophy, spirituality, and Shi'i intellectual traditions. He is recognized for producing translations that are both accurate and accessible while remaining attentive to the nuances of the original Arabic and Persian sources.",
+        "id-ID": "Ali Quli Qara'i adalah seorang cendekiawan Muslim, penerjemah, dan peneliti yang dikenal melalui terjemahan berbagai karya klasik Islam. Bidang kajiannya mencakup Al-Qur'an, hadis, filsafat Islam, spiritualitas, dan tradisi keilmuan Syiah. Ia dikenal karena menghadirkan terjemahan yang akurat dan mudah dibaca, dengan tetap memperhatikan nuansa sumber-sumber Arab dan Persia yang menjadi rujukannya.",
+        "zh-CN": "阿里·古利·卡拉伊是一位穆斯林学者、翻译家和研究者，以翻译伊斯兰经典著作而闻名。他的研究领域涵盖《古兰经》学、圣训学、伊斯兰哲学、灵修传统以及什叶派思想史。其作品以准确、易读著称，同时注重保留阿拉伯语和波斯语原著中的细微含义。",
+        "es-MX": "Ali Quli Qara'i es un académico musulmán, traductor e investigador conocido por sus traducciones de obras clásicas islámicas. Sus áreas de estudio incluyen los estudios coránicos, el hadiz, la filosofía islámica, la espiritualidad y la tradición intelectual chií. Su trabajo destaca por combinar precisión académica con una lectura accesible para el público contemporáneo.",
+        "jv-ID": "Ali Quli Qara'i inggih punika sarjana Muslim, juru terjemah, saha panaliti ingkang misuwur amargi karya-karya terjemahan teks klasik Islam. Panjenenganipun dipun-kenal amargi terjemahanipun ingkang trep, cetha, saha tetep ngreksa nuansa sumber asli Arab lan Persia.",
+        "ar-IQ": "علي قلي قرائي باحث ومترجم مسلم معروف بترجمة عدد من المؤلفات الإسلامية الكلاسيكية. تشمل اهتماماته الدراسات القرآنية والحديث والفلسفة الإسلامية والتصوف والتراث الفكري الشيعي، ويتميّز بأسلوب يجمع بين الدقة العلمية وسهولة العرض.",
+        "fr-FR": "Ali Quli Qara'i est un chercheur, traducteur et érudit musulman reconnu pour ses traductions d'œuvres classiques de l'islam. Ses travaux portent notamment sur les études coraniques, le hadith, la philosophie islamique, la spiritualité et la pensée chiite.",
+        "ja-JP": "アリー・クーリー・カラーイーは、イスラーム古典の翻訳で知られるムスリムの研究者・翻訳家です。クルアーン学、ハディース、イスラーム哲学、精神性、シーア派思想などを専門とし、正確さと読みやすさを兼ね備えた翻訳で高く評価されています。",
+        "th-TH": "Ali Quli Qara'i เป็นนักวิชาการ นักแปล และนักวิจัยมุสลิม ผู้เป็นที่รู้จักจากการแปลผลงานคลาสสิกของอิสลาม ครอบคลุมด้านอัลกุรอาน หะดีษ ปรัชญาอิสลาม จิตวิญญาณ และความคิดชีอะฮ์",
+        "it-IT": "Ali Quli Qara'i è uno studioso, traduttore e ricercatore musulmano noto per le sue traduzioni di opere classiche dell'Islam. I suoi interessi comprendono studi coranici, hadith, filosofia islamica, spiritualità e tradizione intellettuale sciita.",
+        "de-DE": "Ali Quli Qara'i ist ein muslimischer Gelehrter, Übersetzer und Forscher, der vor allem für seine Übersetzungen klassischer islamischer Werke bekannt ist. Seine Arbeit umfasst Qur'anwissenschaften, Hadith, islamische Philosophie, Spiritualität und schiitische Geistesgeschichte.",
+        "ur-PK": "علی قلی قرائی ایک مسلم محقق، مترجم اور اسکالر ہیں جو اسلامی کلاسیکی متون کے انگریزی تراجم کے حوالے سے معروف ہیں۔ ان کی علمی دلچسپیوں میں قرآنیات، حدیث، اسلامی فلسفہ، روحانیت اور شیعہ فکری روایت شامل ہیں۔",
+        "hi-IN": "अली कुली क़राई एक मुस्लिम विद्वान, अनुवादक और शोधकर्ता हैं, जो इस्लामी शास्त्रीय ग्रंथों के अनुवादों के लिए जाने जाते हैं। उनके अध्ययन के प्रमुख क्षेत्र क़ुरआनी अध्ययन, हदीस, इस्लामी दर्शन, आध्यात्मिकता और शिया बौद्धिक परंपरा हैं।",
+        "fa-IR": "علی قلی قرائی پژوهشگر، مترجم و اندیشمند مسلمان معاصر است که بیشتر به دلیل ترجمه آثار کلاسیک اسلامی به زبان انگلیسی شناخته می‌شود. حوزه فعالیت او شامل مطالعات قرآنی، حدیث، فلسفه اسلامی، معنویت و میراث فکری شیعه است. آثار او به دلیل دقت علمی و در عین حال روانی و وضوح در بیان مورد توجه قرار گرفته‌اند.",
+        "pt-BR": "Ali Quli Qara'i é um estudioso muçulmano, tradutor e pesquisador conhecido por suas traduções de obras clássicas do Islã. Seus campos de interesse incluem estudos corânicos, hadith, filosofia islâmica, espiritualidade e tradição intelectual xiita. Seu trabalho é reconhecido por combinar precisão acadêmica com uma linguagem clara e acessível."
+      }
+    }
+  },
+
   "locNames": {
     "en-US": "The Qur'an With a Phrase-by-Phrase English Translation",
     "id-ID": "Al-Qur'an Dengan Terjemahan Bahasa Inggris Per Frasa",
@@ -26,8 +48,7 @@
         "One of the translation's distinguishing features is its treatment of Qur'anic idioms and expressions. Passages that remain clear when translated literally are rendered close to the original wording, while culturally specific or opaque idioms are paraphrased into natural English.",
         "The translation also gives particular attention to exegetical traditions transmitted from the Imams of the Ahl al-Bayt, whom Qara'i regards as an important source for understanding the Qur'an.",
         "Occupying a middle ground between a plain translation and a full commentary, this work balances accuracy, interpretive depth, and readability."
-      ],
-      "author": "Ali Quli Qara'i is a Muslim scholar, translator, and researcher known for his translations of classical Islamic works. His areas of study include Qur'anic studies, hadith, Islamic philosophy, spirituality, and Shi'i intellectual traditions. He is recognized for producing translations that are both accurate and accessible while remaining attentive to the nuances of the original Arabic and Persian sources."
+      ]
     },
 
     "id-ID": {
@@ -39,8 +60,7 @@
         "Salah satu ciri khas terjemahan ini adalah perhatiannya terhadap idiom dan ungkapan Al-Qur'an. Ungkapan yang masih dapat dipahami secara harfiah dipertahankan sedekat mungkin dengan teks asli, sementara idiom yang sulit dipahami dijelaskan melalui parafrasa yang lebih alami.",
         "Terjemahan ini juga memberi perhatian khusus pada riwayat-riwayat tafsir yang berasal dari para Imam Ahlulbait, yang dipandang oleh Qara'i sebagai salah satu sumber penting dalam memahami Al-Qur'an.",
         "Berada di antara terjemahan biasa dan karya tafsir yang lebih luas, terjemahan ini menawarkan keseimbangan antara ketepatan makna, kedalaman penafsiran, dan kemudahan membaca."
-      ],
-      "author": "Ali Quli Qara'i adalah seorang cendekiawan Muslim, penerjemah, dan peneliti yang dikenal melalui terjemahan berbagai karya klasik Islam. Bidang kajiannya mencakup Al-Qur'an, hadis, filsafat Islam, spiritualitas, dan tradisi keilmuan Syiah. Ia dikenal karena menghadirkan terjemahan yang akurat dan mudah dibaca, dengan tetap memperhatikan nuansa sumber-sumber Arab dan Persia yang menjadi rujukannya."
+      ]
     },
 
     "zh-CN": {
@@ -52,8 +72,7 @@
         "本译本的一大特色在于对《古兰经》习语和修辞表达的处理。对于能够直译而不失原意的内容，译者尽量保留原文表达；对于具有文化背景或难以直译的习语，则采用自然流畅的英语进行释义。",
         "译者尤其重视源自圣裔诸伊玛目的诠释传统，并将其视为理解《古兰经》的重要依据之一。",
         "整体而言，本译本介于普通译本与完整注释之间，在准确性、诠释深度与可读性之间取得了良好的平衡。"
-      ],
-      "author": "阿里·古利·卡拉伊是一位穆斯林学者、翻译家和研究者，以翻译伊斯兰经典著作而闻名。他的研究领域涵盖《古兰经》学、圣训学、伊斯兰哲学、灵修传统以及什叶派思想史。其作品以准确、易读著称，同时注重保留阿拉伯语和波斯语原著中的细微含义。"
+      ]
     },
 
     "es-MX": {
@@ -65,8 +84,7 @@
         "Uno de sus rasgos más distintivos es el tratamiento de los modismos y expresiones coránicas. Las expresiones que conservan su sentido al traducirse literalmente se mantienen cercanas al original, mientras que aquellas más difíciles de comprender se presentan mediante paráfrasis claras y naturales.",
         "La traducción también presta especial atención a las tradiciones exegéticas transmitidas por los Imames de Ahl al-Bayt, consideradas por el traductor una fuente importante para comprender el Corán.",
         "Situada entre una traducción convencional y un comentario extenso, esta obra busca equilibrar fidelidad al texto, profundidad interpretativa y facilidad de lectura."
-      ],
-      "author": "Ali Quli Qara'i es un académico musulmán, traductor e investigador conocido por sus traducciones de obras clásicas islámicas. Sus áreas de estudio incluyen los estudios coránicos, el hadiz, la filosofía islámica, la espiritualidad y la tradición intelectual chií. Su trabajo destaca por combinar precisión académica con una lectura accesible para el público contemporáneo."
+      ]
     },
 
     "jv-ID": {
@@ -78,8 +96,7 @@
         "Salah satunggaling ciri khasipun inggih punika cara ngolah ungkapan saha idiom Al-Qur'an. Ungkapan ingkang taksih cetha menawi dipun-terjemahaken sacara langsung dipun-jagi, dene idiom ingkang langkung angel dipun-jlentrehaken kanthi basa ingkang langkung alami.",
         "Terjemahan punika ugi maringi kawigatosan mligi dhateng tradhisi tafsir saking para Imam Ahlulbait.",
         "Kanthi ngadeg ing antawisipun terjemahan biasa lan karya tafsir, terjemahan punika ngupados njumbuhaken katemtuan makna, jeroing penafsiran, saha kagemahan maca."
-      ],
-      "author": "Ali Quli Qara'i inggih punika sarjana Muslim, juru terjemah, saha panaliti ingkang misuwur amargi karya-karya terjemahan teks klasik Islam. Panjenenganipun dipun-kenal amargi terjemahanipun ingkang trep, cetha, saha tetep ngreksa nuansa sumber asli Arab lan Persia."
+      ]
     },
 
     "ar-IQ": {
@@ -91,8 +108,7 @@
         "ومن أبرز مزاياه عنايته بالتعابير والأساليب القرآنية، إذ يحافظ على الترجمة الحرفية حيثما أمكن، ويلجأ إلى الشرح أو إعادة الصياغة عندما يكون المعنى أقل وضوحاً للقارئ المعاصر.",
         "كما يولي اهتماماً خاصاً بالروايات التفسيرية المنقولة عن أئمة أهل البيت، ويعدّها مصدراً مهماً لفهم القرآن الكريم.",
         "وبذلك يشكّل هذا العمل حلاً وسطاً بين الترجمة المجردة والتفسير المطوّل، جامعاً بين الدقة وسهولة القراءة."
-      ],
-      "author": "علي قلي قرائي باحث ومترجم مسلم معروف بترجمة عدد من المؤلفات الإسلامية الكلاسيكية. تشمل اهتماماته الدراسات القرآنية والحديث والفلسفة الإسلامية والتصوف والتراث الفكري الشيعي، ويتميّز بأسلوب يجمع بين الدقة العلمية وسهولة العرض."
+      ]
     },
 
     "fr-FR": {
@@ -104,8 +120,7 @@
         "Une attention particulière est accordée aux expressions idiomatiques du Coran. Lorsque le sens demeure clair, la formulation originale est conservée autant que possible ; dans les autres cas, elle est reformulée dans un langage naturel.",
         "L'auteur accorde également une place importante aux traditions exégétiques transmises par les Imams de l'Ahl al-Bayt.",
         "Située entre la traduction simple et le commentaire détaillé, cette œuvre cherche à concilier fidélité au texte, profondeur interprétative et lisibilité."
-      ],
-      "author": "Ali Quli Qara'i est un chercheur, traducteur et érudit musulman reconnu pour ses traductions d'œuvres classiques de l'islam. Ses travaux portent notamment sur les études coraniques, le hadith, la philosophie islamique, la spiritualité et la pensée chiite."
+      ]
     },
 
     "ja-JP": {
@@ -117,8 +132,7 @@
         "クルアーン特有の慣用表現にも配慮されており、直訳で意味が伝わる箇所は原文に近い形で訳し、難解な表現については自然な英語で意訳しています。",
         "また、アフルル・バイトのイマームたちに伝えられる注釈伝承にも特に重きを置いています。",
         "簡潔な翻訳と本格的な注釈書の中間に位置する作品として、正確さと読みやすさの両立を目指しています。"
-      ],
-      "author": "アリー・クーリー・カラーイーは、イスラーム古典の翻訳で知られるムスリムの研究者・翻訳家です。クルアーン学、ハディース、イスラーム哲学、精神性、シーア派思想などを専門とし、正確さと読みやすさを兼ね備えた翻訳で高く評価されています。"
+      ]
     },
 
     "th-TH": {
@@ -130,8 +144,7 @@
         "จุดเด่นประการหนึ่งคือการจัดการกับสำนวนและถ้อยคำเฉพาะของอัลกุรอาน โดยรักษาความหมายตามต้นฉบับเมื่อเป็นไปได้ และใช้การถอดความอย่างเป็นธรรมชาติเมื่อจำเป็น",
         "นอกจากนี้ยังให้ความสำคัญกับรายงานเชิงอรรถาธิบายที่สืบทอดมาจากบรรดาอิหม่ามแห่งอะฮ์ลุลบัยต์",
         "ผลงานนี้อยู่กึ่งกลางระหว่างคำแปลทั่วไปกับงานอรรถาธิบายที่ละเอียดลึกซึ้ง โดยมุ่งรักษาความถูกต้องและความอ่านง่ายควบคู่กัน"
-      ],
-      "author": "Ali Quli Qara'i เป็นนักวิชาการ นักแปล และนักวิจัยมุสลิม ผู้เป็นที่รู้จักจากการแปลผลงานคลาสสิกของอิสลาม ครอบคลุมด้านอัลกุรอาน หะดีษ ปรัชญาอิสลาม จิตวิญญาณ และความคิดชีอะฮ์"
+      ]
     },
 
     "it-IT": {
@@ -143,8 +156,7 @@
         "Particolare attenzione è riservata agli idiomi e alle espressioni coraniche. Quando possibile, il significato letterale viene preservato; nei casi più complessi, si ricorre a parafrasi chiare e naturali.",
         "L'autore attribuisce inoltre particolare importanza alle tradizioni interpretative trasmesse dagli Imam dell'Ahl al-Bayt.",
         "Il risultato è un'opera che si colloca tra una semplice traduzione e un commentario, combinando accuratezza, profondità interpretativa e leggibilità."
-      ],
-      "author": "Ali Quli Qara'i è uno studioso, traduttore e ricercatore musulmano noto per le sue traduzioni di opere classiche dell'Islam. I suoi interessi comprendono studi coranici, hadith, filosofia islamica, spiritualità e tradizione intellettuale sciita."
+      ]
     },
 
     "de-DE": {
@@ -156,8 +168,7 @@
         "Besondere Aufmerksamkeit gilt quranischen Redewendungen und idiomatischen Ausdrücken. Wo eine wörtliche Wiedergabe verständlich bleibt, wird sie beibehalten; andernfalls werden natürlichere Formulierungen verwendet.",
         "Darüber hinaus berücksichtigt die Übersetzung in besonderem Maße die Auslegungstraditionen der Imame des Ahl al-Bayt.",
         "Das Werk bewegt sich zwischen einer reinen Übersetzung und einem ausführlichen Kommentar und verbindet Genauigkeit mit guter Lesbarkeit."
-      ],
-      "author": "Ali Quli Qara'i ist ein muslimischer Gelehrter, Übersetzer und Forscher, der vor allem für seine Übersetzungen klassischer islamischer Werke bekannt ist. Seine Arbeit umfasst Qur'anwissenschaften, Hadith, islamische Philosophie, Spiritualität und schiitische Geistesgeschichte."
+      ]
     },
 
     "ur-PK": {
@@ -169,8 +180,7 @@
         "قرآنی محاورات اور تعبیرات کے ترجمے میں خاص احتیاط برتی گئی ہے۔ جہاں لفظی ترجمہ قابل فہم ہو وہاں اسے برقرار رکھا گیا ہے، جبکہ مشکل مقامات پر بامحاورہ انداز اپنایا گیا ہے۔",
         "اس ترجمے میں ائمہ اہل بیتؑ سے منقول تفسیری روایات کو بھی خصوصی اہمیت دی گئی ہے۔",
         "یہ ترجمہ سادہ ترجمے اور مفصل تفسیر کے درمیان ایک متوازن مقام رکھتا ہے، اور دقتِ معنی کے ساتھ آسان فہمی کو بھی پیش نظر رکھتا ہے۔"
-      ],
-      "author": "علی قلی قرائی ایک مسلم محقق، مترجم اور اسکالر ہیں جو اسلامی کلاسیکی متون کے انگریزی تراجم کے حوالے سے معروف ہیں۔ ان کی علمی دلچسپیوں میں قرآنیات، حدیث، اسلامی فلسفہ، روحانیت اور شیعہ فکری روایت شامل ہیں۔"
+      ]
     },
 
     "hi-IN": {
@@ -182,8 +192,7 @@
         "क़ुरआनी मुहावरों और विशेष अभिव्यक्तियों के अनुवाद में विशेष सावधानी बरती गई है। जहाँ शाब्दिक अनुवाद पर्याप्त है, उसे बनाए रखा गया है; अन्यथा अधिक स्वाभाविक भाषा का उपयोग किया गया है।",
         "यह अनुवाद अहल अल-बैत के इमामों से संबद्ध व्याख्यात्मक परंपराओं को भी विशेष महत्व देता है।",
         "सरल अनुवाद और विस्तृत तफ़्सीर के बीच स्थित यह कृति शुद्धता, व्याख्यात्मक गहराई और पठनीयता के बीच संतुलन स्थापित करने का प्रयास करती है।"
-      ],
-      "author": "अली कुली क़राई एक मुस्लिम विद्वान, अनुवादक और शोधकर्ता हैं, जो इस्लामी शास्त्रीय ग्रंथों के अनुवादों के लिए जाने जाते हैं। उनके अध्ययन के प्रमुख क्षेत्र क़ुरआनी अध्ययन, हदीस, इस्लामी दर्शन, आध्यात्मिकता और शिया बौद्धिक परंपरा हैं।"
+      ]
     },
 
     "fa-IR": {
@@ -195,8 +204,7 @@
         "یکی از ویژگی‌های برجسته این ترجمه، توجه آن به تعبیرها و اصطلاحات قرآنی است. در مواردی که ترجمه لفظی مفهوم را به‌خوبی منتقل می‌کند، ساختار اصلی حفظ شده است؛ و در مواردی که عبارت برای خواننده امروز کمتر روشن است، از بازنویسی روان‌تر استفاده شده است.",
         "این ترجمه همچنین توجه ویژه‌ای به روایات تفسیری منقول از ائمه اهل‌بیت علیهم‌السلام دارد و آن‌ها را از منابع مهم فهم قرآن می‌داند.",
         "این اثر در میانه راه میان یک ترجمه صرف و یک تفسیر مفصل قرار می‌گیرد و می‌کوشد میان دقت، عمق تفسیری و خوانایی توازن برقرار کند."
-      ],
-      "author": "علی قلی قرائی پژوهشگر، مترجم و اندیشمند مسلمان معاصر است که بیشتر به دلیل ترجمه آثار کلاسیک اسلامی به زبان انگلیسی شناخته می‌شود. حوزه فعالیت او شامل مطالعات قرآنی، حدیث، فلسفه اسلامی، معنویت و میراث فکری شیعه است. آثار او به دلیل دقت علمی و در عین حال روانی و وضوح در بیان مورد توجه قرار گرفته‌اند."
+      ]
     },
 
     "pt-BR": {
@@ -208,8 +216,8 @@
         "Um de seus principais diferenciais está no tratamento de expressões e idiomas característicos do Alcorão. Sempre que possível, o sentido literal é preservado; quando isso comprometeria a clareza, a passagem é apresentada de forma mais natural para o leitor contemporâneo.",
         "A tradução também dedica atenção especial às tradições exegéticas transmitidas pelos Imames da Ahl al-Bayt, consideradas pelo autor uma importante fonte para a compreensão do Alcorão.",
         "Situada entre uma tradução convencional e um comentário mais extenso, esta obra busca equilibrar fidelidade ao texto, profundidade interpretativa e facilidade de leitura."
-      ],
-      "author": "Ali Quli Qara'i é um estudioso muçulmano, tradutor e pesquisador conhecido por suas traduções de obras clássicas do Islã. Seus campos de interesse incluem estudos corânicos, hadith, filosofia islâmica, espiritualidade e tradição intelectual xiita. Seu trabalho é reconhecido por combinar precisão acadêmica com uma linguagem clara e acessível."
+      ]
     }
-  }
+  },
+  "source": "al-quran.info"
 }

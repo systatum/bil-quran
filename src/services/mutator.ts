@@ -1,6 +1,8 @@
-import { Locale } from "@constants/settings"
 import { Dict } from "styled-components/dist/types"
 import { isPlainObject } from "./checker"
+
+// Re-exported for backward compat: pickLocalized itself now lives in ./picker.
+export { pickLocalized } from "./picker"
 
 export type DeepPartial<T> = {
   [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K]
@@ -65,25 +67,6 @@ export function makeSnippet<T>(
   const end = Math.min(length, targetIndex + afterCount + 1)
 
   return words.slice(start, end)
-}
-
-/**
- * From a partial locale-keyed record, extract the present entries and map each
- * value through `pick`. Only locales that exist in the source are included.
- *
- * @example
- * pickLocalized({ "en-US": "Hello", "id-ID": "Halo" }, (v) => v.toUpperCase())
- * // → { "en-US": "HELLO", "id-ID": "HALO" }
- */
-export function pickLocalized<V, R>(
-  record: Partial<Record<Locale, V>>,
-  pick: (value: V) => R,
-): Partial<Record<Locale, R>> {
-  return Object.fromEntries(
-    (Object.values(Locale) as Locale[])
-      .filter((l) => record[l] != null)
-      .map((l) => [l, pick(record[l]!)]),
-  ) as Partial<Record<Locale, R>>
 }
 
 /**

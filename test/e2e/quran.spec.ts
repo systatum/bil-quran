@@ -193,7 +193,7 @@ test.describe("Quran paper", () => {
       // Let both the persisted-restore and requested-verse effects race and settle.
       await page.waitForTimeout(1000)
 
-      const topmostVerse = getTopMostVerse(page)
+      const topmostVerse = await getTopMostVerse(page)
       expect(topmostVerse).toBe("2:21")
     })
   })

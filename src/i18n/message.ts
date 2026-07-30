@@ -8,12 +8,17 @@ export const messages = {
   add: "add",
   cancel: "cancel",
   settings: "settings",
-  backup: "backup",
   bookmarks_and_notes: "bookmarks_and_notes",
   bookmark: "bookmark",
   note: "note",
   highlight: "highlight",
   exegesis: "exegesis",
+  about: {
+    title: "about.title",
+    version: "about.version",
+    source: "about.source",
+    released: "about.released",
+  },
   lookup: {
     title: "lookup.title",
     go: "lookup.go",
@@ -49,6 +54,24 @@ export const messages = {
   fontOptions: {
     meQuranLearner: "fontOptions.meQuranLearner",
   },
+  backup: {
+    title: "backup.title",
+    export: {
+      title: "backup.export.title",
+      description: "backup.export.description",
+      copy: "backup.export.copy",
+      download: "backup.export.download",
+      copySuccess: "backup.export.copySuccess",
+      copyFailed: "backup.export.copyFailed",
+    },
+    import: {
+      title: "backup.import.title",
+      description: "backup.import.description",
+      import: "backup.import.import",
+      selectFile: "backup.import.selectFile",
+      invalid: "backup.import.invalid",
+    },
+  },
   searchSheet: {
     byChapter: "searchSheet.byChapter",
     byJuz: "searchSheet.byJuz",
@@ -66,14 +89,6 @@ export const messages = {
       title: "dialog.highlightVerse.title",
       colorLabel: "dialog.highlightVerse.colorLabel",
     },
-    backup: {
-      title: "dialog.backup.title",
-      description: "dialog.backup.description",
-      copy: "dialog.backup.copy",
-      download: "dialog.backup.download",
-      copySuccess: "dialog.backup.copySuccess",
-      copyFailed: "dialog.backup.copyFailed",
-    },
   },
   notice: {
     bookmark: {
@@ -87,6 +102,25 @@ export const messages = {
   },
   highlightAction: "highlightAction",
   removeHighlight: "removeHighlight",
+  thoughtSchool: {
+    "100": "thoughtSchool.100",
+    "200": "thoughtSchool.200",
+    "210": "thoughtSchool.210",
+    "220": "thoughtSchool.220",
+  },
+  sajdah: {
+    title: "sajdah.title",
+    wajib: "sajdah.wajib",
+    mustahab: "sajdah.mustahab",
+    about: {
+      entryTitle: "sajdah.about.entryTitle",
+      desc: {
+        general: "sajdah.about.desc.general",
+        generalSunni: "sajdah.about.desc.generalSunni",
+        generalShia: "sajdah.about.desc.generalShia",
+      },
+    },
+  },
   errors: {
     bookmarkCreationFailed: "errors.bookmarkCreationFailed",
     bookmarkDataNotFound: "errors.bookmarkDataNotFound",
