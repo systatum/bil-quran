@@ -43,3 +43,4 @@ scripts/translator/.ipynb_checkpoints
 scripts/translator/env
 scripts/translator/**/__pycache__
 scripts/translator/test.log
+scripts/translator/beam.token
