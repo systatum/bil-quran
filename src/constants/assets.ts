@@ -19,6 +19,22 @@ export interface ExegesisSource {
   availableLocales: Locale[]
 }
 
+/** Slug identifying a specific exegesis work, matching its directory name under `exegesis/`. */
+export enum ExegesisWork {
+  AliQuli = "aliquli",
+  MirAli = "mirali",
+  IbnKathir = "ibnkathir",
+}
+
+export namespace ExegesisWork {
+  export function isValid(value: string): value is ExegesisWork {
+    return Object.values(ExegesisWork).includes(value as ExegesisWork)
+  }
+}
+
+/** Fallback exegesis work when a URL names one that isn't valid (see `Asset.resolveExegesisId`). */
+export const DEFAULT_FEED_EXEGESIS_WORK: ExegesisWork = ExegesisWork.MirAli
+
 export interface Asset {
   /**
    * Metadata for each of the Quranic chapters
@@ -64,17 +80,17 @@ export const Asset: Asset = {
   exegesisSources: [
     {
       name: "Ali Quli Qara'i",
-      path: `${exegesisBasePath}/aliquli`,
+      path: `${exegesisBasePath}/${ExegesisWork.AliQuli}`,
       availableLocales: [Locale.IntEnglish],
     },
     {
       name: "Mir Ahmad Ali",
-      path: `${exegesisBasePath}/mirali`,
+      path: `${exegesisBasePath}/${ExegesisWork.MirAli}`,
       availableLocales: [Locale.IntEnglish],
     },
     {
       name: "Ibn Kathir",
-      path: `${exegesisBasePath}/ibnkathir`,
+      path: `${exegesisBasePath}/${ExegesisWork.IbnKathir}`,
       availableLocales: [Locale.IntEnglish],
     },
   ],
