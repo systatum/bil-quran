@@ -249,6 +249,7 @@ export default function ExegesisPaperDialogContent() {
               sajdahRuling={sajdahRuling}
               shownTranslations={userSettings.wbwTranslations}
               showMeaning
+              showTransliteration={userSettings.showTransliteration}
               compact
               smaller
             />

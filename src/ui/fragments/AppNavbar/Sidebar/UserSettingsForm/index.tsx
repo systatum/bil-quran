@@ -32,6 +32,7 @@ export default function UserSettingsForm({
     setWordByWordTranslations,
     setShowPageIndicator,
     setAlphabeticalChaptersSorting,
+    setShowTransliteration,
     setExegesis,
     setProstrationVersesSchools,
     userSettings,
@@ -50,6 +51,7 @@ export default function UserSettingsForm({
     showPageIndicator: userSettings.showPageIndicator ?? true,
     alphabeticalChaptersSorting:
       userSettings.alphabeticalChaptersSorting ?? false,
+    showTransliteration: userSettings.showTransliteration ?? false,
     exegesis: userSettings.exegesis,
     prostvSchools: userSettings.prostrationVersesSchools.map(String),
   }
@@ -191,6 +193,16 @@ export default function UserSettingsForm({
           mobile: true,
         },
       },
+
+      {
+        name: "showTransliteration",
+        title: formatMessage({ id: messages.showTransliteration.title }),
+        helper: formatMessage({ id: messages.showTransliteration.helper }),
+        type: "toggle",
+        toggle: {
+          mobile: true,
+        },
+      },
     ],
     {
       type: "button",
@@ -302,6 +314,9 @@ export default function UserSettingsForm({
         } else if (FormState.AlphabeticalChaptersSorting in currentState) {
           const value = currentState.alphabeticalChaptersSorting
           setAlphabeticalChaptersSorting(value)
+        } else if (FormState.ShowTransliteration in currentState) {
+          const value = currentState.showTransliteration
+          setShowTransliteration(value)
         } else if (FormState.Exegesis in currentState) {
           const values: string[] = currentState.exegesis
           if (!Array.isArray(values)) return
@@ -332,6 +347,7 @@ export const FormState = {
   WordByWordTranslations: "wbwTranslations",
   ShowPageIndicator: "showPageIndicator",
   AlphabeticalChaptersSorting: "alphabeticalChaptersSorting",
+  ShowTransliteration: "showTransliteration",
   Exegesis: "exegesis",
   ProstrationVersesSchools: "prostvSchools",
 } as const
@@ -345,6 +361,7 @@ type FormState = {
   [FormState.WordByWordTranslations]: WordTranslationOption[]
   [FormState.ShowPageIndicator]: boolean
   [FormState.AlphabeticalChaptersSorting]: boolean
+  [FormState.ShowTransliteration]: boolean
   [FormState.Exegesis]: string[]
   [FormState.ProstrationVersesSchools]: string[]
 }

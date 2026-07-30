@@ -33,6 +33,7 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
   wbwTranslations: [WordTranslationOption.AmericanEnglish],
   showPageIndicator: true,
   alphabeticalChaptersSorting: false,
+  showTransliteration: false,
   exegesis: [],
   hasSeenExegesisDialog: false,
   prostrationVersesSchools: [],
@@ -144,6 +145,10 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
 
   setAlphabeticalChaptersSorting(sort) {
     get().partialUpdate({ alphabeticalChaptersSorting: !!sort })
+  },
+
+  setShowTransliteration(show) {
+    get().partialUpdate({ showTransliteration: !!show })
   },
 
   setExegesis(ids) {
@@ -319,6 +324,7 @@ export interface UserSettingsState {
   setBasmalaPosition(basmalaPosition: BasmalaPosition): void
   setShowPageIndicator(show: boolean): void
   setAlphabeticalChaptersSorting(sort: boolean): void
+  setShowTransliteration(show: boolean): void
   setExegesis(ids: string[]): void
   setProstrationVersesSchools(schools: ThoughtSchool[]): void
   setHasSeenExegesisDialog(seen: boolean): void
@@ -365,6 +371,12 @@ export interface UserSettings {
    * instead of natural chapter-id order
    */
   alphabeticalChaptersSorting: boolean
+
+  /**
+   * Whether to show each word's transliteration alongside the Arabic text,
+   * both in the main QuranPaper view and the exegesis dialog's interlinear pane
+   */
+  showTransliteration: boolean
 
   /**
    * IDs of the exegeses the user has activated (e.g. ["aliquli/en-US"]).

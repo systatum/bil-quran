@@ -44,6 +44,10 @@
     "title": "ترتيب السور أبجديًا",
     "helper": "ترتيب السور من الألف إلى الياء"
   },
+  "showTransliteration": {
+    "title": "إظهار النطق",
+    "helper": "إظهار طريقة نطق كل كلمة في القرآن الكريم"
+  },
   "fontCategory": {
     "shaddaStacked": "الشدة والحركات متراكبة",
     "shaddaSeparable": "السماح بفصل الحركات",
