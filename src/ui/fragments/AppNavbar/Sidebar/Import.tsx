@@ -13,6 +13,7 @@ import { useRef, useState } from "react"
 import { decodeBase64Unicode } from "@services/Converter"
 import { isPlainObject } from "@services/checker"
 import useToast from "@hooks/tools/useToast"
+import Tracker from "@services/Tracker"
 
 export function Import({ goBack }: Partial<ScreenProps<Screen>>) {
   const { formatMessage } = useIntl()
@@ -38,6 +39,7 @@ export function Import({ goBack }: Partial<ScreenProps<Screen>>) {
     }
 
     localStorage.setItem("userSettings", decoded)
+    Tracker.track(Tracker.Event.BackupExportRestored)
     window.location.reload()
   }
 
