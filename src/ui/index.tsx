@@ -1,3 +1,8 @@
+import {
+  Asset,
+  DEFAULT_FEED_EXEGESIS_WORK,
+  ExegesisWork,
+} from "@constants/assets"
 import useAppState from "@hooks/states/AppState"
 import usePaginationState from "@hooks/states/PaginationState"
 import useFirstVisibleVerse from "@hooks/tools/useFirstVisibleVerse"
@@ -5,7 +10,7 @@ import {
   ScreenEntry,
   ScreenTransition,
 } from "@systatum/coneto/screen-transition"
-import { useParams } from "@tanstack/react-router"
+import { useParams, useSearch } from "@tanstack/react-router"
 import { useEffect, useMemo, useRef } from "react"
 import { css } from "styled-components"
 import About from "./fragments/About"
@@ -82,6 +87,7 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
   const params = useParams({ strict: false })
   const chapterId = params.chapter ? parseInt(params.chapter) : null
   const verseNumber = params.verse ? parseInt(params.verse) : null
+  const search = useSearch({ strict: false })
 
   const openExegesis = usePaperDialogState((s) => s.openExegesis)
   const openedExegesisForRef = useRef<string | null>(null)
@@ -89,12 +95,37 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
     if (!openExegesisOnMount) return
     if (chapterId == null || verseNumber == null) return
 
-    const target = `${chapterId}:${verseNumber}`
+    const target = `${chapterId}:${verseNumber}:${search.tafsir}:${search.transliteration}`
     if (openedExegesisForRef.current === target) return
 
     openedExegesisForRef.current = target
-    openExegesis(chapterId, verseNumber)
-  }, [openExegesisOnMount, chapterId, verseNumber, openExegesis])
+
+    const tafsirParam =
+      search.tafsir != null ? String(search.tafsir) : undefined
+    const exegesisId = tafsirParam
+      ? Asset.resolveExegesisId(
+          ExegesisWork.isValid(tafsirParam)
+            ? tafsirParam
+            : DEFAULT_FEED_EXEGESIS_WORK,
+          locale,
+        )
+      : undefined
+    const showTransliteration =
+      String(search.transliteration) === "1" ? true : undefined
+
+    openExegesis(chapterId, verseNumber, {
+      exegesisId: exegesisId ?? undefined,
+      showTransliteration,
+    })
+  }, [
+    openExegesisOnMount,
+    chapterId,
+    verseNumber,
+    search.tafsir,
+    search.transliteration,
+    locale,
+    openExegesis,
+  ])
 
   const navbarTitle = useMemo(() => {
     if (chapter == null) return "bil-Qur'an"

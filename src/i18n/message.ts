@@ -46,6 +46,10 @@ export const messages = {
     title: "alphabeticalChaptersSorting.title",
     helper: "alphabeticalChaptersSorting.helper",
   },
+  showTransliteration: {
+    title: "showTransliteration.title",
+    helper: "showTransliteration.helper",
+  },
   fontCategory: {
     shaddaStacked: "fontCategory.shaddaStacked",
     shaddaSeparable: "fontCategory.shaddaSeparable",

@@ -11,6 +11,7 @@ import {
   RiPencilAi2Line,
 } from "@remixicon/react"
 import LOGGER from "@services/Logger"
+import Tracker from "@services/Tracker"
 import { ReactNode } from "react"
 import { useIntl } from "react-intl"
 import { CSSProp } from "styled-components"
@@ -57,13 +58,19 @@ export default function VerseBookmarker({
             caption: formatMessage({ id: messages.bookmark }),
             icon: { image: RiFileMarkedLine },
             onClick: () => {
-              if (!bookmarkVerse({ verseKey }))
+              if (!bookmarkVerse({ verseKey })) {
                 errorToast(
                   formatMessage({
                     id: messages.errors.bookmarkCreationFailed,
                   }),
                   formatMessage({ id: messages.bookmark }),
                 )
+                return
+              }
+              Tracker.track(Tracker.Event.VerseBookmarked, {
+                chapter: chapterId,
+                verse: verseNumber,
+              })
             },
           },
           {
@@ -88,6 +95,10 @@ export default function VerseBookmarker({
             hidden: !showExegesisOption,
             onClick: () => {
               LOGGER.debug("Showing exegesis dialog for", verseKey)
+              Tracker.track(Tracker.Event.VerseExegesisOpened, {
+                chapter: chapterId,
+                verse: verseNumber,
+              })
               openExegesis(chapterId, verseNumber)
             },
           },

@@ -58,13 +58,15 @@ export default function QuranPaper({
   const wbwTranslations = useUserSettingsState(
     (s) => s.userSettings.wbwTranslations,
   )
+  const showTransliteration = useUserSettingsState(
+    (s) => s.userSettings.showTransliteration,
+  )
   const setScrollPosition = useUserSettingsState((s) => s.setScrollPosition)
 
   const rawWords = useWords()
   const words = useTranslatedWords(rawWords, wbwTranslations)
 
   // some flags about the rendering
-  const [showTransliteration, setShowTransliteration] = useState(false)
   const [showMeaning, setShowMeaning] = useState(true)
 
   /**

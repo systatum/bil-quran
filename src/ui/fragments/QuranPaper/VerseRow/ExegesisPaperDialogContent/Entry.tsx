@@ -54,7 +54,7 @@ export default function Entry({
   return (
     <Wrapper $theme={theme} onClick={handleClick}>
       <SourceLabel $theme={theme}>
-        {source?.name ?? exegesisId}
+        Tafsir {source?.name ?? exegesisId}
         {isChapterIntro && " — Introduction"}
       </SourceLabel>
       {isChapterIntro ? (

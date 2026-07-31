@@ -82,7 +82,9 @@ export default function InterlinearText({
           <Bismillah />
 
           {showTransliteration && (
-            <Transliteration>Bismillah hir-Rahman nir-Rahim</Transliteration>
+            <Transliteration data-testid="word-transliteration">
+              Bismillah hir-Rahman nir-Rahim
+            </Transliteration>
           )}
 
           {showMeaning && (
@@ -130,7 +132,9 @@ export default function InterlinearText({
           </Arabic>
 
           {showTransliteration && (
-            <Transliteration>{word.readings[DEFAULT_LOCALE]}</Transliteration>
+            <Transliteration data-testid="word-transliteration">
+              {word.readings[DEFAULT_LOCALE]}
+            </Transliteration>
           )}
 
           {showMeaning && (
