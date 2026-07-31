@@ -20,6 +20,7 @@
     "split-chapter": "node scripts/split-chapter.js"
   },
   "dependencies": {
+    "@posthog/react": "^1.10.3",
     "@remixicon/react": "^4.9.0",
     "@systatum/coneto": "file:./../coneto",
     "@tanstack/react-router": "^1.169.2",
@@ -37,6 +38,7 @@
     "ios-haptics": "^0.1.5",
     "marked": "^18.0.5",
     "nanoid": "^5.1.11",
+    "posthog-js": "^1.408.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-intl": "^10.1.9",

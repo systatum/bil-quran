@@ -225,6 +225,7 @@ export default function VerseRow({
 
       <InterlinearText
         showMeaning={showMeaning}
+        showTransliteration={showTransliteration}
         id={`${verse.chapter.id}-${verse.id}`}
         arabicFont={userSettings.font.arabic}
         words={verse.words}

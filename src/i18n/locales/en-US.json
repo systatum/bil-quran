@@ -44,6 +44,10 @@
     "title": "Alphabetical chapters sorting",
     "helper": "Sort chapters neatly, A to Z"
   },
+  "showTransliteration": {
+    "title": "Show transliteration",
+    "helper": "Show a Latin-script transliteration under each Arabic word"
+  },
   "fontCategory": {
     "shaddaStacked": "Shadda-stacked",
     "shaddaSeparable": "Allow diacritics separation",

@@ -91,7 +91,12 @@ export default function ExegesisPaperDialogContent() {
     setFootnoteReturnScrollTop(null)
   }
 
-  const activeIds = userSettings.exegesis
+  const { exegesisId, showTransliteration: transliterationOverride } =
+    exegesisContent.override ?? {}
+
+  const activeIds = exegesisId ? [exegesisId] : userSettings.exegesis
+  const showTransliteration =
+    transliterationOverride ?? userSettings.showTransliteration
 
   const rawWords = useWords()
   const words = useTranslatedWords(rawWords, userSettings.wbwTranslations)
@@ -133,6 +138,7 @@ export default function ExegesisPaperDialogContent() {
     navigate({
       to: "/e/$chapter/$verse",
       params: { chapter: String(activeChapter), verse: String(verse) },
+      search: (prev) => prev,
       replace: true,
     })
   }
@@ -249,6 +255,7 @@ export default function ExegesisPaperDialogContent() {
               sajdahRuling={sajdahRuling}
               shownTranslations={userSettings.wbwTranslations}
               showMeaning
+              showTransliteration={showTransliteration}
               compact
               smaller
             />

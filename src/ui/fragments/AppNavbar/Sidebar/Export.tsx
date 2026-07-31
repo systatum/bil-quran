@@ -16,6 +16,7 @@ import {
 } from "@remixicon/react"
 import { ThemeMode } from "@constants/theme"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
+import Tracker from "@services/Tracker"
 
 function backupFilename(date: Date): string {
   const yy = String(date.getFullYear()).slice(-2)
@@ -117,14 +118,15 @@ export function Export({ goBack, goToScreen }: Partial<ScreenProps<Screen>>) {
                 onClick: () => {
                   navigator.clipboard
                     .writeText(encoded)
-                    .then(() =>
+                    .then(() => {
+                      Tracker.track(Tracker.Event.BackupExportCopied)
                       successToast(
                         formatMessage({
                           id: messages.backup.export.copySuccess,
                         }),
                         formatMessage({ id: messages.backup.title }),
-                      ),
-                    )
+                      )
+                    })
                     .catch(() =>
                       errorToast(
                         formatMessage({
@@ -153,6 +155,7 @@ export function Export({ goBack, goToScreen }: Partial<ScreenProps<Screen>>) {
                 type: "button",
                 onClick: () => {
                   downloadTextFile(backupFilename(new Date()), encoded)
+                  Tracker.track(Tracker.Event.BackupExportDownloaded)
                 },
                 button: {
                   variant: "primary",

@@ -1,4 +1,5 @@
 import useAppState from "@hooks/states/AppState"
+import Tracker from "@services/Tracker"
 import React, { type ErrorInfo } from "react"
 import { stringifyError } from "./services/Converter"
 import LOGGER from "./services/Logger"
@@ -29,6 +30,7 @@ export default class ErrorRescuer extends React.Component<Props, State> {
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     LOGGER.error("App error", error, info.componentStack)
+    Tracker.captureException(error)
     useAppState.getState().pushError(error)
   }
 

@@ -44,6 +44,10 @@
     "title": "Urutkan surat secara alfabetis",
     "helper": "Urutkan surat dari A sampai Z"
   },
+  "showTransliteration": {
+    "title": "Tampilkan transliterasi",
+    "helper": "Tampilkan cara baca setiap kata dalam al-Quran"
+  },
   "fontCategory": {
     "shaddaStacked": "Tashdid-harakat setumpuk",
     "shaddaSeparable": "Tashdid-harakat fleksibel",

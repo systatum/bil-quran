@@ -1,5 +1,6 @@
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import LOGGER from "@services/Logger"
+import Tracker from "@services/Tracker"
 import { chapterNameSortKey } from "@services/chapters"
 import { Combobox, ComboboxOption } from "@systatum/coneto/combobox"
 import { useNavigate } from "@tanstack/react-router"
@@ -139,6 +140,10 @@ export default function VerseLookup({ onChange }: VerseLookupProps) {
           )
             return
 
+          Tracker.track(Tracker.Event.SearchVerseSelected, {
+            chapter: Number(chapterId),
+            verse: Number(verseId),
+          })
           navigate({
             to: "/c/$chapter/$verse",
             params: { chapter: chapterId, verse: verseId },
