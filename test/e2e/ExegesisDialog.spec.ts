@@ -737,5 +737,53 @@ test.describe("ExegesisDialog", () => {
       await hasText("8", verseIndicator)
       await expect(title).toContainText("An-Nisaa")
     })
+
+    test("?tafsir shows only that source without touching saved settings", async ({
+      page,
+    }) => {
+      await visitFresh(page)
+
+      // trigger the organic first-open default (Ali Quli) and close, so we
+      // have a saved selection to check remains untouched below
+      const first = await openExegesisDialog(page, "1:1")
+      await expect(first).toBeVisible()
+      await closePaperDialog(page)
+
+      await page.goto("/#/e/1/1?tafsir=ibnkathir")
+      await untilUsable(page)
+      const dialog = await getPaperDialog(page)
+      await expect(dialog).toBeVisible()
+      await expect(dialog.getByText(/Tafsir Ibn Kathir/i)).toBeVisible()
+      await expect(dialog.getByText(/Tafsir Ali Quli Qara'i/i)).toHaveCount(0)
+
+      const settings = await page.evaluate(() =>
+        JSON.parse(localStorage.getItem("userSettings") || "{}"),
+      )
+      expect(settings.exegesis).toEqual(["aliquli/en-US"])
+    })
+
+    test("invalid ?tafsir falls back to Mir Ahmad Ali", async ({ page }) => {
+      await visitFresh(page)
+
+      await page.goto("/#/e/1/1?tafsir=not-a-real-work")
+      await untilUsable(page)
+      const dialog = await getPaperDialog(page)
+      await expect(dialog).toBeVisible()
+      await expect(dialog.getByText(/Tafsir Mir Ahmad Ali/i)).toBeVisible()
+    })
+
+    test("?transliteration=1 shows transliteration in the interlinear pane", async ({
+      page,
+    }) => {
+      await visitFresh(page)
+
+      await page.goto("/#/e/1/1?tafsir=aliquli&transliteration=1")
+      await untilUsable(page)
+      const dialog = await getPaperDialog(page)
+      await expect(dialog).toBeVisible()
+      await expect(
+        dialog.locator('[data-testid="word-transliteration"]').first(),
+      ).toBeVisible({ timeout: 5000 })
+    })
   })
 })

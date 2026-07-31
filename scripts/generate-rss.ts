@@ -5,7 +5,26 @@ import { createHash } from "crypto"
 const SITE_URL = process.env.SITE_URL ?? "https://bil-quran.com"
 const QURAN_PATH = join(process.cwd(), "public/quran")
 const OUTPUT_DIR = "build/rss"
-const EXEGESIS_PATH = join(QURAN_PATH, "exegesis/aliquli")
+
+const EXEGESIS_WORKS = ["aliquli", "ibnkathir", "mirali"] as const
+type ExegesisWork = (typeof EXEGESIS_WORKS)[number]
+
+const EXEGESIS_WORK_NAMES: Record<ExegesisWork, string> = {
+  aliquli: "Ali Quli Qara'i",
+  ibnkathir: "Ibn Kathir",
+  mirali: "Mir Ahmad Ali",
+}
+
+// Locales each exegesis work currently has content for.
+const EXEGESIS_WORK_LOCALES: Record<ExegesisWork, readonly string[]> = {
+  aliquli: ["en-US"],
+  ibnkathir: ["en-US"],
+  mirali: ["en-US"],
+}
+
+function exegesisPathFor(work: ExegesisWork): string {
+  return join(QURAN_PATH, "exegesis", work)
+}
 
 async function readJson<T>(filePath: string): Promise<T> {
   const raw = await readFile(filePath, "utf8")
@@ -49,15 +68,20 @@ interface ExegesisChapter {
   description: string
   footnotes: Record<string, Record<string, string>>
   translations: Record<string, string>
+  /** Tafsir/commentary text, distinct from translation — not every work has this. */
+  exegesis?: Record<string, string>
 }
 
 async function loadExegesis(
+  work: ExegesisWork,
   localeCode: string,
   chapterId: number,
 ): Promise<ExegesisChapter | null> {
+  if (!EXEGESIS_WORK_LOCALES[work].includes(localeCode)) return null
+
   try {
     return await readJson<ExegesisChapter>(
-      join(EXEGESIS_PATH, localeCode, `${chapterId}.json`),
+      join(exegesisPathFor(work), localeCode, `${chapterId}.json`),
     )
   } catch {
     // no exegesis for this locale/chapter — fail quietly
@@ -219,7 +243,9 @@ function buildFeed(opts: { localeCode: string; items: string[] }): string {
 </rss>`
 }
 
-const Locales = ["en-US", "id-ID"] as const
+// Only en-US has exegesis content across all works right now; add id-ID
+// back here once at least one work has id-ID chapter files.
+const Locales = ["en-US"] as const
 type LocaleCode = (typeof Locales)[number]
 
 async function generateRSS() {
@@ -274,72 +300,45 @@ async function generateRSS() {
       const words = await readJson<Word[]>(
         join(QURAN_PATH, "verses/imlaei", `${chapterId}.json`),
       )
-
       const verses = groupVerses(words, translations)
-      const verseEntries = Array.from(verses.entries())
-      const exegesis = await loadExegesis(localeCode, chapterId)
 
-      // Per-chapter item
-      addItem(
-        `${chapterId}. ${chapterArabic} (${chapterName})`,
-        `${SITE_URL}/#/c/${chapterId}/0?locale=${localeCode}`,
-        [
-          verseEntries
-            .slice(0, 3)
-            .map(
-              ([verseId, v]) => `
-<p>
-  <b>${verseId}</b><br/>
-  ${v.arabic}<br/>
-  <i>${v.transliteration}</i><br/>
-  ${v.translation}
-</p>`,
-            )
-            .join("\n"),
-        ]
-          .filter(Boolean)
-          .join("\n"),
-      )
+      // Tafsir items, one set per exegesis work -> e/{chapter}/{verse}
+      for (const work of EXEGESIS_WORKS) {
+        const exegesis = await loadExegesis(work, localeCode, chapterId)
+        if (!exegesis) continue
 
-      // Per-verse items
-      for (const [verseId, v] of verseEntries) {
-        const verseNumber = Number(verseId.split(":")[1])
+        const authorName = EXEGESIS_WORK_NAMES[work]
 
-        addItem(
-          `${chapterName}:${verseNumber}`,
-          `${SITE_URL}/#/c/${chapterId}/${verseNumber}?locale=${localeCode}`,
-          [
-            `${chapterName}:${verseNumber} - ${v.arabic}`,
-            v.transliteration,
-            v.translation,
-          ]
-            .filter(Boolean)
-            .join("\n\n"),
-        )
-      }
-
-      // Exegesis (tafsir) items — separate namespace from the interlinear c/ items
-      if (exegesis) {
         // chapter-level tafsir overview -> e/{chapter}/0
         addItem(
-          `${chapterId}. ${chapterArabic} (${chapterName}) — Tafsir`,
-          `${SITE_URL}/#/e/${chapterId}/0?locale=${localeCode}`,
-          `<p>${renderMarkers(exegesis.description)}</p>`,
+          `${chapterId}. ${chapterArabic} (${chapterName})`,
+          `${SITE_URL}/#/e/${chapterId}/0?tafsir=${work}&transliteration=1&locale=${localeCode}`,
+          [
+            `<b>Tafsir ${authorName}</b>`,
+            `<p>${renderMarkers(exegesis.description)}</p>`,
+          ].join("\n\n"),
         )
 
-        // Per-verse tafsir -> e/{chapter}/{verse}
+        // per-verse tafsir -> e/{chapter}/{verse}
         for (const [verseNumberString, translationText] of Object.entries(
           exegesis.translations,
         )) {
           const verseNumber = Number(verseNumberString)
           const verseFootnotes = exegesis.footnotes[verseNumberString]
+          const v = verses.get(`${chapterId}:${verseNumber}`)
+          const exegesisText = exegesis.exegesis?.[verseNumberString]
 
           addItem(
-            `${chapterName}:${verseNumber} — Tafsir`,
-            `${SITE_URL}/#/e/${chapterId}/${verseNumber}?locale=${localeCode}`,
+            `${chapterName}:${verseNumber}`,
+            `${SITE_URL}/#/e/${chapterId}/${verseNumber}?tafsir=${work}&transliteration=1&locale=${localeCode}`,
             [
+              `<b>Tafsir ${authorName}</b>`,
               `<b>${chapterName}:${verseNumber}</b>`,
+              v ? `${v.arabic}<br/><i>${v.transliteration}</i>` : "",
               renderMarkers(translationText, { verseFootnotes }),
+              exegesisText
+                ? renderMarkers(exegesisText, { verseFootnotes })
+                : "",
               verseFootnotes ? renderFootnotes(verseFootnotes) : "",
             ]
               .filter(Boolean)
@@ -357,9 +356,6 @@ async function generateRSS() {
 const descriptions: Record<LocaleCode, string> = {
   "en-US":
     "A Qur'an app with interlinear word-by-word and verse-by-verse translations, helping readers understand the meaning of the Qur'an beyond recitation alone.",
-
-  "id-ID":
-    "Aplikasi Al-Qur'an dengan terjemahan interlinear kata per kata dan ayat per ayat yang membantu pembaca memahami makna Al-Qur'an, bukan hanya membacanya.",
 }
 
 generateRSS().catch((err) => {
