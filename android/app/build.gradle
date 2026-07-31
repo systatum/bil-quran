@@ -1,29 +1,33 @@
 apply plugin: 'com.android.application'
 
+// keystore.properties is gitignored (holds the release signing key), so it's
+// absent on a fresh checkout. Without this guard, Gradle evaluates the release
+// signingConfig unconditionally and fails on debug builds too.
 def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file("keystore.properties")
+def hasKeystoreProperties = keystorePropertiesFile.exists()
 
-if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-}
-
-if (keystorePropertiesFile.exists()) {
+if (hasKeystoreProperties) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
 android {
-    signingConfigs {
-        release {
-            storeFile file(keystoreProperties["storeFile"])
-            storePassword keystoreProperties["storePassword"]
-            keyAlias keystoreProperties["keyAlias"]
-            keyPassword keystoreProperties["keyPassword"]
-        }   
+    if (hasKeystoreProperties) {
+        signingConfigs {
+            release {
+                storeFile file(keystoreProperties["storeFile"])
+                storePassword keystoreProperties["storePassword"]
+                keyAlias keystoreProperties["keyAlias"]
+                keyPassword keystoreProperties["keyPassword"]
+            }
+        }
     }
 
     buildTypes {
         release {
-            signingConfig signingConfigs.release
+            if (hasKeystoreProperties) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
