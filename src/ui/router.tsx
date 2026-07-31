@@ -34,12 +34,10 @@ const verseRoute = createRoute({
 const exegesisRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/e/$chapter/$verse",
+  // Keep types as parsed; retyping here makes the router re-quote the URL. Coerce at the call site.
   validateSearch: (search: Record<string, unknown>) => ({
-    tafsir: typeof search.tafsir === "string" ? search.tafsir : undefined,
-    transliteration:
-      typeof search.transliteration === "string"
-        ? search.transliteration
-        : undefined,
+    tafsir: search.tafsir,
+    transliteration: search.transliteration,
   }),
   component: () => <UIIndex openExegesisOnMount />,
 })

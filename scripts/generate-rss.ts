@@ -68,7 +68,7 @@ interface ExegesisChapter {
   description: string
   footnotes: Record<string, Record<string, string>>
   translations: Record<string, string>
-  /** Tafsir/commentary text, distinct from translation — not every work has this. */
+  /** Tafsir/commentary text, distinct from translation. Not every work has this. */
   exegesis?: Record<string, string>
 }
 
@@ -84,7 +84,7 @@ async function loadExegesis(
       join(exegesisPathFor(work), localeCode, `${chapterId}.json`),
     )
   } catch {
-    // no exegesis for this locale/chapter — fail quietly
+    // no exegesis for this locale/chapter, fail quietly
     return null
   }
 }

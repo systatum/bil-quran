@@ -100,16 +100,18 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
 
     openedExegesisForRef.current = target
 
-    const exegesisId = search.tafsir
+    const tafsirParam =
+      search.tafsir != null ? String(search.tafsir) : undefined
+    const exegesisId = tafsirParam
       ? Asset.resolveExegesisId(
-          ExegesisWork.isValid(search.tafsir)
-            ? search.tafsir
+          ExegesisWork.isValid(tafsirParam)
+            ? tafsirParam
             : DEFAULT_FEED_EXEGESIS_WORK,
           locale,
         )
       : undefined
     const showTransliteration =
-      search.transliteration === "1" ? true : undefined
+      String(search.transliteration) === "1" ? true : undefined
 
     openExegesis(chapterId, verseNumber, {
       exegesisId: exegesisId ?? undefined,
