@@ -181,13 +181,9 @@ export default function UserSettingsForm({
       },
 
       {
-        name: "alphabeticalChaptersSorting",
-        title: formatMessage({
-          id: messages.alphabeticalChaptersSorting.title,
-        }),
-        helper: formatMessage({
-          id: messages.alphabeticalChaptersSorting.helper,
-        }),
+        name: "showTransliteration",
+        title: formatMessage({ id: messages.showTransliteration.title }),
+        helper: formatMessage({ id: messages.showTransliteration.helper }),
         type: "toggle",
         toggle: {
           mobile: true,
@@ -195,9 +191,13 @@ export default function UserSettingsForm({
       },
 
       {
-        name: "showTransliteration",
-        title: formatMessage({ id: messages.showTransliteration.title }),
-        helper: formatMessage({ id: messages.showTransliteration.helper }),
+        name: "alphabeticalChaptersSorting",
+        title: formatMessage({
+          id: messages.alphabeticalChaptersSorting.title,
+        }),
+        helper: formatMessage({
+          id: messages.alphabeticalChaptersSorting.helper,
+        }),
         type: "toggle",
         toggle: {
           mobile: true,
