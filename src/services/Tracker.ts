@@ -1,4 +1,4 @@
-import posthog from "../posthog"
+import posthog, { isPostHogConfigured } from "../posthog"
 
 const Event = {
   VerseBookmarked: "verse.bookmarked",
@@ -22,10 +22,12 @@ class TrackerService {
   readonly Event = Event
 
   track(name: EventName, properties?: Record<string, unknown>) {
+    if (!isPostHogConfigured) return
     posthog.capture(name, properties)
   }
 
   captureException(error: unknown) {
+    if (!isPostHogConfigured) return
     posthog.captureException(error)
   }
 }
