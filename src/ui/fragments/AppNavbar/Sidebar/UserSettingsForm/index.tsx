@@ -14,6 +14,7 @@ import { ScreenProps } from "@systatum/coneto/screen-transition"
 import { FormFieldGroup, StatefulForm } from "@systatum/coneto/stateful-form"
 import { useTheme } from "@systatum/coneto/theme"
 import { Screen } from "@ui/index"
+import Tracker from "@services/Tracker"
 import { useMemo } from "react"
 import { useIntl } from "react-intl"
 import { css } from "styled-components"
@@ -273,33 +274,43 @@ export default function UserSettingsForm({
         if (currentState[key] === "") return
         console.log(`State ${key} value:`, currentState[key])
 
+        const captureSettingChange = () =>
+          Tracker.track(Tracker.Event.SettingsReaderChanged, {
+            settingKey: key,
+          })
+
         // note: do not forget to return early if value is invalid,
         // so that we are not updating the form's state.
         if (FormState.Theme in currentState) {
           const value: ThemeMode = currentState.theme
-          if (value === "dark" || value === "light")
+          if (value === "dark" || value === "light") {
             setTheme(currentState.theme)
-          else return
+            captureSettingChange()
+          } else return
         } else if (FormState.ArabicFontFamily in currentState) {
           const value: string = currentState.arabicFontFamily
           if (!Object.keys(ArabicFonts).includes(value)) return
 
           setFont({ arabic: { family: currentState.arabicFontFamily } })
+          captureSettingChange()
         } else if (FormState.ArabicFontSize in currentState) {
           const value = currentState.arabicFontSize
           if (Number.isNaN(value)) return
 
           setFont({ arabic: { size: Number(currentState.arabicFontSize) } })
+          captureSettingChange()
         } else if (FormState.Locale in currentState) {
           const value = currentState.locale
           if (!Object.values(Locale).includes(value)) return
 
           setLocale(currentState.locale)
+          captureSettingChange()
         } else if (FormState.BasmalaPosition in currentState) {
           const value = currentState.basmalaPosition
           if (!Object.values(BasmalaPosition).includes(value)) return
 
           setBasmalaPosition(currentState.basmalaPosition)
+          captureSettingChange()
         } else if (FormState.WordByWordTranslations in currentState) {
           const values: WordTranslationOption[] = currentState.wbwTranslations
 
@@ -308,15 +319,19 @@ export default function UserSettingsForm({
             return
 
           setWordByWordTranslations(currentState.wbwTranslations)
+          captureSettingChange()
         } else if (FormState.ShowPageIndicator in currentState) {
           const value = currentState.showPageIndicator
           setShowPageIndicator(value)
+          captureSettingChange()
         } else if (FormState.AlphabeticalChaptersSorting in currentState) {
           const value = currentState.alphabeticalChaptersSorting
           setAlphabeticalChaptersSorting(value)
+          captureSettingChange()
         } else if (FormState.ShowTransliteration in currentState) {
           const value = currentState.showTransliteration
           setShowTransliteration(value)
+          captureSettingChange()
         } else if (FormState.Exegesis in currentState) {
           const values: string[] = currentState.exegesis
           if (!Array.isArray(values)) return
@@ -325,6 +340,7 @@ export default function UserSettingsForm({
           )
           if (!values.every((v) => validIds.includes(v))) return
           setExegesis(values)
+          captureSettingChange()
         } else if (FormState.ProstrationVersesSchools in currentState) {
           const values: string[] =
             currentState[FormState.ProstrationVersesSchools]
@@ -332,6 +348,7 @@ export default function UserSettingsForm({
           const validSchools = SAJDAH_SCHOOLS.map(String)
           if (!values.every((v) => validSchools.includes(v))) return
           setProstrationVersesSchools(values.map(Number))
+          captureSettingChange()
         }
       }}
     />

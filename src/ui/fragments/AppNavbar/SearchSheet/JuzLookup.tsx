@@ -2,6 +2,7 @@ import { QuranPage } from "@constants/records/Pagination"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import usePaginationState from "@hooks/states/PaginationState"
 import { messages } from "@i18n/message"
+import Tracker from "@services/Tracker"
 import { Combobox, ComboboxOption } from "@systatum/coneto/combobox"
 import { useNavigate } from "@tanstack/react-router"
 import { Fragment, useEffect, useMemo, useState } from "react"
@@ -148,6 +149,10 @@ export default function JuzLookup({ onChange }: JuzLookupProps) {
           const value = selection as string
           const [chapter, verse] = value.split("-")
           if (!chapter || !verse || isNaN(parseInt(chapter))) return
+          Tracker.track(Tracker.Event.SearchJuzSelected, {
+            chapter: Number(chapter),
+            verse: Number(verse),
+          })
           navigate({
             to: "/c/$chapter/$verse",
             params: { chapter, verse },

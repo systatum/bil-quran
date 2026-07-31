@@ -2,6 +2,7 @@ import { ModalDialogConfig } from "@constants/modalDialog"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import useToast from "@hooks/tools/useToast"
 import { messages } from "@i18n/message"
+import Tracker from "@services/Tracker"
 import { Textarea } from "@systatum/coneto/textarea"
 import { useEffect, useMemo, useState } from "react"
 import { useIntl } from "react-intl"
@@ -49,11 +50,14 @@ export function useNoteVerseDialog(verseKey: string): ModalDialogConfig {
       ),
       onAction(buttonId) {
         if (buttonId !== "add") return
-        if (!bookmarkVerse({ verseKey, note }))
+        if (!bookmarkVerse({ verseKey, note })) {
           errorToast(
             formatMessage({ id: messages.errors.bookmarkCreationFailed }),
             formatMessage({ id: messages.bookmark }),
           )
+          return
+        }
+        Tracker.track(Tracker.Event.VerseNoteSaved)
       },
     }),
     [formatMessage, note, setNote, verseKey, bookmarkVerse],

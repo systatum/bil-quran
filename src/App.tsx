@@ -15,6 +15,7 @@ import ErrorScreen from "./ui/fragments/ErrorScreen"
 import LoadingScreen from "./ui/fragments/LoadingScreen"
 import useChaptersState from "./ui/hooks/states/ChaptersState"
 import useUserSettingsState from "./ui/hooks/states/UserSettingsState"
+import "./posthog"
 import { router } from "./ui/router"
 
 function AppRoot() {
