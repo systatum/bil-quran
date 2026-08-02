@@ -44,3 +44,4 @@ scripts/translator/env
 scripts/translator/**/__pycache__
 scripts/translator/test.log
 scripts/translator/beam.token
+scripts/translator/.virtual_documents

@@ -1,15 +1,18 @@
-import src.shared as api
+from src import api
 from dataclasses import dataclass
+
 
 @dataclass(kw_only=True)
 class ExperimentPrompt:
     setting: api.PromptSetting
     name: str
 
+
 @dataclass(kw_only=True)
 class ExperimentSetting:
     prompt: ExperimentPrompt
     model: str
+
 
 @dataclass(kw_only=True)
 class ExperimentLanguage:

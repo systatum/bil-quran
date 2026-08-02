@@ -1,15 +1,28 @@
-from src.translation import TranslateJob, TranslationService
-from src.rating import RateJob, RatingService
-from src.comparison import CompareJob, ComparisonService
-from src.service import JobResult, Job
-from src.shared import RateAPIRequest, CompareAPIRequest, TranslateAPIRequest
+from src.translation import TranslateJob, TranslateJobResult, TranslationService
+from src.rating import RateJob, RateJobResult, RatingService
+from src.comparison import CompareJob, CompareJobResult, ComparisonService
+from src.service import JobResult, Job, JobResultOk
 from src.settings import LLM_MODELS
+from src.api import (
+    ModelAPIResponse,
+    TranslateAPIRequest,
+    TranslateAPIResponse,
+    RateAPIRequest,
+    RateAPIResponse,
+    CompareAPIRequest,
+    CompareAPIResponse,
+    APIError,
+    APIResponse,
+)
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from time import sleep
+from typing import TypeVar
 import uuid
 import threading
+import typing
+
 
 class JobBoard:
     _jobs: dict[uuid.UUID, Job]
@@ -36,9 +49,24 @@ class JobBoard:
 
     def collect(self):
         with self._lock:
-            self._results.update({result.job.job_id: result for result in appstate.get().translation_service.retrieve_results()})
-            self._results.update({result.job.job_id: result for result in appstate.get().rating_service.retrieve_results()})
-            self._results.update({result.job.job_id: result for result in appstate.get().comparison_service.retrieve_results()})
+            self._results.update(
+                {
+                    result.job.job_id: result
+                    for result in appstate.get().translation_service.retrieve_results()
+                }
+            )
+            self._results.update(
+                {
+                    result.job.job_id: result
+                    for result in appstate.get().rating_service.retrieve_results()
+                }
+            )
+            self._results.update(
+                {
+                    result.job.job_id: result
+                    for result in appstate.get().comparison_service.retrieve_results()
+                }
+            )
 
     def get_result(self, job_id: uuid.UUID) -> JobResult | None:
         self.collect()
@@ -50,12 +78,14 @@ class JobBoard:
             sleep(0.5)
         return result
 
+
 @dataclass(kw_only=True)
 class GlobalData:
     translation_service: TranslationService
     rating_service: RatingService
     comparison_service: ComparisonService
     job_board: JobBoard
+
 
 @dataclass(kw_only=True)
 class Appstate:
@@ -71,16 +101,18 @@ class Appstate:
         assert self.global_data is not None
         return self.global_data
 
+
 appstate: Appstate = Appstate()
+
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     appstate.load(
         GlobalData(
-            translation_service = TranslationService(),
-            rating_service = RatingService(),
-            comparison_service = ComparisonService(),
-            job_board = JobBoard(),
+            translation_service=TranslationService(),
+            rating_service=RatingService(),
+            comparison_service=ComparisonService(),
+            job_board=JobBoard(),
         )
     )
     appstate.get().translation_service.start()
@@ -91,32 +123,57 @@ async def lifespan(_: FastAPI):
     appstate.get().translation_service.stop()
     appstate.get().comparison_service.stop()
 
+
 app = FastAPI(lifespan=lifespan)
 
+V = TypeVar("V")
+E = TypeVar("E")
+
+
+def job_result_to_api_response(result: JobResult[V, E]) -> APIResponse[JobResultOk[V]]:
+    if result.result.is_ok():
+        return APIResponse.ok(
+            value=JobResultOk(
+                job=typing.cast(Job[V, None], result.job),
+                value=result.result.get_value(),
+            )
+        )
+
+    error: E = result.result.get_error()
+    if not isinstance(error, str):
+        raise ValueError("JobResult is assumed to have str error")
+    return APIResponse.err(APIError(error_message=error))
+
+
 @app.get("/models")
-def get_models():
-    return list(LLM_MODELS.keys())
+def get_models() -> ModelAPIResponse:
+    return ModelAPIResponse.ok(list(LLM_MODELS.keys()))
+
 
 @app.post("/translate")
-def translate(request: TranslateAPIRequest):
-    job = TranslateJob(model=request.model, setting=request.setting, prompt=request.translate_input)
+def translate(request: TranslateAPIRequest) -> TranslateAPIResponse:
+    job = request.root
     appstate.get().job_board.queue(job)
 
-    result = appstate.get().job_board.get_result_blocking(job.job_id)
-    return result
+    result: TranslateJobResult = appstate.get().job_board.get_result_blocking(
+        job.job_id
+    )
+    return job_result_to_api_response(result)
+
 
 @app.post("/rate")
-def rate(request: RateAPIRequest):
-    job = RateJob(source=request.source, translation=request.translation)
+def rate(request: RateAPIRequest) -> RateAPIResponse:
+    job = request.root
     appstate.get().job_board.queue(job)
 
-    result = appstate.get().job_board.get_result_blocking(job.job_id)
-    return result
+    result: RateJobResult = appstate.get().job_board.get_result_blocking(job.job_id)
+    return job_result_to_api_response(result)
+
 
 @app.post("/compare")
-def compare(request: CompareAPIRequest):
-    job = CompareJob(source=request.source, translation0=request.translation0, translation1=request.translation1)
+def compare(request: CompareAPIRequest) -> CompareAPIResponse:
+    job = request.root
     appstate.get().job_board.queue(job)
 
-    result = appstate.get().job_board.get_result_blocking(job.job_id)
-    return result
+    result: CompareJobResult = appstate.get().job_board.get_result_blocking(job.job_id)
+    return job_result_to_api_response(result)

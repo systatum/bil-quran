@@ -1,23 +1,28 @@
-import src.shared as api
-from typing import Callable, Any
+from src import api
+from typing import Any, TypeVar
+from dataclasses import dataclass
+from traceback import format_exc
+from pydantic import ValidationError, TypeAdapter
 import requests
 import sys
-from dataclasses import dataclass, asdict
-import traceback
+import typing
+
+T = TypeVar("T")
+
+
+def printerr(*args, **kwargs):
+    file = kwargs.pop("file", sys.stderr)
+    print(*args, file=file, **kwargs)
 
 
 class APIClient:
     @dataclass(kw_only=True)
     class Setting:
         base_url: str = "http://localhost:8000"
-        max_retry: int = 5
-        timeout: float = 60.0
-        authorization: str | None = None
-
-    class RetryException(Exception):
-        pass
+        token: str | None = None
 
     setting: Setting
+    session: requests.Session
 
     def __init__(self, setting: Setting | None = None):
         if setting is None:
@@ -25,77 +30,17 @@ class APIClient:
         else:
             self.setting = setting
 
-    def _request(
-        self,
-        path: str,
-        data: dict | None = None,
-        transformer: Callable[[Any], Any] | None = None,
-    ) -> Any:
-        """
-        Raises RuntimeError if desired result can't be fetched.
-        Raises ValueError if path does not start with /.
-        """
-        if not path.startswith("/"):
-            raise ValueError(f"Path {path} does not start with /")
-
-        setting = self.setting
-        auth_header = {"Authorization": setting.authorization} if setting.authorization is not None else {}
-
-        for _ in range(setting.max_retry):
-            try:
-                if data is None:
-                    response = requests.get(
-                        setting.base_url + path, timeout=setting.timeout, headers=auth_header
-                    )
-                else:
-                    response = requests.post(
-                        setting.base_url + path,
-                        json=data,
-                        headers={"Content-Type": "application/json"} | auth_header,
-                        timeout=setting.timeout,
-                    )
-            except requests.RequestException as e:
-                print(
-                    f"Unexpected error {type(e).__name__}: {traceback.format_exc()}",
-                    file=sys.stderr,
-                )
-                continue
-
-            if not 200 <= response.status_code <= 299:
-                print(
-                    "Request error:", response.status_code, response.text, file=sys.stderr
-                )
-                continue
-
-            try:
-                json_body = response.json()
-            except requests.JSONDecodeError:
-                print("Invalid JSON:", response.text, file=sys.stderr)
-                continue
-
-            if transformer is None:
-                return json_body
-
-            try:
-                return transformer(json_body)
-            except self.RetryException as e:
-                print(f"Transform requested retry: {e}", file=sys.stderr)
-                continue
-
-        raise RuntimeError(
-            f"Failed to request {path} after {setting.max_retry} attempts"
+        self.session = requests.Session()
+        self.session.headers = typing.cast(
+            Any, {"Content-Type": "application/json", "accept": "application/json"}
         )
+        if self.setting.token is not None:
+            self.session.headers = self.session.headers | typing.cast(
+                Any, {"Authorization": f"Bearer {self.setting.token}"}
+            )
 
     def models(self) -> list[str]:
-        def transformer(json_body: Any) -> list[str]:
-            if not isinstance(json_body, list):
-                raise self.RetryException("Models returnend non-list")
-            for i in range(len(json_body)):
-                if not isinstance(json_body[i], str):
-                    raise self.RetryException("Found non-string entry in models")
-            return json_body
-
-        return self._request("/models", transformer=transformer)
+        return self._request("/models", TypeAdapter(list[str]))
 
     def translate(
         self,
@@ -103,70 +48,118 @@ class APIClient:
         source_language: str,
         target_language: str,
         model: str,
-        prompt_setting: api.PromptSetting | None = None,
+        prompt_setting: api.PromptSetting,
     ) -> api.Translation:
-        if prompt_setting is None:
-            prompt_setting = api.PromptSetting()
-
-        translate_input: api.TranslateInput = api.TranslateInput(
+        translate_input = api.TranslateInput(
             source_language=source_language, target_language=target_language, text=text
         )
-
-        api_request: api.TranslateAPIRequest = api.TranslateAPIRequest(
-            translate_input=translate_input, model=model, setting=prompt_setting
+        request = api.TranslateAPIRequest(
+            api.TranslateJob(
+                translate_input=translate_input, setting=prompt_setting, model=model
+            )
         )
-
-        def transformer(json_body: Any) -> api.Translation:
-            try:
-                job_result: api.TranslateJobResult = api.TranslateJobResult(**json_body)
-            except:
-                raise self.RetryException("Unable to parse TranslateJobResult")
-
-            if not job_result.is_ok():
-                raise self.RetryException(job_result.get_error_message())
-            return job_result.get()
-
-        return self._request(
-            "/translate", data=asdict(api_request), transformer=transformer
-        )
+        return self._translate(request).value
 
     def rate(self, source: str, translation: str) -> api.Rating:
-        api_request: api.RateAPIRequest = api.RateAPIRequest(
-            source=source,
-            translation=translation,
+        request = api.RateAPIRequest(
+            api.RateJob(source=source, translation=translation)
         )
-
-        def transformer(json_body: Any) -> api.Rating:
-            try:
-                job_result: api.RateJobResult = api.RateJobResult(**json_body)
-            except:
-                raise self.RetryException("Unable to parse RateJobResult")
-
-            if not job_result.is_ok():
-                raise self.RetryException(job_result.get_error_message())
-            return job_result.get()
-
-        return self._request(
-            "/rate", data=asdict(api_request), transformer=transformer
-        )
+        return self._rate(request).value
 
     def compare(
         self, source: str, translation0: str, translation1: str
     ) -> api.Comparison:
-        api_request: api.CompareAPIRequest = api.CompareAPIRequest(
-            source=source, translation0=translation0, translation1=translation1
+        request = api.CompareAPIRequest(
+            api.CompareJob(
+                source=source, translation0=translation0, translation1=translation1
+            )
         )
+        return self._compare(request).value
 
-        def transformer(json_body: Any) -> api.Comparison:
-            try:
-                job_result: api.CompareJobResult = api.CompareJobResult(**json_body)
-            except:
-                raise self.RetryException("Unable to parse CompareJobResult")
-
-            if not job_result.is_ok():
-                raise self.RetryException(job_result.get_error_message())
-            return job_result.get()
-
+    def _translate(self, request: api.TranslateAPIRequest) -> api.TranslateJobResult:
         return self._request(
-            "/compare", data=asdict(api_request), transformer=transformer
+            "/translate", TypeAdapter(api.TranslateJobResult), request.model_dump_json()
         )
+
+    def _rate(self, request: api.RateAPIRequest) -> api.RateJobResult:
+        return self._request(
+            "/rate", TypeAdapter(api.RateJobResult), request.model_dump_json()
+        )
+
+    def _compare(self, request: api.CompareAPIRequest) -> api.CompareJobResult:
+        return self._request(
+            "/compare", TypeAdapter(api.CompareJobResult), request.model_dump_json()
+        )
+
+    def _format_and_log_errors(self, fmt: str, *args, **kwargs) -> str:
+        value = fmt.format(*args, **kwargs)
+        printerr(value, file=sys.stderr)
+        return value
+
+    def _request(
+        self,
+        path: str,
+        adapter: TypeAdapter[T],
+        data: str | None = None,
+        force_post: bool = False,
+    ) -> T:
+        """
+        TODO: detail raises
+        """
+        try:
+            if data is not None:
+                with self.session as s:
+                    response: requests.Response = s.post(
+                        self.setting.base_url + path, data=data
+                    )
+            elif force_post:
+                with self.session as s:
+                    response: requests.Response = s.post(self.setting.base_url + path)
+            else:
+                with self.session as s:
+                    response: requests.Response = s.get(self.setting.base_url + path)
+        except requests.RequestException as e:
+            error_message = self._format_and_log_errors(
+                "Request error {}: {}", type(e).__name__, format_exc()
+            )
+            raise Exception()
+
+        value = self._process_response(response)
+        try:
+            return adapter.validate_python(value)
+        except ValidationError as e:
+            error_message = self._format_and_log_errors(
+                "Request error {}: {}", type(e).__name__, format_exc()
+            )
+            raise Exception()
+
+    def _process_response(self, response: requests.Response) -> object:
+        """
+        TODO: detail raises
+        """
+
+        # It's not our server that responded
+        if response.status_code != 200:
+            error_message = self._format_and_log_errors(
+                "HTTP {}: {}", response.status_code, response.text
+            )
+            raise Exception()
+
+        try:
+            api_response: api.APIResponse[Any] = api.APIResponse[
+                Any
+            ].model_validate_json(response.text)
+        except ValidationError as e:
+            error_message = self._format_and_log_errors(
+                "Request error {}: {}", type(e).__name__, format_exc()
+            )
+            raise Exception()
+
+        if api_response.status == "err":
+            error: api.APIError = typing.cast(api.APIError, api_response.error)
+            error_message = self._format_and_log_errors(
+                "API error {}: {}", error.error_code, error.error_message
+            )
+            raise Exception()
+
+        return api_response.value
