@@ -60,9 +60,58 @@ good ayat to check: 2:200, 3:26,
 dalam dalam -> dalam
 adalah ia -> ia
 
+## Architecture
+
+No backend server. Everything runs client-side (browser or, for the mobile
+build, a WebView), backed by static files under `public/`.
+
+- **Bootstrap** (`src/App.tsx`): registers fonts, then in order inits
+  `sql.js` (WASM SQLite), runs Drizzle migrations
+  (`public/table_migrations/`), seeds data, and loads chapters/settings.
+- **Data**: Qur'an data (chapters, verses, word-by-word, tafsir) lives as
+  JSON under `public/quran/`, split by `scripts/split-chapter.js`. Seeding
+  (`src/db/seeders.ts`) only runs against empty tables, so it's a no-op on
+  repeat launches.
+- **Asset paths**: built from `window.location.origin` at runtime
+  (`src/constants/assets.ts`), not a hardcoded domain, so the same code
+  works on `bil-quran.com`, `localhost`, or `capacitor://localhost`.
+- **Offline**: `public/quran/fingerprints.json` (MD5 manifest,
+  `scripts/fingerprinter.js`) lets `src/services/fingerprinter.ts` detect
+  when the IndexedDB-persisted SQLite snapshot is stale and needs
+  re-seeding. If the manifest can't be fetched, the existing local DB is
+  trusted as-is. There is no service worker.
+- **Fonts**: bundled locally under `public/fonts/`, no external font CDN.
+
 ## Mobile
 
 The project can also built as a native Android application using Capacitor.
+
+Asset paths resolve against `window.location.origin`, and
+`webDir: "build"` packages all of `public/quran/` and `public/fonts/` into
+the APK. So the app needs no network connection after install: reading
+Qur'an/tafsir data is a local read off the bundled assets, not a download.
+
+### Requirements
+
+- **JDK 21**, required by `@capacitor/android`'s own Gradle module no
+  matter what JDK the rest of the project uses. If your default
+  `JAVA_HOME` is older, point Gradle at Android Studio's bundled JBR
+  instead of installing a separate JDK:
+  ```bash
+  JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home" \
+    ./gradlew assembleDebug
+  ```
+- **Android SDK Platform 36 and Build-Tools 36**, matching
+  `compileSdk`/`targetSdk` in `android/variables.gradle`. Install via
+  Android Studio's SDK Manager (SDK Platforms and SDK Tools tabs), or
+  `sdkmanager "platforms;android-36" "build-tools;36.0.0"`.
+- **A device or emulator** on any API level at or above `minSdkVersion`
+  (24). `compileSdk`/`targetSdk` only affect what the app is built
+  against, not what it can run on, so the emulator doesn't need to match
+  API 36.
+- Android Studio itself isn't required if you're targeting a physical
+  device over USB. It's mainly useful here for its bundled JBR and its
+  emulator/AVD manager.
 
 ### Running on an Android Device
 
@@ -126,6 +175,34 @@ pnpm start:android
 > **Note:** In this mode, changes to the React application are **not** reflected automatically. You must rebuild (`pnpm build:mobile:android`) each time you modify the web application before running it again.
 
 > **Note:** The `server` configuration is intended for development only. Remove the `server` section before creating production builds (`APK` or `AAB`) so the application loads the bundled files from the `build` directory.
+
+### Running on an Android Emulator
+
+No physical device? An emulator works the same way, and you don't need to
+touch the `server` config for it.
+
+1. Create an AVD in Android Studio (Device Manager, if you don't have one
+   yet), or boot an existing one:
+
+   ```bash
+   ~/Library/Android/sdk/emulator/emulator -avd <YOUR_AVD_NAME>
+   ```
+
+   Leave this running in its own terminal. You can list your AVDs with
+   `~/Library/Android/sdk/emulator/emulator -list-avds`.
+
+2. Once it's fully booted, build and launch the app on it:
+
+   ```bash
+   pnpm build:mobile:android
+   pnpm start:android
+   ```
+
+   `start:android` runs `cap run android`, which detects the running
+   emulator and installs the app on it automatically.
+
+The emulator's Android version doesn't need to match `compileSdk`/`targetSdk`
+(see [Requirements](#requirements)), so any AVD at or above API 24 works.
 
 ### Sync Web Assets
 
