@@ -42,7 +42,19 @@ const Wrapper = styled.div<{
   left: 0;
   right: 0;
 
-  background: ${({ theme }) => (theme === "dark" ? "#22271b" : "#f6f1e7")};
+  background: ${({ theme }) =>
+    theme === "dark" ? "rgba(34, 39, 27, 0.35)" : "rgba(246, 241, 231, 0.35)"};
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0
+      ${({ theme }) =>
+        theme === "dark" ? "rgba(255, 255, 255, 0.08)" : "rgba(255, 255, 255, 0.6)"},
+    inset 0 0 0 1px
+      ${({ theme }) => (theme === "dark" ? "#3b372f" : "#d8ccb7")},
+    0 8px 16px -8px
+      ${({ theme }) =>
+        theme === "dark" ? "rgba(0, 0, 0, 0.5)" : "rgba(0, 0, 0, 0.15)"};
 
   padding: 16px;
   padding-top: 0px;
