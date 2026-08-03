@@ -1,5 +1,5 @@
 from __future__ import annotations
-from src.settings import LLM_GPU_ENABLED, LLM_CONTEXT_SIZE
+from src.setting_loader import SettingLoader
 from dataclasses import dataclass
 import dataclasses
 import typing
@@ -35,8 +35,8 @@ class LLMModel:
     def __init__(self, model_path: str):
         self._model = llama_cpp.Llama(
             model_path=model_path,
-            n_gpu_layers=-1 if LLM_GPU_ENABLED else 0,
-            n_ctx=LLM_CONTEXT_SIZE,
+            n_gpu_layers=-1 if SettingLoader.get().LLM_GPU_ENABLED else 0,
+            n_ctx=SettingLoader.get().LLM_CONTEXT_SIZE,
         )
 
     def prompt(

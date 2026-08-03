@@ -2,7 +2,7 @@ from src.translation import TranslateJob, TranslateJobResult, TranslationService
 from src.rating import RateJob, RateJobResult, RatingService
 from src.comparison import CompareJob, CompareJobResult, ComparisonService
 from src.service import JobResult, Job, JobResultOk
-from src.settings import LLM_MODELS
+from src.setting_loader import SettingLoader
 from src.api import (
     ModelAPIResponse,
     TranslateAPIRequest,
@@ -14,11 +14,12 @@ from src.api import (
     APIError,
     APIResponse,
 )
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from time import sleep
-from typing import TypeVar
+from typing import TypeVar, Annotated
 import uuid
 import threading
 import typing
@@ -145,13 +146,26 @@ def job_result_to_api_response(result: JobResult[V, E]) -> APIResponse[JobResult
     return APIResponse.err(APIError(error_message=error))
 
 
+def check_token(
+    authorization: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
+):
+    if authorization.credentials != SettingLoader.get().APP_TOKEN:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid API token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
 @app.get("/models")
-def get_models() -> ModelAPIResponse:
-    return ModelAPIResponse.ok(list(LLM_MODELS.keys()))
+def get_models(_: Annotated[None, Depends(check_token)]) -> ModelAPIResponse:
+    return ModelAPIResponse.ok(list(SettingLoader.get().LLM_MODELS.keys()))
 
 
 @app.post("/translate")
-def translate(request: TranslateAPIRequest) -> TranslateAPIResponse:
+def translate(
+    request: TranslateAPIRequest, _: Annotated[None, Depends(check_token)]
+) -> TranslateAPIResponse:
     job = request.root
     appstate.get().job_board.queue(job)
 
@@ -162,7 +176,9 @@ def translate(request: TranslateAPIRequest) -> TranslateAPIResponse:
 
 
 @app.post("/rate")
-def rate(request: RateAPIRequest) -> RateAPIResponse:
+def rate(
+    request: RateAPIRequest, _: Annotated[None, Depends(check_token)]
+) -> RateAPIResponse:
     job = request.root
     appstate.get().job_board.queue(job)
 
@@ -171,7 +187,9 @@ def rate(request: RateAPIRequest) -> RateAPIResponse:
 
 
 @app.post("/compare")
-def compare(request: CompareAPIRequest) -> CompareAPIResponse:
+def compare(
+    request: CompareAPIRequest, _: Annotated[None, Depends(check_token)]
+) -> CompareAPIResponse:
     job = request.root
     appstate.get().job_board.queue(job)
 

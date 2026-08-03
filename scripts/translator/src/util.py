@@ -20,16 +20,6 @@ class ErrVariant(Generic[E]):
 
 @dataclass()
 class Result(Generic[V, E]):
-    """
-    NOTE:
-        Always construct Result with explicit generic parameters.
-        Example:
-
-            Result[int, str](...)
-
-        Relying on type inference may cause Pydantic to validate against `Any`.
-    """
-
     _value: OkVariant[V] | ErrVariant[E]
 
     @classmethod
