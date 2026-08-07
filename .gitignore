@@ -37,11 +37,8 @@ scripts/quran_audio_uploader/**/ayats/**/*.mp3
 scripts/quran_audio_uploader/**/ayats/**/*
 scripts/quran_audio_uploader/**/except_*.txt
 
-scripts/translator/models
-scripts/translator/hf_cache
 scripts/translator/.ipynb_checkpoints
 scripts/translator/env
 scripts/translator/**/__pycache__
-scripts/translator/test.log
-scripts/translator/beam.token
 scripts/translator/.virtual_documents
+scripts/translator/mount
