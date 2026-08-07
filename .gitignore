@@ -37,8 +37,9 @@ scripts/quran_audio_uploader/**/ayats/**/*.mp3
 scripts/quran_audio_uploader/**/ayats/**/*
 scripts/quran_audio_uploader/**/except_*.txt
 
-scripts/translator/.ipynb_checkpoints
-scripts/translator/env
+scripts/translator/**/.ipynb_checkpoints
 scripts/translator/**/__pycache__
-scripts/translator/.virtual_documents
+scripts/translator/**/.virtual_documents
 scripts/translator/mount
+scripts/translator/.runpod-fastapi-token
+scripts/translator/.venv
