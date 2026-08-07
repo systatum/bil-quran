@@ -11,6 +11,8 @@ from src.api import (
     RateAPIResponse,
     CompareAPIRequest,
     CompareAPIResponse,
+    HealthResult,
+    HealthAPIResponse,
     APIError,
     APIResponse,
 )
@@ -19,6 +21,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from time import sleep
+from datetime import datetime, timezone
 from typing import TypeVar, Annotated
 import uuid
 import threading
@@ -28,11 +31,13 @@ import typing
 class JobBoard:
     _jobs: dict[uuid.UUID, Job]
     _results: dict[uuid.UUID, JobResult]
+    _last_activity_timestamp: datetime
     _lock: threading.Lock
 
     def __init__(self):
         self._jobs = {}
         self._results = {}
+        self._last_activity_timestamp = datetime.now(timezone.utc)
         self._lock = threading.Lock()
 
     def queue(self, job: Job):
@@ -47,6 +52,7 @@ class JobBoard:
 
         with self._lock:
             self._jobs[job.job_id] = job
+            self._last_activity_timestamp = datetime.now(timezone.utc)
 
     def collect(self):
         with self._lock:
@@ -68,6 +74,7 @@ class JobBoard:
                     for result in appstate.get().comparison_service.retrieve_results()
                 }
             )
+            self._last_activity_timestamp = datetime.now(timezone.utc)
 
     def get_result(self, job_id: uuid.UUID) -> JobResult | None:
         self.collect()
@@ -78,6 +85,10 @@ class JobBoard:
         while (result := self.get_result(job_id)) is None:
             sleep(0.5)
         return result
+
+    def get_last_activity_timestamp(self) -> datetime:
+        with self._lock:
+            return self._last_activity_timestamp
 
 
 @dataclass(kw_only=True)
@@ -189,6 +200,26 @@ def check_token(
             detail="Invalid API token",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+
+@app.get("/health")
+def get_health(_: Annotated[None, Depends(check_token)]) -> HealthAPIResponse:
+    app = appstate.get()
+    job_board_timestamp: datetime = app.job_board.get_last_activity_timestamp()
+    busy: bool = any(
+        service.is_busy()
+        for service in (
+            app.translation_service,
+            app.rating_service,
+            app.comparison_service,
+        )
+    )
+    last_activity_timestamp: datetime = (
+        datetime.now(timezone.utc) if busy else job_board_timestamp
+    )
+    return HealthAPIResponse.ok(
+        HealthResult(healthy=True, last_activity_timestamp=last_activity_timestamp)
+    )
 
 
 @app.get("/models")

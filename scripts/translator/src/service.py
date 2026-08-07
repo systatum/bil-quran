@@ -56,6 +56,7 @@ class Service(Generic[V, E], ABC):
     class Shared:
         thread: threading.Thread
         is_shutdown_requested: bool
+        busy: bool
         lock: threading.Lock
 
     _shared_resource: Shared
@@ -66,6 +67,7 @@ class Service(Generic[V, E], ABC):
         self._shared_resource = self.Shared(
             thread=threading.Thread(target=self._loop),
             is_shutdown_requested=False,
+            busy=False,
             lock=threading.Lock(),
         )
 
@@ -82,6 +84,10 @@ class Service(Generic[V, E], ABC):
         with self._shared_resource.lock:
             self._shared_resource.is_shutdown_requested = True
 
+    def is_busy(self) -> bool:
+        with self._shared_resource.lock:
+            return self._shared_resource.busy
+
     def queue_job(self, job: Job[V, E]):
         self._job_queue.put(job)
 
@@ -97,15 +103,18 @@ class Service(Generic[V, E], ABC):
     def _loop(self):
         while True:
             sleep(0.1)
-            with self._shared_resource.lock:
-                if self._shared_resource.is_shutdown_requested:
-                    return
-
+            busy: bool = False
             try:
                 job = self._job_queue.get_nowait()
+                busy = True
             except queue.Empty:
                 continue
-
+            finally:
+                with self._shared_resource.lock:
+                    self._shared_resource.busy = busy
+                    if self._shared_resource.is_shutdown_requested:
+                        self._shared_resource.busy = False
+                        return
             self._result_queue.put(self._run_job(job))
 
     @abstractmethod

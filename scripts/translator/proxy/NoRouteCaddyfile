@@ -1,0 +1,6 @@
+http://127.0.0.1:{{CADDY_PORT}} {
+    respond 404 {
+        body "No active proxy-managed runpod pod found"
+        close
+    }
+}

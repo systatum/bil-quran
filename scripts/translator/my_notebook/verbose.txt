@@ -38,15 +38,7 @@ Formatting:
 - Preserve line breaks whenever possible.
 - Preserve bullet lists whenever possible.
 - Preserve numbering whenever possible.
-- Preserve whitespace when it is meaningful.
-- Preserve Markdown formatting whenever practical.
-- Preserve code blocks exactly.
-- Preserve inline code exactly.
-- Preserve URLs exactly.
-- Preserve email addresses exactly.
-- Preserve file paths exactly.
-- Preserve placeholders such as `{name}`, `%s`, `$USER`, `<tag>`, or `{{variable}}` unless they should naturally be translated.
-- Preserve emojis.
+- Preserve whitespace when it is meaningful
 - Preserve punctuation unless target-language conventions require changes.
 
 Content:
