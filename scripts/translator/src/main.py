@@ -103,6 +103,39 @@ class Appstate:
         return self.global_data
 
 
+def print_version():
+    import torch
+    import subprocess
+    import sys
+
+    print("Python version:", sys.version)
+    print("Torch version:", torch.__version__)
+    print("Torch CUDA version:", torch.version.cuda)
+    print("CUDA available:", torch.cuda.is_available())
+    if torch.cuda.is_available():
+        print("GPU name:", torch.cuda.get_device_name(0))
+        major, minor = torch.cuda.get_device_capability(0)
+        print(f"Compute Capability: {major}.{minor} (sm_{major}{minor})")
+        print("Supported SMs:", ", ".join(torch.cuda.get_arch_list()))
+
+        try:
+            driver = (
+                subprocess.check_output(
+                    [
+                        "nvidia-smi",
+                        "--query-gpu=driver_version",
+                        "--format=csv,noheader",
+                    ],
+                    text=True,
+                )
+                .strip()
+                .splitlines()[0]
+            )
+            print("Driver version:", driver)
+        except Exception as e:
+            print("Driver version unknown, {}\n{}".format(type(e).__name__, e))
+
+
 appstate: Appstate = Appstate()
 
 
@@ -119,6 +152,7 @@ async def lifespan(_: FastAPI):
     appstate.get().translation_service.start()
     appstate.get().rating_service.start()
     appstate.get().comparison_service.start()
+    print_version()
     yield
     appstate.get().rating_service.stop()
     appstate.get().translation_service.stop()
