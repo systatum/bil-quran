@@ -1,29 +1,66 @@
-FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04
+ARG BASE_IMAGE=nvidia/cuda:13.2.1-runtime-ubuntu22.04
+FROM ghcr.io/astral-sh/uv:0.12.2 AS uv-base
 
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONPATH=/app \
-    DEBIAN_FRONTEND=noninteractive
+##########################
+# Generator/parser stage #
+##########################
+FROM ${BASE_IMAGE} AS generator
+
+# Index strategy first match because some windows version stuff made a mess
+ENV UV_LOCKED=1 \
+    UV_INDEX_STRATEGY=unsafe-first-match
+
+WORKDIR /packages
+
+# We output what fixed large size python packages needs to be installed first before
+# the smaller ones or our application code
+RUN --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    --mount=type=bind,source=.python-version,target=.python-version \
+    --mount=from=uv-base,source=/uv,target=/bin/uv \
+    --mount=type=cache,target=/root/.cache/uv \
+    uv export --only-group=heavy --format pylock.toml --verbose > pylock.heavy.toml
+##########################
+# Generator/parser stage #
+##########################
+
+#################
+# Runtime stage #
+#################
+FROM ${BASE_IMAGE}
+
+# Link mode copy just in case (?) I guess. I forgot if it's needed
+# HTTP timeout bumped from 30 default to 600 because cuda images are slow to download
+ENV UV_LOCKED=1 \
+    UV_INDEX_STRATEGY=unsafe-first-match \
+    UV_LINK_MODE=copy \
+    UV_HTTP_TIMEOUT=600
+
+# Install uv
+COPY --from=uv-base /uv /bin/uv
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.11 \
-    python3.11-venv \
-    python3-pip \
-    && rm -rf /var/lib/apt/lists/*
+# We need this because otherwise uv will pick an unsupported python version
+COPY .python-version ./
 
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
-    update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
+# Install fixed large size python packages before anything that we realistically will modify semi-often
+RUN --mount=from=generator,source=/packages/pylock.heavy.toml,target=/app/pylock.heavy.toml \
+    --mount=type=cache,target=/root/.cache/uv \
+    uv venv --verbose \
+    && uv pip install -r pylock.heavy.toml --verbose
 
-RUN python3.11 -m pip install --no-cache-dir \
-    torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+# Fetch other smaller deps
+COPY pyproject.toml uv.lock ./
 
-RUN python3.11 -m pip install --no-cache-dir unbabel-comet
-RUN python3.11 -m pip install --no-cache-dir llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu124
+# Install other smaller deps
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --verbose
 
-RUN python3.11 -m pip install --no-cache-dir huggingface_hub fastapi[standard]
+# Copy source code
+COPY src src/
 
-COPY src/ ./src/
-
-ENTRYPOINT ["fastapi", "run", "--entrypoint", "src.main:app"]
+ENTRYPOINT ["uv", "run", "fastapi", "run", "--entrypoint", "src.main:app"]
+#################
+# Runtime stage #
+#################
