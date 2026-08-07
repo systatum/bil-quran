@@ -7,4 +7,6 @@ export MOUNT_ROOT=./mount
 export APP_TOKEN=default_token
 export HF_HOME=./mount/hf_cache
 
-fastapi dev --entrypoint src.main:app --reload-dir src
+export UV_INDEX_STRATEGY=unsafe-first-index
+
+uv run fastapi dev --entrypoint src.main:app --reload-dir src
