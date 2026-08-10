@@ -33,10 +33,10 @@ android {
         }
     }
 
-    namespace = "com.bilquran.app"
+    namespace = "com.systatum.bilquran"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.bilquran.app"
+        applicationId "com.systatum.bilquran"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

@@ -1,7 +1,7 @@
 import { CapacitorConfig } from "@capacitor/cli"
 
 const config: CapacitorConfig = {
-  appId: "com.bilquran.app",
+  appId: "com.systatum.bilquran",
   appName: "BilQuran",
   webDir: "build",
 }

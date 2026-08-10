@@ -1,4 +1,4 @@
-package com.bilquran.app;
+package com.systatum.bilquran;
 
 import com.getcapacitor.BridgeActivity;
 
