@@ -6,7 +6,7 @@ import {
   TitleSection,
   TitleSectionActionStyles,
 } from "@systatum/coneto/title"
-import { useMemo, useRef } from "react"
+import React, { useMemo, useRef } from "react"
 import { css } from "styled-components"
 import JuzProgressBar from "./JuzProgressBar"
 import { SearchSheet } from "./SearchSheet"
@@ -54,7 +54,10 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
         actions: [
           {
             icon: { image: RiSearchLine, color: fontColor },
-            onClick: () => setIsSearchOpen((x) => !x),
+            onClick: (e?: React.MouseEvent) => {
+              e?.stopPropagation()
+              setIsSearchOpen((x) => !x)
+            },
             styles: actionStyle,
           },
           {
@@ -73,7 +76,11 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
 
   return (
     <>
-      <div ref={titleRef} style={{ position: "relative" }}>
+      <div
+        onClick={() => setIsSearchOpen(false)}
+        ref={titleRef}
+        style={{ position: "relative" }}
+      >
         <Title
           size="sm"
           text={title}
