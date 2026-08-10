@@ -23,16 +23,6 @@ android {
         }
     }
 
-    buildTypes {
-        release {
-            if (hasKeystoreProperties) {
-                signingConfig signingConfigs.release
-            }
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-
     namespace = "com.systatum.bilquran"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
@@ -48,9 +38,16 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+
     buildTypes {
         release {
-            minifyEnabled false
+            if (hasKeystoreProperties) {
+                signingConfig signingConfigs.release
+            }
+            
+            minifyEnabled true
+            shrinkResources true
+
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
