@@ -10,6 +10,7 @@ import ChapterRow from "./ChapterRow"
 import ModalDialog from "./ModalDialog"
 import VerseRow, { Verse } from "./VerseRow"
 import { Bismillah } from "./VerseRow/Bismillah"
+import useAppState from "@hooks/states/AppState"
 
 // This module contains the content browser of the Quran.
 // It includes various components to build the verse, and
@@ -52,6 +53,7 @@ export default function QuranPaper({
   chapterId: requestedChapterId,
   verseNumber: requestedVerseNumber,
 }: QuranBrowserProps) {
+  const { setIsSearchOpen } = useAppState()
   const parentRef = useRef<HTMLDivElement>(null)
 
   const { chapters } = useChaptersState()
@@ -333,6 +335,10 @@ export default function QuranPaper({
   return (
     <div
       ref={parentRef}
+      onClick={() => {
+        // Close the search sheet when a verse is selected from the search results.
+        setIsSearchOpen(false)
+      }}
       style={{
         height: "calc(100vh - 64px)",
         overflow: "auto",
