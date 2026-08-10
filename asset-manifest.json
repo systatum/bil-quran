@@ -1,19 +1,25 @@
 {
   "files": {
-    "main.css": "/static/css/main.675b4b0a.css",
-    "main.js": "/static/js/main.dc1a2c88.js",
+    "main.css": "/static/css/main.db08e70f.css",
+    "main.js": "/static/js/main.1711d7c8.js",
     "static/js/662.44d34e35.chunk.js": "/static/js/662.44d34e35.chunk.js",
     "static/js/40.e2e4b644.chunk.js": "/static/js/40.e2e4b644.chunk.js",
     "static/js/971.6e00b0ae.chunk.js": "/static/js/971.6e00b0ae.chunk.js",
+    "static/js/382.31ed212e.chunk.js": "/static/js/382.31ed212e.chunk.js",
     "static/js/199.58f52c3b.chunk.js": "/static/js/199.58f52c3b.chunk.js",
+    "static/media/SurahNameV4.ttf": "/static/media/SurahNameV4.fbf0a11b9a111be4c88c.ttf",
+    "static/media/BasmalahVer01.woff": "/static/media/BasmalahVer01.fa8771dc3d6f010e5f82.woff",
+    "static/media/BasmalahVer01.woff2": "/static/media/BasmalahVer01.c52864b31d328870d2d7.woff2",
+    "static/media/SurahNameV4.woff2": "/static/media/SurahNameV4.13b0b59a4b46f20c5c44.woff2",
     "static/media/Mont-Heavy.woff2": "/static/media/Mont-Heavy.76e10677896098069947.woff2",
     "index.html": "/index.html",
-    "main.675b4b0a.css.map": "/static/css/main.675b4b0a.css.map",
-    "main.dc1a2c88.js.map": "/static/js/main.dc1a2c88.js.map",
+    "main.db08e70f.css.map": "/static/css/main.db08e70f.css.map",
+    "main.1711d7c8.js.map": "/static/js/main.1711d7c8.js.map",
+    "382.31ed212e.chunk.js.map": "/static/js/382.31ed212e.chunk.js.map",
     "199.58f52c3b.chunk.js.map": "/static/js/199.58f52c3b.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.675b4b0a.css",
-    "static/js/main.dc1a2c88.js"
+    "static/css/main.db08e70f.css",
+    "static/js/main.1711d7c8.js"
   ]
 }
