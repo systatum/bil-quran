@@ -1,7 +1,11 @@
 import { ThemeMode } from "@constants/theme"
 import usePositioningObserver from "@hooks/tools/usePositioningObserver"
 import { RiMenuLine, RiSearchLine } from "@remixicon/react"
-import { Title, TitleSection } from "@systatum/coneto/title"
+import {
+  Title,
+  TitleSection,
+  TitleSectionActionStyles,
+} from "@systatum/coneto/title"
 import { useMemo, useRef } from "react"
 import { css } from "styled-components"
 import JuzProgressBar from "./JuzProgressBar"
@@ -28,6 +32,21 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
   const titleRef = useRef<HTMLDivElement>(null)
   const navbarPositioning = usePositioningObserver(titleRef)
 
+  const actionStyle: TitleSectionActionStyles = {
+    self: css`
+      @media (max-width: 640px) {
+        height: 34px;
+        width: 34px;
+        padding: 0px;
+        border-radius: 8px;
+        svg {
+          height: 20px;
+          width: 20px;
+        }
+      }
+    `,
+  }
+
   const actions: TitleSection[] = useMemo(
     () => [
       {
@@ -36,6 +55,7 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
           {
             icon: { image: RiSearchLine, color: fontColor },
             onClick: () => setIsSearchOpen((x) => !x),
+            styles: actionStyle,
           },
           {
             icon: { image: RiMenuLine, color: fontColor },
@@ -43,6 +63,7 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
               await setIsSearchOpen(false)
               await setActiveScreens([Screen.Sidebar])
             },
+            styles: actionStyle,
           },
         ],
       },
@@ -58,13 +79,16 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
           text={title}
           styles={{
             containerStyle: css`
-              padding: 10px;
+              padding: 10px 6px 10px 14px;
               background-color: ${bgColor};
               color: ${fontColor};
               align-items: center;
             `,
             titleStyle: css`
               color: ${fontColor};
+            `,
+            rightSectionStyle: css`
+              gap: 2px;
             `,
           }}
           rightSection={actions}
