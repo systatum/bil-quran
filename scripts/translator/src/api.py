@@ -14,11 +14,9 @@ class APIError(BaseModel):
     error_message: str = "An unspecified error has happened"
     error_code: ErrorCode = ErrorCode.UNSPECIFIED_ERROR
 
-    # Type coercion is disabled
     # Extra fields are not allowed
     # Assigning value to model's field is validated
     model_config = ConfigDict(
-        strict=True,
         extra="forbid",
         validate_assignment=True,
     )
@@ -35,12 +33,10 @@ class APIResponse(BaseModel, Generic[T]):
     value: T | None
     error: APIError | None
 
-    # Type coercion is disabled
     # Extra fields are not allowed
     # Assigning value to model's field is validated
     # Instance is always (re-)validated since instance is of type dataclass not BaseModel
     model_config = ConfigDict(
-        strict=True,
         extra="forbid",
         validate_assignment=True,
         revalidate_instances="always",
@@ -72,12 +68,9 @@ class APIResponse(BaseModel, Generic[T]):
 
 
 class APIRequest(RootModel[T]):
-    # Type coercion enabled, fastAPI doesn't like it when this is disabled and it has to process dataclasses
     # Assigning value to model's field is validated
     # Instance is always (re-)validated since instance is of type dataclass not BaseModel
-    model_config = ConfigDict(
-        strict=False, validate_assignment=True, revalidate_instances="always"
-    )
+    model_config = ConfigDict(validate_assignment=True, revalidate_instances="always")
 
 
 from src.translation import (

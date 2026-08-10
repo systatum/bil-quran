@@ -43,3 +43,4 @@ scripts/translator/**/.virtual_documents
 scripts/translator/mount
 scripts/translator/.runpod-fastapi-token
 scripts/translator/.venv
+scripts/translator/results

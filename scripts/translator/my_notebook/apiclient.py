@@ -78,17 +78,17 @@ class APIClient:
 
     def _translate(self, request: api.TranslateAPIRequest) -> api.TranslateJobResult:
         return self._request(
-            "/translate", TypeAdapter(api.TranslateJobResult), request.model_dump_json()
+            "/translate", TypeAdapter(api.TranslateJobResult), request.model_dump()
         )
 
     def _rate(self, request: api.RateAPIRequest) -> api.RateJobResult:
         return self._request(
-            "/rate", TypeAdapter(api.RateJobResult), request.model_dump_json()
+            "/rate", TypeAdapter(api.RateJobResult), request.model_dump()
         )
 
     def _compare(self, request: api.CompareAPIRequest) -> api.CompareJobResult:
         return self._request(
-            "/compare", TypeAdapter(api.CompareJobResult), request.model_dump_json()
+            "/compare", TypeAdapter(api.CompareJobResult), request.model_dump()
         )
 
     def _format_and_log_errors(self, fmt: str, *args, **kwargs) -> str:
@@ -100,17 +100,17 @@ class APIClient:
         self,
         path: str,
         adapter: TypeAdapter[T],
-        data: str | None = None,
+        json_data: dict | None = None,
         force_post: bool = False,
     ) -> T:
         """
         TODO: detail raises
         """
         try:
-            if data is not None:
+            if json_data is not None:
                 with self.session as s:
                     response: requests.Response = s.post(
-                        self.setting.base_url + path, data=data
+                        self.setting.base_url + path, json=json_data
                     )
             elif force_post:
                 with self.session as s:
