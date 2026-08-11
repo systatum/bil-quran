@@ -12,10 +12,12 @@ import { useIntl } from "react-intl"
 import { css } from "styled-components"
 import Title from "../AppNavbar/Sidebar/Title"
 import Headings from "../Headings"
+import { useNavigate } from "@tanstack/react-router"
 
 export default function ExegesisDetail({
   goBack,
 }: Partial<ScreenProps<Screen>>) {
+  const navigate = useNavigate()
   const { formatMessage } = useIntl()
   const {
     userSettings: { theme, locale: rawLocale },
@@ -36,6 +38,10 @@ export default function ExegesisDetail({
         contentType="exegesis-detail"
         onClosingSidebarRequested={() => {
           goBack?.()
+          navigate({
+            to: "/about",
+            replace: true,
+          })
           // only clear if nothing reopened a (possibly different) exegesis
           // detail in the meantime, or this stale timeout would clobber it
           const closingId = selectedExegesisId
