@@ -125,6 +125,9 @@ export const messages = {
       },
     },
   },
+  privacyPolicy: {
+    title: "privacyPolicy.title",
+  },
   errors: {
     bookmarkCreationFailed: "errors.bookmarkCreationFailed",
     bookmarkDataNotFound: "errors.bookmarkDataNotFound",

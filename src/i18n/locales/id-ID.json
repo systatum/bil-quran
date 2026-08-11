@@ -123,6 +123,9 @@
       }
     }
   },
+  "privacyPolicy": {
+    "title": "Kebijakan Privasi"
+  },
   "notice": {
     "bookmark": {
       "noDataYet": "Belum ada ayat yang ditambahkan. Ketuk nomor ayat untuk lalu dapat menandai ayat-ayat tertentu."

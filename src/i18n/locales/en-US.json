@@ -123,6 +123,11 @@
       }
     }
   },
+
+  "privacyPolicy": {
+    "title": "Privacy Policy"
+  },
+
   "notice": {
     "bookmark": {
       "noDataYet": "No bookmarks yet. Click a verse number to bookmark it or add a note."
