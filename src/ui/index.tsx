@@ -165,6 +165,7 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
     Screen.ExegesisDetail,
     Screen.ProstrationVersesDetail,
     Screen.Sidebar,
+    Screen.PrivacyPolicy,
   ]
 
   const shouldUseFullLayout =
