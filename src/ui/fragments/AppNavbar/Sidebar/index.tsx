@@ -89,6 +89,7 @@ export const ContentType = {
   Import: "import",
   ExegesisDetail: "exegesis-detail",
   ProstrationVersesDetail: "prostverses-detail",
+  PrivacyPolicy: "privacy-policy",
 } as const
 
 export type ContentType = (typeof ContentType)[keyof typeof ContentType]
