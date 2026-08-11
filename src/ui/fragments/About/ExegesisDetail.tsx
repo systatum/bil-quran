@@ -5,14 +5,13 @@ import { resolveLocale } from "@i18n"
 import { messages } from "@i18n/message"
 import { safePick } from "@services/picker"
 import { ScreenProps } from "@systatum/coneto/screen-transition"
-import { StatefulForm } from "@systatum/coneto/stateful-form"
+import { useNavigate } from "@tanstack/react-router"
 import { SubItem, Text, Wrapper } from "@ui/fragments"
 import { Screen } from "@ui/index"
 import { useIntl } from "react-intl"
 import { css } from "styled-components"
 import Title from "../AppNavbar/Sidebar/Title"
 import Headings from "../Headings"
-import { useNavigate } from "@tanstack/react-router"
 
 export default function ExegesisDetail({
   goBack,
@@ -86,62 +85,45 @@ export default function ExegesisDetail({
           }
         `}
       >
-        <StatefulForm
-          mobile
-          styles={{
-            containerStyle: css`
-              gap: 20px;
-            `,
-            mobileFieldGroupStyle: css`
-              gap: 20px;
-              border-radius: 10px;
-              padding-top: 20px;
-              padding-bottom: 20px;
-
-              background: ${theme === "dark" ? "#1a211d" : "#ededed"};
-            `,
-          }}
-          formValues={{}}
-          fields={[
-            {
-              name: "longDesc",
-              type: "custom",
-
-              render: (
-                <SubItem
+        <div style={{ gap: "20px" }}>
+          <div
+            style={{
+              gap: "20px",
+              borderRadius: "10px",
+              paddingTop: "20px",
+              paddingBottom: "20px",
+              background: theme === "dark" ? "#1a211d" : "#ededed",
+            }}
+          >
+            <SubItem
+              $style={css`
+                gap: 14px;
+              `}
+            >
+              {bookName && (
+                <Headings.Third
                   $style={css`
-                    gap: 14px;
+                    font-weight: 600;
                   `}
                 >
-                  {bookName && (
-                    <Headings.Third
-                      $style={css`
-                        font-weight: 600;
-                      `}
-                    >
-                      {bookName}
-                    </Headings.Third>
-                  )}
-                  {descriptionParagraphs.map((paragraph, i) => (
-                    <Text key={i}>{paragraph}</Text>
-                  ))}
-                </SubItem>
-              ),
-            },
-            {
-              name: "source",
-              type: "custom",
-              render: detail && (
-                <SubItem>
-                  <Headings.Third $fontWeight="600">
-                    {formatMessage({ id: messages.about.source })}
-                  </Headings.Third>
-                  <Text>{detail.source}</Text>
-                </SubItem>
-              ),
-            },
-          ]}
-        />
+                  {bookName}
+                </Headings.Third>
+              )}
+              {descriptionParagraphs.map((paragraph, i) => (
+                <Text key={i}>{paragraph}</Text>
+              ))}
+            </SubItem>
+
+            {detail && (
+              <SubItem>
+                <Headings.Third $fontWeight="600">
+                  {formatMessage({ id: messages.about.source })}
+                </Headings.Third>
+                <Text>{detail.source}</Text>
+              </SubItem>
+            )}
+          </div>
+        </div>
       </Wrapper>
     </>
   )
