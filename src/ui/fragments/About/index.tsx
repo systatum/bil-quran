@@ -13,11 +13,13 @@ import { Screen } from "@ui/index"
 import { useIntl } from "react-intl"
 import { css } from "styled-components"
 import Headings from "../Headings"
+import { useNavigate } from "@tanstack/react-router"
 
 export default function About({
   goBack,
   goToScreen,
 }: Partial<ScreenProps<Screen>>) {
+  const navigate = useNavigate()
   const { formatMessage } = useIntl()
   const {
     userSettings: { theme, locale: rawLocal },
@@ -111,6 +113,13 @@ export default function About({
                   },
                   onClick: async () => {
                     await getExegesisDetail(String(option.value), locale)
+                    await navigate({
+                      to: "/about/$screen",
+                      params: {
+                        screen: String(option.value).split("/")[0],
+                      },
+                    })
+
                     await goToScreen?.(Screen.ExegesisDetail)
                   },
                 }) satisfies FormFieldGroup,
