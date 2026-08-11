@@ -25,6 +25,7 @@ import ExegesisPaperDialogContent from "./fragments/QuranPaper/VerseRow/Exegesis
 import { LexemeDetailPaperDialog } from "./fragments/QuranPaper/VerseRow/LexemeDetailPaperDialog"
 import usePaperDialogState from "./hooks/states/PaperDialogState"
 import useUserSettingsState from "./hooks/states/UserSettingsState"
+import PrivacyPolicy from "./fragments/About/PrivacyPolicy"
 
 interface UIIndexProps {
   /** When true, opens the exegesis paper dialog for the routed verse on mount. */
@@ -40,6 +41,7 @@ export const Screen = {
   Import: "import",
   About: "about",
   Sidebar: "sidebar",
+  PrivacyPolicy: "privacy-policy",
 } as const
 
 export type Screen = (typeof Screen)[keyof typeof Screen]
@@ -65,6 +67,10 @@ const SCREENS: Record<Screen, ScreenEntry> = {
   },
   [Screen.ProstrationVersesDetail]: {
     component: ProstrationVersesDetail,
+    closable: true,
+  },
+  [Screen.PrivacyPolicy]: {
+    component: PrivacyPolicy,
     closable: true,
   },
 }
