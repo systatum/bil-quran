@@ -26,6 +26,8 @@ import { LexemeDetailPaperDialog } from "./fragments/QuranPaper/VerseRow/LexemeD
 import usePaperDialogState from "./hooks/states/PaperDialogState"
 import useUserSettingsState from "./hooks/states/UserSettingsState"
 import PrivacyPolicy from "./fragments/About/PrivacyPolicy"
+import useExegesisOptions from "@hooks/tools/useExegesisOptions"
+import useExegesisState from "@hooks/states/ExegesisState"
 
 interface UIIndexProps {
   /** When true, opens the exegesis paper dialog for the routed verse on mount. */
@@ -170,6 +172,36 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
 
   const shouldUseFullLayout =
     currentScreen !== undefined && fullLayoutScreens.includes(currentScreen)
+
+  // about configuration
+  const exegesisOptions = useExegesisOptions()
+  const { getExegesisDetail } = useExegesisState()
+
+  const screenContent = params?.screen
+
+  useEffect(() => {
+    if (!screenContent) {
+      setActiveScreens([Screen.About])
+      return
+    }
+
+    if (screenContent === "privacy") {
+      setActiveScreens([Screen.About, Screen.PrivacyPolicy])
+      return
+    }
+
+    const exegesisOption = exegesisOptions
+      .flatMap((exegesisOption) => exegesisOption.groupOptions ?? [])
+      .find((option) => String(option.value).split("/")[0] === screenContent)
+
+    if (exegesisOption) {
+      getExegesisDetail(String(exegesisOption.value), locale)
+      setActiveScreens([Screen.About, Screen.ExegesisDetail])
+      return
+    }
+
+    setActiveScreens([Screen.About])
+  }, [screenContent, exegesisOptions, setActiveScreens])
 
   return (
     <>
