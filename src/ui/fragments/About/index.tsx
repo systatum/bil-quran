@@ -7,10 +7,7 @@ import { messages } from "@i18n/message"
 import { RiArrowLeftLine, RiArrowRightSLine } from "@remixicon/react"
 import { Button } from "@systatum/coneto/button"
 import { ScreenProps } from "@systatum/coneto/screen-transition"
-import {
-  FormFieldGroup,
-  StatefulForm,
-} from "@systatum/coneto/stateful-form"
+import { FormFieldGroup, StatefulForm } from "@systatum/coneto/stateful-form"
 import { Item, SubItem, Text, Wrapper } from "@ui/fragments"
 import { Screen } from "@ui/index"
 import { useIntl } from "react-intl"
@@ -106,9 +103,7 @@ export default function About({
                     "aria-label": "exegesis",
                     styles: {
                       self: css`
-                        background: ${theme === "dark"
-                          ? "#1a211d"
-                          : "#ededed"};
+                        background: ${theme === "dark" ? "#1a211d" : "#ededed"};
                         flex-direction: row-reverse;
                         justify-content: space-between;
                       `,
@@ -141,6 +136,28 @@ export default function About({
             },
             onClick: async () => {
               await goToScreen?.(Screen.ProstrationVersesDetail)
+            },
+          } satisfies FormFieldGroup,
+          {
+            type: "button",
+            name: "privacyPolicy",
+            title: formatMessage({ id: messages.privacyPolicy.title }),
+            button: {
+              icon: {
+                image: RiArrowRightSLine,
+                size: 18,
+              },
+              "aria-label": "privacy-policy",
+              styles: {
+                self: css`
+                  background: ${theme === "dark" ? "#1a211d" : "#ededed"};
+                  flex-direction: row-reverse;
+                  justify-content: space-between;
+                `,
+              },
+            },
+            onClick: async () => {
+              await goToScreen?.(Screen.PrivacyPolicy)
             },
           } satisfies FormFieldGroup,
         ]}
