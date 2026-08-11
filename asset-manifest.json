@@ -1,10 +1,10 @@
 {
   "files": {
     "main.css": "/static/css/main.db08e70f.css",
-    "main.js": "/static/js/main.c9b83c33.js",
+    "main.js": "/static/js/main.6cd90dae.js",
     "static/js/662.44d34e35.chunk.js": "/static/js/662.44d34e35.chunk.js",
-    "static/js/40.e2e4b644.chunk.js": "/static/js/40.e2e4b644.chunk.js",
-    "static/js/971.6e00b0ae.chunk.js": "/static/js/971.6e00b0ae.chunk.js",
+    "static/js/40.206eff1c.chunk.js": "/static/js/40.206eff1c.chunk.js",
+    "static/js/971.28a9727e.chunk.js": "/static/js/971.28a9727e.chunk.js",
     "static/js/382.31ed212e.chunk.js": "/static/js/382.31ed212e.chunk.js",
     "static/js/199.58f52c3b.chunk.js": "/static/js/199.58f52c3b.chunk.js",
     "static/media/SurahNameV4.ttf": "/static/media/SurahNameV4.fbf0a11b9a111be4c88c.ttf",
@@ -14,12 +14,12 @@
     "static/media/Mont-Heavy.woff2": "/static/media/Mont-Heavy.76e10677896098069947.woff2",
     "index.html": "/index.html",
     "main.db08e70f.css.map": "/static/css/main.db08e70f.css.map",
-    "main.c9b83c33.js.map": "/static/js/main.c9b83c33.js.map",
+    "main.6cd90dae.js.map": "/static/js/main.6cd90dae.js.map",
     "382.31ed212e.chunk.js.map": "/static/js/382.31ed212e.chunk.js.map",
     "199.58f52c3b.chunk.js.map": "/static/js/199.58f52c3b.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.db08e70f.css",
-    "static/js/main.c9b83c33.js"
+    "static/js/main.6cd90dae.js"
   ]
 }
