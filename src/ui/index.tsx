@@ -10,7 +10,7 @@ import {
   ScreenEntry,
   ScreenTransition,
 } from "@systatum/coneto/screen-transition"
-import { useParams, useSearch } from "@tanstack/react-router"
+import { useMatchRoute, useParams, useSearch } from "@tanstack/react-router"
 import { useEffect, useMemo, useRef } from "react"
 import { css } from "styled-components"
 import About from "./fragments/About"
@@ -32,6 +32,8 @@ import useExegesisState from "@hooks/states/ExegesisState"
 interface UIIndexProps {
   /** When true, opens the exegesis paper dialog for the routed verse on mount. */
   openExegesisOnMount?: boolean
+  /** When true, opens about mount. */
+  openAboutOnMount?: boolean
 }
 
 export const Screen = {
@@ -77,7 +79,11 @@ const SCREENS: Record<Screen, ScreenEntry> = {
   },
 }
 
-export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
+export default function UIIndex({
+  openExegesisOnMount,
+  openAboutOnMount,
+}: UIIndexProps = {}) {
+  const matchRoute = useMatchRoute()
   const { chapter } = useFirstVisibleVerse()
   // Selectors instead of destructuring the whole store, so this component
   // only re-renders when theme/locale actually change, not on every
@@ -178,15 +184,26 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
   const { getExegesisDetail } = useExegesisState()
 
   const screenContent = params?.screen
+  const isAboutRoute = matchRoute({
+    to: "/about",
+    fuzzy: true,
+  })
 
   useEffect(() => {
+    if (!isAboutRoute || !openAboutOnMount) return
+
     if (!screenContent) {
       setActiveScreens([Screen.About])
       return
     }
 
-    if (screenContent === "privacy") {
+    if (screenContent === "privacy-policy") {
       setActiveScreens([Screen.About, Screen.PrivacyPolicy])
+      return
+    }
+
+    if (screenContent === "prostration-verse") {
+      setActiveScreens([Screen.About, Screen.ProstrationVersesDetail])
       return
     }
 
@@ -201,7 +218,7 @@ export default function UIIndex({ openExegesisOnMount }: UIIndexProps = {}) {
     }
 
     setActiveScreens([Screen.About])
-  }, [screenContent, exegesisOptions, setActiveScreens])
+  }, [screenContent, exegesisOptions, setActiveScreens, openAboutOnMount])
 
   return (
     <>

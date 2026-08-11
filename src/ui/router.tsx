@@ -45,13 +45,13 @@ const exegesisRoute = createRoute({
 const aboutRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/about",
-  component: UIIndex,
+  component: () => <UIIndex openAboutOnMount />,
 })
 
 const aboutScreenRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/about/$screen",
-  component: UIIndex,
+  component: () => <UIIndex openAboutOnMount />,
 })
 
 const routeTree = rootRoute.addChildren([
