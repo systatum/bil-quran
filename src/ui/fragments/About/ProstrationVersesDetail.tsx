@@ -14,6 +14,7 @@ import { useIntl } from "react-intl"
 import styled, { css } from "styled-components"
 import { ContentType } from "../AppNavbar/Sidebar"
 import Headings from "../Headings"
+import Title from "../AppNavbar/Sidebar/Title"
 
 export default function ProstrationVersesDetail({
   goBack,
