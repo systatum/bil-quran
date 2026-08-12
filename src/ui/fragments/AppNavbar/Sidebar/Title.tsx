@@ -69,6 +69,9 @@ export default function Title({
     case ContentType.PrivacyPolicy:
       title = formatMessage({ id: messages.privacyPolicy.title })
       break
+    case ContentType.Contributors:
+      title = formatMessage({ id: messages.contributors.title })
+      break
   }
 
   return (

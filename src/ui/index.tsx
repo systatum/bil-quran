@@ -26,6 +26,7 @@ import { LexemeDetailPaperDialog } from "./fragments/QuranPaper/VerseRow/LexemeD
 import usePaperDialogState from "./hooks/states/PaperDialogState"
 import useUserSettingsState from "./hooks/states/UserSettingsState"
 import PrivacyPolicy from "./fragments/About/PrivacyPolicy"
+import Contributors from "./fragments/About/Contributors"
 import useExegesisOptions from "@hooks/tools/useExegesisOptions"
 import useExegesisState from "@hooks/states/ExegesisState"
 
@@ -46,6 +47,7 @@ export const Screen = {
   About: "about",
   Sidebar: "sidebar",
   PrivacyPolicy: "privacy-policy",
+  Contributors: "contributors",
 } as const
 
 export type Screen = (typeof Screen)[keyof typeof Screen]
@@ -75,6 +77,10 @@ const SCREENS: Record<Screen, ScreenEntry> = {
   },
   [Screen.PrivacyPolicy]: {
     component: PrivacyPolicy,
+    closable: true,
+  },
+  [Screen.Contributors]: {
+    component: Contributors,
     closable: true,
   },
 }
@@ -174,6 +180,7 @@ export default function UIIndex({
     Screen.ProstrationVersesDetail,
     Screen.Sidebar,
     Screen.PrivacyPolicy,
+    Screen.Contributors,
   ]
 
   const shouldUseFullLayout =
@@ -204,6 +211,11 @@ export default function UIIndex({
 
     if (screenContent === "prostration-verse") {
       setActiveScreens([Screen.About, Screen.ProstrationVersesDetail])
+      return
+    }
+
+    if (screenContent === "contributors") {
+      setActiveScreens([Screen.About, Screen.Contributors])
       return
     }
 

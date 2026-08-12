@@ -181,6 +181,28 @@ export default function About({
                 await goToScreen?.(Screen.PrivacyPolicy)
               },
             } satisfies FormFieldGroup,
+            {
+              type: "button",
+              name: "contributors",
+              title: formatMessage({ id: messages.contributors.title }),
+              button: {
+                icon: {
+                  image: RiArrowRightSLine,
+                  size: 18,
+                },
+                "aria-label": "contributors",
+                styles: {
+                  self: css`
+                    background: ${theme === "dark" ? "#1a211d" : "#ededed"};
+                    flex-direction: row-reverse;
+                    justify-content: space-between;
+                  `,
+                },
+              },
+              onClick: async () => {
+                await goToScreen?.(Screen.Contributors)
+              },
+            } satisfies FormFieldGroup,
           ]}
         />
       </ScrollContainer>
