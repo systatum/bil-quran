@@ -107,17 +107,18 @@ class APIClient:
         TODO: detail raises
         """
         try:
-            if json_data is not None:
-                with self.session as s:
-                    response: requests.Response = s.post(
-                        self.setting.base_url + path, json=json_data
-                    )
+            if data is not None:
+                response: requests.Response = self.session.post(
+                    self.setting.base_url + path, data=data.encode("utf-8")
+                )
             elif force_post:
-                with self.session as s:
-                    response: requests.Response = s.post(self.setting.base_url + path)
+                response: requests.Response = self.session.post(
+                    self.setting.base_url + path
+                )
             else:
-                with self.session as s:
-                    response: requests.Response = s.get(self.setting.base_url + path)
+                response: requests.Response = self.session.get(
+                    self.setting.base_url + path
+                )
         except requests.RequestException as e:
             error_message = self._format_and_log_errors(
                 "Request error {}: {}", type(e).__name__, format_exc()
