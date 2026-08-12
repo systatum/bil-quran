@@ -9,11 +9,12 @@ import { ScreenProps } from "@systatum/coneto/screen-transition"
 import { FormFieldGroup, StatefulForm } from "@systatum/coneto/stateful-form"
 import { Wrapper } from "@ui/fragments"
 import { Screen } from "@ui/index"
-import { useCallback, useState } from "react"
+import { useCallback, useRef, useState } from "react"
 import { useIntl } from "react-intl"
 import styled, { css } from "styled-components"
 import Headings from "../Headings"
-import { useNavigate } from "@tanstack/react-router"
+
+const HEADER_TRANSITION_MS = 300
 
 export default function About({
   goBack,
@@ -29,8 +30,24 @@ export default function About({
   const locale = resolveLocale(rawLocal)
 
   const [scrolled, setScrolled] = useState(false)
+  const scrolledRef = useRef(false)
+  const lockedRef = useRef(false)
+
+  // Hysteresis plus a lock prevents oscilation where the header resize
+  // from clamping scrollTop and re-triggering itself mid-transition.
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    setScrolled(e.currentTarget.scrollTop > 10)
+    if (lockedRef.current) return
+
+    const top = e.currentTarget.scrollTop
+    const next = scrolledRef.current ? top > 4 : top > 24
+    if (next === scrolledRef.current) return
+
+    scrolledRef.current = next
+    lockedRef.current = true
+    setScrolled(next)
+    setTimeout(() => {
+      lockedRef.current = false
+    }, HEADER_TRANSITION_MS)
   }, [])
 
   return (
