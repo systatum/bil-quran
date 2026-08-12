@@ -1,8 +1,9 @@
 import { ScreenProps } from "@systatum/coneto/screen-transition"
 import { Screen } from "@ui/index"
-import Title from "../AppNavbar/Sidebar/Title"
-import { ContentType } from "../AppNavbar/Sidebar"
 import { useEffect, useState } from "react"
+import { ContentType } from "../AppNavbar/Sidebar"
+import Title from "../AppNavbar/Sidebar/Title"
+import WrappedPoints from "./WrappedPoints"
 
 type PrivacyPolicy = Partial<ScreenProps<Screen>>
 
@@ -22,7 +23,14 @@ export default function PrivacyPolicy({ goBack }: PrivacyPolicy) {
         contentType={ContentType.PrivacyPolicy}
         withAction={false}
       />
-      {privacyPolicy}
+      <WrappedPoints
+        points={[
+          {
+            title: "",
+            content: privacyPolicy,
+          },
+        ]}
+      />
     </>
   )
 }
