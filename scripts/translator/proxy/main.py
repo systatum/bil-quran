@@ -15,8 +15,8 @@ NO_ROUTE_FILENAME = "NoRouteCaddyfile"
 CADDY_FILENAME = "Caddyfile"
 CADDY_PORT = 8049
 
-MAX_POD_LIFETIME_SECONDS = 60 * 5  # 5 minutes
-MAX_POD_INACTIVITY_SECONDS = 60 * 3  # 3 minutes
+MAX_POD_LIFETIME_SECONDS = 60 * 60 * 5  # 5 hours
+MAX_POD_INACTIVITY_SECONDS = 60 * 30  # 30 minutes
 
 
 def pod():
