@@ -39,6 +39,9 @@ class APIClient:
                 Any, {"Authorization": f"Bearer {self.setting.token}"}
             )
 
+    def health(self) -> api.HealthResult:
+        return self._request("/health", TypeAdapter(api.HealthResult))
+
     def models(self) -> list[str]:
         return self._request("/models", TypeAdapter(list[str]))
 

@@ -44,3 +44,4 @@ scripts/translator/mount
 scripts/translator/.runpod-*
 scripts/translator/.venv
 scripts/translator/results
+scripts/translator/proxy/Caddyfile

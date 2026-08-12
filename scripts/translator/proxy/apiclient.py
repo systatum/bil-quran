@@ -63,7 +63,7 @@ class APIClient:
         return self._request(
             f"/pods/{pod_id}/action",
             TypeAdapter(Pod),
-            data=PodAction(root="stop").model_dump_json(),
+            data=PodAction(action="stop").model_dump_json(),
         )
 
     def _format_and_log_errors(self, fmt: str, *args, **kwargs) -> str:

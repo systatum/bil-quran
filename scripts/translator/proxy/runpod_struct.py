@@ -1,7 +1,7 @@
 from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Optional, Literal, TypeAlias
-from pydantic import BaseModel, RootModel, Field
+from pydantic import BaseModel, Field
 import re
 
 
@@ -46,8 +46,8 @@ class Pod(BaseModel):
         return (now - start).total_seconds()
 
 
-class PodAction(RootModel):
-    root: PodActionType
+class PodAction(BaseModel):
+    action: PodActionType
 
 
 PodActionType: TypeAlias = Literal["start", "stop", "restart", "terminate"]
