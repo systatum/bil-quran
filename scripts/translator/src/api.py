@@ -95,6 +95,22 @@ RateAPIResponse = APIResponse[RateJobResult]
 CompareAPIRequest = APIRequest[CompareJob]
 CompareAPIResponse = APIResponse[CompareJobResult]
 
+from dataclasses import dataclass
+from datetime import datetime
+
+
+@dataclass(kw_only=True)
+class HealthResult:
+    """
+    NOTE: last_activity_timestamp does not include non-ML related activity/requests
+    """
+
+    healthy: bool
+    last_activity_timestamp: datetime
+
+
+HealthAPIResponse = APIResponse[HealthResult]
+
 # Exported symbols
 __all__ = [
     "APIResponse",
@@ -114,4 +130,6 @@ __all__ = [
     "CompareJob",
     "Comparison",
     "CompareAPIResponse",
+    "HealthResult",
+    "HealthAPIResponse",
 ]
