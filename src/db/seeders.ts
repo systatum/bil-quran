@@ -11,7 +11,7 @@ import { repo } from "@db/repo/index"
 import { unpackIPC } from "@services/Converter"
 import { FingerprintedAsset, saveFingerprints } from "@services/fingerprinter"
 import LOGGER from "@services/Logger"
-import { pause } from "@services/mutator"
+import { pause, queryInChunks } from "@services/mutator"
 import { ensureHasTranslation } from "@services/translations"
 import { persistDb } from "./driver"
 
@@ -20,24 +20,6 @@ import { persistDb } from "./driver"
 // YIELD_EVERY iterations keeps the app responsive while seeding runs.
 const YIELD_EVERY = 2000
 const BATCH_SIZE = 1000
-
-/**
- * Runs `queryChunk` over `items` in BATCH_SIZE-sized pieces, yielding between
- * each. A single query with thousands of `IN (...)` params is one atomic
- * sql.js call that can't be interrupted, so the chunking has to happen here
- * rather than around the call.
- */
-async function queryInChunks<TItem, TResult>(
-  items: TItem[],
-  queryChunk: (chunk: TItem[]) => Promise<TResult[]>,
-): Promise<TResult[]> {
-  const results: TResult[] = []
-  for (let i = 0; i < items.length; i += BATCH_SIZE) {
-    results.push(...(await queryChunk(items.slice(i, i + BATCH_SIZE))))
-    await pause(0)
-  }
-  return results
-}
 
 // This module handle adding data to the database, especially
 // for the very first time. This should only be called after
@@ -155,7 +137,7 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
   // ------------------------------------------------------------
 
   const rootTokens = Object.keys(uniqueRoots)
-  const existingRoots = await queryInChunks(rootTokens, async (chunk) =>
+  const existingRoots = await queryInChunks(rootTokens, BATCH_SIZE, async (chunk) =>
     unpackIPC(await repo.roots.findAllBy({ roots: chunk })),
   )
 
@@ -202,7 +184,7 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
   // ------------------------------------------------------------
 
   const tokens = Object.keys(uniqueLexemes)
-  const existingLexemes = await queryInChunks(tokens, async (chunk) =>
+  const existingLexemes = await queryInChunks(tokens, BATCH_SIZE, async (chunk) =>
     unpackIPC(await repo.lexemes.findAllBy({ tokens: chunk })),
   )
 

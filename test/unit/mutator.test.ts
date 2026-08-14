@@ -8,7 +8,7 @@ jest.mock("../../src/services/checker", () => ({
   isPlainObject: jest.fn(),
 }))
 
-import { pickLocalized } from "../../src/services/mutator"
+import { pickLocalized, queryInChunks } from "../../src/services/mutator"
 import { Locale } from "../../src/constants/settings"
 
 describe("pickLocalized", () => {
@@ -40,5 +40,37 @@ describe("pickLocalized", () => {
     }
     const shorts = pickLocalized(source, (v) => v.short)
     expect(shorts).toEqual({ [Locale.IntEnglish]: "A brief desc" })
+  })
+})
+
+describe("queryInChunks", () => {
+  it("calls queryChunk once per chunk of the given size", async () => {
+    const queryChunk = jest.fn(async (chunk: number[]) => chunk)
+    await queryInChunks([1, 2, 3, 4, 5], 2, queryChunk)
+
+    expect(queryChunk).toHaveBeenCalledTimes(3)
+    expect(queryChunk).toHaveBeenNthCalledWith(1, [1, 2])
+    expect(queryChunk).toHaveBeenNthCalledWith(2, [3, 4])
+    expect(queryChunk).toHaveBeenNthCalledWith(3, [5])
+  })
+
+  it("preserves item order across chunk boundaries", async () => {
+    const result = await queryInChunks([1, 2, 3, 4, 5], 2, async (chunk) =>
+      chunk.map((n) => n * 10),
+    )
+    expect(result).toEqual([10, 20, 30, 40, 50])
+  })
+
+  it("makes a single call when items fit within one chunk", async () => {
+    const queryChunk = jest.fn(async (chunk: number[]) => chunk)
+    await queryInChunks([1, 2], 1000, queryChunk)
+    expect(queryChunk).toHaveBeenCalledTimes(1)
+  })
+
+  it("makes no calls for an empty items array", async () => {
+    const queryChunk = jest.fn(async (chunk: number[]) => chunk)
+    const result = await queryInChunks([], 100, queryChunk)
+    expect(queryChunk).not.toHaveBeenCalled()
+    expect(result).toEqual([])
   })
 })

@@ -102,3 +102,22 @@ export function mergeKeys<T extends Record<string | number, unknown>>(
 export async function pause(ms: number) {
   return new Promise((f) => setTimeout(f, ms))
 }
+
+/**
+ * Runs `queryChunk` over `items` in `chunkSize`-sized pieces, yielding
+ * between each. A single query with thousands of `IN (...)` params is one
+ * atomic sql.js call that can't be interrupted, so chunking has to happen
+ * around the query itself rather than around its result.
+ */
+export async function queryInChunks<TItem, TResult>(
+  items: TItem[],
+  chunkSize: number,
+  queryChunk: (chunk: TItem[]) => Promise<TResult[]>,
+): Promise<TResult[]> {
+  const results: TResult[] = []
+  for (let i = 0; i < items.length; i += chunkSize) {
+    results.push(...(await queryChunk(items.slice(i, i + chunkSize))))
+    await pause(0)
+  }
+  return results
+}
