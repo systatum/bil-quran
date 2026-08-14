@@ -8,25 +8,18 @@ import useUserSettingsState from "./UserSettingsState"
 const useChaptersState = create<ChaptersState>((set, get) => ({
   chapters: {},
 
-  loadChapters() {
+  async loadChapters() {
     const loadedChapters = get().chapters
     if (Object.keys(loadedChapters).length === 144) return
 
     console.debug("Loading chapters data from the database")
-    repo.chapters
-      .findAllBy({})
-      .then((ipcResp) => {
-        const chapters = unpackIPC(ipcResp)
-        set({
-          chapters: chapters.reduce<Record<number, ChapterRecord>>(
-            (acc, ch) => ({ ...acc, [ch.id]: ch }),
-            {},
-          ),
-        })
-      })
-      .catch((e) => {
-        throw e
-      })
+    const chapters = unpackIPC(await repo.chapters.findAllBy({}))
+    set({
+      chapters: chapters.reduce<Record<number, ChapterRecord>>(
+        (acc, ch) => ({ ...acc, [ch.id]: ch }),
+        {},
+      ),
+    })
   },
 
   getChapter(arg) {
@@ -82,7 +75,7 @@ const useChaptersState = create<ChaptersState>((set, get) => ({
 
 export interface ChaptersState {
   chapters: Record<number, ChapterRecord>
-  loadChapters: () => void
+  loadChapters: () => Promise<void>
   getChapter: (chapterNumber: number | string) => ChapterRecord
   getChapterMeaning: (chapterNumber: number) => string | null
   getChapterArabicName: (chapterNumber: number) => string | null

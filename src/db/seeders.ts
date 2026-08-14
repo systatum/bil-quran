@@ -28,21 +28,41 @@ const BATCH_SIZE = 1000
 
 type SeedProgress = "verses" | "paginations"
 
-// seed the app with minimal data so that it can work
-export async function seedData(callback: (progress: SeedProgress) => void) {
-  const hasAnyChapter = unpackIPC(await repo.chapters.count()) > 0
-  const hasAnyWords = unpackIPC(await repo.words.count()) > 0
-  const needVerseSeeding = !(hasAnyChapter && hasAnyWords)
-  LOGGER.debug(
-    `Has any chapter? ${hasAnyChapter}, any words? ${hasAnyWords} => ${needVerseSeeding}`,
-  )
+/**
+ * Seed the app with minimal data so that it can work. Seeds only
+ * `priorityChapterId`'s verses before returning, so the caller can make the
+ * app interactive without waiting for all 114 chapters; the remaining
+ * chapters continue seeding in the background (not awaited here).
+ *
+ * `onChapterReady` fires once per chapter (priority chapter included) right
+ * after its words are persisted, so the caller can merge them into UI state.
+ */
+export async function seedData(
+  callback: (progress: SeedProgress) => void,
+  priorityChapterId: number,
+  onChapterReady: (chapterId: number) => void,
+) {
+  callback("verses")
+  const chapters = await seedChapters()
+
+  const totalChapters = Object.keys(chapters).length
+  const seededChapterCount = await countSeededChapters()
+  const needVerseSeeding = seededChapterCount < totalChapters
+  LOGGER.debug(`Seeded chapters: ${seededChapterCount}/${totalChapters}`)
 
   if (needVerseSeeding) {
-    callback("verses")
-    const chapters = await seedChapters()
-    await seedVerses(chapters)
-    await seedWordTranslations()
+    const priorityWords = await fetchChapterVerseWords(priorityChapterId)
+    await seedChapterVerses(priorityChapterId, chapters, priorityWords)
+    onChapterReady(priorityChapterId)
     await persistDb()
+
+    // Not awaited: the app becomes interactive once the priority chapter is
+    // ready, and the rest seed in the background. Must stay sequential, never
+    // Promise.all across chapters — seedChapterVerses's check-then-insert
+    // pattern is only race-free when calls don't overlap.
+    seedRemainingChapters(priorityChapterId, chapters, onChapterReady).catch(
+      (e) => LOGGER.error("Failed seeding remaining chapters", e),
+    )
   }
 
   callback("paginations")
@@ -50,6 +70,40 @@ export async function seedData(callback: (progress: SeedProgress) => void) {
   if (seededPaginations) await persistDb()
   saveFingerprints()
   LOGGER.debug("Return from seeding: done")
+}
+
+/**
+ * Seeds every chapter except `priorityChapterId`, then the word-translation
+ * corpus. Fetches all chapters' JSON concurrently (pure network I/O, safe to
+ * parallelize) but writes to the DB one chapter at a time — seedChapterVerses's
+ * check-then-insert pattern is only race-free when calls don't overlap.
+ */
+async function seedRemainingChapters(
+  priorityChapterId: number,
+  chapters: Record<number, ChapterRecord>,
+  onChapterReady: (chapterId: number) => void,
+): Promise<void> {
+  const chapterIds = Object.keys(chapters)
+    .map(Number)
+    .sort((a, b) => a - b)
+    .filter((id) => id !== priorityChapterId)
+
+  const fetched = await Promise.all(
+    chapterIds.map(async (chapterId) => ({
+      chapterId,
+      verseWords: await fetchChapterVerseWords(chapterId),
+    })),
+  )
+
+  for (const { chapterId, verseWords } of fetched) {
+    await seedChapterVerses(chapterId, chapters, verseWords)
+    onChapterReady(chapterId)
+    await pause(0)
+  }
+
+  await seedWordTranslations()
+  await persistDb()
+  LOGGER.debug("Background chapter seeding complete")
 }
 
 /**
@@ -76,36 +130,62 @@ async function seedChapters(): Promise<Record<number, ChapterRecord>> {
   return asDict(createdChapters)
 }
 
-async function seedVerses(chapters: Record<number, ChapterRecord>) {
-  interface VerseWord {
-    id: string
-    word: string
-    trans: string
-    root: string
-  }
-
-  const name = Rendering.Imlaei
-
-  // if there's already an Imlaei rendering, no need to create a new one
-  const existing = unpackIPC(await repo.renderings.findAllBy({ name }))
-  const rendering =
-    existing.length === 1
-      ? existing[0]
-      : unpackIPC(await repo.renderings.create({ name }))
-
-  const chapterWords = await Promise.all(
-    Array.from({ length: 114 }, (_, i) =>
-      FingerprintedAsset.Quran.getVerseRendering<VerseWord[]>(
-        rendering.name,
-        i + 1,
-      ),
+/** How many distinct chapters currently have any seeded words. */
+async function countSeededChapters(): Promise<number> {
+  const rows = unpackIPC(
+    await repo.words.raw<{ cnt: number }>(
+      `SELECT COUNT(DISTINCT chapter_id) AS cnt FROM words`,
     ),
   )
-  const verseWords = chapterWords.flat()
+  return rows[0]?.cnt ?? 0
+}
+
+async function chapterHasWords(chapterId: number): Promise<boolean> {
+  const rows = unpackIPC(
+    await repo.words.raw<{ cnt: number }>(
+      `SELECT COUNT(*) AS cnt FROM words WHERE chapter_id = ${chapterId}`,
+    ),
+  )
+  return (rows[0]?.cnt ?? 0) > 0
+}
+
+interface VerseWord {
+  id: string
+  word: string
+  trans: string
+  root: string
+}
+
+function fetchChapterVerseWords(chapterNumber: number): Promise<VerseWord[]> {
+  return FingerprintedAsset.Quran.getVerseRendering<VerseWord[]>(
+    Rendering.Imlaei,
+    chapterNumber,
+  )
+}
+
+/**
+ * Seed one chapter's words (and any roots/lexemes it introduces). Idempotent
+ * — a chapter that already has words is skipped, so this is safe to call
+ * again for a chapter left over from an interrupted background seed.
+ */
+async function seedChapterVerses(
+  chapterNumber: number,
+  chapters: Record<number, ChapterRecord>,
+  verseWords: VerseWord[],
+): Promise<void> {
+  if (verseWords.length === 0) return
+  if (await chapterHasWords(chapterNumber)) return
+
+  const name = Rendering.Imlaei
+  const existingRendering = unpackIPC(await repo.renderings.findAllBy({ name }))
+  const rendering =
+    existingRendering.length === 1
+      ? existingRendering[0]
+      : unpackIPC(await repo.renderings.create({ name }))
 
   // ------------------------------------------------------------
   // PASS 1
-  // collect unique roots + lexemes
+  // collect unique roots + lexemes for this chapter
   // ------------------------------------------------------------
 
   const uniqueRoots: Record<string, RootRecord | NewRootRecord> = {}
@@ -153,7 +233,6 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
   for (const root of rootTokens)
     if (rootCache[root] == null) missingRoots.push({ root })
 
-  // create the root words in bulk
   LOGGER.debug(`${missingRoots.length} root words to create in batch`)
   for (let i = 0; i < missingRoots.length; i += BATCH_SIZE) {
     const batch = missingRoots.slice(i, i + BATCH_SIZE)
@@ -210,84 +289,66 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
 
   // ------------------------------------------------------------
   // PASS 2
-  // insert words
+  // insert this chapter's words
   // ------------------------------------------------------------
 
-  async function insertChapterWords(
-    verseWords: VerseWord[],
-    chapterId: number,
-    chapters: Record<number, ChapterRecord>,
-    lexemeCache: Record<string, LexemeRecord>,
-    rendering: RenderingRecord,
-  ) {
-    // All 114 calls are fired synchronously via `.map()` below; yielding
-    // first means each call suspends immediately instead of running its
-    // synchronous verseMap-building work back-to-back with the other 113.
-    await pause(0)
+  await insertChapterWords(verseWords, chapterNumber, chapters, lexemeCache, rendering)
+}
 
-    LOGGER.debug(`Chapter ${chapterId}: ${verseWords.length} source words`)
-    const renderingId = rendering.id
-    const chapter = chapters[chapterId]
+async function insertChapterWords(
+  verseWords: VerseWord[],
+  chapterId: number,
+  chapters: Record<number, ChapterRecord>,
+  lexemeCache: Record<string, LexemeRecord>,
+  rendering: RenderingRecord,
+) {
+  LOGGER.debug(`Chapter ${chapterId}: ${verseWords.length} source words`)
+  const renderingId = rendering.id
+  const chapter = chapters[chapterId]
 
-    // Group source words by verse, preserving encounter order as word order.
-    const verseMap = new Map<
-      number,
-      { lexemeIds: number[]; partNumber: number }
-    >()
-    for (const v of verseWords) {
-      const [, verse] = v.id.split(":").map(Number)
-      if (!verseMap.has(verse)) {
-        const partNumber = chapter.partitioning.find(
-          (p) => verse >= p.start && verse <= p.end,
-        )!.part
-        verseMap.set(verse, { lexemeIds: [], partNumber })
-      }
-      verseMap.get(verse)!.lexemeIds.push(lexemeCache[v.word].id)
+  // Group source words by verse, preserving encounter order as word order.
+  const verseMap = new Map<
+    number,
+    { lexemeIds: number[]; partNumber: number }
+  >()
+  for (let i = 0; i < verseWords.length; i++) {
+    const v = verseWords[i]
+    const [, verse] = v.id.split(":").map(Number)
+    if (!verseMap.has(verse)) {
+      const partNumber = chapter.partitioning.find(
+        (p) => verse >= p.start && verse <= p.end,
+      )!.part
+      verseMap.set(verse, { lexemeIds: [], partNumber })
     }
+    verseMap.get(verse)!.lexemeIds.push(lexemeCache[v.word].id)
 
-    const records: Partial<WordRecord>[] = Array.from(verseMap.entries()).map(
-      ([verse, { lexemeIds, partNumber }]) => ({
-        chapterId,
-        verse,
-        lexemeIds,
-        partNumber,
-        renderingId,
-      }),
-    )
-
-    for (let i = 0; i < records.length; i += BATCH_SIZE) {
-      const result = await repo.words.createBulk(
-        records.slice(i, i + BATCH_SIZE),
-      )
-      if (!result.succeed) {
-        console.error(`Failed inserting chapter ${chapterId}`, result.errors)
-        throw new Error(`Failed inserting chapter ${chapterId}`)
-      }
-      await pause(0)
-    }
-
-    LOGGER.debug(
-      `Done inserting chapter ${chapterId} (${rendering.name}), ${verseMap.size} verses`,
-    )
+    if (i % YIELD_EVERY === 0) await pause(0)
   }
 
-  await Promise.all(
-    chapterWords.map((words, index) =>
-      insertChapterWords(words, index + 1, chapters, lexemeCache, rendering),
-    ),
+  const records: Partial<WordRecord>[] = Array.from(verseMap.entries()).map(
+    ([verse, { lexemeIds, partNumber }]) => ({
+      chapterId,
+      verse,
+      lexemeIds,
+      partNumber,
+      renderingId,
+    }),
   )
 
-  const statsByChapter = await repo.words.raw(`
-    SELECT
-      chapter_id,
-      MAX(verse) AS max_verse,
-      COUNT(DISTINCT verse) AS verse_count,
-      SUM(json_array_length(lexeme_ids)) AS word_count
-    FROM words
-    GROUP BY chapter_id
-    ORDER BY chapter_id
-  `)
-  console.log("Chapter statistics", statsByChapter)
+  for (let i = 0; i < records.length; i += BATCH_SIZE) {
+    const result = await repo.words.createBulk(
+      records.slice(i, i + BATCH_SIZE),
+    )
+    if (!result.succeed) {
+      console.error(`Failed inserting chapter ${chapterId}`, result.errors)
+      throw new Error(`Failed inserting chapter ${chapterId}`)
+    }
+    await pause(0)
+  }
+
+  LOGGER.debug(
+    `Done inserting chapter ${chapterId} (${rendering.name}), ${verseMap.size} verses`,
+  )
 }
 
 export async function seedWordTranslations() {

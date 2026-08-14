@@ -20,8 +20,11 @@ import ErrorScreen from "./ui/fragments/ErrorScreen"
 import LoadingScreen from "./ui/fragments/LoadingScreen"
 import useChaptersState from "./ui/hooks/states/ChaptersState"
 import useUserSettingsState from "./ui/hooks/states/UserSettingsState"
+import useWordsState from "./ui/hooks/states/WordsState"
 import "./posthog"
 import { router } from "./ui/router"
+
+const TOTAL_CHAPTERS = 114
 
 // Plain localStorage read, no DB dependency. Runs before first render so the
 // real theme/locale apply immediately instead of after bootstrap finishes.
@@ -36,7 +39,7 @@ function AppRoot() {
     errors,
   } = useAppState()
   const {
-    userSettings: { theme, locale },
+    userSettings: { theme, locale, lastScroll },
   } = useUserSettingsState()
 
   // Parsed once on mount so the preview shell below can render immediately,
@@ -49,6 +52,14 @@ function AppRoot() {
     deepLink?.tafsirParam,
     deepLink?.transliterationParam,
     locale,
+  )
+
+  // The chapter to seed first, so the app becomes interactive without
+  // waiting for all 114 chapters: the deep link's chapter, falling back to
+  // the last-viewed chapter, then chapter 1.
+  const priorityChapterId = Math.min(
+    Math.max(deepLink?.chapterId || lastScroll.chapterId || 1, 1),
+    TOTAL_CHAPTERS,
   )
 
   // ensure the minimum data is in the database
@@ -75,14 +86,25 @@ function AppRoot() {
         setLoadingText("Setting up local storage...")
         await applyMigrations()
 
-        await seedData((progress) => {
-          if (progress === "verses") setLoadingText("Seeding verses...")
-          else if (progress === "paginations")
-            setLoadingText("Seeding paginations...")
-        })
+        await seedData(
+          (progress) => {
+            if (progress === "verses") setLoadingText("Seeding verses...")
+            else if (progress === "paginations")
+              setLoadingText("Seeding paginations...")
+          },
+          priorityChapterId,
+          (chapterId) => {
+            // A failure here only means that chapter's words don't show yet,
+            // not a fatal condition — log it rather than surfacing ErrorScreen.
+            useWordsState
+              .getState()
+              .loadWords(chapterId)
+              .catch((e) => console.error("Failed loading chapter words", e))
+          },
+        )
 
         setLoadingText("Loading chapters...")
-        loadChapters()
+        await loadChapters()
 
         setLoadingText("Preparing the layout...")
 
