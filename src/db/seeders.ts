@@ -39,8 +39,8 @@ export async function seedData(callback: (progress: SeedProgress) => void) {
   }
 
   callback("paginations")
-  await seedPaginations()
-  await persistDb()
+  const seededPaginations = await seedPaginations()
+  if (seededPaginations) await persistDb()
   saveFingerprints()
   LOGGER.debug("Return from seeding: done")
 }
@@ -273,9 +273,11 @@ export async function seedWordTranslations() {
   await ensureHasTranslation(WordTranslationOption.AmericanEnglish)
 }
 
-async function seedPaginations() {
+/** Returns whether any pagination style was actually (re-)seeded. */
+async function seedPaginations(): Promise<boolean> {
   LOGGER.debug("Seeding paginations")
   const pgStyles: PaginationStyle[] = Object.keys(Asset.paginationStyles)
+  let seededAny = false
 
   for (const style of pgStyles) {
     const existings = unpackIPC(
@@ -286,8 +288,11 @@ async function seedPaginations() {
     try {
       const pages = await FingerprintedAsset.Quran.getPaginationStyle(style)
       await repo.paginations.create({ name: style, pages })
+      seededAny = true
     } catch (e) {
       LOGGER.error(`Failed seeding pagination style ${style}`, e)
     }
   }
+
+  return seededAny
 }
