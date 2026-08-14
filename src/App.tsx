@@ -6,11 +6,16 @@ import { seedData } from "@db/seeders"
 import useAppState from "@hooks/states/AppState"
 import { loadMessages, resolveLocale } from "@i18n"
 import { I18nProvider } from "@i18n/provider"
+import {
+  parseExegesisDeepLink,
+  resolveExegesisSelection,
+} from "@services/Converter"
 import { Theme } from "@systatum/coneto/theme"
 import { RouterProvider } from "@tanstack/react-router"
 import { JSX, useEffect, useRef, useState } from "react"
 import "./App.css"
 import ErrorRescuer from "./ErrorRescuer"
+import ExegesisPreviewShell from "./ui/fragments/ExegesisPreviewShell"
 import ErrorScreen from "./ui/fragments/ErrorScreen"
 import LoadingScreen from "./ui/fragments/LoadingScreen"
 import useChaptersState from "./ui/hooks/states/ChaptersState"
@@ -31,8 +36,20 @@ function AppRoot() {
     errors,
   } = useAppState()
   const {
-    userSettings: { theme },
+    userSettings: { theme, locale },
   } = useUserSettingsState()
+
+  // Parsed once on mount so the preview shell below can render immediately,
+  // ahead of the DB bootstrap effect and without the router being mounted.
+  const [deepLink] = useState(() =>
+    parseExegesisDeepLink(window.location.hash),
+  )
+  // Harmless (all-undefined) when there's no deep link; only read when one exists.
+  const exegesisSelection = resolveExegesisSelection(
+    deepLink?.tafsirParam,
+    deepLink?.transliterationParam,
+    locale,
+  )
 
   // ensure the minimum data is in the database
   const boostrappedRef = useRef(false)
@@ -86,7 +103,19 @@ function AppRoot() {
 
   return (
     <Theme mode={theme}>
-      {(!isBootstrapped || !isFullyLoaded) && errors.length === 0 && (
+      {!isBootstrapped &&
+        errors.length === 0 &&
+        (deepLink ? (
+          <ExegesisPreviewShell
+            chapterId={deepLink.chapterId}
+            verseNumber={deepLink.verseNumber}
+            exegesisIdOverride={exegesisSelection.exegesisId}
+            showTransliterationOverride={exegesisSelection.showTransliteration}
+          />
+        ) : (
+          <LoadingScreen />
+        ))}
+      {isBootstrapped && !isFullyLoaded && errors.length === 0 && (
         <LoadingScreen />
       )}
       {isBootstrapped && errors.length === 0 && (
