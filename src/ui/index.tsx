@@ -1,11 +1,7 @@
-import {
-  Asset,
-  DEFAULT_FEED_EXEGESIS_WORK,
-  ExegesisWork,
-} from "@constants/assets"
 import useAppState from "@hooks/states/AppState"
 import usePaginationState from "@hooks/states/PaginationState"
 import useFirstVisibleVerse from "@hooks/tools/useFirstVisibleVerse"
+import { resolveExegesisSelection } from "@services/Converter"
 import {
   ScreenEntry,
   ScreenTransition,
@@ -114,23 +110,11 @@ export default function UIIndex({
 
     openedExegesisForRef.current = target
 
-    const tafsirParam =
-      search.tafsir != null ? String(search.tafsir) : undefined
-    const exegesisId = tafsirParam
-      ? Asset.resolveExegesisId(
-          ExegesisWork.isValid(tafsirParam)
-            ? tafsirParam
-            : DEFAULT_FEED_EXEGESIS_WORK,
-          locale,
-        )
-      : undefined
-    const showTransliteration =
-      String(search.transliteration) === "1" ? true : undefined
-
-    openExegesis(chapterId, verseNumber, {
-      exegesisId: exegesisId ?? undefined,
-      showTransliteration,
-    })
+    openExegesis(
+      chapterId,
+      verseNumber,
+      resolveExegesisSelection(search.tafsir, search.transliteration, locale),
+    )
   }, [
     openExegesisOnMount,
     chapterId,
