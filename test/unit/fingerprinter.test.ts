@@ -1,7 +1,6 @@
 import { FingerprintedAsset } from "@services/fingerprinter"
 
-// URLs deliberately outside of `${basePath}/quran/` so `readJson` skips the
-// fingerprint-recording path (which would otherwise fetch fingerprints.json).
+// Outside `${basePath}/quran/` so `readJson` skips fingerprint recording.
 const ASSET_URL = "https://example.test/not-quran-asset.json"
 
 function mockFetchOk(payload: unknown) {
@@ -48,7 +47,7 @@ describe("FingerprintedAsset", () => {
         expect(global.fetch).toHaveBeenCalledTimes(1)
       })
 
-      it("does not poison the cache on failure — a later call retries", async () => {
+      it("does not poison the cache on failure, so a later call retries", async () => {
         const url = `${ASSET_URL}?retry`
         global.fetch = jest
           .fn()

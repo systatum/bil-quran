@@ -18,9 +18,12 @@ import useUserSettingsState from "./ui/hooks/states/UserSettingsState"
 import "./posthog"
 import { router } from "./ui/router"
 
+// Plain localStorage read, no DB dependency. Runs before first render so the
+// real theme/locale apply immediately instead of after bootstrap finishes.
+useUserSettingsState.getState().restoreState()
+
 function AppRoot() {
   const { loadChapters } = useChaptersState()
-  const { restoreState } = useUserSettingsState()
   const {
     setLoadingText,
     isVersesLoaded: isFullyLoaded,
@@ -71,7 +74,6 @@ function AppRoot() {
           ;(window as any).__repo = repo
         }
 
-        restoreState()
         setIsBootstrapped(true)
       } catch (e) {
         console.error("Error preparing application", e)

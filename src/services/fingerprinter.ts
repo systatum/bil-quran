@@ -18,12 +18,7 @@ const fingerprintsPath = `${quranBasePath}fingerprints.json`
 let remoteFingerprintsPromise: Promise<NotarizedAsset | null> | null = null
 const readFingerprints: NotarizedAsset = {}
 
-/**
- * In-memory cache of in-flight/resolved `readJson` calls, keyed by resolved
- * asset URL. Lets unrelated code paths that happen to request the same asset
- * during a single page load (e.g. a fast preview and the full DB seeding
- * pass) share one network round trip instead of each fetching it themselves.
- */
+/** Dedupes concurrent/repeat `readJson` calls for the same URL within a page load. */
 const assetJsonCache = new Map<AssetPath, Promise<unknown>>()
 
 export class FingerprintedAsset {
@@ -82,8 +77,7 @@ export class FingerprintedAsset {
     })()
 
     assetJsonCache.set(assetPath, promise)
-    // Don't let a failed fetch permanently poison the cache — a later retry
-    // (e.g. after the network recovers) should be able to fetch again.
+    // Evict on failure so a later retry can still fetch.
     promise.catch(() => assetJsonCache.delete(assetPath))
 
     return promise as Promise<T>
