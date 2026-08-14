@@ -66,6 +66,9 @@ export default function Title({
     case ContentType.ProstrationVersesDetail:
       title = formatMessage({ id: messages.sajdah.about.entryTitle })
       break
+    case ContentType.PrivacyPolicy:
+      title = formatMessage({ id: messages.privacyPolicy.title })
+      break
   }
 
   return (

@@ -6,6 +6,11 @@
   "scripts": {
     "prestart": "pnpm run split-chapter",
     "start": "craco start",
+    "start:android": "cap run android",
+    "start:ios": "cap run ios",
+    "build:mobile:android": "pnpm run build && pnpm run predeploy && cap sync android",
+    "build:android:apk": "pnpm build:mobile:android && cd android && ./gradlew assembleRelease",
+    "build:android:aab": "pnpm build:mobile:android && cd android && ./gradlew bundleRelease",
     "build": "craco build && node scripts/inject-build-info.js",
     "test": "pnpm run test:unit && pnpm run test:e2e",
     "test:unit": "craco test --watchAll=false --passWithNoTests",
@@ -20,6 +25,11 @@
     "split-chapter": "node scripts/split-chapter.js"
   },
   "dependencies": {
+    "@capacitor/android": "^8.3.4",
+    "@capacitor/cli": "^8.3.4",
+    "@capacitor/core": "^8.3.4",
+    "@capacitor/haptics": "^8.0.2",
+    "@electric-sql/pglite": "^0.4.5",
     "@posthog/react": "^1.10.3",
     "@remixicon/react": "^4.9.0",
     "@systatum/coneto": "file:./../coneto",
@@ -35,7 +45,6 @@
     "@types/react-dom": "^19.2.3",
     "drizzle-orm": "^0.45.2",
     "idb-keyval": "^6.2.4",
-    "ios-haptics": "^0.1.5",
     "marked": "^18.0.5",
     "nanoid": "^5.1.11",
     "posthog-js": "^1.408.1",

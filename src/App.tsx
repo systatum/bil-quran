@@ -98,7 +98,7 @@ function AppRoot() {
 /**
  * Register fonts available
  */
-const FONT_ASSETS_BASE_URL = "https://assets.bil-quran.com/fonts"
+const FONT_ASSETS_BASE_URL = "/fonts"
 export function registerFonts(): void {
   const css = Object.entries(ArabicFonts)
     .map(([fontId, { relativePath }]) => {

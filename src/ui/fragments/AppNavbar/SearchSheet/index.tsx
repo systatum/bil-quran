@@ -42,7 +42,25 @@ const Wrapper = styled.div<{
   left: 0;
   right: 0;
 
-  background: ${({ theme }) => (theme === "dark" ? "#22271b" : "#f6f1e7")};
+  background: ${({ theme }) =>
+    theme === "dark" ? "rgba(34, 39, 27, 0.55)" : "rgba(246, 241, 231, 0.55)"};
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+
+  box-shadow:
+    /* subtle top highlight, glass edge */
+    inset 0 1px 0
+      ${({ theme }) =>
+        theme === "dark"
+          ? "rgba(255, 255, 255, 0.06)"
+          : "rgba(255, 255, 255, 0.5)"},
+    /* recessed inset — separates sheet from paper behind it */ inset 0 2px 6px
+      ${({ theme }) =>
+        theme === "dark" ? "rgba(0, 0, 0, 0.35)" : "rgba(96, 78, 51, 0.14)"},
+    inset 0 0 0 1px ${({ theme }) => (theme === "dark" ? "#4a453a" : "#c9bc9f")},
+    /* lift off the background so it doesn't blend */ 0 10px 20px -8px
+      ${({ theme }) =>
+        theme === "dark" ? "rgba(0, 0, 0, 0.6)" : "rgba(0, 0, 0, 0.2)"};
 
   padding: 16px;
   padding-top: 0px;
