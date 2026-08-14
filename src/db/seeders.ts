@@ -11,8 +11,14 @@ import { repo } from "@db/repo/index"
 import { unpackIPC } from "@services/Converter"
 import { FingerprintedAsset, saveFingerprints } from "@services/fingerprinter"
 import LOGGER from "@services/Logger"
+import { pause } from "@services/mutator"
 import { ensureHasTranslation } from "@services/translations"
 import { persistDb } from "./driver"
+
+// sql.js runs SQLite synchronously on the main thread with no worker, so a
+// long loop here blocks input/paint for its full duration. Yielding every
+// YIELD_EVERY iterations keeps the app responsive while seeding runs.
+const YIELD_EVERY = 2000
 
 // This module handle adding data to the database, especially
 // for the very first time. This should only be called after
@@ -105,7 +111,9 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
   const uniqueRoots: Record<string, RootRecord | NewRootRecord> = {}
   const uniqueLexemes: Record<string, NewLexemeRecord> = {}
 
-  for (const v of verseWords) {
+  for (let i = 0; i < verseWords.length; i++) {
+    const v = verseWords[i]
+
     if (uniqueRoots[v.root] == null)
       uniqueRoots[v.root] = {
         root: v.root,
@@ -120,6 +128,8 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
         rootId: 0,
         root: {} as RootRecord,
       }
+
+    if (i % YIELD_EVERY === 0) await pause(0)
   }
 
   // ------------------------------------------------------------
@@ -155,14 +165,17 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
   // attach resolved roots to lexemes
   // ------------------------------------------------------------
 
-  for (const v of verseWords) {
+  for (let i = 0; i < verseWords.length; i++) {
+    const v = verseWords[i]
     const lexeme = uniqueLexemes[v.word]
 
-    if (lexeme.rootId !== 0) continue
+    if (lexeme.rootId === 0) {
+      const root = rootCache[v.root]
+      lexeme.rootId = root.id
+      lexeme.root = root
+    }
 
-    const root = rootCache[v.root]
-    lexeme.rootId = root.id
-    lexeme.root = root
+    if (i % YIELD_EVERY === 0) await pause(0)
   }
 
   // ------------------------------------------------------------
