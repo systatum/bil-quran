@@ -21,6 +21,10 @@ import { persistDb } from "./driver"
 const YIELD_EVERY = 2000
 const BATCH_SIZE = 1000
 
+// so that an interruption only loses a few chapters' worth of
+// work, not the whole background pass.
+const PERSIST_EVERY_CHAPTERS = 15
+
 // This module handle adding data to the database, especially
 // for the very first time. This should only be called after
 // the database is freshly created, and migration scripts
@@ -95,9 +99,12 @@ async function seedRemainingChapters(
     })),
   )
 
-  for (const { chapterId, verseWords } of fetched) {
+  for (let i = 0; i < fetched.length; i++) {
+    const { chapterId, verseWords } = fetched[i]
     await seedChapterVerses(chapterId, chapters, verseWords)
     onChapterReady(chapterId)
+
+    if ((i + 1) % PERSIST_EVERY_CHAPTERS === 0) await persistDb()
     await pause(0)
   }
 
@@ -217,8 +224,10 @@ async function seedChapterVerses(
   // ------------------------------------------------------------
 
   const rootTokens = Object.keys(uniqueRoots)
-  const existingRoots = await queryInChunks(rootTokens, BATCH_SIZE, async (chunk) =>
-    unpackIPC(await repo.roots.findAllBy({ roots: chunk })),
+  const existingRoots = await queryInChunks(
+    rootTokens,
+    BATCH_SIZE,
+    async (chunk) => unpackIPC(await repo.roots.findAllBy({ roots: chunk })),
   )
 
   const rootCache: Record<string, RootRecord> = {}
@@ -263,8 +272,10 @@ async function seedChapterVerses(
   // ------------------------------------------------------------
 
   const tokens = Object.keys(uniqueLexemes)
-  const existingLexemes = await queryInChunks(tokens, BATCH_SIZE, async (chunk) =>
-    unpackIPC(await repo.lexemes.findAllBy({ tokens: chunk })),
+  const existingLexemes = await queryInChunks(
+    tokens,
+    BATCH_SIZE,
+    async (chunk) => unpackIPC(await repo.lexemes.findAllBy({ tokens: chunk })),
   )
 
   const lexemeCache: Record<string, LexemeRecord> = {}
@@ -292,7 +303,13 @@ async function seedChapterVerses(
   // insert this chapter's words
   // ------------------------------------------------------------
 
-  await insertChapterWords(verseWords, chapterNumber, chapters, lexemeCache, rendering)
+  await insertChapterWords(
+    verseWords,
+    chapterNumber,
+    chapters,
+    lexemeCache,
+    rendering,
+  )
 }
 
 async function insertChapterWords(
@@ -336,9 +353,7 @@ async function insertChapterWords(
   )
 
   for (let i = 0; i < records.length; i += BATCH_SIZE) {
-    const result = await repo.words.createBulk(
-      records.slice(i, i + BATCH_SIZE),
-    )
+    const result = await repo.words.createBulk(records.slice(i, i + BATCH_SIZE))
     if (!result.succeed) {
       console.error(`Failed inserting chapter ${chapterId}`, result.errors)
       throw new Error(`Failed inserting chapter ${chapterId}`)
