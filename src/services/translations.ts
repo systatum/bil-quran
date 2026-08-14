@@ -7,6 +7,7 @@ import { repo } from "@db/repo"
 import { unpackIPC } from "./Converter"
 import { FingerprintedAsset, saveFingerprints } from "./fingerprinter"
 import LOGGER from "./Logger"
+import { pause } from "./mutator"
 
 /**
  * Promises by locale. This record keeping is to de-duplicate
@@ -41,6 +42,9 @@ export async function ensureHasTranslation(locale: WordTranslationOption) {
       if (batch.length === 0) return
       unpackIPC(await repo.wbwTranslations.createBulk(batch))
       batch = []
+      // sql.js runs synchronously with no worker; yield so this loop
+      // doesn't block input/paint for its full duration.
+      await pause(0)
     }
 
     for (const [loc, meaning] of Object.entries(translations)) {

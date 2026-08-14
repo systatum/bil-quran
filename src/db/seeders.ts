@@ -19,6 +19,25 @@ import { persistDb } from "./driver"
 // long loop here blocks input/paint for its full duration. Yielding every
 // YIELD_EVERY iterations keeps the app responsive while seeding runs.
 const YIELD_EVERY = 2000
+const BATCH_SIZE = 1000
+
+/**
+ * Runs `queryChunk` over `items` in BATCH_SIZE-sized pieces, yielding between
+ * each. A single query with thousands of `IN (...)` params is one atomic
+ * sql.js call that can't be interrupted, so the chunking has to happen here
+ * rather than around the call.
+ */
+async function queryInChunks<TItem, TResult>(
+  items: TItem[],
+  queryChunk: (chunk: TItem[]) => Promise<TResult[]>,
+): Promise<TResult[]> {
+  const results: TResult[] = []
+  for (let i = 0; i < items.length; i += BATCH_SIZE) {
+    results.push(...(await queryChunk(items.slice(i, i + BATCH_SIZE))))
+    await pause(0)
+  }
+  return results
+}
 
 // This module handle adding data to the database, especially
 // for the very first time. This should only be called after
@@ -83,7 +102,6 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
     root: string
   }
 
-  const BATCH_SIZE = 1000
   const name = Rendering.Imlaei
 
   // if there's already an Imlaei rendering, no need to create a new one
@@ -137,8 +155,8 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
   // ------------------------------------------------------------
 
   const rootTokens = Object.keys(uniqueRoots)
-  const existingRoots = unpackIPC(
-    await repo.roots.findAllBy({ roots: rootTokens }),
+  const existingRoots = await queryInChunks(rootTokens, async (chunk) =>
+    unpackIPC(await repo.roots.findAllBy({ roots: chunk })),
   )
 
   const rootCache: Record<string, RootRecord> = {}
@@ -159,6 +177,7 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
     const batch = missingRoots.slice(i, i + BATCH_SIZE)
     const created = unpackIPC(await repo.roots.createBulk(batch))
     for (const root of created) rootCache[root.root] = root
+    await pause(0)
   }
 
   // ------------------------------------------------------------
@@ -183,8 +202,8 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
   // ------------------------------------------------------------
 
   const tokens = Object.keys(uniqueLexemes)
-  const existingLexemes = unpackIPC(
-    await repo.lexemes.findAllBy({ tokens: tokens }),
+  const existingLexemes = await queryInChunks(tokens, async (chunk) =>
+    unpackIPC(await repo.lexemes.findAllBy({ tokens: chunk })),
   )
 
   const lexemeCache: Record<string, LexemeRecord> = {}
@@ -204,6 +223,7 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
     const batch = missingLexemes.slice(i, i + BATCH_SIZE)
     const created = unpackIPC(await repo.lexemes.createBulk(batch))
     for (const lex of created) lexemeCache[lex.token] = lex
+    await pause(0)
   }
 
   // ------------------------------------------------------------
@@ -218,6 +238,11 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
     lexemeCache: Record<string, LexemeRecord>,
     rendering: RenderingRecord,
   ) {
+    // All 114 calls are fired synchronously via `.map()` below; yielding
+    // first means each call suspends immediately instead of running its
+    // synchronous verseMap-building work back-to-back with the other 113.
+    await pause(0)
+
     LOGGER.debug(`Chapter ${chapterId}: ${verseWords.length} source words`)
     const renderingId = rendering.id
     const chapter = chapters[chapterId]
@@ -256,6 +281,7 @@ async function seedVerses(chapters: Record<number, ChapterRecord>) {
         console.error(`Failed inserting chapter ${chapterId}`, result.errors)
         throw new Error(`Failed inserting chapter ${chapterId}`)
       }
+      await pause(0)
     }
 
     LOGGER.debug(
@@ -305,6 +331,8 @@ async function seedPaginations(): Promise<boolean> {
     } catch (e) {
       LOGGER.error(`Failed seeding pagination style ${style}`, e)
     }
+
+    await pause(0)
   }
 
   return seededAny
