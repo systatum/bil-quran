@@ -18,6 +18,14 @@ const fingerprintsPath = `${quranBasePath}fingerprints.json`
 let remoteFingerprintsPromise: Promise<NotarizedAsset | null> | null = null
 const readFingerprints: NotarizedAsset = {}
 
+/**
+ * In-memory cache of in-flight/resolved `readJson` calls, keyed by resolved
+ * asset URL. Lets unrelated code paths that happen to request the same asset
+ * during a single page load (e.g. a fast preview and the full DB seeding
+ * pass) share one network round trip instead of each fetching it themselves.
+ */
+const assetJsonCache = new Map<AssetPath, Promise<unknown>>()
+
 export class FingerprintedAsset {
   static Quran = {
     getChaptersMetadata: async <T>(): Promise<T> => {
@@ -60,13 +68,25 @@ export class FingerprintedAsset {
   static async readJson<T>(assetPath: string): Promise<T> {
     await recordRead(assetPath)
 
-    const response = await fetch(assetPath, { cache: "no-cache" })
-    if (!response.ok) {
-      LOGGER.error(`Unable to load asset: ${assetPath}`)
-      throw new Error(`Unable to load asset: ${assetPath}`)
-    }
+    const cached = assetJsonCache.get(assetPath)
+    if (cached) return cached as Promise<T>
 
-    return response.json()
+    const promise = (async () => {
+      const response = await fetch(assetPath, { cache: "no-cache" })
+      if (!response.ok) {
+        LOGGER.error(`Unable to load asset: ${assetPath}`)
+        throw new Error(`Unable to load asset: ${assetPath}`)
+      }
+
+      return response.json()
+    })()
+
+    assetJsonCache.set(assetPath, promise)
+    // Don't let a failed fetch permanently poison the cache — a later retry
+    // (e.g. after the network recovers) should be able to fetch again.
+    promise.catch(() => assetJsonCache.delete(assetPath))
+
+    return promise as Promise<T>
   }
 }
 
