@@ -47,11 +47,17 @@ function AppRoot() {
   const [deepLink] = useState(() =>
     parseExegesisDeepLink(window.location.hash),
   )
+  // ?locale= overrides which locale the exegesis/transliteration resolve
+  // against for this deep link only; it never touches the persisted setting.
+  const deepLinkLocale = deepLink?.localeParam
+    ? resolveLocale(deepLink.localeParam)
+    : locale
+
   // Harmless (all-undefined) when there's no deep link; only read when one exists.
   const exegesisSelection = resolveExegesisSelection(
     deepLink?.tafsirParam,
     deepLink?.transliterationParam,
-    locale,
+    deepLinkLocale,
   )
 
   // The chapter to seed first, so the app becomes interactive without

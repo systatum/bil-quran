@@ -88,6 +88,7 @@ export interface ExegesisDeepLink {
   verseNumber: number
   tafsirParam?: string
   transliterationParam?: string
+  localeParam?: string
 }
 
 /** Parses an `#/e/:chapter/:verse` hash without needing the router mounted. */
@@ -103,6 +104,7 @@ export function parseExegesisDeepLink(hash: string): ExegesisDeepLink | null {
     verseNumber: Number(verse),
     tafsirParam: params.get("tafsir") ?? undefined,
     transliterationParam: params.get("transliteration") ?? undefined,
+    localeParam: params.get("locale") ?? undefined,
   }
 }
 

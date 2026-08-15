@@ -1,6 +1,7 @@
 import useAppState from "@hooks/states/AppState"
 import usePaginationState from "@hooks/states/PaginationState"
 import useFirstVisibleVerse from "@hooks/tools/useFirstVisibleVerse"
+import { resolveLocale } from "@i18n"
 import { resolveExegesisSelection } from "@services/Converter"
 import {
   ScreenEntry,
@@ -108,13 +109,19 @@ export default function UIIndex({
   const verseNumber = params.verse ? parseInt(params.verse) : null
   const search = useSearch({ strict: false })
 
+  // ?locale= overrides which locale the exegesis/transliteration resolve
+  // against for this deep link only, same as ?tafsir=/?transliteration=; it
+  // never touches the user's persisted locale setting.
+  const localeOverride =
+    search.locale != null ? resolveLocale(String(search.locale)) : locale
+
   const openExegesis = usePaperDialogState((s) => s.openExegesis)
   const openedExegesisForRef = useRef<string | null>(null)
   useEffect(() => {
     if (!openExegesisOnMount) return
     if (chapterId == null || verseNumber == null) return
 
-    const target = `${chapterId}:${verseNumber}:${search.tafsir}:${search.transliteration}`
+    const target = `${chapterId}:${verseNumber}:${search.tafsir}:${search.transliteration}:${localeOverride}`
     if (openedExegesisForRef.current === target) return
 
     openedExegesisForRef.current = target
@@ -122,7 +129,11 @@ export default function UIIndex({
     openExegesis(
       chapterId,
       verseNumber,
-      resolveExegesisSelection(search.tafsir, search.transliteration, locale),
+      resolveExegesisSelection(
+        search.tafsir,
+        search.transliteration,
+        localeOverride,
+      ),
     )
   }, [
     openExegesisOnMount,
@@ -130,7 +141,7 @@ export default function UIIndex({
     verseNumber,
     search.tafsir,
     search.transliteration,
-    locale,
+    localeOverride,
     openExegesis,
   ])
 

@@ -39,6 +39,18 @@ describe("Converter", () => {
     it("returns null for a non-numeric chapter or verse", () => {
       expect(parseExegesisDeepLink("#/e/abc/7")).toBeNull()
     })
+
+    it("parses a locale override", () => {
+      expect(
+        parseExegesisDeepLink("#/e/10/104?tafsir=ibnkathir&locale=id-ID"),
+      ).toEqual({
+        chapterId: 10,
+        verseNumber: 104,
+        tafsirParam: "ibnkathir",
+        transliterationParam: undefined,
+        localeParam: "id-ID",
+      })
+    })
   })
 
   describe("resolveExegesisSelection", () => {

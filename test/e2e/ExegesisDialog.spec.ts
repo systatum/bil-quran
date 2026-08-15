@@ -785,5 +785,25 @@ test.describe("ExegesisDialog", () => {
         dialog.locator('[data-testid="word-transliteration"]').first(),
       ).toBeVisible({ timeout: 5000 })
     })
+
+    test("?locale= resolves exegesis for that locale without touching saved settings", async ({
+      page,
+    }) => {
+      await visitFresh(page)
+
+      await page.goto("/#/e/1/1?tafsir=ibnkathir&locale=id-ID")
+      await untilUsable(page)
+      const dialog = await getPaperDialog(page)
+      await expect(dialog).toBeVisible()
+      // No exegesis source has an Indonesian variant yet, so this still
+      // resolves to the English text, but by going through the id-ID
+      // override rather than the app's current locale setting.
+      await expect(dialog.getByText(/Tafsir Ibn Kathir/i)).toBeVisible()
+
+      const settings = await page.evaluate(() =>
+        JSON.parse(localStorage.getItem("userSettings") || "{}"),
+      )
+      expect(settings.locale).not.toBe("id-ID")
+    })
   })
 })

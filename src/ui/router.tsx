@@ -38,6 +38,7 @@ const exegesisRoute = createRoute({
   validateSearch: (search: Record<string, unknown>) => ({
     tafsir: search.tafsir,
     transliteration: search.transliteration,
+    locale: search.locale,
   }),
   component: () => <UIIndex openExegesisOnMount />,
 })
