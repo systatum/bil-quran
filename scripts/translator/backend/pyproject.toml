@@ -1,0 +1,38 @@
+[project]
+name = "Backend"
+version = "0.1.0"
+description = "Translation web-service backend"
+readme = "README.md"
+authors = [{ name = "SeeStarz", email = "mfahrim7@gmail.com" }]
+requires-python = ">=3.11,<3.12" # Doesn't actually pin the python version
+dependencies = [
+    "shared",
+    "fastapi[standard]>=0.141.1",
+    "llama-cpp-python==0.3.34",
+    "torch==2.12.1+cu132",
+    "unbabel-comet>=2.2.7",
+]
+
+[tool.uv.sources]
+torch = { index = "pytorch" }
+llama-cpp-python = { index = "llama-cpp-python" }
+shared = { workspace = true }
+
+[[tool.uv.index]]
+name = "llama-cpp-python"
+url = "https://abetlen.github.io/llama-cpp-python/whl/cu132"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cu132"
+
+[dependency-groups]
+heavy = ["llama-cpp-python==0.3.34", "torch==2.12.1+cu132"]
+
+[build-system]
+requires = ["uv_build>=0.12.0,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = "."

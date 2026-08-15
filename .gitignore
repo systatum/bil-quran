@@ -40,8 +40,8 @@ scripts/quran_audio_uploader/**/except_*.txt
 scripts/translator/**/.ipynb_checkpoints
 scripts/translator/**/__pycache__
 scripts/translator/**/.virtual_documents
-scripts/translator/mount
-scripts/translator/.runpod-*
-scripts/translator/.venv
-scripts/translator/results
+scripts/translator/backend/mount
 scripts/translator/proxy/Caddyfile
+scripts/translator/frontend/results
+scripts/translator/.env
+scripts/translator/.venv
