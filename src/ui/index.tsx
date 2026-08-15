@@ -5,6 +5,7 @@ import { resolveExegesisSelection } from "@services/Converter"
 import {
   ScreenEntry,
   ScreenTransition,
+  ScreenTransitionRef,
 } from "@systatum/coneto/screen-transition"
 import { useMatchRoute, useParams, useSearch } from "@tanstack/react-router"
 import { useEffect, useMemo, useRef } from "react"
@@ -19,7 +20,9 @@ import { Import } from "./fragments/AppNavbar/Sidebar/Import"
 import QuranPaper from "./fragments/QuranPaper"
 import ExegesisPaperDialogContent from "./fragments/QuranPaper/VerseRow/ExegesisPaperDialogContent"
 import { LexemeDetailPaperDialog } from "./fragments/QuranPaper/VerseRow/LexemeDetailPaperDialog"
-import usePaperDialogState from "./hooks/states/PaperDialogState"
+import usePaperDialogState, {
+  registerScreenReopenNotifier,
+} from "./hooks/states/PaperDialogState"
 import useUserSettingsState from "./hooks/states/UserSettingsState"
 import PrivacyPolicy from "./fragments/About/PrivacyPolicy"
 import useExegesisOptions from "@hooks/tools/useExegesisOptions"
@@ -91,6 +94,12 @@ export default function UIIndex({
   const { loadPagination } = usePaginationState()
   useEffect(() => {
     loadPagination()
+  }, [])
+
+  const screenTransitionRef = useRef<ScreenTransitionRef>(null)
+  useEffect(() => {
+    registerScreenReopenNotifier((key) => screenTransitionRef.current?.reopen(key))
+    return () => registerScreenReopenNotifier(null)
   }, [])
 
   // read params
@@ -214,6 +223,7 @@ export default function UIIndex({
       />
 
       <ScreenTransition
+        ref={screenTransitionRef}
         screens={SCREENS}
         activeScreens={activeScreens}
         onScreenChange={(activeScreens) => {
