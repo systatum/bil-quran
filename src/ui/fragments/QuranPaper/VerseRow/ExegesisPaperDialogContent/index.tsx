@@ -98,15 +98,12 @@ export default function ExegesisPaperDialogContent() {
   const showTransliteration =
     transliterationOverride ?? userSettings.showTransliteration
 
-  const rawWords = useWords()
+  const rawWords = useWords(activeChapter)
   const words = useTranslatedWords(rawWords, userSettings.wbwTranslations)
 
   const verseWords = useMemo(
-    () =>
-      words.filter(
-        (w) => w.chapterId === activeChapter && w.verse === activeVerse,
-      ),
-    [words, activeChapter, activeVerse],
+    () => words.filter((w) => w.verse === activeVerse),
+    [words, activeVerse],
   )
 
   const maxVerse = useMemo(() => {

@@ -20,6 +20,11 @@ const useWordsState = create<WordsState>((set, get) => ({
     if (get().loadedChapters.has(chapterId)) return
 
     const chapterWords = unpackIPC(await repo.words.all({ chapterId }))
+    // Don't cache as loaded if empty — the chapter may just not be
+    // background-seeded yet, and a later call should retry rather than be
+    // stuck believing it has no words.
+    if (chapterWords.length === 0) return
+
     set((s) => ({
       words: [...s.words, ...chapterWords],
       loadedChapters: new Set(s.loadedChapters).add(chapterId),
