@@ -32,6 +32,21 @@ const PERSIST_EVERY_CHAPTERS = 15
 
 type SeedProgress = "verses" | "paginations"
 
+let writeLock: Promise<unknown> = Promise.resolve()
+
+/**
+ * Runs fn only after every previously queued chapter write has settled, and
+ * becomes what the next call waits on. seedChapterVerses's check-then-insert
+ * dedup for roots/lexemes is only race-free when writes never overlap; this
+ * is the one place that's enforced, shared by the background loop and any
+ * on-demand request.
+ */
+function withWriteLock<T>(fn: () => Promise<T>): Promise<T> {
+  const result = writeLock.then(fn, fn)
+  writeLock = result.catch(() => {})
+  return result
+}
+
 /**
  * Seed the app with minimal data so that it can work. Seeds only
  * `priorityChapterId`'s verses before returning, so the caller can make the
@@ -56,7 +71,9 @@ export async function seedData(
 
   if (needVerseSeeding) {
     const priorityWords = await fetchChapterVerseWords(priorityChapterId)
-    await seedChapterVerses(priorityChapterId, chapters, priorityWords)
+    await withWriteLock(() =>
+      seedChapterVerses(priorityChapterId, chapters, priorityWords),
+    )
     onChapterReady(priorityChapterId)
     await persistDb()
 
@@ -101,7 +118,7 @@ async function seedRemainingChapters(
 
   for (let i = 0; i < fetched.length; i++) {
     const { chapterId, verseWords } = fetched[i]
-    await seedChapterVerses(chapterId, chapters, verseWords)
+    await withWriteLock(() => seedChapterVerses(chapterId, chapters, verseWords))
     onChapterReady(chapterId)
 
     if ((i + 1) % PERSIST_EVERY_CHAPTERS === 0) await persistDb()
@@ -154,6 +171,24 @@ async function chapterHasWords(chapterId: number): Promise<boolean> {
     ),
   )
   return (rows[0]?.cnt ?? 0) > 0
+}
+
+/**
+ * Seeds one chapter right away instead of waiting for the background pass to
+ * reach it, e.g. when the user jumps to a verse in a chapter that hasn't
+ * seeded yet. Shares `withWriteLock` with the background loop, so this never
+ * runs concurrently with it; shares `fetchChapterVerseWords`'s underlying
+ * `readJson` cache, so if the background loop is already fetching this same
+ * chapter's JSON, this reuses that request instead of firing a second one.
+ */
+export async function ensureChapterSeeded(
+  chapterId: number,
+  chapters: Record<number, ChapterRecord>,
+): Promise<void> {
+  if (await chapterHasWords(chapterId)) return
+
+  const verseWords = await fetchChapterVerseWords(chapterId)
+  await withWriteLock(() => seedChapterVerses(chapterId, chapters, verseWords))
 }
 
 interface VerseWord {
