@@ -1,0 +1,6 @@
+proxy/
+frontend/
+backend/mount/
+
+.venv/
+**/__pycache__

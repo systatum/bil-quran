@@ -2,7 +2,9 @@ services:
   translator:
     image: seestarz/bil-quran_translator
     container_name: bil-quran_translator
-    build: .
+    build:
+      dockerfile: ./backend/Dockerfile
+      context: ../
     volumes:
       - ${COMPOSE_VOLUME:-./mount}:/workspace:rw
     ports:

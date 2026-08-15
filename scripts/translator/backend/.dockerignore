@@ -1,6 +1,0 @@
-models/
-env/
-hf_cache/
-mount/
-.ipynb_checkpoints/
-**/__pycache__
