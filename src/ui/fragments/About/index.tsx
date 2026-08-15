@@ -1,3 +1,4 @@
+import { ENV } from "@constants/env"
 import useExegesisState from "@hooks/states/ExegesisState"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import useExegesisOptions from "@hooks/tools/useExegesisOptions"
@@ -7,7 +8,7 @@ import { RiArrowLeftLine, RiArrowRightSLine } from "@remixicon/react"
 import { Button } from "@systatum/coneto/button"
 import { ScreenProps } from "@systatum/coneto/screen-transition"
 import { FormFieldGroup, StatefulForm } from "@systatum/coneto/stateful-form"
-import { Wrapper } from "@ui/fragments"
+import { Text, Wrapper } from "@ui/fragments"
 import { Screen } from "@ui/index"
 import { useCallback, useRef, useState } from "react"
 import { useIntl } from "react-intl"
@@ -83,6 +84,14 @@ export default function About({
       <Header $theme={theme} $scrolled={scrolled}>
         <Logo src="/logo_full.png" alt="logo" $scrolled={scrolled} />
         <Headings.Second>bil-Qur'an</Headings.Second>
+        <VersionInfo $scrolled={scrolled}>
+          <Text>
+            {formatMessage({ id: messages.about.version })} {ENV.version}
+          </Text>
+          <Text>
+            {formatMessage({ id: messages.about.released })} {ENV.releasedDate}
+          </Text>
+        </VersionInfo>
       </Header>
 
       <ScrollContainer onScroll={handleScroll}>
@@ -236,6 +245,20 @@ const Logo = styled.img<{ $scrolled: boolean }>`
   width: ${({ $scrolled }) => ($scrolled ? "64px" : "180px")};
   height: ${({ $scrolled }) => ($scrolled ? "64px" : "180px")};
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+`
+
+const VersionInfo = styled.div<{ $scrolled: boolean }>`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  transition:
+    max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.25s ease,
+    margin-top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: ${({ $scrolled }) => ($scrolled ? "0px" : "48px")};
+  margin-top: ${({ $scrolled }) => ($scrolled ? "0px" : "4px")};
+  opacity: ${({ $scrolled }) => ($scrolled ? 0 : 1)};
 `
 
 const ScrollContainer = styled.div`

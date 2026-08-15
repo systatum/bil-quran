@@ -49,7 +49,7 @@ export default function WrappedPoints({ points }: WrappedPointsProps) {
         }
       `}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+      <PointsList>
         {points.map((point, index) => (
           <Point
             key={index}
@@ -59,6 +59,7 @@ export default function WrappedPoints({ points }: WrappedPointsProps) {
           >
             <SubItem
               $style={css`
+                width: 100%;
                 gap: 14px;
               `}
             >
@@ -79,10 +80,29 @@ export default function WrappedPoints({ points }: WrappedPointsProps) {
             </SubItem>
           </Point>
         ))}
-      </div>
+      </PointsList>
     </Wrapper>
   )
 }
+
+const PointsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  min-width: 300px;
+  max-width: 350px;
+
+  @media (max-width: 370px) {
+    width: 80vw;
+    min-width: 300px;
+  }
+
+  @media (min-width: 370px) and (max-width: 700px) {
+    width: 60vw;
+    max-width: 300px;
+  }
+`
 
 const Point = styled.div`
   padding: 25px;
