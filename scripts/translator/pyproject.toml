@@ -1,35 +1,13 @@
 [project]
 name = "translator"
 version = "0.1.0"
-description = "Translation web-service backend, deployment scripts, and notebook scripts"
+description = "Add your description here"
 readme = "README.md"
 authors = [{ name = "SeeStarz", email = "mfahrim7@gmail.com" }]
-requires-python = ">=3.11,<3.12" # Doesn't actually pin the python version
-dependencies = [
-    "fastapi[standard]>=0.141.1",
-    "llama-cpp-python>=0.3.34",
-    "torch==2.12.1+cu132",
-    "unbabel-comet>=2.2.7",
-]
+requires-python = ">=3.11"
 
 [tool.uv.sources]
-torch = { index = "pytorch" }
-llama-cpp-python = { index = "llama-cpp-python" }
+shared = { workspace = true }
 
-[[tool.uv.index]]
-name = "pytorch"
-url = "https://download.pytorch.org/whl/cu132"
-
-[[tool.uv.index]]
-name = "llama-cpp-python"
-url = "https://abetlen.github.io/llama-cpp-python/whl/cu132"
-explicit = true
-
-[dependency-groups]
-dev = [
-    "ipykernel>=7.3.0",
-    "jupyterlab>=4.6.2",
-    "jupyterlab-lsp>=5.3.0",
-    "python-lsp-server>=1.15.0",
-]
-heavy = ["llama-cpp-python>=0.3.34", "torch==2.12.1+cu132"]
+[tool.uv.workspace]
+members = ["backend", "frontend", "proxy", "shared"]
