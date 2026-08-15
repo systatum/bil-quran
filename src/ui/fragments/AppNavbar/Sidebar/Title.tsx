@@ -78,7 +78,7 @@ export default function Title({
     <Coneto.Title
       size="lg"
       text={title}
-      pretitle="Bil-Quran"
+      pretitle="bil-Quran"
       styles={{
         ...styles,
         containerStyle: css`
