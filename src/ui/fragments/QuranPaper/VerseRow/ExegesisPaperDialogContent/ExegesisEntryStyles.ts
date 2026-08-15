@@ -1,4 +1,4 @@
-import styled from "styled-components"
+import styled, { keyframes } from "styled-components"
 
 export const Wrapper = styled.div<{ $theme: string }>`
   display: flex;
@@ -232,5 +232,30 @@ export const TranslationTextContent = styled.div<{
   }
   p:last-child {
     margin-bottom: 0;
+  }
+`
+
+export const pulse = keyframes`
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.7; }
+`
+
+export const skeletonColor = (theme: string) =>
+  theme === "dark" ? "#3a3a3a" : "#e2d6c3"
+
+export const WordsSkeleton = styled.div<{ $theme: string }>`
+  display: flex;
+  flex-direction: row-reverse;
+  gap: 10px;
+  padding: 16px 0;
+
+  &::before,
+  &::after {
+    content: "";
+    width: 48px;
+    height: 22px;
+    border-radius: 6px;
+    background: ${({ $theme }) => skeletonColor($theme)};
+    animation: ${pulse} 1.4s ease-in-out infinite;
   }
 `

@@ -166,6 +166,22 @@ sequenceDiagram
     Note over Seed: only chapters 17-30's work is redone, not 2-16
 ```
 
+The background pass isn't the only caller that writes a chapter's words: opening the exegesis dialog on a chapter the background pass hasn't reached yet seeds that chapter immediately rather than waiting (see Request flows below). Both paths have to honor the same sequential-writes requirement, so what actually enforces it is a single module-level promise, not a queue:
+
+```ts
+let writeLock: Promise<unknown> = Promise.resolve()
+
+function withWriteLock<T>(fn: () => Promise<T>): Promise<T> {
+  const result = writeLock.then(fn, fn)
+  writeLock = result.catch(() => {}) // never leave the chain rejected
+  return result
+}
+```
+
+Every chapter write, background or on-demand, goes through `withWriteLock`. Each call chains onto whatever the previous call left in `writeLock` and becomes the new value of `writeLock` itself, so calls pile up strictly one after another no matter which caller reaches it first or how many arrive at once. There's no priority to compute and nothing to track beyond this one reference, because the requirement was never "on-demand goes first," it was just "writes never overlap."
+
+`ensureChapterSeeded(chapterId)` is the on-demand entry point this backs: check `chapterHasWords`, and if it's genuinely missing, fetch its JSON and write it through `withWriteLock`. The fetch goes through the same in-flight-promise cache `FingerprintedAsset.readJson` already uses, so if the background pass's own concurrent prefetch is mid-flight for that exact chapter, this call reuses that same promise instead of firing a second request for it.
+
 Measured on a real cold start, this brought time-to-interactive down from roughly 3.7 seconds to under one second, with the full background pass across all 114 chapters finishing in about 20 seconds without ever blocking user interaction.
 
 ### Rendering
@@ -180,7 +196,7 @@ A third implication is architectural rather than a performance number: since `wo
 
 ### Request flows
 
-These sketch the current, as-built behavior end to end, across the database, the seeding layer, and the UI. They're a snapshot, not a spec: Phase 3 (a seeding priority queue plus a loading state for the exegesis dialog) will change the third one.
+These sketch the current, as-built behavior end to end, across the database, the seeding layer, and the UI.
 
 **Opening the app.** The priority chapter (from the deep link, else the last-viewed chapter, else chapter 1) is the only thing seeded before the app is usable. Everything else happens after, in the background.
 
@@ -247,33 +263,34 @@ sequenceDiagram
     end
 ```
 
-**Jumping to a verse whose chapter hasn't been seeded yet.** This is the gap Phase 3 is meant to close. Today, there's no priority bump and no loading state: the dialog just waits for the ordinary background pass to get there.
+**Jumping to a verse whose chapter hasn't been seeded yet.** A Q-marker link, a deep link, or a lookup can point at a chapter the background pass hasn't reached. Rather than waiting for the ordinary background order to get there, that chapter is seeded on demand, and the dialog shows a loading skeleton while it does.
 
 ```mermaid
 sequenceDiagram
     participant U as User
     participant EC as ExegesisPaperDialogContent
     participant Words as WordsState
+    participant Seed as seeders.ts
+    participant Lock as writeLock
     participant DB as sql.js (WASM)
-    participant Seed as background seed loop
 
     U->>EC: open a verse in chapter X (not yet background-seeded)
-    EC->>Words: useWords(X)
-    Words->>DB: loadWords(X) query
-    DB-->>Words: 0 rows (chapter not seeded yet)
-    Words-->>Words: chapter X NOT marked loaded (a later call can retry)
-    EC-->>U: interlinear pane renders empty, no loading indicator
-
-    Note over Seed: background seeding keeps working through chapters in order
-
-    Seed->>DB: seed chapter X once its turn comes up
-    Seed->>Words: onChapterReady(X) -> loadWords(X)
-    DB-->>Words: chapter X's words
-    Words->>Words: merge into the shared words array, mark X loaded
+    EC->>Words: useWords(X) -> loadWords(X)
+    Words->>Words: mark X in loadingChapters
+    EC-->>U: interlinear pane shows a loading skeleton
+    Words->>Seed: ensureChapterSeeded(X)
+    Seed->>DB: chapterHasWords(X)? -> false
+    Seed->>Seed: fetch chapter X's JSON<br/>(shares the background pass's in-flight fetch if it's already mid-flight for X)
+    Seed->>Lock: withWriteLock(() => seedChapterVerses(X))
+    Note over Lock: waits for whatever chapter the<br/>background loop is currently writing to finish first
+    Lock->>DB: seed chapter X's words
+    Seed-->>Words: ensureChapterSeeded resolves
+    Words->>DB: read chapter X's words
+    Words->>Words: merge into words array, mark X loaded, clear X from loadingChapters
     Words-->>EC: words array reference changes
-    EC-->>U: interlinear pane populates on its own, no user action needed
+    EC-->>U: skeleton swaps to the real interlinear words
 
-    Note over EC,Words: closing and reopening the dialog before this point<br/>just repeats useWords(X), which gets 0 rows again<br/>until seeding actually reaches chapter X
+    Note over Seed: background loop's own seedChapterVerses(X) call,<br/>whenever its turn comes, hits chapterHasWords(X) -> true and skips it
 ```
 
 ## Mobile
@@ -296,9 +313,17 @@ Qur'an/tafsir data is a local read off the bundled assets, not a download.
     ./gradlew assembleDebug
   ```
 - **Android SDK Platform 36 and Build-Tools 36**, matching
-  `compileSdk`/`targetSdk` in `android/variables.gradle`. Install via
-  Android Studio's SDK Manager (SDK Platforms and SDK Tools tabs), or
+  `compileSdk`/`targetSdk` in `android/variables.gradle`.
+
+  We can check by:
+
+  ```
+  grep -R "compileSdk\|targetSdk\|minSdk" android/gradle* android/build.gradle android/variables.gradle 2>/dev/null
+  ```
+
+  Then install via Android Studio's SDK Manager (SDK Platforms and SDK Tools tabs), or
   `sdkmanager "platforms;android-36" "build-tools;36.0.0"`.
+
 - **A device or emulator** on any API level at or above `minSdkVersion`
   (24). `compileSdk`/`targetSdk` only affect what the app is built
   against, not what it can run on, so the emulator doesn't need to match

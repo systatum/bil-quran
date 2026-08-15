@@ -9,13 +9,16 @@ import useUserSettingsState from "@hooks/states/UserSettingsState"
 import { FingerprintedAsset } from "@services/fingerprinter"
 import { renderExegesisMarkdown } from "@services/markdown"
 import { useEffect, useState } from "react"
-import styled, { keyframes } from "styled-components"
+import styled from "styled-components"
 import Footnotes from "../QuranPaper/VerseRow/ExegesisPaperDialogContent/Footnotes"
 import {
+  pulse,
+  skeletonColor,
   SourceLabel,
   TranslationText,
   TranslationTextContent,
   VerseText,
+  WordsSkeleton,
   Wrapper,
 } from "../QuranPaper/VerseRow/ExegesisPaperDialogContent/ExegesisEntryStyles"
 import InterlinearText from "../QuranPaper/VerseRow/InterlinearText"
@@ -251,31 +254,6 @@ const Empty = styled.p<{ $theme: string }>`
   font-size: 0.95em;
   text-align: center;
   color: ${({ $theme }) => ($theme === "dark" ? "#666" : "#999")};
-`
-
-const pulse = keyframes`
-  0%, 100% { opacity: 0.35; }
-  50% { opacity: 0.7; }
-`
-
-const skeletonColor = (theme: string) =>
-  theme === "dark" ? "#3a3a3a" : "#e2d6c3"
-
-const WordsSkeleton = styled.div<{ $theme: string }>`
-  display: flex;
-  flex-direction: row-reverse;
-  gap: 10px;
-  padding: 16px 0;
-
-  &::before,
-  &::after {
-    content: "";
-    width: 48px;
-    height: 22px;
-    border-radius: 6px;
-    background: ${({ $theme }) => skeletonColor($theme)};
-    animation: ${pulse} 1.4s ease-in-out infinite;
-  }
 `
 
 const TextSkeleton = styled.div<{ $theme: string }>`

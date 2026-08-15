@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test"
 import { FINGERPRINT_KEY } from "@services/fingerprinter"
+import { getPaperDialog } from "./tools/interactivity"
 import { clearBrowserStorage, untilUsable } from "./tools/state"
 
 test.describe("Bootstrap", () => {
@@ -109,10 +110,12 @@ test.describe("Bootstrap", () => {
       // background pass's order and is the one most likely still unseeded
       const start = Date.now()
       await page.goto("/#/e/114/1?tafsir=aliquli")
-      await page
-        .locator('[aria-label="paper-dialog-content"]')
-        .waitFor({ state: "visible", timeout: 10_000 })
-      await page
+      const dialog = await getPaperDialog(page)
+      await expect(dialog).toBeVisible()
+      // scoped to the dialog: chapter 1's own words are already visible in
+      // the background QuranPaper view underneath it, unscoped would pass
+      // without chapter 114 ever loading
+      await dialog
         .locator(".arabic-lex")
         .first()
         .waitFor({ state: "visible", timeout: 10_000 })
@@ -120,6 +123,55 @@ test.describe("Bootstrap", () => {
 
       // background order alone takes ~20s to reach chapter 114
       expect(elapsed).toBeLessThan(6_000)
+    })
+
+    test("shows a loading skeleton in the interlinear pane while the chapter seeds, then swaps to the real words", async ({
+      page,
+    }) => {
+      await page.goto("/")
+      await untilUsable(page)
+
+      await page.route("**/quran/verses/imlaei/114.json", async (route) => {
+        await new Promise((r) => setTimeout(r, 3_500))
+        await route.continue()
+      })
+
+      const start = Date.now()
+      await page.goto("/#/e/114/1?tafsir=aliquli")
+      const dialog = await getPaperDialog(page)
+      await expect(dialog).toBeVisible()
+
+      const interlinearCell = dialog
+        .locator('[aria-label="split-pane-cell"]')
+        .first()
+
+      // Skeleton's placeholder blocks are drawn via ::before/::after, so they
+      // never show up as DOM children — check the computed pseudo-style.
+      await expect
+        .poll(
+          () =>
+            interlinearCell.evaluate((cell) => {
+              const skeleton = cell.firstElementChild
+              if (!skeleton) return "none"
+              return getComputedStyle(skeleton, "::before").content
+            }),
+          { timeout: 2_000 },
+        )
+        .not.toBe("none")
+      await expect(dialog.locator(".arabic-lex")).toHaveCount(0)
+
+      await dialog
+        .locator(".arabic-lex")
+        .first()
+        .waitFor({ state: "visible", timeout: 10_000 })
+      expect(Date.now() - start).toBeLessThan(8_000)
+
+      const skeletonGone = await interlinearCell.evaluate((cell) => {
+        const skeleton = cell.firstElementChild
+        if (!skeleton) return true
+        return getComputedStyle(skeleton, "::before").content === "none"
+      })
+      expect(skeletonGone).toBe(true)
     })
 
     test("does not create duplicate roots or lexemes when an on-demand jump races the background pass", async ({
