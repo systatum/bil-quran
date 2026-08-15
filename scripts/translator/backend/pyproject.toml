@@ -1,7 +1,7 @@
 [project]
-name = "translator"
+name = "Backend"
 version = "0.1.0"
-description = "Translation web-service backend, deployment scripts, and notebook scripts"
+description = "Translation web-service backend"
 readme = "README.md"
 authors = [{ name = "SeeStarz", email = "mfahrim7@gmail.com" }]
 requires-python = ">=3.11,<3.12" # Doesn't actually pin the python version
