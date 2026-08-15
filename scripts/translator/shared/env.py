@@ -57,7 +57,6 @@ class BackendEnv(Env):
     SETTING_SYS_PATH: str
     SETTING_PYTHON_PATH: str
     MOUNT_ROOT: str
-    HF_HOME: str
 
     @classmethod
     def get(cls) -> Self:
@@ -71,15 +70,3 @@ class ProxyEnv(Env):
     @classmethod
     def get(cls) -> Self:
         return cls._load_from_env("PX_")
-
-
-from dotenv import load_dotenv
-
-load_dotenv()
-load_dotenv(".env-public")
-
-print(
-    dataclasses.asdict(FrontendEnv.get())
-    | dataclasses.asdict(BackendEnv.get())
-    | dataclasses.asdict(ProxyEnv.get())
-)

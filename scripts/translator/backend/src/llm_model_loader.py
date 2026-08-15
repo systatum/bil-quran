@@ -1,6 +1,6 @@
-from src.setting_loader import SettingLoader
-from src.llm_model_source import ModelSource
-from src.llm_model import LLMModel
+from backend.src.setting_loader import SettingLoader
+from backend.src.llm_model_source import ModelSource
+from backend.src.llm_model import LLMModel
 from pathlib import Path
 import os
 import shutil

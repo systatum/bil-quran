@@ -1,5 +1,5 @@
 from __future__ import annotations
-from src.util import Result
+from backend.src.util import Result
 from time import sleep
 from queue import Queue
 from dataclasses import dataclass

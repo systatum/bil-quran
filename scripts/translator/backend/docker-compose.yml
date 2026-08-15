@@ -18,4 +18,4 @@ services:
       - BE_API_KEY=tl-default_token
 
       # where hf will store artifacts, make sure it's on the volume and consistent
-      - BE_HF_HOME=/workspace/hf_cache
+      - HF_HOME=/workspace/hf_cache

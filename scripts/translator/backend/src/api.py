@@ -73,15 +73,15 @@ class APIRequest(RootModel[T]):
     model_config = ConfigDict(validate_assignment=True, revalidate_instances="always")
 
 
-from src.translation import (
+from backend.src.translation import (
     TranslateJob,
     TranslateInput,
     PromptSetting,
     Translation,
 )
-from src.rating import RateJob, Rating
-from src.comparison import CompareJob, Comparison
-from src.service import JobResultOk as JobResult
+from backend.src.rating import RateJob, Rating
+from backend.src.comparison import CompareJob, Comparison
+from backend.src.service import JobResultOk as JobResult
 
 TranslateJobResult: TypeAlias = JobResult[Translation]
 RateJobResult: TypeAlias = JobResult[Rating]

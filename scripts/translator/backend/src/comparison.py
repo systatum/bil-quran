@@ -1,5 +1,5 @@
 from __future__ import annotations
-from src.service import JobResult, Job, Service
+from backend.src.service import JobResult, Job, Service
 from transformers import (
     AutoTokenizer,
     MT5EncoderModel,
