@@ -10,12 +10,12 @@ services:
     gpus: all
     environment:
       # setting_loader.py will use this
-      - ALT_SETTING_SYS_PATH=/workspace
-      - ALT_SETTING_PYTHON_PATH=mount.setting
+      - BE_ALT_SETTING_SYS_PATH=/workspace
+      - BE_ALT_SETTING_PYTHON_PATH=mount.setting
 
       # setting.py may use this
-      - MOUNT_ROOT=/workspace
-      - APP_TOKEN=default_token
+      - BE_MOUNT_ROOT=/workspace
+      - BE_API_KEY=tl-default_token
 
       # where hf will store artifacts, make sure it's on the volume and consistent
-      - HF_HOME=/workspace/hf_cache
+      - BE_HF_HOME=/workspace/hf_cache

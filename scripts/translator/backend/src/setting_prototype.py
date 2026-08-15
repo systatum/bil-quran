@@ -1,14 +1,6 @@
 from src.llm_model_source import ModelSource
 from dataclasses import dataclass
 from pathlib import Path
-import os
-
-
-def get_env(env_name: str):
-    env: str | None = os.environ.get(env_name)
-    if env is None:
-        raise ValueError(f"Environment variable {env_name} not set")
-    return env
 
 
 @dataclass(frozen=True)

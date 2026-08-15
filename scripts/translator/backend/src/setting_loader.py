@@ -1,4 +1,5 @@
-from src.setting_prototype import Setting, get_env
+from shared.env import BackendEnv as Env
+from src.setting_prototype import Setting
 from traceback import format_exc
 import src.setting as default_setting
 import importlib
@@ -11,14 +12,12 @@ class SettingLoader:
 
     @staticmethod
     def _load() -> Setting:
-        ALT_SETTING_SYS_PATH: str = get_env("ALT_SETTING_SYS_PATH")
-        ALT_SETTING_PYTHON_PATH: str = get_env("ALT_SETTING_PYTHON_PATH")
         used_setting: default_setting.Setting = default_setting.get_setting()
 
         lib: types.ModuleType | None = None
         try:
-            sys.path.append(ALT_SETTING_SYS_PATH)
-            lib = importlib.import_module(ALT_SETTING_PYTHON_PATH)
+            sys.path.append(Env.get().SETTING_SYS_PATH)
+            lib = importlib.import_module(Env.get().SETTING_PYTHON_PATH)
             print(f"Attempting to load setting from file {lib.__file__}")
             loaded_setting = lib.get_setting()
             if not isinstance(loaded_setting, Setting):
