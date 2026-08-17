@@ -78,7 +78,7 @@ export default function LoadingScreen() {
 
       <Content>
         <Logo src="/logo_full.png" alt="logo" />
-        <Title>Bil-Quran</Title>
+        <Title>bil-Quran</Title>
         <Subtitle>{loadingText}</Subtitle>
       </Content>
     </Container>

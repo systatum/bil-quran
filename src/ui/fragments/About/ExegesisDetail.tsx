@@ -6,12 +6,10 @@ import { messages } from "@i18n/message"
 import { safePick } from "@services/picker"
 import { ScreenProps } from "@systatum/coneto/screen-transition"
 import { useNavigate } from "@tanstack/react-router"
-import { SubItem, Text, Wrapper } from "@ui/fragments"
 import { Screen } from "@ui/index"
 import { useIntl } from "react-intl"
-import { css } from "styled-components"
 import Title from "../AppNavbar/Sidebar/Title"
-import Headings from "../Headings"
+import WrappedPoints from "./WrappedPoints"
 
 export default function ExegesisDetail({
   goBack,
@@ -53,78 +51,18 @@ export default function ExegesisDetail({
         withAction={false}
       />
 
-      <Wrapper
-        $theme={theme}
-        $style={css`
-          justify-content: start;
-          overflow: auto;
-          min-height: 0;
-          padding: 40px 20px;
-
-          /* Firefox */
-          scrollbar-width: thin;
-          scrollbar-color: ${theme === "dark" ? "#555" : "#bbb"} transparent;
-
-          /* Chrome, Edge, Safari */
-          &::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-          }
-
-          &::-webkit-scrollbar-track {
-            background: transparent;
-          }
-
-          &::-webkit-scrollbar-thumb {
-            background: ${theme === "dark" ? "#555" : "#bbb"};
-            border-radius: 999px;
-          }
-
-          &::-webkit-scrollbar-thumb:hover {
-            background: ${theme === "dark" ? "#777" : "#999"};
-          }
-        `}
-      >
-        <div style={{ gap: "20px" }}>
-          <div
-            style={{
-              gap: "20px",
-              borderRadius: "10px",
-              paddingTop: "20px",
-              paddingBottom: "20px",
-              background: theme === "dark" ? "#1a211d" : "#ededed",
-            }}
-          >
-            <SubItem
-              $style={css`
-                gap: 14px;
-              `}
-            >
-              {bookName && (
-                <Headings.Third
-                  $style={css`
-                    font-weight: 600;
-                  `}
-                >
-                  {bookName}
-                </Headings.Third>
-              )}
-              {descriptionParagraphs.map((paragraph, i) => (
-                <Text key={i}>{paragraph}</Text>
-              ))}
-            </SubItem>
-
-            {detail && (
-              <SubItem>
-                <Headings.Third $fontWeight="600">
-                  {formatMessage({ id: messages.about.source })}
-                </Headings.Third>
-                <Text>{detail.source}</Text>
-              </SubItem>
-            )}
-          </div>
-        </div>
-      </Wrapper>
+      <WrappedPoints
+        points={[
+          {
+            title: bookName,
+            content: descriptionParagraphs.join("\n\n"),
+          },
+          {
+            title: formatMessage({ id: messages.about.source }),
+            content: detail?.source ?? "",
+          },
+        ]}
+      />
     </>
   )
 }

@@ -1,6 +1,6 @@
-import { mkdir, writeFile, readFile, access } from "fs/promises"
-import { join } from "path"
 import { createHash } from "crypto"
+import { access, mkdir, readFile, writeFile } from "fs/promises"
+import { join } from "path"
 
 const SITE_URL = process.env.SITE_URL ?? "https://bil-quran.com"
 const QURAN_PATH = join(process.cwd(), "public/quran")
@@ -284,7 +284,7 @@ async function generateRSS() {
     }
     // Homepage
     addItem(
-      "Bil-Quran: Word-by-Word Qur'an",
+      "bil-Quran: Word-by-Word Quran",
       `${SITE_URL}/?locale=${localeCode}`,
       descriptions[localeCode],
     )

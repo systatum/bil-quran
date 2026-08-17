@@ -1,33 +1,26 @@
 import { ScreenProps } from "@systatum/coneto/screen-transition"
 import { Screen } from "@ui/index"
-import { useEffect, useState } from "react"
 import { ContentType } from "../AppNavbar/Sidebar"
 import Title from "../AppNavbar/Sidebar/Title"
 import WrappedPoints from "./WrappedPoints"
 
-type PrivacyPolicy = Partial<ScreenProps<Screen>>
+const CONTRIBUTORS = ["Adam Noto Hakarsa", "Alim Naufal"]
 
-export default function PrivacyPolicy({ goBack }: PrivacyPolicy) {
-  const [privacyPolicy, setPrivacyPolicy] = useState("")
+type ContributorsProps = Partial<ScreenProps<Screen>>
 
-  useEffect(() => {
-    fetch("/PrivacyPolicy.md")
-      .then((response) => response.text())
-      .then(setPrivacyPolicy)
-  }, [])
-
+export default function Contributors({ goBack }: ContributorsProps) {
   return (
     <>
       <Title
         onClosingSidebarRequested={() => goBack?.()}
-        contentType={ContentType.PrivacyPolicy}
+        contentType={ContentType.Contributors}
         withAction={false}
       />
       <WrappedPoints
         points={[
           {
             title: "",
-            content: privacyPolicy,
+            content: CONTRIBUTORS.join(", "),
           },
         ]}
       />

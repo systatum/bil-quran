@@ -32,7 +32,7 @@
     "@electric-sql/pglite": "^0.4.5",
     "@posthog/react": "^1.10.3",
     "@remixicon/react": "^4.9.0",
-    "@systatum/coneto": "file:./../coneto",
+    "@systatum/coneto": "^3.2.0",
     "@tanstack/react-router": "^1.169.2",
     "@tanstack/react-virtual": "^3.13.24",
     "@testing-library/dom": "^10.4.1",
@@ -62,6 +62,7 @@
   "devDependencies": {
     "@craco/craco": "^7.1.0",
     "@playwright/test": "^1.61.0",
+    "@posthog/types": "^1.399.0",
     "@types/pg": "^8.20.0",
     "@types/rss": "^0.0.32",
     "@types/sql.js": "^1.4.11",

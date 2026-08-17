@@ -69,13 +69,16 @@ export default function Title({
     case ContentType.PrivacyPolicy:
       title = formatMessage({ id: messages.privacyPolicy.title })
       break
+    case ContentType.Contributors:
+      title = formatMessage({ id: messages.contributors.title })
+      break
   }
 
   return (
     <Coneto.Title
       size="lg"
       text={title}
-      pretitle="Bil-Quran"
+      pretitle="bil-Quran"
       styles={{
         ...styles,
         containerStyle: css`
