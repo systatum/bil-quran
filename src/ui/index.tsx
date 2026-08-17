@@ -1,5 +1,7 @@
 import useAppState from "@hooks/states/AppState"
+import useExegesisState from "@hooks/states/ExegesisState"
 import usePaginationState from "@hooks/states/PaginationState"
+import useExegesisOptions from "@hooks/tools/useExegesisOptions"
 import useFirstVisibleVerse from "@hooks/tools/useFirstVisibleVerse"
 import { resolveLocale } from "@i18n"
 import { resolveExegesisSelection } from "@services/Converter"
@@ -12,7 +14,9 @@ import { useMatchRoute, useParams, useSearch } from "@tanstack/react-router"
 import { useEffect, useMemo, useRef } from "react"
 import { css } from "styled-components"
 import About from "./fragments/About"
+import Contributors from "./fragments/About/Contributors"
 import ExegesisDetail from "./fragments/About/ExegesisDetail"
+import PrivacyPolicy from "./fragments/About/PrivacyPolicy"
 import ProstrationVersesDetail from "./fragments/About/ProstrationVersesDetail"
 import AppNavbar from "./fragments/AppNavbar"
 import Sidebar from "./fragments/AppNavbar/Sidebar"
@@ -25,9 +29,6 @@ import usePaperDialogState, {
   registerScreenReopenNotifier,
 } from "./hooks/states/PaperDialogState"
 import useUserSettingsState from "./hooks/states/UserSettingsState"
-import PrivacyPolicy from "./fragments/About/PrivacyPolicy"
-import useExegesisOptions from "@hooks/tools/useExegesisOptions"
-import useExegesisState from "@hooks/states/ExegesisState"
 
 interface UIIndexProps {
   /** When true, opens the exegesis paper dialog for the routed verse on mount. */
@@ -46,6 +47,7 @@ export const Screen = {
   About: "about",
   Sidebar: "sidebar",
   PrivacyPolicy: "privacy-policy",
+  Contributors: "contributors",
 } as const
 
 export type Screen = (typeof Screen)[keyof typeof Screen]
@@ -77,6 +79,10 @@ const SCREENS: Record<Screen, ScreenEntry> = {
     component: PrivacyPolicy,
     closable: true,
   },
+  [Screen.Contributors]: {
+    component: Contributors,
+    closable: true,
+  },
 }
 
 export default function UIIndex({
@@ -99,7 +105,9 @@ export default function UIIndex({
 
   const screenTransitionRef = useRef<ScreenTransitionRef>(null)
   useEffect(() => {
-    registerScreenReopenNotifier((key) => screenTransitionRef.current?.reopen(key))
+    registerScreenReopenNotifier((key) =>
+      screenTransitionRef.current?.reopen(key),
+    )
     return () => registerScreenReopenNotifier(null)
   }, [])
 
@@ -178,6 +186,7 @@ export default function UIIndex({
     Screen.ProstrationVersesDetail,
     Screen.Sidebar,
     Screen.PrivacyPolicy,
+    Screen.Contributors,
   ]
 
   const shouldUseFullLayout =
@@ -208,6 +217,11 @@ export default function UIIndex({
 
     if (screenContent === "prostration-verse") {
       setActiveScreens([Screen.About, Screen.ProstrationVersesDetail])
+      return
+    }
+
+    if (screenContent === "contributors") {
+      setActiveScreens([Screen.About, Screen.Contributors])
       return
     }
 

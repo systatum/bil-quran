@@ -104,9 +104,9 @@ That background pass is also where seeding and rendering actually interleave, an
 ```ts
 async function seedRemainingChapters(chapters, onChapterReady) {
   for (const chapter of chapters) {
-    await seedChapterVerses(chapter)   // DB writes, chunked and yielding internally
-    onChapterReady(chapter.id)         // merges into WordsState, schedules a React re-render
-    await pause(0)                     // hands control back before touching the next chapter
+    await seedChapterVerses(chapter) // DB writes, chunked and yielding internally
+    onChapterReady(chapter.id) // merges into WordsState, schedules a React re-render
+    await pause(0) // hands control back before touching the next chapter
   }
 }
 ```
@@ -312,8 +312,7 @@ Qur'an/tafsir data is a local read off the bundled assets, not a download.
   JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home" \
     ./gradlew assembleDebug
   ```
-- **Android SDK Platform 36 and Build-Tools 36**, matching
-  `compileSdk`/`targetSdk` in `android/variables.gradle`.
+- **Android SDK Platform 36 and Build-Tools 36**, matching `compileSdk`/`targetSdk` in `android/variables.gradle`.
 
   We can check by:
 

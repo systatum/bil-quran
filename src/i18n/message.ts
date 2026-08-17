@@ -128,6 +128,9 @@ export const messages = {
   privacyPolicy: {
     title: "privacyPolicy.title",
   },
+  contributors: {
+    title: "contributors.title",
+  },
   errors: {
     bookmarkCreationFailed: "errors.bookmarkCreationFailed",
     bookmarkDataNotFound: "errors.bookmarkDataNotFound",

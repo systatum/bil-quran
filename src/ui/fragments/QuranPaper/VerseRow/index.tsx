@@ -16,12 +16,12 @@ import { useWordTranslations } from "@hooks/tools/useWordTranslations"
 import { unpackIPC } from "@services/Converter"
 import LOGGER from "@services/Logger"
 import { makeSnippet } from "@services/mutator"
+import { haptic } from "@utils/haptic"
 import { useEffect, useMemo, useRef } from "react"
 import styled from "styled-components"
 import { Bismillah } from "./Bismillah"
 import InterlinearText from "./InterlinearText"
 import { VerseMarker } from "./VerseMarker"
-import { haptic } from "@utils/haptic"
 
 export type Verse = {
   id: string

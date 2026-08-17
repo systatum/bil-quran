@@ -126,6 +126,11 @@
   "privacyPolicy": {
     "title": "Kebijakan Privasi"
   },
+
+  "contributors": {
+    "title": "Kontributor"
+  },
+
   "notice": {
     "bookmark": {
       "noDataYet": "Belum ada ayat yang ditambahkan. Ketuk nomor ayat untuk lalu dapat menandai ayat-ayat tertentu."
