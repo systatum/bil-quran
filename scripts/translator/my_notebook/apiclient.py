@@ -3,11 +3,27 @@ from typing import Any, TypeVar
 from dataclasses import dataclass
 from traceback import format_exc
 from pydantic import ValidationError, TypeAdapter
+from enum import Enum
 import requests
 import sys
 import typing
 
 T = TypeVar("T")
+
+
+class APIErrorType(Enum):
+    UNKNOWN_ERROR = 1
+    HTTP_REQUEST_ERROR = 2
+    FASTAPI_ERROR = 3
+    APPLICATION_ERROR = 4
+    MALFORMED_RESPONSE_ERROR = 5
+
+
+@dataclass(kw_only=True)
+class APIError(Exception):
+    http_code: int | None
+    error_message: str
+    error_type: APIErrorType
 
 
 def printerr(*args, **kwargs):
@@ -40,9 +56,17 @@ class APIClient:
             )
 
     def health(self) -> api.HealthResult:
+        """
+        RAISES:
+            APIError
+        """
         return self._request("/health", TypeAdapter(api.HealthResult))
 
     def models(self) -> list[str]:
+        """
+        RAISES:
+            APIError
+        """
         return self._request("/models", TypeAdapter(list[str]))
 
     def translate(
@@ -53,6 +77,10 @@ class APIClient:
         model: str,
         prompt_setting: api.PromptSetting,
     ) -> api.Translation:
+        """
+        RAISES:
+            APIError
+        """
         translate_input = api.TranslateInput(
             source_language=source_language, target_language=target_language, text=text
         )
@@ -64,6 +92,10 @@ class APIClient:
         return self._translate(request).value
 
     def rate(self, source: str, translation: str) -> api.Rating:
+        """
+        RAISES:
+            APIError
+        """
         request = api.RateAPIRequest(
             api.RateJob(source=source, translation=translation)
         )
@@ -72,6 +104,10 @@ class APIClient:
     def compare(
         self, source: str, translation0: str, translation1: str
     ) -> api.Comparison:
+        """
+        RAISES:
+            APIError
+        """
         request = api.CompareAPIRequest(
             api.CompareJob(
                 source=source, translation0=translation0, translation1=translation1
@@ -80,16 +116,28 @@ class APIClient:
         return self._compare(request).value
 
     def _translate(self, request: api.TranslateAPIRequest) -> api.TranslateJobResult:
+        """
+        RAISES:
+            APIError
+        """
         return self._request(
             "/translate", TypeAdapter(api.TranslateJobResult), request.model_dump()
         )
 
     def _rate(self, request: api.RateAPIRequest) -> api.RateJobResult:
+        """
+        RAISES:
+            APIError
+        """
         return self._request(
             "/rate", TypeAdapter(api.RateJobResult), request.model_dump()
         )
 
     def _compare(self, request: api.CompareAPIRequest) -> api.CompareJobResult:
+        """
+        RAISES:
+            APIError
+        """
         return self._request(
             "/compare", TypeAdapter(api.CompareJobResult), request.model_dump()
         )
@@ -107,7 +155,8 @@ class APIClient:
         force_post: bool = False,
     ) -> T:
         """
-        TODO: detail raises
+        RAISES:
+            APIError
         """
         try:
             if data is not None:
@@ -124,22 +173,31 @@ class APIClient:
                 )
         except requests.RequestException as e:
             error_message = self._format_and_log_errors(
-                "Request error {}: {}", type(e).__name__, format_exc()
+                "{}: {}", type(e).__name__, format_exc()
             )
-            raise Exception()
+            raise APIError(
+                http_code=None,
+                error_message=error_message,
+                error_type=APIErrorType.HTTP_REQUEST_ERROR,
+            )
 
         value = self._process_response(response)
         try:
             return adapter.validate_python(value)
         except ValidationError as e:
             error_message = self._format_and_log_errors(
-                "Request error {}: {}", type(e).__name__, format_exc()
+                "{}: {}", type(e).__name__, format_exc()
             )
-            raise Exception()
+            raise APIError(
+                http_code=response.status_code,
+                error_message=error_message,
+                error_type=APIErrorType.MALFORMED_RESPONSE_ERROR,
+            )
 
     def _process_response(self, response: requests.Response) -> object:
         """
-        TODO: detail raises
+        RAISES:
+            APIError
         """
 
         # It's not our server that responded
@@ -147,7 +205,11 @@ class APIClient:
             error_message = self._format_and_log_errors(
                 "HTTP {}: {}", response.status_code, response.text
             )
-            raise Exception()
+            raise APIError(
+                http_code=response.status_code,
+                error_message=error_message,
+                error_type=APIErrorType.FASTAPI_ERROR,
+            )
 
         try:
             api_response: api.APIResponse[Any] = api.APIResponse[
@@ -155,15 +217,23 @@ class APIClient:
             ].model_validate_json(response.text)
         except ValidationError as e:
             error_message = self._format_and_log_errors(
-                "Request error {}: {}", type(e).__name__, format_exc()
+                "{}: {}", type(e).__name__, format_exc()
             )
-            raise Exception()
+            raise APIError(
+                http_code=response.status_code,
+                error_message=error_message,
+                error_type=APIErrorType.MALFORMED_RESPONSE_ERROR,
+            )
 
         if api_response.status == "err":
             error: api.APIError = typing.cast(api.APIError, api_response.error)
             error_message = self._format_and_log_errors(
-                "API error {}: {}", error.error_code, error.error_message
+                "{}: {}", error.error_code, error.error_message
             )
-            raise Exception()
+            raise APIError(
+                http_code=response.status_code,
+                error_message=error_message,
+                error_type=APIErrorType.APPLICATION_ERROR,
+            )
 
         return api_response.value
