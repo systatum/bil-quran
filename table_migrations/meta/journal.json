@@ -17,6 +17,9 @@
     },
     {
       "tag": "0005_light_sleeper"
+    },
+    {
+      "tag": "0006_daily_stark_industries"
     }
   ]
 }
