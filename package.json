@@ -32,7 +32,7 @@
     "@electric-sql/pglite": "^0.4.5",
     "@posthog/react": "^1.10.3",
     "@remixicon/react": "^4.9.0",
-    "@systatum/coneto": "file:./../coneto",
+    "@systatum/coneto": "^3.2.0",
     "@tanstack/react-router": "^1.169.2",
     "@tanstack/react-virtual": "^3.13.24",
     "@testing-library/dom": "^10.4.1",
