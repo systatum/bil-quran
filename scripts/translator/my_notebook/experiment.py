@@ -4,8 +4,8 @@ from src import api
 from datetime import datetime, timezone
 from time import perf_counter
 from pathlib import Path
-from pydantic import TypeAdapter
-from uuid import UUID
+from pydantic import TypeAdapter, ValidationError
+from uuid import UUID, uuid4
 from typing import Optional
 import typing
 import math
@@ -35,39 +35,70 @@ class ExperimentRunner:
     def run(
         self,
         command: ExperimentRunCommand,
+        run_id: Optional[UUID] = None,
     ):
         batches = self._create_batches(command)
-        metadata = self._run_command_to_metadata(command, batches)
+        if run_id is None:
+            run_id = uuid4()
+        metadata = self._run_command_to_metadata(command, batches, run_id)
 
         self._update_metadata(metadata)
 
         run_dir = self._run_dirpath(metadata.created_at)
 
         os.makedirs(run_dir)
-        for i, batch in enumerate(batches, 1):
+        self._process_run(metadata, [batch.batch_id for batch in batches], run_dir)
+
+    def continue_run(self, run_id: UUID):
+        """
+        Raises:
+            FileNotFoundError if run cannot be found
+        """
+
+        metadata_filepath = self._find_metadata_filepath(run_id)
+        if metadata_filepath is None:
+            raise FileNotFoundError(f"Cannot find run with id {run_id}")
+
+        metadata = TypeAdapter(ExperimentRunMetadata).validate_json(
+            metadata_filepath.read_bytes()
+        )
+
+        run_dir = self._run_dirpath(metadata.created_at)
+        batch_ids = list(metadata.batches.keys())
+        self._process_run(metadata, batch_ids, run_dir)
+
+    def _process_run(
+        self,
+        metadata: ExperimentRunMetadata,
+        batch_ids: list[UUID],
+        run_dir: Path,
+    ):
+        for i, batch_id in enumerate(batch_ids, 1):
             self._translate_batch(
                 metadata,
-                batch.batch_id,
+                batch_id,
                 run_dir,
                 i,
-                len(batches),
+                len(batch_ids),
             )
 
-            metadata.batches[batch.batch_id].progress = "translated"
+            metadata.batches[batch_id].progress = "translated"
             if metadata.progress == "not started":
                 metadata.progress = "partial"
             self._update_metadata(metadata)
 
-        for i, batch in enumerate(batches, 1):
+        for i, batch_id in enumerate(batch_ids, 1):
             self._rate_batch(
                 metadata,
-                batch.batch_id,
+                batch_id,
                 run_dir,
                 i,
-                len(batches),
+                len(batch_ids),
             )
 
-            metadata.batches[batch.batch_id].progress = "complete"
+            metadata.batches[batch_id].progress = "complete"
+            if metadata.progress == "not started":
+                metadata.progress = "partial"
             self._update_metadata(metadata)
 
         metadata.progress = "complete"
@@ -117,6 +148,7 @@ class ExperimentRunner:
 
         model = batch.model
         done_count = 0
+        self._translated_record_filepath(batch_dir).write_bytes(b"")
         for prompt_setting in metadata.prompt_settings.values():
             for language in metadata.language_pairs:
                 for text_index in range(
@@ -129,7 +161,9 @@ class ExperimentRunner:
                     )
 
                     translated = self._translate(input=input, allow_fail=True)
-                    with open(self._unrated_record_filepath(batch_dir), "ab") as file:
+                    with open(
+                        self._translated_record_filepath(batch_dir), "ab"
+                    ) as file:
                         file.write(
                             TypeAdapter(ExperimentTranslatedRecord).dump_json(
                                 translated
@@ -169,9 +203,10 @@ class ExperimentRunner:
         done_count = 0
         batch_dir = self._batch_dirpath(run_dir, batch)
         record_count = (
-            self._unrated_record_filepath(batch_dir).read_bytes().count(b"\n")
+            self._translated_record_filepath(batch_dir).read_bytes().count(b"\n")
         )
-        with open(self._unrated_record_filepath(batch_dir)) as file:
+        self._complete_record_filepath(batch_dir).write_bytes(b"")
+        with open(self._translated_record_filepath(batch_dir)) as file:
             for record in file:
                 record = TypeAdapter(ExperimentTranslatedRecord).validate_json(record)
                 model = record.input_.setting.model
@@ -213,6 +248,19 @@ class ExperimentRunner:
         return cls.base_dirpath / (datetime.strftime(created_at, "%Y%m%d_%H%M%S"))
 
     @classmethod
+    def _find_metadata_filepath(cls, run_id: UUID) -> Optional[Path]:
+        for metadata_path in cls.base_dirpath.glob("*.metadata.json"):
+            try:
+                metadata = TypeAdapter(ExperimentRunMetadata).validate_json(
+                    metadata_path.read_bytes()
+                )
+            except ValidationError:
+                continue
+            if metadata.run_id == run_id:
+                return metadata_path
+        return None
+
+    @classmethod
     def _metadata_filepath(cls, created_at: datetime) -> Path:
         return cls.base_dirpath / (
             datetime.strftime(created_at, "%Y%m%d_%H%M%S") + ".metadata.json"
@@ -234,7 +282,7 @@ class ExperimentRunner:
         )
 
     @staticmethod
-    def _unrated_record_filepath(batch_dir: Path) -> Path:
+    def _translated_record_filepath(batch_dir: Path) -> Path:
         return batch_dir / "unrated_records.jsonl"
 
     @staticmethod
@@ -243,9 +291,10 @@ class ExperimentRunner:
 
     @staticmethod
     def _run_command_to_metadata(
-        command: ExperimentRunCommand, batches: list[ExperimentBatch]
+        command: ExperimentRunCommand, batches: list[ExperimentBatch], run_id: UUID
     ) -> ExperimentRunMetadata:
         return ExperimentRunMetadata(
+            run_id=run_id,
             note=command.note,
             models=command.models,
             prompt_settings={
