@@ -2,7 +2,7 @@ from src import api
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from uuid import UUID, uuid4
-from typing import Literal
+from typing import Literal, TypeAlias
 import dataclasses
 
 
@@ -78,6 +78,9 @@ class ExperimentCompleteRecord(Versioned):
     metadata: ExperimentMetadata
 
 
+ExperimentBatchProgress: TypeAlias = Literal["not started", "translated", "complete"]
+
+
 @dataclass(kw_only=True)
 class ExperimentBatch:
     """
@@ -89,7 +92,10 @@ class ExperimentBatch:
     model: str
     text_index_start: int
     text_index_end: int  # Inclusive
-    progress: Literal["not started", "translated", "complete"]
+    progress: ExperimentBatchProgress
+
+
+ExperimentRunProgress: TypeAlias = Literal["not started", "partial", "complete"]
 
 
 @dataclass(kw_only=True)
@@ -104,7 +110,7 @@ class ExperimentRunMetadata(Versioned):
     texts: list[ExperimentText]
 
     batches: dict[UUID, ExperimentBatch]
-    progress: Literal["not started", "partial", "complete"]
+    progress: ExperimentRunProgress
 
 
 @dataclass(kw_only=True)
@@ -127,7 +133,9 @@ __all__ = [
     "ExperimentMetadata",
     "ExperimentTranslatedRecord",
     "ExperimentCompleteRecord",
+    "ExperimentBatchProgress",
     "ExperimentBatch",
+    "ExperimentRunProgress",
     "ExperimentRunMetadata",
     "ExperimentRunCommand",
 ]

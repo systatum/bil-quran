@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from time import perf_counter
 from pathlib import Path
 from pydantic import TypeAdapter, ValidationError
-from uuid import UUID, uuid4
+from uuid import UUID, uuid4, uuid5
 from typing import Optional
 import typing
 import math
@@ -32,36 +32,49 @@ class ExperimentRunner:
     def __init__(self, client: APIClient):
         self._client = client
 
-    def run(
+    def create(
         self,
         command: ExperimentRunCommand,
-        run_id: Optional[UUID] = None,
-    ):
+        explicit_uuid: UUID | None = None,
+        force_new: bool = False,
+    ) -> UUID:
+        """
+        UUID is tied to the lifecycle of the result generation
+
+        Raises:
+            ValueError if explicit_uuid and force_new is set
+        """
+        if explicit_uuid is not None and force_new:
+            raise ValueError("Can not set explicit_uuid and force_new at the same time")
+
         batches = self._create_batches(command)
-        if run_id is None:
+        run_id: UUID
+        if force_new:
             run_id = uuid4()
-        metadata = self._run_command_to_metadata(command, batches, run_id)
+        elif explicit_uuid is not None:
+            run_id = explicit_uuid
+        else:
+            run_id = uuid5(
+                UUID("0" * 32),
+                str(TypeAdapter(ExperimentRunCommand).dump_json(command)),
+            )
 
-        self._update_metadata(metadata)
+        metadata = self._find_metadata(run_id)
+        if metadata is None:
+            metadata = self._run_command_to_metadata(command, batches, run_id)
+            self._update_metadata(metadata)
 
-        run_dir = self._run_dirpath(metadata.created_at)
+        return metadata.run_id
 
-        os.makedirs(run_dir)
-        self._process_run(metadata, [batch.batch_id for batch in batches], run_dir)
-
-    def continue_run(self, run_id: UUID):
+    def run(self, run_id: UUID):
         """
         Raises:
             FileNotFoundError if run cannot be found
         """
 
-        metadata_filepath = self._find_metadata_filepath(run_id)
-        if metadata_filepath is None:
+        metadata = self._find_metadata(run_id)
+        if metadata is None:
             raise FileNotFoundError(f"Cannot find run with id {run_id}")
-
-        metadata = TypeAdapter(ExperimentRunMetadata).validate_json(
-            metadata_filepath.read_bytes()
-        )
 
         run_dir = self._run_dirpath(metadata.created_at)
         batch_ids = list(metadata.batches.keys())
@@ -74,7 +87,7 @@ class ExperimentRunner:
         run_dir: Path,
     ):
         for i, batch_id in enumerate(batch_ids, 1):
-            self._translate_batch(
+            progress = self._translate_batch(
                 metadata,
                 batch_id,
                 run_dir,
@@ -82,13 +95,13 @@ class ExperimentRunner:
                 len(batch_ids),
             )
 
-            metadata.batches[batch_id].progress = "translated"
+            metadata.batches[batch_id].progress = progress
             if metadata.progress == "not started":
                 metadata.progress = "partial"
             self._update_metadata(metadata)
 
         for i, batch_id in enumerate(batch_ids, 1):
-            self._rate_batch(
+            progress = self._rate_batch(
                 metadata,
                 batch_id,
                 run_dir,
@@ -96,7 +109,7 @@ class ExperimentRunner:
                 len(batch_ids),
             )
 
-            metadata.batches[batch_id].progress = "complete"
+            metadata.batches[batch_id].progress = progress
             if metadata.progress == "not started":
                 metadata.progress = "partial"
             self._update_metadata(metadata)
@@ -138,10 +151,10 @@ class ExperimentRunner:
         run_dir: Path,
         batch_number: int = 1,
         batch_total: int = 1,
-    ):
+    ) -> ExperimentBatchProgress:
         batch: ExperimentBatch = metadata.batches[batch_id]
         if batch.progress != "not started":
-            return
+            return batch.progress
 
         batch_dir = self._batch_dirpath(run_dir, batch)
         os.makedirs(batch_dir, exist_ok=True)
@@ -187,6 +200,7 @@ class ExperimentRunner:
                         flush=True,
                     )
         print()
+        return "translated"
 
     def _rate_batch(
         self,
@@ -195,10 +209,10 @@ class ExperimentRunner:
         run_dir: Path,
         batch_number: int = 1,
         batch_total: int = 1,
-    ):
+    ) -> ExperimentBatchProgress:
         batch: ExperimentBatch = metadata.batches[batch_id]
         if batch.progress != "translated":
-            return
+            return batch.progress
 
         done_count = 0
         batch_dir = self._batch_dirpath(run_dir, batch)
@@ -236,6 +250,20 @@ class ExperimentRunner:
                     flush=True,
                 )
         print()
+        return "complete"
+
+    @classmethod
+    def _find_metadata(cls, run_id: UUID) -> Optional[ExperimentRunMetadata]:
+        for metadata_path in cls.base_dirpath.glob("*.metadata.json"):
+            try:
+                metadata = TypeAdapter(ExperimentRunMetadata).validate_json(
+                    metadata_path.read_bytes()
+                )
+            except ValidationError:
+                continue
+            if metadata.run_id == run_id:
+                return metadata
+        return None
 
     @classmethod
     def _update_metadata(cls, metadata: ExperimentRunMetadata):
@@ -246,19 +274,6 @@ class ExperimentRunner:
     @classmethod
     def _run_dirpath(cls, created_at: datetime) -> Path:
         return cls.base_dirpath / (datetime.strftime(created_at, "%Y%m%d_%H%M%S"))
-
-    @classmethod
-    def _find_metadata_filepath(cls, run_id: UUID) -> Optional[Path]:
-        for metadata_path in cls.base_dirpath.glob("*.metadata.json"):
-            try:
-                metadata = TypeAdapter(ExperimentRunMetadata).validate_json(
-                    metadata_path.read_bytes()
-                )
-            except ValidationError:
-                continue
-            if metadata.run_id == run_id:
-                return metadata_path
-        return None
 
     @classmethod
     def _metadata_filepath(cls, created_at: datetime) -> Path:
