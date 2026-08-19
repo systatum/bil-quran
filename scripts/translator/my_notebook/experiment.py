@@ -5,32 +5,12 @@ from datetime import datetime, timezone
 from time import perf_counter
 from pathlib import Path
 from pydantic import TypeAdapter
+from uuid import UUID
+from typing import Optional
 import typing
 import math
 import sys
 import os
-
-
-def metadata_v2_to_internal(
-    v2: ExperimentRunMetadataV2,
-) -> ExperimentRunMetadataInternal:
-    return ExperimentRunMetadataInternal(
-        run_id=v2.run_id,
-        created_at=v2.created_at,
-        note=v2.note,
-        models=v2.models,
-        prompt_settings={
-            name: ExperimentPrompt(setting=v2.prompt_settings[name], name=name)
-            for name in v2.prompt_settings.keys()
-        },
-        language_pairs=[
-            ExperimentLanguage(
-                source_language=source_language, target_language=target_language
-            )
-            for (source_language, target_language) in v2.language_pairs
-        ],
-        texts=[ExperimentText(text=text, text_id=i) for i, text in enumerate(v2.texts)],
-    )
 
 
 def printerr(*args, **kwargs):
@@ -46,107 +26,183 @@ def format_and_log_errors(self, fmt: str, *args, **kwargs) -> str:
 
 class ExperimentRunner:
     _client: APIClient
+    base_dirpath: Path = Path("results")
 
     def __init__(self, client: APIClient):
         self._client = client
 
-    def create_batches(
-        self, run: ExperimentRunMetadataV2, batch_size: int = 64
-    ) -> list[ExperimentBatchV1]:
+    def run(
+        self,
+        command: ExperimentRunCommand,
+    ):
+        batches = self._create_batches(command)
+        metadata = self._run_command_to_metadata(command, batches)
+
+        self._update_metadata(metadata)
+
+        run_dir = self._run_dirpath(metadata.created_at)
+
+        os.makedirs(run_dir)
+        for i, batch in enumerate(batches, 1):
+            self._translate_batch(
+                metadata,
+                batch.batch_id,
+                run_dir,
+                i,
+                len(batches),
+            )
+
+            metadata.batches[batch.batch_id].progress = "translated"
+            metadata.progress = "partial"
+
+            self._update_metadata(metadata)
+
+        metadata.progress = "complete"
+        self._update_metadata(metadata)
+
+    def _create_batches(
+        self, run: ExperimentRunCommand, batch_size: int = 64
+    ) -> list[ExperimentBatch]:
         variant_count_per_model = len(run.language_pairs) * len(run.prompt_settings)
         text_count_per_model_per_batch = math.ceil(batch_size / variant_count_per_model)
         text_count_per_model = variant_count_per_model * len(run.texts)
 
         batches = []
         for model in run.models:
-            for batch_start_id in range(
+            for batch_start_index in range(
                 0, text_count_per_model, text_count_per_model_per_batch
             ):
-                batch_end_id = min(
-                    batch_start_id + text_count_per_model_per_batch,
-                    text_count_per_model_per_batch,
+                batch_end_index = min(
+                    batch_start_index + text_count_per_model_per_batch - 1,
+                    len(run.texts) - 1,
                 )
                 batches.append(
-                    ExperimentBatchV1(
-                        run_id=run.run_id,
+                    ExperimentBatch(
                         model=model,
-                        text_id_start=batch_start_id,
-                        text_id_end=batch_end_id - 1,
+                        text_index_start=batch_start_index,
+                        text_index_end=batch_end_index,
+                        progress="not started",
                     )
                 )
 
         return batches
 
-    def translate_batch(
+    def _translate_batch(
         self,
-        run_: ExperimentRunMetadataV2,
-        batch: ExperimentBatchV1,
-        base_dir: Path,
+        metadata: ExperimentRunMetadata,
+        batch_id: UUID,
+        run_dir: Path,
         batch_number: int = 1,
         batch_total: int = 1,
     ):
-        if batch.translated:
+        batch: ExperimentBatch = metadata.batches[batch_id]
+        if batch.progress != "not started":
             return
 
-        save_dir = base_dir / self._format_batch(batch)
-        os.makedirs(save_dir, exist_ok=True)
-
-        run: ExperimentRunMetadataInternal = metadata_v2_to_internal(run_)
+        batch_dir = self._batch_dirpath(run_dir, batch)
+        os.makedirs(batch_dir, exist_ok=True)
 
         model = batch.model
-        for pi, prompt_setting in enumerate(run.prompt_settings.values(), 1):
-            for li, language in enumerate(run.language_pairs, 1):
-                for ti, text in enumerate(run.texts, 1):
+        done_count = 0
+        for prompt_setting in metadata.prompt_settings.values():
+            for language in metadata.language_pairs:
+                for text_index in range(
+                    batch.text_index_start, batch.text_index_end + 1
+                ):
+                    text = metadata.texts[text_index]
                     setting = ExperimentSetting(prompt=prompt_setting, model=model)
                     input = ExperimentInput(
                         text=text, language=language, setting=setting
                     )
 
-                    unrated = self._translate(input=input, allow_fail=True)
-                    file_name = save_dir / "unrated_records.jsonl"
-                    TypeAdapter(ExperimentUnratedRecordV1).validate_python(unrated)
-                    with open(file_name, "ab") as file:
+                    translated = self._translate(input=input, allow_fail=True)
+                    with open(self._unrated_filepath(batch_dir), "ab") as file:
                         file.write(
-                            TypeAdapter(ExperimentUnratedRecordV1).dump_json(unrated)
+                            TypeAdapter(ExperimentTranslatedRecord).dump_json(
+                                translated
+                            )
+                            + b"\n"
                         )
-                        file.write(b"\n")
+                    done_count += 1
                     print(
-                        "Batch {}/{} | Model {} | Prompt {}/{} | Language {}/{} | Text {}/{}\r".format(
+                        "Translating | Batch {}/{} | Model {} | Done {}/{}\r".format(
                             batch_number,
                             batch_total,
                             model,
-                            pi,
-                            len(run.prompt_settings.values()),
-                            li,
-                            len(run.language_pairs),
-                            ti,
-                            len(run.texts),
+                            done_count,
+                            len(metadata.prompt_settings)
+                            * len(metadata.language_pairs)
+                            * (batch.text_index_end - batch.text_index_start + 1),
                         ),
                         flush=True,
                         end="",
                     )
 
-        batch.translated = True
-        file_name = save_dir / "metadata.json"
-        TypeAdapter(ExperimentBatchV1).validate_python(batch)
-        with open(file_name, "wb") as file:
-            file.write(TypeAdapter(ExperimentBatchV1).dump_json(batch))
+    @classmethod
+    def _update_metadata(cls, metadata: ExperimentRunMetadata):
+        cls._metadata_filepath(metadata.created_at).write_bytes(
+            TypeAdapter(ExperimentRunMetadata).dump_json(metadata, indent=2)
+        )
+
+    @classmethod
+    def _run_dirpath(cls, created_at: datetime) -> Path:
+        return cls.base_dirpath / (datetime.strftime(created_at, "%Y%m%d_%H%M%S"))
+
+    @classmethod
+    def _metadata_filepath(cls, created_at: datetime) -> Path:
+        return cls.base_dirpath / (
+            datetime.strftime(created_at, "%Y%m%d_%H%M%S") + ".metadata.json"
+        )
 
     @staticmethod
-    def _format_batch(batch: ExperimentBatchV1) -> str:
-        return "{}_{}_{}_batch_{}_{}".format(
-            batch.run_id,
-            batch.batch_id,
+    def _find_batch_dirpath(run_dir: Path, batch_id: UUID) -> Optional[Path]:
+        for path in run_dir.glob(f"batch_*_{batch_id}"):
+            return path
+        return None
+
+    @staticmethod
+    def _batch_dirpath(run_dir: Path, batch: ExperimentBatch) -> Path:
+        return run_dir / "batch_{}-{}_{}_{}".format(
+            batch.text_index_start,
+            batch.text_index_end,
             batch.model,
-            batch.text_id_start,
-            batch.text_id_end,
+            batch.batch_id,
+        )
+
+    @staticmethod
+    def _unrated_filepath(batch_dir: Path) -> Path:
+        return batch_dir / "unrated_records.jsonl"
+
+    @staticmethod
+    def _run_command_to_metadata(
+        command: ExperimentRunCommand, batches: list[ExperimentBatch]
+    ) -> ExperimentRunMetadata:
+        return ExperimentRunMetadata(
+            note=command.note,
+            models=command.models,
+            prompt_settings={
+                name: ExperimentPrompt(setting=command.prompt_settings[name], name=name)
+                for name in command.prompt_settings.keys()
+            },
+            language_pairs=[
+                ExperimentLanguage(
+                    source_language=source_language, target_language=target_language
+                )
+                for (source_language, target_language) in command.language_pairs
+            ],
+            texts=[
+                ExperimentText(text=text, text_index=i)
+                for i, text in enumerate(command.texts)
+            ],
+            batches={batch.batch_id: batch for batch in batches},
+            progress="not started",
         )
 
     def _translate(
         self,
         input: ExperimentInput,
         allow_fail: bool = False,
-    ) -> ExperimentUnratedRecordV1:
+    ) -> ExperimentTranslatedRecord:
         start_time = perf_counter()
         try:
             translation = self._client.translate(
@@ -165,8 +221,8 @@ class ExperimentRunner:
             error_message = format_and_log_errors(
                 "Translation failed, {}: {}", type(e).__name__, e
             )
-            return ExperimentUnratedRecordV1(
-                input=input,
+            return ExperimentTranslatedRecord(
+                input_=input,
                 translation=None,
                 metadata=ExperimentMetadata(
                     created_at=datetime.now(timezone.utc),
@@ -178,8 +234,8 @@ class ExperimentRunner:
 
         end_time = perf_counter()
 
-        return ExperimentUnratedRecordV1(
-            input=input,
+        return ExperimentTranslatedRecord(
+            input_=input,
             translation=translation,
             metadata=ExperimentMetadata(
                 created_at=datetime.now(timezone.utc),
@@ -191,14 +247,14 @@ class ExperimentRunner:
 
     def _rate(
         self,
-        unrated: ExperimentUnratedRecordV1,
+        unrated: ExperimentTranslatedRecord,
         metadata: ExperimentMetadata,
         allow_fail: bool = False,
-    ) -> ExperimentCompleteRecordV2:
+    ) -> ExperimentCompleteRecord:
         start_time = perf_counter()
         try:
             rating = self._client.rate(
-                unrated.input.text.text,
+                unrated.input_.text.text,
                 typing.cast(api.Translation, unrated.translation),
             )
         except Exception as e:
@@ -211,8 +267,8 @@ class ExperimentRunner:
                 "Rating failed, {}: {}", type(e).__name__, e
             )
 
-            return ExperimentCompleteRecordV2(
-                input=unrated.input,
+            return ExperimentCompleteRecord(
+                input_=unrated.input_,
                 result=None,
                 metadata=ExperimentMetadata(
                     created_at=datetime.now(timezone.utc),
@@ -228,8 +284,8 @@ class ExperimentRunner:
             translation=typing.cast(api.Translation, unrated.translation), rating=rating
         )
 
-        return ExperimentCompleteRecordV2(
-            input=unrated.input,
+        return ExperimentCompleteRecord(
+            input_=unrated.input_,
             result=result,
             metadata=ExperimentMetadata(
                 created_at=datetime.now(timezone.utc),

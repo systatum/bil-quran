@@ -2,6 +2,7 @@ from src import api
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from uuid import UUID, uuid4
+from typing import Literal
 import dataclasses
 
 
@@ -11,6 +12,11 @@ def date_field():
 
 def uuid_field():
     return dataclasses.field(default_factory=lambda: uuid4())
+
+
+@dataclass(kw_only=True)
+class Versioned:
+    version: Literal["2"] = "2"
 
 
 @dataclass(kw_only=True)
@@ -34,7 +40,7 @@ class ExperimentLanguage:
 @dataclass(kw_only=True)
 class ExperimentText:
     text: str
-    text_id: int
+    text_index: int
 
 
 @dataclass(kw_only=True)
@@ -59,37 +65,35 @@ class ExperimentMetadata:
 
 
 @dataclass(kw_only=True)
-class ExperimentUnratedRecordV1:
-    input: ExperimentInput
+class ExperimentTranslatedRecord(Versioned):
+    input_: ExperimentInput
     translation: api.Translation | None
     metadata: ExperimentMetadata
 
 
 @dataclass(kw_only=True)
-class ExperimentCompleteRecordV2:
-    input: ExperimentInput
+class ExperimentCompleteRecord(Versioned):
+    input_: ExperimentInput
     result: ExperimentResult | None
     metadata: ExperimentMetadata
 
 
 @dataclass(kw_only=True)
-class ExperimentBatchV1:
+class ExperimentBatch:
     """
     Batching always include all prompt_settings and language_pairs per text
     """
 
     batch_id: UUID = uuid_field()
     created_at: datetime = date_field()
-    run_id: UUID
     model: str
-    text_id_start: int
-    text_id_end: int  # Inclusive
-    translated: bool = False
-    rated: bool = False
+    text_index_start: int
+    text_index_end: int  # Inclusive
+    progress: Literal["not started", "translated", "complete"]
 
 
 @dataclass(kw_only=True)
-class ExperimentRunMetadataInternal:
+class ExperimentRunMetadata(Versioned):
     run_id: UUID = uuid_field()
     created_at: datetime = date_field()
     note: str = ""
@@ -99,11 +103,12 @@ class ExperimentRunMetadataInternal:
     language_pairs: list[ExperimentLanguage]
     texts: list[ExperimentText]
 
+    batches: dict[UUID, ExperimentBatch]
+    progress: Literal["not started", "partial", "complete"]
+
 
 @dataclass(kw_only=True)
-class ExperimentRunMetadataV2:
-    run_id: UUID = uuid_field()
-    created_at: datetime = date_field()
+class ExperimentRunCommand:
     note: str = ""
 
     models: list[str]
@@ -120,9 +125,9 @@ __all__ = [
     "ExperimentInput",
     "ExperimentResult",
     "ExperimentMetadata",
-    "ExperimentUnratedRecordV1",
-    "ExperimentCompleteRecordV2",
-    "ExperimentBatchV1",
-    "ExperimentRunMetadataInternal",
-    "ExperimentRunMetadataV2",
+    "ExperimentTranslatedRecord",
+    "ExperimentCompleteRecord",
+    "ExperimentBatch",
+    "ExperimentRunMetadata",
+    "ExperimentRunCommand",
 ]
