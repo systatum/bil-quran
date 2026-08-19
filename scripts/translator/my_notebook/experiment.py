@@ -11,6 +11,7 @@ import typing
 import math
 import sys
 import os
+import colorama
 
 
 def printerr(*args, **kwargs):
@@ -53,8 +54,20 @@ class ExperimentRunner:
             )
 
             metadata.batches[batch.batch_id].progress = "translated"
-            metadata.progress = "partial"
+            if metadata.progress == "not started":
+                metadata.progress = "partial"
+            self._update_metadata(metadata)
 
+        for i, batch in enumerate(batches, 1):
+            self._rate_batch(
+                metadata,
+                batch.batch_id,
+                run_dir,
+                i,
+                len(batches),
+            )
+
+            metadata.batches[batch.batch_id].progress = "complete"
             self._update_metadata(metadata)
 
         metadata.progress = "complete"
@@ -116,7 +129,7 @@ class ExperimentRunner:
                     )
 
                     translated = self._translate(input=input, allow_fail=True)
-                    with open(self._unrated_filepath(batch_dir), "ab") as file:
+                    with open(self._unrated_record_filepath(batch_dir), "ab") as file:
                         file.write(
                             TypeAdapter(ExperimentTranslatedRecord).dump_json(
                                 translated
@@ -125,7 +138,9 @@ class ExperimentRunner:
                         )
                     done_count += 1
                     print(
-                        "Translating | Batch {}/{} | Model {} | Done {}/{}\r".format(
+                        colorama.ansi.clear_line(),
+                        "\r"
+                        "Translating | Batch {}/{} | Model {} | Done {}/{}".format(
                             batch_number,
                             batch_total,
                             model,
@@ -134,9 +149,58 @@ class ExperimentRunner:
                             * len(metadata.language_pairs)
                             * (batch.text_index_end - batch.text_index_start + 1),
                         ),
-                        flush=True,
                         end="",
+                        flush=True,
                     )
+        print()
+
+    def _rate_batch(
+        self,
+        metadata: ExperimentRunMetadata,
+        batch_id: UUID,
+        run_dir: Path,
+        batch_number: int = 1,
+        batch_total: int = 1,
+    ):
+        batch: ExperimentBatch = metadata.batches[batch_id]
+        if batch.progress != "translated":
+            return
+
+        done_count = 0
+        batch_dir = self._batch_dirpath(run_dir, batch)
+        record_count = (
+            self._unrated_record_filepath(batch_dir).read_bytes().count(b"\n")
+        )
+        with open(self._unrated_record_filepath(batch_dir)) as file:
+            for record in file:
+                record = TypeAdapter(ExperimentTranslatedRecord).validate_json(record)
+                model = record.input_.setting.model
+
+                rated = self._rate(
+                    translated=record, metadata=record.metadata, allow_fail=True
+                )
+                with open(self._complete_record_filepath(batch_dir), "ab") as file:
+                    file.write(
+                        TypeAdapter(ExperimentCompleteRecord).dump_json(rated) + b"\n"
+                    )
+                done_count += 1
+                if done_count != 1:
+                    colorama.ansi.Cursor.UP()
+                    colorama.ansi.clear_line()
+                print(
+                    colorama.ansi.clear_line(),
+                    "\r"
+                    "Rating | Batch {}/{} | Model {} | Done {}/{}".format(
+                        batch_number,
+                        batch_total,
+                        model,
+                        done_count,
+                        record_count,
+                    ),
+                    end="",
+                    flush=True,
+                )
+        print()
 
     @classmethod
     def _update_metadata(cls, metadata: ExperimentRunMetadata):
@@ -170,8 +234,12 @@ class ExperimentRunner:
         )
 
     @staticmethod
-    def _unrated_filepath(batch_dir: Path) -> Path:
+    def _unrated_record_filepath(batch_dir: Path) -> Path:
         return batch_dir / "unrated_records.jsonl"
+
+    @staticmethod
+    def _complete_record_filepath(batch_dir: Path) -> Path:
+        return batch_dir / "complete_records.jsonl"
 
     @staticmethod
     def _run_command_to_metadata(
@@ -247,15 +315,15 @@ class ExperimentRunner:
 
     def _rate(
         self,
-        unrated: ExperimentTranslatedRecord,
+        translated: ExperimentTranslatedRecord,
         metadata: ExperimentMetadata,
         allow_fail: bool = False,
     ) -> ExperimentCompleteRecord:
         start_time = perf_counter()
         try:
             rating = self._client.rate(
-                unrated.input_.text.text,
-                typing.cast(api.Translation, unrated.translation),
+                translated.input_.text.text,
+                typing.cast(api.Translation, translated.translation),
             )
         except Exception as e:
             if not allow_fail:
@@ -268,7 +336,7 @@ class ExperimentRunner:
             )
 
             return ExperimentCompleteRecord(
-                input_=unrated.input_,
+                input_=translated.input_,
                 result=None,
                 metadata=ExperimentMetadata(
                     created_at=datetime.now(timezone.utc),
@@ -281,11 +349,12 @@ class ExperimentRunner:
         end_time = perf_counter()
 
         result = ExperimentResult(
-            translation=typing.cast(api.Translation, unrated.translation), rating=rating
+            translation=typing.cast(api.Translation, translated.translation),
+            rating=rating,
         )
 
         return ExperimentCompleteRecord(
-            input_=unrated.input_,
+            input_=translated.input_,
             result=result,
             metadata=ExperimentMetadata(
                 created_at=datetime.now(timezone.utc),
