@@ -137,8 +137,20 @@ function startServer() {
     },
   )
 
+  server.stdout.on("data", (data) => {
+    process.stdout.write(`[server] ${data}`)
+  })
+
   server.stderr.on("data", (data) => {
     process.stderr.write(`[server] ${data}`)
+  })
+
+  server.on("error", (error) => {
+    console.error("[server process error]", error)
+  })
+
+  server.on("exit", (code, signal) => {
+    console.error(`[server exited] code=${code} signal=${signal}`)
   })
 
   return server
