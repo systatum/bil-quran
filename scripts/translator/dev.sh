@@ -7,4 +7,4 @@ set +a
 
 export UV_INDEX_STRATEGY=unsafe-first-match
 
-uv run fastapi dev --entrypoint backend.src.main:app --reload-dir backend/src
+uv run --package backend --dev fastapi dev --entrypoint backend.main:app --reload-dir backend/src

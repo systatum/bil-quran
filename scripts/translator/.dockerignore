@@ -1,6 +1,11 @@
-proxy/
-frontend/
-backend/mount/
+.env-public
 
-.venv/
+# GIT
+**/.ipynb_checkpoints
 **/__pycache__
+**/.virtual_documents
+backend/mount
+proxy/Caddyfile
+frontend/results
+.env
+.venv

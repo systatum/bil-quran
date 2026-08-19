@@ -1,6 +1,6 @@
 from shared.env import BackendEnv as Env
-from backend.src.setting_prototype import Setting
-from backend.src.llm_model_source import ModelSource
+from backend.setting_prototype import Setting
+from backend.llm_model_source import ModelSource
 from pathlib import Path
 
 

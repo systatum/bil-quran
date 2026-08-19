@@ -1,5 +1,5 @@
 from __future__ import annotations
-from backend.src.setting_loader import SettingLoader
+from backend.setting_loader import SettingLoader
 from dataclasses import dataclass
 from typing import Optional, List, Union, Dict, Iterator
 import dataclasses

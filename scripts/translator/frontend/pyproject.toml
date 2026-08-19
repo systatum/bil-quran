@@ -3,15 +3,21 @@ name = "frontend"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-authors = [
-    { name = "SeeStarz", email = "mfahrim7@gmail.com" }
-]
+authors = [{ name = "SeeStarz", email = "mfahrim7@gmail.com" }]
 requires-python = ">=3.11"
-dependencies = []
-
-[project.scripts]
-frontend = "frontend:main"
+dependencies = [
+    "colorama>=0.4.6",
+    "ipykernel>=7.3.0",
+    "jupyterlab>=4.6.2",
+    "jupyterlab-lsp>=5.3.0",
+    "pydantic>=2.13.4",
+    "python-lsp-server>=1.15.0",
+    "requests>=2.34.2",
+]
 
 [build-system]
 requires = ["uv_build>=0.12.0,<0.13.0"]
 build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = "."

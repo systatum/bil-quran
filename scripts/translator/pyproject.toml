@@ -5,9 +5,18 @@ description = "Add your description here"
 readme = "README.md"
 authors = [{ name = "SeeStarz", email = "mfahrim7@gmail.com" }]
 requires-python = ">=3.11"
+dependencies = [
+    "shared",
+]
 
 [tool.uv.sources]
+backend = { workspace = true }
+frontend = { workspace = true }
+proxy = { workspace = true }
 shared = { workspace = true }
 
 [tool.uv.workspace]
 members = ["backend", "shared", "frontend", "proxy"]
+
+[dependency-groups]
+dev = ["backend", "frontend", "proxy", "shared"]

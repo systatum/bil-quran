@@ -1,7 +1,7 @@
 from __future__ import annotations
-from backend.src.llm_model_loader import load_models
-from backend.src.llm_model import PromptSetting, TranslateInput, LLMModel
-from backend.src.service import Job, JobResult, Service
+from backend.llm_model_loader import load_models
+from backend.llm_model import PromptSetting, TranslateInput, LLMModel
+from backend.service import Job, JobResult, Service
 from dataclasses import dataclass
 from typing import TypeAlias
 import traceback

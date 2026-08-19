@@ -12,8 +12,8 @@ services:
     gpus: all
     environment:
       # setting_loader.py will use this
-      - BE_ALT_SETTING_SYS_PATH=/workspace
-      - BE_ALT_SETTING_PYTHON_PATH=mount.setting
+      - BE_SETTING_SYS_PATH=/workspace
+      - BE_SETTING_PYTHON_PATH=mount.setting
 
       # setting.py may use this
       - BE_MOUNT_ROOT=/workspace

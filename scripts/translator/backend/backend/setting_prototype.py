@@ -1,4 +1,4 @@
-from backend.src.llm_model_source import ModelSource
+from backend.llm_model_source import ModelSource
 from dataclasses import dataclass
 from pathlib import Path
 

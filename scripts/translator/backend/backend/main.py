@@ -1,9 +1,9 @@
-from backend.src.translation import TranslateJob, TranslateJobResult, TranslationService
-from backend.src.rating import RateJob, RateJobResult, RatingService
-from backend.src.comparison import CompareJob, CompareJobResult, ComparisonService
-from backend.src.service import JobResult, Job, JobResultOk
-from backend.src.setting_loader import SettingLoader
-from backend.src.api import (
+from backend.translation import TranslateJob, TranslateJobResult, TranslationService
+from backend.rating import RateJob, RateJobResult, RatingService
+from backend.comparison import CompareJob, CompareJobResult, ComparisonService
+from backend.service import JobResult, Job, JobResultOk
+from backend.setting_loader import SettingLoader
+from backend.api import (
     ModelAPIResponse,
     TranslateAPIRequest,
     TranslateAPIResponse,

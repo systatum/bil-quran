@@ -1,7 +1,7 @@
 from shared.env import BackendEnv as Env
-from backend.src.setting_prototype import Setting
+from backend.setting_prototype import Setting
 from traceback import format_exc
-import backend.src.setting as default_setting
+import backend.setting as default_setting
 import importlib
 import types
 import sys

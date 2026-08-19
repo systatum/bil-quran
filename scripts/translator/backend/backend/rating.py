@@ -1,5 +1,5 @@
 from __future__ import annotations
-from backend.src.service import JobResult, Job, Service
+from backend.service import JobResult, Job, Service
 from comet import download_model, load_from_checkpoint
 from comet.models import CometModel
 from dataclasses import dataclass

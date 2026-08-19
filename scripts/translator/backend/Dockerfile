@@ -8,7 +8,8 @@ FROM ${BASE_IMAGE} AS generator
 
 # Index strategy first match because some windows version stuff made a mess
 ENV UV_LOCKED=1 \
-    UV_INDEX_STRATEGY=unsafe-first-match
+    UV_INDEX_STRATEGY=unsafe-first-match \
+    UV_HTTP_TIMEOUT=300
 
 WORKDIR /app
 
@@ -19,6 +20,7 @@ RUN mkdir /packages
 RUN --mount=type=bind,source=.,target=. \
     --mount=from=uv-base,source=/uv,target=/bin/uv \
     --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=cache,target=/root/.local/share/uv/python \
     uv export --package=backend --only-group=heavy --format pylock.toml --verbose > /packages/pylock.heavy.toml && \
     uv export --package=backend --format pylock.toml --verbose > /packages/pylock.toml
 ##########################
@@ -31,7 +33,9 @@ RUN --mount=type=bind,source=.,target=. \
 FROM ${BASE_IMAGE}
 
 # HTTP timeout bumped from 30 default to 3000 because cuda images are slow to download
+# Link mode copy just in case hardlinks does not work
 ENV UV_LOCKED=1 \
+    UV_LINK_MODE=copy \
     UV_INDEX_STRATEGY=unsafe-first-match \
     UV_HTTP_TIMEOUT=3000
 
@@ -52,13 +56,15 @@ RUN --mount=from=generator,source=/packages/pylock.heavy.toml,target=/app/pylock
 # Install all deps
 RUN --mount=from=generator,source=/packages/pylock.heavy.toml,target=/app/pylock.toml \
     --mount=type=cache,target=/root/.cache/uv \
-    uv venv --verbose \
-    && uv pip install -r pylock.toml --verbose
+    uv pip install -r pylock.toml --verbose
 
-COPY .python-version pyproject.toml uv.lock ./
-COPY backend backend/
+COPY . ./
 
-ENTRYPOINT ["uv", "run", "fastapi", "run", "--entrypoint", "backend.src.main:app"]
+# Because for some reason the all install above is not enough
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --package backend --package shared
+
+ENTRYPOINT ["uv", "run", "--package", "backend", "fastapi", "run", "--entrypoint", "backend.main:app"]
 #################
 # Runtime stage #
 #################
