@@ -6,6 +6,7 @@ import usePaperDialogState, {
   assertPaperDialogContent,
 } from "@hooks/states/PaperDialogState"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
+import useWordsState from "@hooks/states/WordsState"
 import { useTranslatedWords, useWords } from "@hooks/tools/useWordTranslations"
 import { messages } from "@i18n/message"
 import {
@@ -26,6 +27,7 @@ import VerseBookmarker from "../../VerseBookmarker"
 import InterlinearText from "../InterlinearText"
 import Carousel from "./Carousel"
 import Entry from "./Entry"
+import { WordsSkeleton } from "./ExegesisEntryStyles"
 
 export type NavTarget = { chapterId: number; verse: number }
 
@@ -98,15 +100,15 @@ export default function ExegesisPaperDialogContent() {
   const showTransliteration =
     transliterationOverride ?? userSettings.showTransliteration
 
-  const rawWords = useWords()
+  const rawWords = useWords(activeChapter)
   const words = useTranslatedWords(rawWords, userSettings.wbwTranslations)
+  const isChapterLoading = useWordsState((s) =>
+    s.loadingChapters.has(activeChapter),
+  )
 
   const verseWords = useMemo(
-    () =>
-      words.filter(
-        (w) => w.chapterId === activeChapter && w.verse === activeVerse,
-      ),
-    [words, activeChapter, activeVerse],
+    () => words.filter((w) => w.verse === activeVerse),
+    [words, activeVerse],
   )
 
   const maxVerse = useMemo(() => {
@@ -247,19 +249,24 @@ export default function ExegesisPaperDialogContent() {
             `,
           }}
         >
-          {!isChapterIntro && verseWords.length > 0 && (
-            <InterlinearText
-              id={`exegesis-${activeChapter}-${activeVerse}`}
-              arabicFont={fontArabic}
-              words={verseWords}
-              sajdahRuling={sajdahRuling}
-              shownTranslations={userSettings.wbwTranslations}
-              showMeaning
-              showTransliteration={showTransliteration}
-              compact
-              smaller
-            />
-          )}
+          {!isChapterIntro &&
+            (isChapterLoading ? (
+              <WordsSkeleton $theme={theme} />
+            ) : (
+              verseWords.length > 0 && (
+                <InterlinearText
+                  id={`exegesis-${activeChapter}-${activeVerse}`}
+                  arabicFont={fontArabic}
+                  words={verseWords}
+                  sajdahRuling={sajdahRuling}
+                  shownTranslations={userSettings.wbwTranslations}
+                  showMeaning
+                  showTransliteration={showTransliteration}
+                  compact
+                  smaller
+                />
+              )
+            ))}
         </SplitPane.Cell>
 
         <SplitPane.Cell

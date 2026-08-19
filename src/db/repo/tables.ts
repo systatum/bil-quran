@@ -86,7 +86,7 @@ export const exegesisContent = table(
 
 export const roots = table("roots", {
   id: integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
-  root: text({ length: 18 }).notNull(),
+  root: text({ length: 18 }).notNull().unique(),
 })
 
 export const lexemes = table("lexemes", {
@@ -94,7 +94,7 @@ export const lexemes = table("lexemes", {
   rootId: integer()
     .notNull()
     .references(() => roots.id, { onDelete: "cascade" }),
-  token: text({ length: 25 }).notNull(),
+  token: text({ length: 25 }).notNull().unique(),
   readings: text({ mode: "json" })
     .$type<Partial<Record<Locale, string>>>()
     .notNull()

@@ -4,6 +4,22 @@ import { create } from "zustand"
 import type { WordCell } from "../../fragments/QuranPaper/VerseRow"
 import useAppState from "./AppState"
 
+/**
+ * Set by `UIIndex` once the ScreenTransition mounts. `goBack()` only applies
+ * a screen's removal ~300ms after being triggered (to let the close
+ * animation play), so re-opening the same screen key inside that window
+ * doesn't change `activeScreens` at all (pushScreen dedupes it away) and the
+ * pending removal has nothing to notice it should stand down. Calling
+ * `reopen()` right after re-asserting the screen cancels that stale removal.
+ */
+let notifyScreenReopened: ((key: Screen) => void) | null = null
+
+export function registerScreenReopenNotifier(
+  fn: ((key: Screen) => void) | null,
+) {
+  notifyScreenReopened = fn
+}
+
 const usePaperDialogState = create<PaperDialogState>((set) => ({
   content: null,
   openCount: 0,
@@ -16,6 +32,7 @@ const usePaperDialogState = create<PaperDialogState>((set) => ({
     await useAppState.setState((s) => ({
       activeScreens: pushScreen(s.activeScreens, Screen.Lexeme),
     }))
+    notifyScreenReopened?.(Screen.Lexeme)
   },
 
   updateLexemeOccurrences(occurrences) {
@@ -38,6 +55,7 @@ const usePaperDialogState = create<PaperDialogState>((set) => ({
     await useAppState.setState((s) => ({
       activeScreens: pushScreen(s.activeScreens, Screen.Exegesis),
     }))
+    notifyScreenReopened?.(Screen.Exegesis)
   },
 
   close() {

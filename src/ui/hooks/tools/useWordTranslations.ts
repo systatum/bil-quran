@@ -68,22 +68,46 @@ export function useWordTranslations(
   return corpora
 }
 
-export function useWords() {
+/**
+ * Loads and returns one chapter's words, or every loaded chapter's words if
+ * `chapterId` is omitted.
+ */
+export function useWords(chapterId?: number) {
   const { pushError } = useAppState()
-  const { words, loadWords } = useWordsState()
+  const { words, loadedChapters, loadWords } = useWordsState()
 
   useEffect(() => {
-    ;(async () => {
+    if (chapterId == null) {
       if (words.length > 0) return
-      try {
-        loadWords()
-      } catch (e) {
-        pushError(e)
-      }
-    })()
-  }, [])
+      loadWords().catch((e) => pushError(e))
+      return
+    }
 
-  return words
+    if (loadedChapters.has(chapterId)) return
+    loadWords(chapterId).catch((e) => pushError(e))
+  }, [chapterId])
+
+  return useMemo(
+    () =>
+      chapterId == null ? words : words.filter((w) => w.chapterId === chapterId),
+    [words, chapterId],
+  )
+}
+
+function translateWord(
+  word: WordWithLexemeRecord,
+  locales: WordTranslationOption[],
+  corpora: Partial<TranslationCorpusMap>,
+): WordCell {
+  return {
+    ...word,
+    meanings: Object.fromEntries(
+      locales.map((locale) => [
+        locale,
+        corpora[locale]?.[word.chapterId]?.[word.verse]?.[word.order],
+      ]),
+    ),
+  }
 }
 
 export function useTranslatedWords(
@@ -92,16 +116,42 @@ export function useTranslatedWords(
 ): WordCell[] {
   const corpora = useWordTranslations(locales)
 
-  return useMemo(() => {
-    return words.map((word) => ({
-      ...word,
+  // `words` only ever grows by appending whole chapters (never reorders or
+  // removes), so a background chapter merge keeps every previous element's
+  // identity. Reusing the previous result and translating just the new tail
+  // keeps this O(new words) instead of O(all words loaded so far) on every
+  // single background-seeded chapter.
+  const prevRef = useRef<{
+    words: WordWithLexemeRecord[]
+    locales: WordTranslationOption[]
+    corpora: Partial<TranslationCorpusMap>
+    result: WordCell[]
+  } | null>(null)
 
-      meanings: Object.fromEntries(
-        locales.map((locale) => [
-          locale,
-          corpora[locale]?.[word.chapterId]?.[word.verse]?.[word.order],
-        ]),
-      ),
-    }))
+  return useMemo(() => {
+    const prev = prevRef.current
+    const isAppend =
+      prev != null &&
+      prev.locales === locales &&
+      prev.corpora === corpora &&
+      words.length >= prev.words.length &&
+      words[0] === prev.words[0]
+
+    const newWords = isAppend ? words.slice(prev!.words.length) : words
+
+    // Nothing new for this particular filtered/scoped `words` view (e.g. a
+    // single-chapter dialog while an unrelated chapter merges in the
+    // background). Reuse the previous result as-is rather than allocating
+    // an identical array.
+    if (isAppend && newWords.length === 0) {
+      prevRef.current = { words, locales, corpora, result: prev!.result }
+      return prev!.result
+    }
+
+    const newCells = newWords.map((word) => translateWord(word, locales, corpora))
+    const result = isAppend ? [...prev!.result, ...newCells] : newCells
+
+    prevRef.current = { words, locales, corpora, result }
+    return result
   }, [words, corpora, locales])
 }

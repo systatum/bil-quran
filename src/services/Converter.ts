@@ -1,4 +1,10 @@
+import {
+  Asset,
+  DEFAULT_FEED_EXEGESIS_WORK,
+  ExegesisWork,
+} from "@constants/assets"
 import { IPCResponse } from "@constants/IPC"
+import { Locale } from "@constants/settings"
 
 // ===== ERROR ======================================
 
@@ -71,6 +77,60 @@ export function flattenObject(
     },
     {} as Record<string, string>,
   )
+}
+
+// ===== URL ========================================
+
+const EXEGESIS_HASH_RE = /^#\/e\/(\d+)\/(\d+)(?:\?(.*))?$/
+
+export interface ExegesisDeepLink {
+  chapterId: number
+  verseNumber: number
+  tafsirParam?: string
+  transliterationParam?: string
+  localeParam?: string
+}
+
+/** Parses an `#/e/:chapter/:verse` hash without needing the router mounted. */
+export function parseExegesisDeepLink(hash: string): ExegesisDeepLink | null {
+  const match = EXEGESIS_HASH_RE.exec(hash)
+  if (!match) return null
+
+  const [, chapter, verse, query] = match
+  const params = new URLSearchParams(query ?? "")
+
+  return {
+    chapterId: Number(chapter),
+    verseNumber: Number(verse),
+    tafsirParam: params.get("tafsir") ?? undefined,
+    transliterationParam: params.get("transliteration") ?? undefined,
+    localeParam: params.get("locale") ?? undefined,
+  }
+}
+
+export interface ExegesisSelectionOverride {
+  exegesisId?: string
+  showTransliteration?: boolean
+}
+
+/** Mirrors `UIIndex`'s `openExegesisOnMount` override resolution. */
+export function resolveExegesisSelection(
+  tafsirParam: unknown,
+  transliterationParam: unknown,
+  locale: Locale,
+): ExegesisSelectionOverride {
+  const tafsir = tafsirParam != null ? String(tafsirParam) : undefined
+  const exegesisId = tafsir
+    ? Asset.resolveExegesisId(
+        ExegesisWork.isValid(tafsir) ? tafsir : DEFAULT_FEED_EXEGESIS_WORK,
+        locale,
+      )
+    : undefined
+
+  return {
+    exegesisId: exegesisId ?? undefined,
+    showTransliteration: String(transliterationParam) === "1" ? true : undefined,
+  }
 }
 
 const ROOT_LETTER_LATIN: Record<string, string> = {

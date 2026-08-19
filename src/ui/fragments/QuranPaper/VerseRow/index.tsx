@@ -16,12 +16,12 @@ import { useWordTranslations } from "@hooks/tools/useWordTranslations"
 import { unpackIPC } from "@services/Converter"
 import LOGGER from "@services/Logger"
 import { makeSnippet } from "@services/mutator"
-import { useEffect, useRef } from "react"
+import { haptic } from "@utils/haptic"
+import { useEffect, useMemo, useRef } from "react"
 import styled from "styled-components"
 import { Bismillah } from "./Bismillah"
 import InterlinearText from "./InterlinearText"
 import { VerseMarker } from "./VerseMarker"
-import { haptic } from "@utils/haptic"
 
 export type Verse = {
   id: string
@@ -251,37 +251,56 @@ export default function VerseRow({
 }
 
 /**
- * Group words into verse
+ * Groups words into verses.
  *
- * @param chapters map of chapter metadata by their numbering
- * @param words array of words
- * @returns words grouped into verse
+ * `words` only ever grows by appending whole chapters during background
+ * seeding (never reorders or removes), so a merge keeps every previous
+ * element's identity. This groups just the new tail into the same verse map
+ * carried over from last time, instead of re-walking every word loaded so
+ * far on every single background-seeded chapter.
  */
-VerseRow.groupVerse = (
+export function useGroupedVerses(
   chapters: Record<number, ChapterRecord>,
   words: WordCell[],
-) => {
-  const grouped: Record<string, Verse> = {}
+): Verse[] {
+  const prevRef = useRef<{
+    words: WordCell[]
+    chapters: Record<number, ChapterRecord>
+    verseMap: Map<string, Verse>
+  } | null>(null)
 
-  for (const word of words) {
-    const key = `${word.chapterId}:${word.verse}`
-    let verse = grouped[key]
+  return useMemo(() => {
+    const prev = prevRef.current
+    const isAppend =
+      prev != null &&
+      prev.chapters === chapters &&
+      words.length >= prev.words.length &&
+      words[0] === prev.words[0]
 
-    if (!verse) {
-      verse = {
-        id: key,
-        chapter: chapters[word.chapterId],
-        number: word.verse,
-        words: [],
+    const verseMap = isAppend ? prev!.verseMap : new Map<string, Verse>()
+    const newWords = isAppend ? words.slice(prev!.words.length) : words
+
+    for (const word of newWords) {
+      const key = `${word.chapterId}:${word.verse}`
+      let verse = verseMap.get(key)
+
+      if (!verse) {
+        verse = {
+          id: key,
+          chapter: chapters[word.chapterId],
+          number: word.verse,
+          words: [],
+        }
+
+        verseMap.set(key, verse)
       }
 
-      grouped[key] = verse
+      verse.words.push(word)
     }
 
-    verse.words.push(word)
-  }
-
-  return Array.from(Object.values(grouped))
+    prevRef.current = { words, chapters, verseMap }
+    return Array.from(verseMap.values())
+  }, [chapters, words])
 }
 
 const VerseRowWrapper = styled.div<{

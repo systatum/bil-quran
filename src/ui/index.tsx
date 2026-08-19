@@ -1,20 +1,22 @@
-import {
-  Asset,
-  DEFAULT_FEED_EXEGESIS_WORK,
-  ExegesisWork,
-} from "@constants/assets"
 import useAppState from "@hooks/states/AppState"
+import useExegesisState from "@hooks/states/ExegesisState"
 import usePaginationState from "@hooks/states/PaginationState"
+import useExegesisOptions from "@hooks/tools/useExegesisOptions"
 import useFirstVisibleVerse from "@hooks/tools/useFirstVisibleVerse"
+import { resolveLocale } from "@i18n"
+import { resolveExegesisSelection } from "@services/Converter"
 import {
   ScreenEntry,
   ScreenTransition,
+  ScreenTransitionRef,
 } from "@systatum/coneto/screen-transition"
 import { useMatchRoute, useParams, useSearch } from "@tanstack/react-router"
 import { useEffect, useMemo, useRef } from "react"
 import { css } from "styled-components"
 import About from "./fragments/About"
+import Contributors from "./fragments/About/Contributors"
 import ExegesisDetail from "./fragments/About/ExegesisDetail"
+import PrivacyPolicy from "./fragments/About/PrivacyPolicy"
 import ProstrationVersesDetail from "./fragments/About/ProstrationVersesDetail"
 import AppNavbar from "./fragments/AppNavbar"
 import Sidebar from "./fragments/AppNavbar/Sidebar"
@@ -23,12 +25,10 @@ import { Import } from "./fragments/AppNavbar/Sidebar/Import"
 import QuranPaper from "./fragments/QuranPaper"
 import ExegesisPaperDialogContent from "./fragments/QuranPaper/VerseRow/ExegesisPaperDialogContent"
 import { LexemeDetailPaperDialog } from "./fragments/QuranPaper/VerseRow/LexemeDetailPaperDialog"
-import usePaperDialogState from "./hooks/states/PaperDialogState"
+import usePaperDialogState, {
+  registerScreenReopenNotifier,
+} from "./hooks/states/PaperDialogState"
 import useUserSettingsState from "./hooks/states/UserSettingsState"
-import PrivacyPolicy from "./fragments/About/PrivacyPolicy"
-import Contributors from "./fragments/About/Contributors"
-import useExegesisOptions from "@hooks/tools/useExegesisOptions"
-import useExegesisState from "@hooks/states/ExegesisState"
 
 interface UIIndexProps {
   /** When true, opens the exegesis paper dialog for the routed verse on mount. */
@@ -103,11 +103,25 @@ export default function UIIndex({
     loadPagination()
   }, [])
 
+  const screenTransitionRef = useRef<ScreenTransitionRef>(null)
+  useEffect(() => {
+    registerScreenReopenNotifier((key) =>
+      screenTransitionRef.current?.reopen(key),
+    )
+    return () => registerScreenReopenNotifier(null)
+  }, [])
+
   // read params
   const params = useParams({ strict: false })
   const chapterId = params.chapter ? parseInt(params.chapter) : null
   const verseNumber = params.verse ? parseInt(params.verse) : null
   const search = useSearch({ strict: false })
+
+  // ?locale= overrides which locale the exegesis/transliteration resolve
+  // against for this deep link only, same as ?tafsir=/?transliteration=; it
+  // never touches the user's persisted locale setting.
+  const localeOverride =
+    search.locale != null ? resolveLocale(String(search.locale)) : locale
 
   const openExegesis = usePaperDialogState((s) => s.openExegesis)
   const openedExegesisForRef = useRef<string | null>(null)
@@ -115,35 +129,27 @@ export default function UIIndex({
     if (!openExegesisOnMount) return
     if (chapterId == null || verseNumber == null) return
 
-    const target = `${chapterId}:${verseNumber}:${search.tafsir}:${search.transliteration}`
+    const target = `${chapterId}:${verseNumber}:${search.tafsir}:${search.transliteration}:${localeOverride}`
     if (openedExegesisForRef.current === target) return
 
     openedExegesisForRef.current = target
 
-    const tafsirParam =
-      search.tafsir != null ? String(search.tafsir) : undefined
-    const exegesisId = tafsirParam
-      ? Asset.resolveExegesisId(
-          ExegesisWork.isValid(tafsirParam)
-            ? tafsirParam
-            : DEFAULT_FEED_EXEGESIS_WORK,
-          locale,
-        )
-      : undefined
-    const showTransliteration =
-      String(search.transliteration) === "1" ? true : undefined
-
-    openExegesis(chapterId, verseNumber, {
-      exegesisId: exegesisId ?? undefined,
-      showTransliteration,
-    })
+    openExegesis(
+      chapterId,
+      verseNumber,
+      resolveExegesisSelection(
+        search.tafsir,
+        search.transliteration,
+        localeOverride,
+      ),
+    )
   }, [
     openExegesisOnMount,
     chapterId,
     verseNumber,
     search.tafsir,
     search.transliteration,
-    locale,
+    localeOverride,
     openExegesis,
   ])
 
@@ -242,6 +248,7 @@ export default function UIIndex({
       />
 
       <ScreenTransition
+        ref={screenTransitionRef}
         screens={SCREENS}
         activeScreens={activeScreens}
         onScreenChange={(activeScreens) => {

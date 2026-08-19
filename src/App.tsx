@@ -6,21 +6,32 @@ import { seedData } from "@db/seeders"
 import useAppState from "@hooks/states/AppState"
 import { loadMessages, resolveLocale } from "@i18n"
 import { I18nProvider } from "@i18n/provider"
+import {
+  parseExegesisDeepLink,
+  resolveExegesisSelection,
+} from "@services/Converter"
 import { Theme } from "@systatum/coneto/theme"
 import { RouterProvider } from "@tanstack/react-router"
 import { JSX, useEffect, useRef, useState } from "react"
 import "./App.css"
 import ErrorRescuer from "./ErrorRescuer"
+import ExegesisPreviewShell from "./ui/fragments/ExegesisPreviewShell"
 import ErrorScreen from "./ui/fragments/ErrorScreen"
 import LoadingScreen from "./ui/fragments/LoadingScreen"
 import useChaptersState from "./ui/hooks/states/ChaptersState"
 import useUserSettingsState from "./ui/hooks/states/UserSettingsState"
+import useWordsState from "./ui/hooks/states/WordsState"
 import "./posthog"
 import { router } from "./ui/router"
 
+const TOTAL_CHAPTERS = 114
+
+// Plain localStorage read, no DB dependency. Runs before first render so the
+// real theme/locale apply immediately instead of after bootstrap finishes.
+useUserSettingsState.getState().restoreState()
+
 function AppRoot() {
   const { loadChapters } = useChaptersState()
-  const { restoreState } = useUserSettingsState()
   const {
     setLoadingText,
     isVersesLoaded: isFullyLoaded,
@@ -28,8 +39,34 @@ function AppRoot() {
     errors,
   } = useAppState()
   const {
-    userSettings: { theme },
+    userSettings: { theme, locale, lastScroll },
   } = useUserSettingsState()
+
+  // Parsed once on mount so the preview shell below can render immediately,
+  // ahead of the DB bootstrap effect and without the router being mounted.
+  const [deepLink] = useState(() =>
+    parseExegesisDeepLink(window.location.hash),
+  )
+  // ?locale= overrides which locale the exegesis/transliteration resolve
+  // against for this deep link only; it never touches the persisted setting.
+  const deepLinkLocale = deepLink?.localeParam
+    ? resolveLocale(deepLink.localeParam)
+    : locale
+
+  // Harmless (all-undefined) when there's no deep link; only read when one exists.
+  const exegesisSelection = resolveExegesisSelection(
+    deepLink?.tafsirParam,
+    deepLink?.transliterationParam,
+    deepLinkLocale,
+  )
+
+  // The chapter to seed first, so the app becomes interactive without
+  // waiting for all 114 chapters: the deep link's chapter, falling back to
+  // the last-viewed chapter, then chapter 1.
+  const priorityChapterId = Math.min(
+    Math.max(deepLink?.chapterId || lastScroll.chapterId || 1, 1),
+    TOTAL_CHAPTERS,
+  )
 
   // ensure the minimum data is in the database
   const boostrappedRef = useRef(false)
@@ -55,14 +92,25 @@ function AppRoot() {
         setLoadingText("Setting up local storage...")
         await applyMigrations()
 
-        await seedData((progress) => {
-          if (progress === "verses") setLoadingText("Seeding verses...")
-          else if (progress === "paginations")
-            setLoadingText("Seeding paginations...")
-        })
+        await seedData(
+          (progress) => {
+            if (progress === "verses") setLoadingText("Seeding verses...")
+            else if (progress === "paginations")
+              setLoadingText("Seeding paginations...")
+          },
+          priorityChapterId,
+          (chapterId) => {
+            // A failure here only means that chapter's words don't show yet,
+            // not a fatal condition — log it rather than surfacing ErrorScreen.
+            useWordsState
+              .getState()
+              .loadWords(chapterId)
+              .catch((e) => console.error("Failed loading chapter words", e))
+          },
+        )
 
         setLoadingText("Loading chapters...")
-        loadChapters()
+        await loadChapters()
 
         setLoadingText("Preparing the layout...")
 
@@ -71,7 +119,6 @@ function AppRoot() {
           ;(window as any).__repo = repo
         }
 
-        restoreState()
         setIsBootstrapped(true)
       } catch (e) {
         console.error("Error preparing application", e)
@@ -84,7 +131,19 @@ function AppRoot() {
 
   return (
     <Theme mode={theme}>
-      {(!isBootstrapped || !isFullyLoaded) && errors.length === 0 && (
+      {!isBootstrapped &&
+        errors.length === 0 &&
+        (deepLink ? (
+          <ExegesisPreviewShell
+            chapterId={deepLink.chapterId}
+            verseNumber={deepLink.verseNumber}
+            exegesisIdOverride={exegesisSelection.exegesisId}
+            showTransliterationOverride={exegesisSelection.showTransliteration}
+          />
+        ) : (
+          <LoadingScreen />
+        ))}
+      {isBootstrapped && !isFullyLoaded && errors.length === 0 && (
         <LoadingScreen />
       )}
       {isBootstrapped && errors.length === 0 && (

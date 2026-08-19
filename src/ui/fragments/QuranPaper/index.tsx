@@ -8,7 +8,7 @@ import useChaptersState from "../../hooks/states/ChaptersState"
 import useUserSettingsState from "../../hooks/states/UserSettingsState"
 import ChapterRow from "./ChapterRow"
 import ModalDialog from "./ModalDialog"
-import VerseRow, { Verse } from "./VerseRow"
+import VerseRow, { useGroupedVerses, Verse } from "./VerseRow"
 import { Bismillah } from "./VerseRow/Bismillah"
 import useAppState from "@hooks/states/AppState"
 
@@ -81,10 +81,7 @@ export default function QuranPaper({
    * Group words into verses.
    * This is semantic grouping only (not layout logic).
    */
-  const verses = useMemo<Verse[]>(
-    () => VerseRow.groupVerse(chapters, words),
-    [words],
-  )
+  const verses = useGroupedVerses(chapters, words)
 
   const renderRows = useMemo<RenderRow[]>(() => {
     // the chapters data must be ready first
