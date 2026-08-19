@@ -244,35 +244,34 @@ async function generatePage(
 
   await waitForTafsir(page)
 
-  const html = await page.content()
-
-  let transformedHtml = html
+  let html = await page.content()
+  html = enlargeExegesisShell(html)
 
   if (verseNumber > 1) {
     const result = replaceButtonWithLink(
-      transformedHtml,
+      html,
       '[data-testid="prev-verse-btn"]',
       `/tafsir/${locale}/${exegesisId}/${chapterSlug}/${verseNumber - 1}.html`,
     )
 
     if (result.replaced) {
-      transformedHtml = result.html
+      html = result.html
     }
   }
 
   if (verseNumber < chapterLength) {
     const result = replaceButtonWithLink(
-      transformedHtml,
+      html,
       '[data-testid="next-verse-btn"]',
       `/tafsir/${locale}/${exegesisId}/${chapterSlug}/${verseNumber + 1}.html`,
     )
 
     if (result.replaced) {
-      transformedHtml = result.html
+      html = result.html
     }
   }
 
-  const productionHtml = transformedHtml
+  const productionHtml = html
     .replaceAll(BASE_URL, PRODUCTION_URL)
     .replaceAll(`http://localhost:${PORT}`, PRODUCTION_URL)
 
@@ -446,6 +445,33 @@ function replaceButtonWithLink(html: string, selector: string, href: string) {
     html: $.html(),
     replaced: true,
   }
+}
+
+function enlargeExegesisShell(html: string) {
+  const pattern = /(<[^>]*aria-label="paper-dialog-wrapper"[^>]*)(>)/
+
+  if (!pattern.test(html)) {
+    console.warn("  did not enlarge exegesis shell: element not found")
+    return html
+  }
+
+  console.log("  enlarged exegesis shell")
+
+  return html.replace(pattern, (_match, openingTag, closing) => {
+    let result = openingTag
+
+    if (/\bstyle="[^"]*"/.test(result)) {
+      result = result.replace(
+        /style="([^"]*)"/,
+        (_styleMatch, styles) =>
+          `style="${styles}; transform: none; max-height: 100dvh;"`,
+      )
+    } else {
+      result += ` style="transform: none; max-height: 100dvh;"`
+    }
+
+    return result + closing
+  })
 }
 
 main().catch((error) => {
