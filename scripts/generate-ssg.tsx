@@ -137,9 +137,9 @@ function startServer() {
     },
   )
 
-  server.stdout.on("data", (data) => {
-    process.stdout.write(`[server] ${data}`)
-  })
+  // server.stdout.on("data", (data) => {
+  //   process.stdout.write(`[server] ${data}`)
+  // })
 
   server.stderr.on("data", (data) => {
     process.stderr.write(`[server] ${data}`)
@@ -454,8 +454,6 @@ function enlargeExegesisShell(html: string) {
     console.warn("  did not enlarge exegesis shell: element not found")
     return html
   }
-
-  console.log("  enlarged exegesis shell")
 
   return html.replace(pattern, (_match, openingTag, closing) => {
     let result = openingTag
