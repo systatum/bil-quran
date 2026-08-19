@@ -7,6 +7,7 @@ import { chromium, type Page } from "playwright"
 const PORT = 4173
 const BASE_URL = `http://127.0.0.1:${PORT}`
 const PRODUCTION_URL = "https://bil-quran.com"
+const MAX_WORKERS = 5
 
 const PUBLIC_QURAN = path.resolve("public/quran")
 const CHAPTERS_PATH = path.join(PUBLIC_QURAN, "chapters.json")
@@ -282,8 +283,6 @@ async function generatePage(
   })
 
   await writeFile(outputPath, productionHtml, "utf8")
-
-  process.stdout.write(`\r${chapterSlug} ${verseNumber}/${chapterLength}`)
 }
 
 async function main() {
@@ -291,8 +290,16 @@ async function main() {
   const exegeses = await loadExegeses()
 
   console.log(`Found ${Object.keys(chapters).length} chapters.`)
-
   console.log(`Found ${exegeses.length} locale/exegesis combinations.`)
+
+  const chapterEntries = Object.entries(chapters)
+
+  const totalVerses = Object.values(chapters).reduce(
+    (total, chapter) => total + chapter.length,
+    0,
+  )
+
+  console.log(`Found ${totalVerses} verses.`)
 
   /*
    * Start the production build server.
@@ -309,72 +316,97 @@ async function main() {
     const browser = await chromium.launch()
 
     try {
-      const page = await browser.newPage()
+      const workerCount = Math.min(MAX_WORKERS, chapterEntries.length)
 
       /*
-       * Every locale/exegesis combination is generated.
-       *
-       * Example:
-       *
-       *   en-US / ibn-kathir
-       *
-       * becomes:
-       *
-       *   /tafsir/en/ibn-kathir/...
+       * Progress is tracked independently for every
+       * locale/exegesis combination.
        */
+      const progress = new Map<string, number>()
+
       for (const { locale, exegesisId } of exegeses) {
-        /*
-         * Only generate SEO pages for locales we want exposed
-         * in the public URL.
-         *
-         * en-US -> en
-         * id-ID -> id
-         * ar-IQ -> ar
-         */
-        const seoLocale = locale.split("-")[0]
+        progress.set(`${locale}:${exegesisId}`, 0)
+      }
 
-        for (const [chapterIdString, chapter] of Object.entries(chapters)) {
-          const chapterId = Number(chapterIdString)
+      /*
+       * Shared chapter queue.
+       */
+      let nextChapterIndex = 0
 
-          /*
-           * Prefer transliteration for the locale used by the
-           * application.
-           *
-           * For example:
-           *
-           *   en-US -> Al-Faatiha -> al-faatiha
-           */
-          const transliteration =
-            chapter.transliterations[locale] ??
-            chapter.transliterations["en-US"]
+      async function worker(workerId: number) {
+        const page = await browser.newPage()
 
-          if (!transliteration) {
-            console.warn(
-              `Skipping chapter ${chapterId}: ` +
-                `no transliteration for ${locale}`,
-            )
+        try {
+          while (true) {
+            /*
+             * Claim the next chapter.
+             */
+            const index = nextChapterIndex++
 
-            continue
+            if (index >= chapterEntries.length) {
+              return
+            }
+
+            const [chapterIdString, chapter] = chapterEntries[index]
+            const chapterId = Number(chapterIdString)
+
+            /*
+             * Every locale/exegesis combination is generated.
+             */
+            for (const { locale, exegesisId } of exegeses) {
+              const seoLocale = locale.split("-")[0]
+
+              const transliteration =
+                chapter.transliterations[locale] ??
+                chapter.transliterations["en-US"]
+
+              if (!transliteration) {
+                console.warn(
+                  `Skipping chapter ${chapterId}: ` +
+                    `no transliteration for ${locale}`,
+                )
+
+                continue
+              }
+
+              const chapterSlug = slugify(transliteration)
+              const progressKey = `${locale}:${exegesisId}`
+
+              for (
+                let verseNumber = 1;
+                verseNumber <= chapter.length;
+                verseNumber++
+              ) {
+                await generatePage(page, {
+                  locale,
+                  chapterId,
+                  exegesisId,
+                  chapterSlug,
+                  verseNumber,
+                  chapterLength: chapter.length,
+                })
+
+                const completed = (progress.get(progressKey) ?? 0) + 1
+
+                progress.set(progressKey, completed)
+
+                updateProgress(
+                  progressKey,
+                  `${exegesisId} - ${seoLocale}`,
+                  completed,
+                  totalVerses,
+                )
+              }
+            }
           }
-
-          const chapterSlug = slugify(transliteration)
-
-          for (
-            let verseNumber = 1;
-            verseNumber <= chapter.length;
-            verseNumber++
-          ) {
-            await generatePage(page, {
-              locale,
-              chapterId,
-              exegesisId,
-              chapterSlug,
-              verseNumber,
-              chapterLength: chapter.length,
-            })
-          }
+        } finally {
+          await page.close()
         }
       }
+
+      await Promise.all(
+        Array.from({ length: workerCount }, (_, index) => worker(index + 1)),
+      )
     } finally {
       await browser.close()
     }
@@ -470,6 +502,61 @@ function enlargeExegesisShell(html: string) {
 
     return result + closing
   })
+}
+
+const progressLines = new Map<string, number>()
+
+function updateProgress(
+  key: string,
+  label: string,
+  completed: number,
+  total: number,
+) {
+  let line = progressLines.get(key)
+
+  if (line === undefined) {
+    line = progressLines.size
+    progressLines.set(key, line)
+
+    process.stdout.write(
+      `[${label}] ${completed} / ${total} ` +
+        `(${((completed / total) * 100).toFixed(2)}%)\n`,
+    )
+
+    return
+  }
+
+  /*
+   * Save current cursor position.
+   */
+  process.stdout.write("\x1b7")
+
+  /*
+   * Move to the progress line.
+   *
+   * The cursor is normally at the line immediately after
+   * all progress entries.
+   */
+  const linesUp = progressLines.size - line
+
+  if (linesUp > 0) {
+    process.stdout.write(`\x1b[${linesUp}A`)
+  }
+
+  /*
+   * Replace the entire line.
+   */
+  process.stdout.write("\r\x1b[2K")
+
+  process.stdout.write(
+    `[${label}] ${completed} / ${total} ` +
+      `(${((completed / total) * 100).toFixed(2)}%)`,
+  )
+
+  /*
+   * Restore cursor to where it was.
+   */
+  process.stdout.write("\x1b8")
 }
 
 main().catch((error) => {
