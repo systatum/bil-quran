@@ -427,16 +427,80 @@ const REDIRECT_TRIGGER_SELECTORS = [
   '[aria-label="paper-dialog-drag-indicator"]',
 ]
 
-function buildRedirectScript(appUrl: string): string {
-  return (
-    `<script>` +
-    `(function(){var u=${JSON.stringify(appUrl)};` +
-    `${JSON.stringify(REDIRECT_TRIGGER_SELECTORS)}.forEach(function(sel){` +
-    `document.querySelectorAll(sel).forEach(function(el){` +
-    `el.addEventListener("click",function(){window.location.href=u})});` +
-    `});})();` +
-    `</script>`
-  )
+/**
+ * Static triggers (backdrop, header, bookmark, drag indicator, source label)
+ * schedule a redirect to the real app for the verse currently on screen.
+ * Prev/next links instead intercept the click, fetch the adjacent static
+ * page and splice its dialog content in — a same-origin request identical to
+ * what the plain `<a href>` would have navigated to — while independently
+ * scheduling their own redirect for the verse being navigated to, without
+ * waiting on that fetch. Elements outside the dialog (app header, overlay,
+ * drag indicator) are wired once; anything inside it is re-wired after every
+ * splice, since that region is replaced wholesale each time.
+ */
+function buildRedirectScript(data: {
+  siteUrl: string
+  chapterId: number
+  verseNumber: number
+  exegesisId: string
+  locale: string
+}): string {
+  const script = `(function(){
+var DATA=${JSON.stringify(data)};
+var redirectTimer=null;
+var TRIGGER_SELECTORS=${JSON.stringify(REDIRECT_TRIGGER_SELECTORS)};
+
+function realAppUrl(verse){
+  var params=new URLSearchParams({tafsir:DATA.exegesisId,transliteration:"1",locale:DATA.locale});
+  return DATA.siteUrl+"/#/e/"+DATA.chapterId+"/"+verse+"?"+params.toString();
+}
+
+function scheduleRedirect(verse){
+  if(redirectTimer)clearTimeout(redirectTimer);
+  redirectTimer=setTimeout(function(){window.location.href=realAppUrl(verse)},5000);
+}
+
+function wireStaticTriggers(root){
+  TRIGGER_SELECTORS.forEach(function(sel){
+    root.querySelectorAll(sel).forEach(function(el){
+      el.addEventListener("click",function(){scheduleRedirect(DATA.verseNumber)});
+    });
+  });
+}
+
+function wireTraversal(root){
+  root.querySelectorAll('a[data-testid="prev-verse-btn"],a[data-testid="next-verse-btn"]').forEach(function(link){
+    link.addEventListener("click",function(e){
+      e.preventDefault();
+      var href=link.getAttribute("href");
+      var delta=link.getAttribute("data-testid")==="prev-verse-btn"?-1:1;
+      var targetVerse=DATA.verseNumber+delta;
+
+      scheduleRedirect(targetVerse);
+
+      fetch(href).then(function(res){return res.text()}).then(function(html){
+        var doc=new DOMParser().parseFromString(html,"text/html");
+        var newContent=doc.querySelector('[aria-label="paper-dialog-content"]');
+        var oldContent=document.querySelector('[aria-label="paper-dialog-content"]');
+        if(!newContent||!oldContent)return;
+
+        oldContent.replaceWith(newContent);
+        document.title=doc.title;
+        history.pushState(null,"",href);
+        DATA.verseNumber=targetVerse;
+
+        wireStaticTriggers(newContent);
+        wireTraversal(newContent);
+      }).catch(function(){});
+    });
+  });
+}
+
+wireStaticTriggers(document);
+wireTraversal(document);
+})();`
+
+  return `<script>${script}</script>`
 }
 
 async function generatePage(
@@ -524,9 +588,13 @@ async function generatePage(
   }
 
   $("body").append(
-    buildRedirectScript(
-      getAppUrl(PRODUCTION_URL, locale, chapterId, verseNumber, exegesisId),
-    ),
+    buildRedirectScript({
+      siteUrl: PRODUCTION_URL,
+      chapterId,
+      verseNumber,
+      exegesisId,
+      locale,
+    }),
   )
 
   let html = $.html()
