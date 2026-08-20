@@ -99,6 +99,22 @@ async function loadExegeses() {
   return result
 }
 
+const exegesisNameCache = new Map<string, Promise<string>>()
+
+/** Reads an exegesis work's display name from its `about.json`, cached per slug. */
+function getExegesisName(slug: string): Promise<string> {
+  let promise = exegesisNameCache.get(slug)
+
+  if (!promise) {
+    promise = readFile(path.join(EXEGESIS_PATH, slug, "about.json"), "utf8").then(
+      (raw) => (JSON.parse(raw) as { name: string }).name,
+    )
+    exegesisNameCache.set(slug, promise)
+  }
+
+  return promise
+}
+
 async function readDirectoryNames(directory: string): Promise<string[]> {
   const { readdir } = await import("node:fs/promises")
 
@@ -217,6 +233,8 @@ async function generatePage(
     chapterId,
     exegesisId,
     chapterSlug,
+    chapterName,
+    exegesisName,
     verseNumber,
     chapterLength,
   }: {
@@ -224,6 +242,8 @@ async function generatePage(
     chapterId: number
     exegesisId: string
     chapterSlug: string
+    chapterName: string
+    exegesisName: string
     verseNumber: number
     chapterLength: number
   },
@@ -247,6 +267,10 @@ async function generatePage(
 
   let html = await page.content()
   html = enlargeExegesisShell(html)
+  html = patchTitle(
+    html,
+    `bil-Quran: ${chapterName}:${verseNumber} with Tafsir ${exegesisName}`,
+  )
 
   if (verseNumber > 1) {
     const result = replaceButtonWithLink(
@@ -371,6 +395,7 @@ async function main() {
 
               const chapterSlug = slugify(transliteration)
               const progressKey = `${locale}:${exegesisId}`
+              const exegesisName = await getExegesisName(locale)
 
               for (
                 let verseNumber = 1;
@@ -382,6 +407,8 @@ async function main() {
                   chapterId,
                   exegesisId,
                   chapterSlug,
+                  chapterName: transliteration,
+                  exegesisName,
                   verseNumber,
                   chapterLength: chapter.length,
                 })
@@ -477,6 +504,22 @@ function replaceButtonWithLink(html: string, selector: string, href: string) {
     html: $.html(),
     replaced: true,
   }
+}
+
+function patchTitle(html: string, title: string) {
+  const pattern = /<title>[^<]*<\/title>/
+
+  if (!pattern.test(html)) {
+    console.warn("  did not patch title: element not found")
+    return html
+  }
+
+  const escaped = title
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+
+  return html.replace(pattern, `<title>${escaped}</title>`)
 }
 
 function enlargeExegesisShell(html: string) {
