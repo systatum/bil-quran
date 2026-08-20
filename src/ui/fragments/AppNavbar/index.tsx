@@ -77,6 +77,7 @@ export default function AppNavbar({ theme, title }: AppNavbarProps) {
   return (
     <>
       <div
+        className="app-header"
         onClick={() => setIsSearchOpen(false)}
         ref={titleRef}
         style={{ position: "relative" }}

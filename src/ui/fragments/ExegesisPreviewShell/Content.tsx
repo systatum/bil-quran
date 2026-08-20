@@ -5,7 +5,9 @@ import {
 } from "@constants/records/ExegesisRecord"
 import { Rendering } from "@constants/records/RenderingRecord"
 import { DEFAULT_LOCALE, Locale } from "@constants/settings"
-import useUserSettingsState from "@hooks/states/UserSettingsState"
+import useUserSettingsState, {
+  FontSetting,
+} from "@hooks/states/UserSettingsState"
 import { FingerprintedAsset } from "@services/fingerprinter"
 import { renderExegesisMarkdown } from "@services/markdown"
 import { useEffect, useState } from "react"
@@ -212,7 +214,7 @@ export interface ExegesisPreviewViewProps {
   exegesisId: string | undefined
   source: ExegesisSource | null
   showTransliteration: boolean
-  arabicFont: string
+  arabicFont: FontSetting
   words: WordCell[] | null
   content: ExegesisVerseContent | null | undefined
 }
