@@ -2,8 +2,9 @@ import { Asset } from "@constants/assets"
 import { Locale } from "@constants/settings"
 import { renderExegesisMarkdown } from "@services/markdown"
 import * as cheerio from "cheerio"
+import { createHash } from "node:crypto"
 import { spawn } from "node:child_process"
-import { mkdir, readFile, writeFile } from "node:fs/promises"
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises"
 import path from "node:path"
 import { chromium, type Page } from "playwright"
 
@@ -174,13 +175,35 @@ async function readDirectoryNames(directory: string): Promise<string[]> {
     .map((entry) => entry.name)
 }
 
+const rawFileCache = new Map<string, Promise<string>>()
+
+/** Reads a file's raw text, cached — also the input source for content hashing. */
+function readRawCached(filePath: string): Promise<string> {
+  let promise = rawFileCache.get(filePath)
+
+  if (!promise) {
+    promise = readFile(filePath, "utf8")
+    rawFileCache.set(filePath, promise)
+  }
+
+  return promise
+}
+
+function imlaeiPath(chapterId: number): string {
+  return path.join(PUBLIC_QURAN, "verses", "imlaei", `${chapterId}.json`)
+}
+
+function exegesisChapterPath(
+  slug: string,
+  locale: string,
+  chapterId: number,
+): string {
+  return path.join(EXEGESIS_PATH, slug, locale, `${chapterId}.json`)
+}
+
 /** Reads the raw interlinear (Imlaei) word list for a chapter. */
 async function readImlaeiWords(chapterId: number): Promise<ImlaeiWord[]> {
-  const raw = await readFile(
-    path.join(PUBLIC_QURAN, "verses", "imlaei", `${chapterId}.json`),
-    "utf8",
-  )
-  return JSON.parse(raw)
+  return JSON.parse(await readRawCached(imlaeiPath(chapterId)))
 }
 
 /** Reads the raw exegesis asset for one work/locale/chapter. */
@@ -189,11 +212,7 @@ async function readExegesisChapter(
   locale: string,
   chapterId: number,
 ): Promise<ExegesisChapterAsset> {
-  const raw = await readFile(
-    path.join(EXEGESIS_PATH, slug, locale, `${chapterId}.json`),
-    "utf8",
-  )
-  return JSON.parse(raw)
+  return JSON.parse(await readRawCached(exegesisChapterPath(slug, locale, chapterId)))
 }
 
 /** Locales with their own word-by-word translation corpus; anything else falls back to en-US. */
@@ -216,6 +235,78 @@ function readWbwTranslations(locale: string): Promise<Record<string, string>> {
   }
 
   return promise
+}
+
+/** The exact per-chapter slice of a locale's wbw corpus, deterministically ordered for hashing. */
+function wbwSliceForChapter(
+  wbwTranslations: Record<string, string>,
+  chapterId: number,
+): string {
+  const prefix = `${chapterId}:`
+
+  return JSON.stringify(
+    Object.entries(wbwTranslations)
+      .filter(([key]) => key.startsWith(prefix))
+      .sort(([a], [b]) => a.localeCompare(b)),
+  )
+}
+
+/** Fingerprints everything that determines one chapter's generated output for a combo. */
+async function computeChapterHash(
+  exegesisId: string,
+  locale: string,
+  chapterId: number,
+  wbwTranslations: Record<string, string>,
+): Promise<string> {
+  const [imlaeiRaw, exegesisRaw] = await Promise.all([
+    readRawCached(imlaeiPath(chapterId)),
+    readRawCached(exegesisChapterPath(exegesisId, locale, chapterId)),
+  ])
+
+  return createHash("sha256")
+    .update(imlaeiRaw)
+    .update(exegesisRaw)
+    .update(wbwSliceForChapter(wbwTranslations, chapterId))
+    .digest("hex")
+    .slice(0, 16)
+}
+
+const HASH_COMMENT_PATTERN = /<!--ssg-hash:([0-9a-f]+)-->/
+
+function buildHashComment(hash: string): string {
+  return `<!--ssg-hash:${hash}-->`
+}
+
+/**
+ * Decides which verses in a chapter/combo actually need (re)generating: none
+ * of them if the folder's already up to date, only the missing ones if the
+ * hash still matches but a previous run was cut short, or all of them if the
+ * folder is empty/absent or its hash is stale.
+ */
+async function decideChapterWork(
+  chapterDir: string,
+  chapterLength: number,
+  currentHash: string,
+): Promise<number[]> {
+  const allVerses = Array.from({ length: chapterLength }, (_, i) => i + 1)
+
+  let entries: string[]
+  try {
+    entries = await readdir(chapterDir)
+  } catch {
+    return allVerses
+  }
+
+  const existingFiles = new Set(entries.filter((name) => name.endsWith(".html")))
+  if (existingFiles.size === 0) return allVerses
+
+  const sampleFile = path.join(chapterDir, [...existingFiles][0])
+  const sampleHtml = await readFile(sampleFile, "utf8").catch(() => "")
+  const existingHash = sampleHtml.match(HASH_COMMENT_PATTERN)?.[1]
+
+  if (existingHash !== currentHash) return allVerses
+
+  return allVerses.filter((verse) => !existingFiles.has(`${verse}.html`))
 }
 
 async function waitForServer(url: string) {
@@ -282,6 +373,10 @@ function getAppUrl(
   return `${base}/#/e/${chapterId}/${verseNumber}?${params.toString()}`
 }
 
+function getChapterDir(exegesisId: string, locale: string, chapterSlug: string) {
+  return path.join("build", "tafsir", exegesisId, locale, chapterSlug)
+}
+
 function getOutputPath(
   exegesisId: string,
   locale: string,
@@ -289,11 +384,7 @@ function getOutputPath(
   verseNumber: number,
 ) {
   return path.join(
-    "build",
-    "tafsir",
-    exegesisId,
-    locale,
-    chapterSlug,
+    getChapterDir(exegesisId, locale, chapterSlug),
     `${verseNumber}.html`,
   )
 }
@@ -508,6 +599,7 @@ async function generatePage(
   words: ImlaeiWord[],
   exegesisChapter: ExegesisChapterAsset,
   wbwTranslations: Record<string, string>,
+  hash: string,
   {
     locale,
     chapterId,
@@ -596,6 +688,7 @@ async function generatePage(
       locale,
     }),
   )
+  $("body").append(buildHashComment(hash))
 
   let html = $.html()
 
@@ -748,12 +841,34 @@ async function main() {
           )
           const wbwTranslations = await readWbwTranslations(locale)
 
-          for (
-            let verseNumber = 1;
-            verseNumber <= chapter.length;
-            verseNumber++
-          ) {
-            await generatePage(shell, words, exegesisChapter, wbwTranslations, {
+          const hash = await computeChapterHash(
+            exegesisId,
+            locale,
+            chapterId,
+            wbwTranslations,
+          )
+
+          const chapterDir = getChapterDir(exegesisId, locale, chapterSlug)
+          const versesToGenerate = await decideChapterWork(
+            chapterDir,
+            chapter.length,
+            hash,
+          )
+
+          const alreadyDone = chapter.length - versesToGenerate.length
+          if (alreadyDone > 0) {
+            const completed = (progress.get(progressKey) ?? 0) + alreadyDone
+            progress.set(progressKey, completed)
+            updateProgress(
+              progressKey,
+              `${exegesisId} - ${seoLocale}`,
+              completed,
+              totalVerses,
+            )
+          }
+
+          for (const verseNumber of versesToGenerate) {
+            await generatePage(shell, words, exegesisChapter, wbwTranslations, hash, {
               locale,
               chapterId,
               exegesisId,
