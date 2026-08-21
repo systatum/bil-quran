@@ -15,13 +15,14 @@ import { RouterProvider } from "@tanstack/react-router"
 import { JSX, useEffect, useRef, useState } from "react"
 import "./App.css"
 import ErrorRescuer from "./ErrorRescuer"
-import ExegesisPreviewShell from "./ui/fragments/ExegesisPreviewShell"
+import "./posthog"
 import ErrorScreen from "./ui/fragments/ErrorScreen"
+import ExegesisPreviewShell from "./ui/fragments/ExegesisPreviewShell"
 import LoadingScreen from "./ui/fragments/LoadingScreen"
 import useChaptersState from "./ui/hooks/states/ChaptersState"
+import useTranslationsState from "./ui/hooks/states/TranslationsState"
 import useUserSettingsState from "./ui/hooks/states/UserSettingsState"
 import useWordsState from "./ui/hooks/states/WordsState"
-import "./posthog"
 import { router } from "./ui/router"
 
 const TOTAL_CHAPTERS = 114
@@ -44,19 +45,16 @@ function AppRoot() {
 
   // Parsed once on mount so the preview shell below can render immediately,
   // ahead of the DB bootstrap effect and without the router being mounted.
-  const [deepLink] = useState(() =>
-    parseExegesisDeepLink(window.location.hash),
-  )
+  const [deepLink] = useState(() => parseExegesisDeepLink(window.location.hash))
   // ?locale= overrides which locale the exegesis/transliteration resolve
   // against for this deep link only; it never touches the persisted setting.
   const deepLinkLocale = deepLink?.localeParam
     ? resolveLocale(deepLink.localeParam)
     : locale
 
-  // Harmless (all-undefined) when there's no deep link; only read when one exists.
   const exegesisSelection = resolveExegesisSelection(
     deepLink?.tafsirParam,
-    deepLink?.transliterationParam,
+    !!deepLink?.showTransliteration,
     deepLinkLocale,
   )
 
@@ -117,6 +115,7 @@ function AppRoot() {
         // this is done only for testing/development, so we can debug/test by looking at the db
         if (process.env.NODE_ENV !== "production") {
           ;(window as any).__repo = repo
+          ;(window as any).__translationsState = useTranslationsState
         }
 
         setIsBootstrapped(true)

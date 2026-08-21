@@ -57,6 +57,19 @@ export async function untilUsable(page: Page | Locator) {
   })
 }
 
+/**
+ * Waits for word-by-word translations to actually be ready — `[data-verse]`
+ * can be "visible" while still covered by the loading overlay. Only use
+ * this where translated content is asserted on; it delays background
+ * seeding enough to throw off tests with fixed timeouts elsewhere.
+ */
+export async function untilTranslationsLoaded(page: Page) {
+  await page
+    .locator('[data-testid="app-loading-screen"]')
+    .waitFor({ state: "detached", timeout: 30_000 })
+    .catch(() => {})
+}
+
 /** Returns the computed `font-family` of the first `.arabic-lex` span in the first `[data-verse]` row. */
 export async function getWordFontFamily(page: Page): Promise<string | null> {
   return page.evaluate(() => {

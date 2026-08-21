@@ -2,7 +2,12 @@ import { Rendering } from "@constants/records/RenderingRecord"
 import { expect, Page, test } from "@playwright/test"
 import { loadQuranWords } from "./tools/data"
 import { scrollDown, waitUntilVisible } from "./tools/interactivity"
-import { getTopMostVerse, untilUsable, visitFresh } from "./tools/state"
+import {
+  getTopMostVerse,
+  untilTranslationsLoaded,
+  untilUsable,
+  visitFresh,
+} from "./tools/state"
 
 test.describe("Quran paper", () => {
   test.beforeEach(async ({ page }) => await visitFresh(page))
@@ -88,6 +93,7 @@ test.describe("Quran paper", () => {
       })
     }
 
+    await untilTranslationsLoaded(page)
     const initialFailures = await checkVisibleVerseWords(page)
     expect(initialFailures).toEqual([])
 

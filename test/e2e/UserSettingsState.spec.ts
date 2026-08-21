@@ -442,7 +442,15 @@ test.describe("UserSettingsState", () => {
       })
 
       await toggleWbwTranslation("Indonesian", page)
-      await page.waitForTimeout(500)
+
+      // corpora["id-ID"] is only set after ensureHasTranslation (insert +
+      // persistDb) fully resolves — a direct completion signal, instead of
+      // guessing how long ~77k rows take to insert and flush.
+      await page.waitForFunction(
+        () => !!(window as any).__translationsState?.getState().corpora["id-ID"],
+        undefined,
+        { timeout: 10_000 },
+      )
       expect(requests.length).toBe(1)
 
       await page.reload()
