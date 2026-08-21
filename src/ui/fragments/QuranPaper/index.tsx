@@ -125,6 +125,12 @@ export default function QuranPaper({
   const hasRestoredScrollRef = useRef(false)
   // prevent recording while programmatically restoring.
   const isRestoringScrollRef = useRef(false)
+
+  // Read via ref, not as an effect dep — renderRows churns during
+  // background seeding and would tear down the listener mid-debounce.
+  const renderRowsRef = useRef(renderRows)
+  renderRowsRef.current = renderRows
+
   useEffect(() => {
     const el = parentRef.current
     if (!el) return
@@ -139,8 +145,9 @@ export default function QuranPaper({
       timeout = window.setTimeout(() => {
         if (!el) return
 
+        const currentRenderRows = renderRowsRef.current
         const visibleItems = virtualizer.getVirtualItems().filter((item) => {
-          const row = renderRows[item.index]
+          const row = currentRenderRows[item.index]
           if (!row) return false
           if (!isVerseRow(row)) return false
 
@@ -157,12 +164,12 @@ export default function QuranPaper({
         // "current" verse, instead of the previous earlier verse that may even partially
         // visible -- which, if there's no chapter row, will be a perfect-esque candidate
         const selected = visibleItems[0]
-        let row = renderRows[selected.index]
+        let row = currentRenderRows[selected.index]
         if (selected.index > 1) {
-          if (renderRows[selected.index - 1].type === "chapter") {
+          if (currentRenderRows[selected.index - 1].type === "chapter") {
             // tried to backtrack, but got a chapter row; so skip
           } else {
-            row = renderRows[selected.index + 1]
+            row = currentRenderRows[selected.index + 1]
           }
         }
 
@@ -179,7 +186,7 @@ export default function QuranPaper({
       clearTimeout(timeout)
       el.removeEventListener("scroll", recordScrolling)
     }
-  }, [renderRows])
+  }, [virtualizer.scrollElement])
 
   async function waitForMeasurements() {
     return new Promise<void>((resolve) => {
@@ -205,7 +212,11 @@ export default function QuranPaper({
     })
   }
 
-  async function scrollToVerse(chapterId: number, verse: number) {
+  /** @returns whether the target verse was found and actually scrolled to. */
+  async function scrollToVerse(
+    chapterId: number,
+    verse: number,
+  ): Promise<boolean> {
     const targetIndex = renderRows.findIndex((row) => {
       return (
         row.type === "verse" &&
@@ -215,7 +226,7 @@ export default function QuranPaper({
     })
 
     // cannot find the target index? done deal
-    if (targetIndex < 0) return
+    if (targetIndex < 0) return false
     // mark that we are currently "restoring" scroll
     isRestoringScrollRef.current = true
 
@@ -225,7 +236,7 @@ export default function QuranPaper({
     await document.fonts.ready
 
     // essentially: wait until multiple pass of painting, before scrolling
-    return new Promise<void>((resolve) => {
+    return new Promise<boolean>((resolve) => {
       requestAnimationFrame(() => {
         // on this paint, document might be resized due to font having been
         // downloaded
@@ -252,7 +263,7 @@ export default function QuranPaper({
             // reenable persistence after much more stable
             window.setTimeout(() => {
               isRestoringScrollRef.current = false
-              resolve()
+              resolve(true)
             }, 300)
           })
         })
@@ -283,12 +294,38 @@ export default function QuranPaper({
     restoreScroll()
   }, [renderRows, requestedChapterId, requestedVerseNumber])
 
+  // Always the latest scrollToVerse, so a delayed call below re-reads
+  // current renderRows instead of a stale snapshot.
+  const scrollToVerseRef = useRef(scrollToVerse)
+  scrollToVerseRef.current = scrollToVerse
+
+  // Caps re-scrolling for a deep-linked verse: one attempt, one delayed
+  // recorrect, then done — instead of re-running on every renderRows
+  // change (background seeding), which starved scroll-position recording.
+  const scrolledToRequestRef = useRef<string | null>(null)
+  const scrollRequestInFlightRef = useRef<string | null>(null)
   useEffect(() => {
-    // must have rows on the page
     if (renderRows.length === 0) return
-    // must both be provided
     if (!requestedChapterId || !requestedVerseNumber) return
-    scrollToVerse(requestedChapterId, requestedVerseNumber)
+
+    const requestKey = `${requestedChapterId}:${requestedVerseNumber}`
+    if (scrolledToRequestRef.current === requestKey) return
+    if (scrollRequestInFlightRef.current === requestKey) return
+
+    scrollRequestInFlightRef.current = requestKey
+    ;(async () => {
+      const scrolled = await scrollToVerseRef.current(
+        requestedChapterId,
+        requestedVerseNumber,
+      )
+      if (scrolled) {
+        await new Promise((resolve) => window.setTimeout(resolve, 500))
+        await scrollToVerseRef.current(requestedChapterId, requestedVerseNumber)
+        scrolledToRequestRef.current = requestKey
+      }
+      if (scrollRequestInFlightRef.current === requestKey)
+        scrollRequestInFlightRef.current = null
+    })()
   }, [requestedChapterId, requestedVerseNumber, renderRows])
 
   // Always points at the latest restore-to-last-position logic so the

@@ -87,7 +87,7 @@ export interface ExegesisDeepLink {
   chapterId: number
   verseNumber: number
   tafsirParam?: string
-  transliterationParam?: string
+  showTransliteration: boolean
   localeParam?: string
 }
 
@@ -98,12 +98,13 @@ export function parseExegesisDeepLink(hash: string): ExegesisDeepLink | null {
 
   const [, chapter, verse, query] = match
   const params = new URLSearchParams(query ?? "")
+  const showTransliterationRawVal = params.get("transliteration") ?? undefined
 
   return {
     chapterId: Number(chapter),
     verseNumber: Number(verse),
     tafsirParam: params.get("tafsir") ?? undefined,
-    transliterationParam: params.get("transliteration") ?? undefined,
+    showTransliteration: showTransliterationRawVal === "1",
     localeParam: params.get("locale") ?? undefined,
   }
 }
@@ -116,7 +117,7 @@ export interface ExegesisSelectionOverride {
 /** Mirrors `UIIndex`'s `openExegesisOnMount` override resolution. */
 export function resolveExegesisSelection(
   tafsirParam: unknown,
-  transliterationParam: unknown,
+  transliterationParam: boolean,
   locale: Locale,
 ): ExegesisSelectionOverride {
   const tafsir = tafsirParam != null ? String(tafsirParam) : undefined
@@ -129,7 +130,7 @@ export function resolveExegesisSelection(
 
   return {
     exegesisId: exegesisId ?? undefined,
-    showTransliteration: String(transliterationParam) === "1" ? true : undefined,
+    showTransliteration: transliterationParam,
   }
 }
 

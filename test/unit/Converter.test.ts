@@ -1,5 +1,7 @@
 import { Locale } from "@constants/settings"
 import {
+  ExegesisDeepLink,
+  ExegesisSelectionOverride,
   parseExegesisDeepLink,
   resolveExegesisSelection,
 } from "@services/Converter"
@@ -8,15 +10,22 @@ describe("Converter", () => {
   describe("parseExegesisDeepLink", () => {
     it("parses chapter, verse, and query params", () => {
       expect(
-        parseExegesisDeepLink(
-          "#/e/10/104?tafsir=ibnkathir&transliteration=1",
-        ),
+        parseExegesisDeepLink("#/e/10/104?tafsir=ibnkathir&transliteration=1"),
       ).toEqual({
         chapterId: 10,
         verseNumber: 104,
         tafsirParam: "ibnkathir",
-        transliterationParam: "1",
-      })
+        showTransliteration: true,
+      } satisfies ExegesisDeepLink)
+
+      expect(
+        parseExegesisDeepLink("#/e/10/104?tafsir=ibnkathir&transliteration=0"),
+      ).toEqual({
+        chapterId: 10,
+        verseNumber: 104,
+        tafsirParam: "ibnkathir",
+        showTransliteration: false,
+      } satisfies ExegesisDeepLink)
     })
 
     it("parses chapter and verse without a query string", () => {
@@ -24,8 +33,8 @@ describe("Converter", () => {
         chapterId: 1,
         verseNumber: 7,
         tafsirParam: undefined,
-        transliterationParam: undefined,
-      })
+        showTransliteration: false,
+      } satisfies ExegesisDeepLink)
     })
 
     it("returns null for a non-exegesis route", () => {
@@ -47,59 +56,44 @@ describe("Converter", () => {
         chapterId: 10,
         verseNumber: 104,
         tafsirParam: "ibnkathir",
-        transliterationParam: undefined,
+        showTransliteration: false,
         localeParam: "id-ID",
-      })
+      } satisfies ExegesisDeepLink)
     })
   })
 
   describe("resolveExegesisSelection", () => {
     it("resolves a valid tafsir slug in the given locale", () => {
       expect(
-        resolveExegesisSelection("ibnkathir", undefined, Locale.IntEnglish),
+        resolveExegesisSelection("ibnkathir", false, Locale.IntEnglish),
       ).toEqual({
         exegesisId: "ibnkathir/en-US",
-        showTransliteration: undefined,
-      })
+        showTransliteration: false,
+      } satisfies ExegesisSelectionOverride)
     })
 
     it("falls back to the default work for an unknown slug", () => {
       expect(
-        resolveExegesisSelection("not-a-real-tafsir", undefined, Locale.IntEnglish),
+        resolveExegesisSelection("not-a-real-tafsir", true, Locale.IntEnglish),
       ).toEqual({
         exegesisId: "mirali/en-US",
-        showTransliteration: undefined,
-      })
+        showTransliteration: true,
+      } satisfies ExegesisSelectionOverride)
     })
 
     it("falls back to English when the slug lacks the requested locale", () => {
       expect(
-        resolveExegesisSelection("ibnkathir", undefined, Locale.Indonesian),
+        resolveExegesisSelection("ibnkathir", false, Locale.Indonesian),
       ).toEqual({
         exegesisId: "ibnkathir/en-US",
-        showTransliteration: undefined,
-      })
+        showTransliteration: false,
+      } satisfies ExegesisSelectionOverride)
     })
 
     it("leaves exegesisId undefined when no tafsir param is given", () => {
       expect(
-        resolveExegesisSelection(undefined, undefined, Locale.IntEnglish)
+        resolveExegesisSelection(undefined, false, Locale.IntEnglish)
           .exegesisId,
-      ).toBeUndefined()
-    })
-
-    it("resolves showTransliteration true only for exactly \"1\"", () => {
-      expect(
-        resolveExegesisSelection(undefined, "1", Locale.IntEnglish)
-          .showTransliteration,
-      ).toBe(true)
-      expect(
-        resolveExegesisSelection(undefined, "0", Locale.IntEnglish)
-          .showTransliteration,
-      ).toBeUndefined()
-      expect(
-        resolveExegesisSelection(undefined, undefined, Locale.IntEnglish)
-          .showTransliteration,
       ).toBeUndefined()
     })
   })

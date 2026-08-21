@@ -58,7 +58,7 @@ export default function LoadingScreen() {
   }, [current])
 
   return (
-    <Container>
+    <Container data-testid="app-loading-screen">
       <Background
         key={`current-${current}`}
         style={{
