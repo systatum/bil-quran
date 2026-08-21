@@ -1771,11 +1771,15 @@ name = "proxy"
 version = "0.1.0"
 source = { editable = "proxy" }
 dependencies = [
+    { name = "pydantic" },
     { name = "shared" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "shared", editable = "shared" }]
+requires-dist = [
+    { name = "pydantic", specifier = ">=2.13.4" },
+    { name = "shared", editable = "shared" },
+]
 
 [[package]]
 name = "psutil"
@@ -2387,10 +2391,14 @@ version = "0.1.0"
 source = { editable = "shared" }
 dependencies = [
     { name = "pydantic" },
+    { name = "requests" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "pydantic", specifier = ">=2.13.4" }]
+requires-dist = [
+    { name = "pydantic", specifier = ">=2.13.4" },
+    { name = "requests", specifier = ">=2.34.2" },
+]
 
 [[package]]
 name = "shellingham"

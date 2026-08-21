@@ -1,5 +1,5 @@
-from frontend.structs import *  # type: ignore .I really don't want to manually import everything
-from frontend.apiclient import APIClient
+from frontend.structs import *  # type: ignore . I really don't want to manually import everything
+from shared.apiclient import APIClient
 from shared import api
 from datetime import datetime, timezone
 from time import perf_counter
