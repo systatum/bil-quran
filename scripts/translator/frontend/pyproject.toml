@@ -13,6 +13,7 @@ dependencies = [
     "pydantic>=2.13.4",
     "python-lsp-server>=1.15.0",
     "requests>=2.34.2",
+    "shared",
 ]
 
 [build-system]
@@ -21,3 +22,6 @@ build-backend = "uv_build"
 
 [tool.uv.build-backend]
 module-root = "."
+
+[tool.uv.sources]
+shared = { workspace = true }

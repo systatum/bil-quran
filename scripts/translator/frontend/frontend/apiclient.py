@@ -1,4 +1,4 @@
-from src import api
+from shared import api
 from typing import Any, TypeVar
 from dataclasses import dataclass
 from traceback import format_exc
@@ -75,71 +75,83 @@ class APIClient:
         source_language: str,
         target_language: str,
         model: str,
-        prompt_setting: api.PromptSetting,
-    ) -> api.Translation:
+        prompt_setting: api.internal.PromptSetting,
+    ) -> api.internal.Translation:
         """
         RAISES:
             APIError
         """
-        translate_input = api.TranslateInput(
+        translate_input = api.internal.TranslateInput(
             source_language=source_language, target_language=target_language, text=text
         )
-        request = api.TranslateAPIRequest(
-            api.TranslateJob(
+        request = api.internal.TranslateAPIRequest(
+            api.internal.TranslateJob(
                 translate_input=translate_input, setting=prompt_setting, model=model
             )
         )
         return self._translate(request).value
 
-    def rate(self, source: str, translation: str) -> api.Rating:
+    def rate(self, source: str, translation: str) -> api.internal.Rating:
         """
         RAISES:
             APIError
         """
-        request = api.RateAPIRequest(
-            api.RateJob(source=source, translation=translation)
+        request = api.internal.RateAPIRequest(
+            api.internal.RateJob(source=source, translation=translation)
         )
         return self._rate(request).value
 
     def compare(
         self, source: str, translation0: str, translation1: str
-    ) -> api.Comparison:
+    ) -> api.internal.Comparison:
         """
         RAISES:
             APIError
         """
-        request = api.CompareAPIRequest(
-            api.CompareJob(
+        request = api.internal.CompareAPIRequest(
+            api.internal.CompareJob(
                 source=source, translation0=translation0, translation1=translation1
             )
         )
         return self._compare(request).value
 
-    def _translate(self, request: api.TranslateAPIRequest) -> api.TranslateJobResult:
+    def _translate(
+        self, request: api.internal.TranslateAPIRequest
+    ) -> api.internal.TranslateJobResultOk:
         """
         RAISES:
             APIError
         """
         return self._request(
-            "/translate", TypeAdapter(api.TranslateJobResult), request.model_dump()
+            "/translate",
+            TypeAdapter(api.internal.TranslateJobResultOk),
+            request.model_dump_json(),
         )
 
-    def _rate(self, request: api.RateAPIRequest) -> api.RateJobResult:
+    def _rate(
+        self, request: api.internal.RateAPIRequest
+    ) -> api.internal.RateJobResultOk:
         """
         RAISES:
             APIError
         """
         return self._request(
-            "/rate", TypeAdapter(api.RateJobResult), request.model_dump()
+            "/rate",
+            TypeAdapter(api.internal.RateJobResultOk),
+            request.model_dump_json(),
         )
 
-    def _compare(self, request: api.CompareAPIRequest) -> api.CompareJobResult:
+    def _compare(
+        self, request: api.internal.CompareAPIRequest
+    ) -> api.internal.CompareJobResultOk:
         """
         RAISES:
             APIError
         """
         return self._request(
-            "/compare", TypeAdapter(api.CompareJobResult), request.model_dump()
+            "/compare",
+            TypeAdapter(api.internal.CompareJobResultOk),
+            request.model_dump_json(),
         )
 
     def _format_and_log_errors(self, fmt: str, *args, **kwargs) -> str:

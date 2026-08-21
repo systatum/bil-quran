@@ -5,4 +5,4 @@ source .env-public
 source .env
 set +a
 
-uv run --package --isolated frontend jupyter lab ./frontend
+uv run --package frontend --isolated jupyter lab ./frontend

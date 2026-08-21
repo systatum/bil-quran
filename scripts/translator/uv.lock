@@ -662,6 +662,7 @@ dependencies = [
     { name = "pydantic" },
     { name = "python-lsp-server" },
     { name = "requests" },
+    { name = "shared" },
 ]
 
 [package.metadata]
@@ -673,6 +674,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.13.4" },
     { name = "python-lsp-server", specifier = ">=1.15.0" },
     { name = "requests", specifier = ">=2.34.2" },
+    { name = "shared", editable = "shared" },
 ]
 
 [[package]]
@@ -1768,6 +1770,12 @@ wheels = [
 name = "proxy"
 version = "0.1.0"
 source = { editable = "proxy" }
+dependencies = [
+    { name = "shared" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "shared", editable = "shared" }]
 
 [[package]]
 name = "psutil"

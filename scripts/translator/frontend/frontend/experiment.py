@@ -1,6 +1,6 @@
-from my_notebook.structs import *
-from my_notebook.apiclient import APIClient
-from src import api
+from frontend.structs import *  # type: ignore .I really don't want to manually import everything
+from frontend.apiclient import APIClient
+from shared import api
 from datetime import datetime, timezone
 from time import perf_counter
 from pathlib import Path
@@ -387,7 +387,7 @@ class ExperimentRunner:
         try:
             rating = self._client.rate(
                 translated.input_.text.text,
-                typing.cast(api.Translation, translated.translation),
+                typing.cast(api.internal.Translation, translated.translation),
             )
         except Exception as e:
             if not allow_fail:
@@ -413,7 +413,7 @@ class ExperimentRunner:
         end_time = perf_counter()
 
         result = ExperimentResult(
-            translation=typing.cast(api.Translation, translated.translation),
+            translation=typing.cast(api.internal.Translation, translated.translation),
             rating=rating,
         )
 

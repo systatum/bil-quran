@@ -5,4 +5,4 @@ source .env-public
 source .env
 set +a
 
-uv run --package --isolated proxy python -m proxy.main
+uv run --package proxy --isolated python -m proxy.main

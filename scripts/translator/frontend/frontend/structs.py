@@ -1,4 +1,4 @@
-from src import api
+from shared import api
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from uuid import UUID, uuid4
@@ -21,7 +21,7 @@ class Versioned:
 
 @dataclass(kw_only=True)
 class ExperimentPrompt:
-    setting: api.PromptSetting
+    setting: api.internal.PromptSetting
     name: str
 
 
@@ -52,8 +52,8 @@ class ExperimentInput:
 
 @dataclass(kw_only=True)
 class ExperimentResult:
-    translation: api.Translation
-    rating: api.Rating
+    translation: api.internal.Translation
+    rating: api.internal.Rating
 
 
 @dataclass(kw_only=True)
@@ -67,7 +67,7 @@ class ExperimentMetadata:
 @dataclass(kw_only=True)
 class ExperimentTranslatedRecord(Versioned):
     input_: ExperimentInput
-    translation: api.Translation | None
+    translation: api.internal.Translation | None
     metadata: ExperimentMetadata
 
 
@@ -118,7 +118,7 @@ class ExperimentRunCommand:
     note: str = ""
 
     models: list[str]
-    prompt_settings: dict[str, api.PromptSetting]
+    prompt_settings: dict[str, api.internal.PromptSetting]
     language_pairs: list[tuple[str, str]]  # Source to target language
     texts: list[str]
 
