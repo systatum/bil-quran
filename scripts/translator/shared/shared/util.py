@@ -1,9 +1,21 @@
 from typing import Generic, TypeVar, Literal, Self
 from dataclasses import dataclass
+import sys
 
 V = TypeVar("V")
 E = TypeVar("E")
 T = TypeVar("T")
+
+
+def printerr(*args, **kwargs):
+    file = kwargs.pop("file", sys.stderr)
+    print(*args, file=file, **kwargs)
+
+
+def format_and_log_errors(fmt: str, *args, **kwargs) -> str:
+    value = fmt.format(*args, **kwargs)
+    printerr(value, file=sys.stderr)
+    return value
 
 
 @dataclass(kw_only=True)

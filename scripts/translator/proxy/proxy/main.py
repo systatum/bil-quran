@@ -1,6 +1,11 @@
-from proxy.apiclient import APIClient, APIError, APIErrorType, printerr
+from proxy.runpod_client import (
+    RunpodAPIClient,
+    RunpodAPIError,
+    RunpodAPIErrorType,
+)
 from proxy.runpod_struct import Pod
-from my_notebook.apiclient import APIClient as FastAPIClient
+from shared.apiclient import APIClient as BackendAPIClient
+from shared.util import printerr
 from pathlib import Path
 from datetime import datetime, timezone
 from subprocess import Popen, run
@@ -25,9 +30,9 @@ def pod():
     with open(".runpod-fastapi-token") as file:
         api_token: str = file.read().strip()
 
-    client: APIClient = APIClient(APIClient.Setting(api_key=api_key))
-    fastapi_client: FastAPIClient = FastAPIClient(
-        FastAPIClient.Setting(
+    client: RunpodAPIClient = RunpodAPIClient(RunpodAPIClient.Setting(api_key=api_key))
+    fastapi_client: BackendAPIClient = BackendAPIClient(
+        BackendAPIClient.Setting(
             base_url=f"http://127.0.0.1:{CADDY_PORT}", token=api_token
         )
     )
@@ -39,8 +44,8 @@ def pod():
         sleep(5)
         try:
             pods = client.list_pods()
-        except APIError as e:
-            if e.error_type == APIErrorType.HTTP_ERROR:
+        except RunpodAPIError as e:
+            if e.error_type == RunpodAPIErrorType.HTTP_ERROR:
                 printerr("HTTP Error on list_pods")
                 continue
             printerr("APIError on list_pods")
@@ -69,8 +74,8 @@ def pod():
             for disabled_id in disabled_ids:
                 try:
                     client.stop_pod(disabled_id)
-                except APIError as e:
-                    if e.error_type == APIErrorType.HTTP_ERROR:
+                except RunpodAPIError as e:
+                    if e.error_type == RunpodAPIErrorType.HTTP_ERROR:
                         printerr("HTTP Error on stopping pod id", disabled_id)
                         continue
                     printerr("APIError on stopping pod id", disabled_id)
@@ -111,8 +116,8 @@ def pod():
             )
             try:
                 client.stop_pod(active_pod.id)
-            except APIError as e:
-                if e.error_type == APIErrorType.HTTP_ERROR:
+            except RunpodAPIError as e:
+                if e.error_type == RunpodAPIErrorType.HTTP_ERROR:
                     printerr("HTTP Error on stopping active pod with id", active_pod.id)
                     continue
                 printerr("APIError on stopping active pod with id", active_pod.id)
@@ -133,8 +138,8 @@ def pod():
                 )
                 try:
                     client.stop_pod(active_pod.id)
-                except APIError as e:
-                    if e.error_type == APIErrorType.HTTP_ERROR:
+                except RunpodAPIError as e:
+                    if e.error_type == RunpodAPIErrorType.HTTP_ERROR:
                         printerr(
                             "HTTP Error on stopping active pod with id", active_pod.id
                         )

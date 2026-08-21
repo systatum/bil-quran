@@ -1,11 +1,11 @@
 from shared import api
+from shared.util import format_and_log_errors
 from typing import Any, TypeVar
 from dataclasses import dataclass
 from traceback import format_exc
 from pydantic import ValidationError, TypeAdapter
 from enum import Enum
 import requests
-import sys
 import typing
 
 T = TypeVar("T")
@@ -24,11 +24,6 @@ class APIError(Exception):
     http_code: int | None
     error_message: str
     error_type: APIErrorType
-
-
-def printerr(*args, **kwargs):
-    file = kwargs.pop("file", sys.stderr)
-    print(*args, file=file, **kwargs)
 
 
 class APIClient:
@@ -154,11 +149,6 @@ class APIClient:
             request.model_dump_json(),
         )
 
-    def _format_and_log_errors(self, fmt: str, *args, **kwargs) -> str:
-        value = fmt.format(*args, **kwargs)
-        printerr(value, file=sys.stderr)
-        return value
-
     def _request(
         self,
         path: str,
@@ -184,7 +174,7 @@ class APIClient:
                     self.setting.base_url + path
                 )
         except requests.RequestException as e:
-            error_message = self._format_and_log_errors(
+            error_message = format_and_log_errors(
                 "{}: {}", type(e).__name__, format_exc()
             )
             raise APIError(
@@ -197,7 +187,7 @@ class APIClient:
         try:
             return adapter.validate_python(value)
         except ValidationError as e:
-            error_message = self._format_and_log_errors(
+            error_message = format_and_log_errors(
                 "{}: {}", type(e).__name__, format_exc()
             )
             raise APIError(
@@ -214,7 +204,7 @@ class APIClient:
 
         # It's not our server that responded
         if response.status_code != 200:
-            error_message = self._format_and_log_errors(
+            error_message = format_and_log_errors(
                 "HTTP {}: {}", response.status_code, response.text
             )
             raise APIError(
@@ -228,7 +218,7 @@ class APIClient:
                 Any
             ].model_validate_json(response.text)
         except ValidationError as e:
-            error_message = self._format_and_log_errors(
+            error_message = format_and_log_errors(
                 "{}: {}", type(e).__name__, format_exc()
             )
             raise APIError(
@@ -239,7 +229,7 @@ class APIClient:
 
         if api_response.status == "err":
             error: api.APIError = typing.cast(api.APIError, api_response.error)
-            error_message = self._format_and_log_errors(
+            error_message = format_and_log_errors(
                 "{}: {}", error.error_code, error.error_message
             )
             raise APIError(
