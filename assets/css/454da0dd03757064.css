@@ -1,0 +1,195 @@
+
+        @font-face {
+          font-family: "AdwaAssalaf";
+          font-style: normal;
+          font-display: swap;
+          font-weight: 400;
+          font-synthesis: none;
+          text-rendering: optimizeLegibility;
+          src:
+            url("/fonts/adwa-assalaf/adwa-assalaf.woff2") format("woff2"),
+            url("/fonts/adwa-assalaf/adwa-assalaf.woff") format("woff"),
+            url("/fonts/adwa-assalaf/adwa-assalaf.ttf") format("truetype");
+        }
+
+        @font-face {
+          font-family: "Almushaf";
+          font-style: normal;
+          font-display: swap;
+          font-weight: 400;
+          font-synthesis: none;
+          text-rendering: optimizeLegibility;
+          src:
+            url("/fonts/almushaf/almushaf.woff2") format("woff2"),
+            url("/fonts/almushaf/almushaf.woff") format("woff"),
+            url("/fonts/almushaf/almushaf.ttf") format("truetype");
+        }
+
+        @font-face {
+          font-family: "AlquranWbw";
+          font-style: normal;
+          font-display: swap;
+          font-weight: 400;
+          font-synthesis: none;
+          text-rendering: optimizeLegibility;
+          src:
+            url("/fonts/alquranwbw/QuranWBW(1).woff2") format("woff2"),
+            url("/fonts/alquranwbw/QuranWBW(1).woff") format("woff"),
+            url("/fonts/alquranwbw/QuranWBW(1).ttf") format("truetype");
+        }
+
+        @font-face {
+          font-family: "Amiri";
+          font-style: normal;
+          font-display: swap;
+          font-weight: 400;
+          font-synthesis: none;
+          text-rendering: optimizeLegibility;
+          src:
+            url("/fonts/amiri/amiri_arabic-400-normal.woff2") format("woff2"),
+            url("/fonts/amiri/amiri_arabic-400-normal.woff") format("woff"),
+            url("/fonts/amiri/amiri_arabic-400-normal.ttf") format("truetype");
+        }
+
+        @font-face {
+          font-family: "DroidNaskh";
+          font-style: normal;
+          font-display: swap;
+          font-weight: 400;
+          font-synthesis: none;
+          text-rendering: optimizeLegibility;
+          src:
+            url("/fonts/droid-naskh/droid-naskh-regular.woff2") format("woff2"),
+            url("/fonts/droid-naskh/droid-naskh-regular.woff") format("woff"),
+            url("/fonts/droid-naskh/droid-naskh-regular.ttf") format("truetype");
+        }
+
+        @font-face {
+          font-family: "FarsiSimple";
+          font-style: normal;
+          font-display: swap;
+          font-weight: 400;
+          font-synthesis: none;
+          text-rendering: optimizeLegibility;
+          src:
+            url("/fonts/farsi-simple/farsi-simple-bold.woff2") format("woff2"),
+            url("/fonts/farsi-simple/farsi-simple-bold.woff") format("woff"),
+            url("/fonts/farsi-simple/farsi-simple-bold.ttf") format("truetype");
+        }
+
+        @font-face {
+          font-family: "MeQuran";
+          font-style: normal;
+          font-display: swap;
+          font-weight: 400;
+          font-synthesis: none;
+          text-rendering: optimizeLegibility;
+          src:
+            url("/fonts/mequran/MeQuran.woff2") format("woff2"),
+            url("/fonts/mequran/MeQuran.woff") format("woff"),
+            url("/fonts/mequran/MeQuran.ttf") format("truetype");
+        }
+
+        @font-face {
+          font-family: "MeQuranFull";
+          font-style: normal;
+          font-display: swap;
+          font-weight: 400;
+          font-synthesis: none;
+          text-rendering: optimizeLegibility;
+          src:
+            url("/fonts/mequran-sep/mq2-f.woff2") format("woff2"),
+            url("/fonts/mequran-sep/mq2-f.woff") format("woff"),
+            url("/fonts/mequran-sep/mq2-f.ttf") format("truetype");
+        }
+
+        @font-face {
+          font-family: "Noorehuda";
+          font-style: normal;
+          font-display: swap;
+          font-weight: 400;
+          font-synthesis: none;
+          text-rendering: optimizeLegibility;
+          src:
+            url("/fonts/noorehuda/noorehuda.woff2") format("woff2"),
+            url("/fonts/noorehuda/noorehuda.woff") format("woff"),
+            url("/fonts/noorehuda/noorehuda.ttf") format("truetype");
+        }
+
+        @font-face {
+          font-family: "NotoNaskhArabic";
+          font-style: normal;
+          font-display: swap;
+          font-weight: 400;
+          font-synthesis: none;
+          text-rendering: optimizeLegibility;
+          src:
+            url("/fonts/notonaskh/NotoNaskhArabic-Regular.woff2") format("woff2"),
+            url("/fonts/notonaskh/NotoNaskhArabic-Regular.woff") format("woff"),
+            url("/fonts/notonaskh/NotoNaskhArabic-Regular.ttf") format("truetype");
+        }
+
+        @font-face {
+          font-family: "NotoNastaqUrdu";
+          font-style: normal;
+          font-display: swap;
+          font-weight: 400;
+          font-synthesis: none;
+          text-rendering: optimizeLegibility;
+          src:
+            url("/fonts/notonastaq-urdu/notonastaq-urdu.woff2") format("woff2"),
+            url("/fonts/notonastaq-urdu/notonastaq-urdu.woff") format("woff"),
+            url("/fonts/notonastaq-urdu/notonastaq-urdu.ttf") format("truetype");
+        }
+
+        @font-face {
+          font-family: "SahlNaskh";
+          font-style: normal;
+          font-display: swap;
+          font-weight: 400;
+          font-synthesis: none;
+          text-rendering: optimizeLegibility;
+          src:
+            url("/fonts/warsh/mequ2.woff2") format("woff2"),
+            url("/fonts/warsh/mequ2.woff") format("woff"),
+            url("/fonts/warsh/mequ2.ttf") format("truetype");
+        }
+
+        @font-face {
+          font-family: "TahaNaskh";
+          font-style: normal;
+          font-display: swap;
+          font-weight: 400;
+          font-synthesis: none;
+          text-rendering: optimizeLegibility;
+          src:
+            url("/fonts/taha-naskh/taha-naskh.woff2") format("woff2"),
+            url("/fonts/taha-naskh/taha-naskh.woff") format("woff"),
+            url("/fonts/taha-naskh/taha-naskh.ttf") format("truetype");
+        }
+
+        @font-face {
+          font-family: "Ubuntu";
+          font-style: normal;
+          font-display: swap;
+          font-weight: 400;
+          font-synthesis: none;
+          text-rendering: optimizeLegibility;
+          src:
+            url("/fonts/ubuntu/Ubuntu-Arabic_R.woff2") format("woff2"),
+            url("/fonts/ubuntu/Ubuntu-Arabic_R.woff") format("woff"),
+            url("/fonts/ubuntu/Ubuntu-Arabic_R.ttf") format("truetype");
+        }
+
+        @font-face {
+          font-family: "UthTaha";
+          font-style: normal;
+          font-display: swap;
+          font-weight: 400;
+          font-synthesis: none;
+          text-rendering: optimizeLegibility;
+          src:
+            url("/fonts/uthtaha/uthtaha.woff2") format("woff2"),
+            url("/fonts/uthtaha/uthtaha.woff") format("woff"),
+            url("/fonts/uthtaha/uthtaha.ttf") format("truetype");
+        }
