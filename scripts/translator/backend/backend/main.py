@@ -1,20 +1,23 @@
 from backend.translation import TranslateJob, TranslateJobResult, TranslationService
 from backend.rating import RateJob, RateJobResult, RatingService
 from backend.comparison import CompareJob, CompareJobResult, ComparisonService
-from backend.service import JobResult, Job, JobResultOk
+from backend.service import JobResult, Job
 from backend.setting_loader import SettingLoader
-from backend.api import (
-    ModelAPIResponse,
+from shared.api import (
+    ModelsAPIResponse,
+    HealthResult,
+    HealthAPIResponse,
+    APIError,
+    APIResponse,
+)
+from shared.api.internal import (
+    JobResultOk,
     TranslateAPIRequest,
     TranslateAPIResponse,
     RateAPIRequest,
     RateAPIResponse,
     CompareAPIRequest,
     CompareAPIResponse,
-    HealthResult,
-    HealthAPIResponse,
-    APIError,
-    APIResponse,
 )
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -26,6 +29,9 @@ from typing import TypeVar, Annotated
 import uuid
 import threading
 import typing
+import sys
+import torch
+import subprocess
 
 
 class JobBoard:
@@ -115,10 +121,6 @@ class Appstate:
 
 
 def print_version():
-    import torch
-    import subprocess
-    import sys
-
     print("Python version:", sys.version)
     print("Torch version:", torch.__version__)
     print("Torch CUDA version:", torch.version.cuda)
@@ -152,6 +154,11 @@ appstate: Appstate = Appstate()
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    print_version()
+    SettingLoader.get()  # Initialize setting here so we can see what's going on
+    print(end="", flush=True)
+    print(end="", flush=True, file=sys.stderr)
+
     appstate.load(
         GlobalData(
             translation_service=TranslationService(),
@@ -223,8 +230,8 @@ def get_health(_: Annotated[None, Depends(check_token)]) -> HealthAPIResponse:
 
 
 @app.get("/models")
-def get_models(_: Annotated[None, Depends(check_token)]) -> ModelAPIResponse:
-    return ModelAPIResponse.ok(list(SettingLoader.get().LLM_MODELS.keys()))
+def get_models(_: Annotated[None, Depends(check_token)]) -> ModelsAPIResponse:
+    return ModelsAPIResponse.ok(list(SettingLoader.get().LLM_MODELS.keys()))
 
 
 @app.post("/translate")

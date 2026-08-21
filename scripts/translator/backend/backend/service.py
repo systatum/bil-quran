@@ -1,13 +1,11 @@
 from __future__ import annotations
-from backend.util import Result
+from shared.result import Result
 from time import sleep
 from queue import Queue
 from dataclasses import dataclass
 from typing import Generic, TypeVar
 from abc import abstractmethod, ABC
 import queue
-import dataclasses
-import uuid
 import threading
 
 """
@@ -24,16 +22,8 @@ from a different Job subclass even if technically they are the same type
 V = TypeVar("V")
 E = TypeVar("E")
 
-
-@dataclass(kw_only=True)
-class Job(Generic[V, E]):
-    job_id: uuid.UUID = dataclasses.field(default_factory=lambda: uuid.uuid4())
-
-    def ok(self, value: V) -> JobResult[V, E]:
-        return JobResult(job=self, result=Result.ok(value))
-
-    def err(self, error: E) -> JobResult[V, E]:
-        return JobResult(job=self, result=Result.err(error))
+# Re-export
+from shared.api.internal import Job
 
 
 @dataclass(kw_only=True)
@@ -41,11 +31,13 @@ class JobResult(Generic[V, E]):
     job: Job[V, E]
     result: Result[V, E]
 
+    @classmethod
+    def ok(cls, job: Job[V, E], value: V) -> JobResult[V, E]:
+        return cls(job=job, result=Result.ok(value))
 
-@dataclass(kw_only=True)
-class JobResultOk(Generic[V]):
-    job: Job[V, None]
-    value: V
+    @classmethod
+    def err(cls, job: Job[V, E], error: E) -> JobResult[V, E]:
+        return cls(job=job, result=Result.err(error))
 
 
 class Service(Generic[V, E], ABC):

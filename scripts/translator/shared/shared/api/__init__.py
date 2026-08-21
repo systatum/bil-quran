@@ -1,7 +1,9 @@
 from __future__ import annotations
-from typing import TypeVar, Generic, Literal, Self, TypeAlias
+from typing import TypeVar, Generic, Literal, Self
 from pydantic import ConfigDict, BaseModel, RootModel, model_validator
 from enum import Enum
+from dataclasses import dataclass
+from datetime import datetime
 
 T = TypeVar("T")
 
@@ -73,32 +75,6 @@ class APIRequest(RootModel[T]):
     model_config = ConfigDict(validate_assignment=True, revalidate_instances="always")
 
 
-from backend.translation import (
-    TranslateJob,
-    TranslateInput,
-    PromptSetting,
-    Translation,
-)
-from backend.rating import RateJob, Rating
-from backend.comparison import CompareJob, Comparison
-from backend.service import JobResultOk as JobResult
-
-TranslateJobResult: TypeAlias = JobResult[Translation]
-RateJobResult: TypeAlias = JobResult[Rating]
-CompareJobResult: TypeAlias = JobResult[Comparison]
-
-ModelAPIResponse = APIResponse[list[str]]
-TranslateAPIRequest = APIRequest[TranslateJob]
-TranslateAPIResponse = APIResponse[TranslateJobResult]
-RateAPIRequest = APIRequest[RateJob]
-RateAPIResponse = APIResponse[RateJobResult]
-CompareAPIRequest = APIRequest[CompareJob]
-CompareAPIResponse = APIResponse[CompareJobResult]
-
-from dataclasses import dataclass
-from datetime import datetime
-
-
 @dataclass(kw_only=True)
 class HealthResult:
     """
@@ -109,27 +85,14 @@ class HealthResult:
     last_activity_timestamp: datetime
 
 
+ModelsAPIResponse = APIResponse[list[str]]
 HealthAPIResponse = APIResponse[HealthResult]
 
 # Exported symbols
 __all__ = [
     "APIResponse",
     "APIRequest",
-    "ModelAPIResponse",
-    "TranslateAPIRequest",
-    "TranslateJob",
-    "TranslateInput",
-    "PromptSetting",
-    "Translation",
-    "TranslateAPIResponse",
-    "RateAPIRequest",
-    "RateJob",
-    "Rating",
-    "RateAPIResponse",
-    "CompareAPIRequest",
-    "CompareJob",
-    "Comparison",
-    "CompareAPIResponse",
+    "ModelsAPIResponse",
     "HealthResult",
     "HealthAPIResponse",
 ]

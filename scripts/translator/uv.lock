@@ -2377,6 +2377,12 @@ wheels = [
 name = "shared"
 version = "0.1.0"
 source = { editable = "shared" }
+dependencies = [
+    { name = "pydantic" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "pydantic", specifier = ">=2.13.4" }]
 
 [[package]]
 name = "shellingham"
@@ -2612,24 +2618,8 @@ dependencies = [
     { name = "shared" },
 ]
 
-[package.dev-dependencies]
-dev = [
-    { name = "backend" },
-    { name = "frontend" },
-    { name = "proxy" },
-    { name = "shared" },
-]
-
 [package.metadata]
 requires-dist = [{ name = "shared", editable = "shared" }]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "backend", editable = "backend" },
-    { name = "frontend", editable = "frontend" },
-    { name = "proxy", editable = "proxy" },
-    { name = "shared", editable = "shared" },
-]
 
 [[package]]
 name = "triton"

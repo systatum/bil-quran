@@ -12,19 +12,8 @@ from typing import Any, TypeAlias
 import torch
 import traceback
 
-
-@dataclass(kw_only=True)
-class CompareJob(Job):
-    source: str
-    translation0: str
-    translation1: str
-
-
-@dataclass(kw_only=True)
-class Comparison:
-    probabilities: tuple[float, float]
-    choice: int
-
+# Re-export
+from shared.api.internal import CompareJob, Comparison
 
 CompareJobResult: TypeAlias = JobResult[Comparison, str]
 
@@ -43,18 +32,18 @@ class ComparisonService(Service[Comparison, str]):
             any(keyword in text for keyword in DISALLOWED_KEYWORDS)
             for text in (job.source, job.translation0, job.translation1)
         ):
-            return job.err("Disallowed keywords found in text")
+            return JobResult.err(job, "Disallowed keywords found in text")
 
         try:
             result = compare(
                 self._model, job.source, job.translation0, job.translation1
             )
         except Exception as e:
-            return job.err(
-                f"Unexpected error {type(e).__name__}: {traceback.format_exc()}"
+            return JobResult.err(
+                job, f"Unexpected error {type(e).__name__}: {traceback.format_exc()}"
             )
 
-        return job.ok(result)
+        return JobResult.ok(job, result)
 
 
 # NOTE: MT-RANKER code has very incomplete documentation, so this code is simply what seems to work as suggested by CHATGPT

@@ -2,18 +2,12 @@ from __future__ import annotations
 from backend.service import JobResult, Job, Service
 from comet import download_model, load_from_checkpoint
 from comet.models import CometModel
-from dataclasses import dataclass
 from typing import TypeAlias
 import traceback
 
+# Re-export
+from shared.api.internal import RateJob, Rating
 
-@dataclass(kw_only=True)
-class RateJob(Job):
-    source: str
-    translation: str
-
-
-Rating: TypeAlias = float
 RateJobResult: TypeAlias = JobResult[Rating, str]
 
 
@@ -30,11 +24,11 @@ class RatingService(Service[Rating, str]):
         try:
             result = rate(self._model, job.source, job.translation)
         except Exception as e:
-            return job.err(
-                f"Unexpected error {type(e).__name__}: {traceback.format_exc()}"
+            return JobResult.err(
+                job, f"Unexpected error {type(e).__name__}: {traceback.format_exc()}"
             )
 
-        return job.ok(result)
+        return JobResult.ok(job, result)
 
 
 def load_model() -> CometModel:

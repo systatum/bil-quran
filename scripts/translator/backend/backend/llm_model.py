@@ -1,35 +1,11 @@
 from __future__ import annotations
 from backend.setting_loader import SettingLoader
-from dataclasses import dataclass
 from typing import Optional, List, Union, Dict, Iterator
-import dataclasses
 import typing
 import llama_cpp
 
-
-@dataclass(kw_only=True)
-class PromptSetting:
-    system_prompt: str = (
-        "You are an assistant who translates. The first line of the input is source and target language specification"
-    )
-    response_format: dict = dataclasses.field(
-        default_factory=lambda: {
-            "type": "text",
-        }
-    )
-    prompt_format: str = "{source_language} -> {target_language}\n{text}"
-
-    def __post_init__(self):
-        assert self.prompt_format.count("{source_language}") == 1
-        assert self.prompt_format.count("{target_language}") == 1
-        assert self.prompt_format.count("{text}") == 1
-
-
-@dataclass(kw_only=True)
-class TranslateInput:
-    source_language: str
-    target_language: str
-    text: str
+# Re-export
+from shared.api.internal import TranslateInput, PromptSetting
 
 
 class LLMModel:

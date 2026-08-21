@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=nvidia/cuda:13.2.1-runtime-ubuntu22.04
+ARG BASE_IMAGE=nvidia/cuda:13.2.1-runtime-ubuntu24.04
 FROM ghcr.io/astral-sh/uv:0.12.2 AS uv-base
 
 ##########################
@@ -22,7 +22,7 @@ RUN --mount=type=bind,source=.,target=. \
     --mount=type=cache,target=/root/.cache/uv \
     --mount=type=cache,target=/root/.local/share/uv/python \
     uv export --package=backend --only-group=heavy --format pylock.toml --verbose > /packages/pylock.heavy.toml && \
-    uv export --package=backend --format pylock.toml --verbose > /packages/pylock.toml
+    uv export --package=backend --package=shared --format pylock.toml --verbose > /packages/pylock.toml
 ##########################
 # Generator/parser stage #
 ##########################
