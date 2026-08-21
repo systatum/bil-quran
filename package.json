@@ -63,6 +63,7 @@
   },
   "devDependencies": {
     "@craco/craco": "^7.1.0",
+    "@minify-html/node": "^0.18.1",
     "@playwright/test": "^1.61.0",
     "@posthog/types": "^1.399.0",
     "@types/pg": "^8.20.0",

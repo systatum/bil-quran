@@ -50,6 +50,7 @@ export default function ChapterRow({
   return (
     <ChapterHeaderContainer
       data-index={index}
+      data-chapterid={chapter.id}
       ref={ref}
       theme={theme}
       style={{ transform: style.transform }}
@@ -73,11 +74,14 @@ export default function ChapterRow({
           <ChapterGlowLine $side="left" $theme={theme} />
 
           <ChapterCenter>
-            <ChapterName $hasBasmala={hasBasmala}>
+            <ChapterName $hasBasmala={hasBasmala} className="ChapterRow-name">
               {getChapterArabicName(chapter.id)}
             </ChapterName>
 
-            <ChapterDescription $hasBasmala={hasBasmala}>
+            <ChapterDescription
+              $hasBasmala={hasBasmala}
+              className="ChapterRow-description"
+            >
               {getChapterTransliteratedName(chapter.id)}
               {" · "}
               {getChapterMeaning(chapter.id)}

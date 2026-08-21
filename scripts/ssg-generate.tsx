@@ -1,9 +1,11 @@
 import { Asset } from "@constants/assets"
 import { Locale } from "@constants/settings"
-import { renderExegesisMarkdown } from "@services/markdown"
+import { renderExegesisMarkdown, renderFootnoteText } from "@services/markdown"
+import { minify } from "@minify-html/node"
 import * as cheerio from "cheerio"
 import { createHash } from "node:crypto"
 import { spawn } from "node:child_process"
+import { existsSync } from "node:fs"
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises"
 import path from "node:path"
 import { chromium, type Page } from "playwright"
@@ -23,6 +25,14 @@ const MAX_WORKERS = 5
 const PUBLIC_QURAN = path.resolve("public/quran")
 const CHAPTERS_PATH = path.join(PUBLIC_QURAN, "chapters.json")
 const EXEGESIS_PATH = path.join(PUBLIC_QURAN, "exegesis")
+
+const SVG_ASSETS_RELATIVE_DIR = "assets/svg"
+const PUBLIC_SVG_DIR = path.resolve("public", SVG_ASSETS_RELATIVE_DIR)
+const BUILD_SVG_DIR = path.resolve("build", SVG_ASSETS_RELATIVE_DIR)
+
+const CSS_ASSETS_RELATIVE_DIR = "assets/css"
+const PUBLIC_CSS_DIR = path.resolve("public", CSS_ASSETS_RELATIVE_DIR)
+const BUILD_CSS_DIR = path.resolve("build", CSS_ASSETS_RELATIVE_DIR)
 
 interface Chapter {
   length: number
@@ -57,6 +67,7 @@ interface ExegesisChapterAsset {
   description?: string | null
   translations?: Record<string, string>
   exegesis?: Record<string, string | null>
+  footnotes?: Record<string, Record<string, string>>
 }
 
 /** Attributes lifted off one captured word span, reused to build every other verse's words. */
@@ -68,10 +79,18 @@ interface WordTemplate {
   meaning: Record<string, string> | null
 }
 
+/** Attributes lifted off one captured footnote item, reused to build every other verse's list. */
+interface FootnoteTemplate {
+  list: Record<string, string>
+  item: Record<string, string>
+  marker: Record<string, string>
+}
+
 /** A captured, fully-bootstrapped page, reused as the shell for every verse in this combo. */
 interface Shell {
   html: string
   wordTemplate: WordTemplate | null
+  footnoteTemplate: FootnoteTemplate | null
 }
 
 function sleep(ms: number) {
@@ -215,6 +234,59 @@ async function readExegesisChapter(
   return JSON.parse(await readRawCached(exegesisChapterPath(slug, locale, chapterId)))
 }
 
+/**
+ * Finds a verse to capture the shell from that exercises as much markup as
+ * this exegesis work has: translation, exegesis body, footnotes, and a
+ * scripture quote (an RT-block). Styled-components only emits CSS for
+ * markup that actually rendered, so a plain verse 1:1 capture can leave a
+ * combo missing styles (or, worse, a template with no hook at all) for
+ * whatever it never happened to exercise. Stops early once a verse scores
+ * the max, so this is cheap for combos that have everything on chapter 1.
+ */
+async function findRichCaptureVerse(
+  exegesisId: string,
+  locale: string,
+  chapters: Chapters,
+): Promise<{ chapterId: number; verseNumber: number }> {
+  let best = { chapterId: 1, verseNumber: 1, score: -1 }
+
+  for (const chapterIdString of Object.keys(chapters)) {
+    const chapterId = Number(chapterIdString)
+    const chapter = await readExegesisChapter(exegesisId, locale, chapterId)
+
+    // A translation-only work (no exegesis body at all) can still carry
+    // footnotes on its translation text, so scan every verse key any of
+    // these three fields mentions — not just the ones with exegesis text.
+    const verseKeys = new Set([
+      ...Object.keys(chapter.translations ?? {}),
+      ...Object.keys(chapter.exegesis ?? {}),
+      ...Object.keys(chapter.footnotes ?? {}),
+    ])
+
+    for (const verseKey of verseKeys) {
+      const exegesisText = chapter.exegesis?.[verseKey]
+      const hasTranslation = Boolean(chapter.translations?.[verseKey])
+      const hasExegesis = Boolean(exegesisText)
+      const hasFootnote = Object.keys(chapter.footnotes?.[verseKey] ?? {}).length > 0
+      const hasScriptureQuote = Boolean(exegesisText?.includes('"RT"'))
+
+      const score =
+        Number(hasTranslation) +
+        Number(hasExegesis) +
+        Number(hasFootnote) +
+        Number(hasScriptureQuote)
+
+      if (score > best.score) {
+        best = { chapterId, verseNumber: Number(verseKey), score }
+      }
+    }
+
+    if (best.score === 4) break
+  }
+
+  return best
+}
+
 /** Locales with their own word-by-word translation corpus; anything else falls back to en-US. */
 const WBW_TRANSLATION_LOCALES = ["en-US", "id-ID"]
 
@@ -332,7 +404,10 @@ function startServer() {
     "pnpm",
     ["exec", "serve", "-s", "build", "-l", String(PORT)],
     {
-      stdio: ["ignore", "pipe", "pipe"],
+      // Its own process group, so stopServer can signal any child pnpm
+      // spawns for the actual server, not just the pnpm wrapper itself.
+      detached: true,
+      stdio: ["ignore", "ignore", "pipe"],
     },
   )
 
@@ -351,10 +426,34 @@ function startServer() {
   return server
 }
 
-function stopServer(server: ReturnType<typeof spawn>) {
-  if (!server.killed) {
-    server.kill("SIGTERM")
-  }
+/** Kills the server's whole process group and waits for it to actually exit. */
+function stopServer(server: ReturnType<typeof spawn>): Promise<void> {
+  return new Promise((resolve) => {
+    if (server.exitCode !== null || server.signalCode !== null || !server.pid) {
+      resolve()
+      return
+    }
+
+    const forceKillTimer = setTimeout(() => {
+      try {
+        process.kill(-server.pid!, "SIGKILL")
+      } catch {
+        // Already gone.
+      }
+    }, 5000)
+
+    server.once("exit", () => {
+      clearTimeout(forceKillTimer)
+      resolve()
+    })
+
+    try {
+      process.kill(-server.pid, "SIGTERM")
+    } catch {
+      clearTimeout(forceKillTimer)
+      resolve()
+    }
+  })
 }
 
 function getAppUrl(
@@ -405,6 +504,153 @@ async function waitForDialog(page: Page) {
   })
 }
 
+/** Waits for a chapter header row to mount and render its name, not just exist. */
+async function waitForChapterHeader(page: Page, chapterId: number) {
+  const selector = `[data-chapterid="${chapterId}"]`
+  await page.waitForSelector(selector)
+
+  await page.waitForFunction(
+    (sel) => (document.querySelector(sel)?.textContent?.trim().length ?? 0) > 0,
+    selector,
+  )
+}
+
+/**
+ * Removes the background reading list's per-verse rows. The chapter header
+ * row stays; generatePage() overwrites its text for the real chapter.
+ */
+function stripBackgroundVerseRows(html: string): string {
+  const $ = cheerio.load(html, { decodeEntities: false })
+
+  $("div[data-verse]").each((_, el) => {
+    const $el = $(el)
+
+    if ($el.closest('[aria-label="paper-dialog-content"]').length === 0) {
+      $el.remove()
+    }
+  })
+
+  // Virtualization can render a neighboring chapter's header row too — keep
+  // only chapter 1's, since that's the one generatePage() splices into.
+  $('div[data-chapterid]:not([data-chapterid="1"])').remove()
+
+  return $.html()
+}
+
+/**
+ * Removes the app bundle and its build-info banner script. Without this,
+ * the deferred bundle hydrates the real SPA over the static page, and its
+ * hash-based router (which sees no hash on this page's plain URL path)
+ * silently swaps the rendered dialog for the plain reading view. Our own
+ * redirect script is added later and is plain JS, so it needs none of this.
+ */
+function stripAppBootstrapScripts(html: string): string {
+  const $ = cheerio.load(html, { decodeEntities: false })
+
+  $("script").each((_, el) => {
+    const $script = $(el)
+    const src = $script.attr("src") ?? ""
+    const isAppBundle = src.includes("/static/js/")
+    const isBuildInfoBanner = ($script.html() ?? "").includes("window.__systatum_bilquran")
+
+    if (isAppBundle || isBuildInfoBanner) {
+      $script.remove()
+    }
+  })
+
+  return $.html()
+}
+
+/** Attributes worth keeping on the <img> that replaces an extracted <svg>. */
+const SVG_TO_IMG_ATTRS = ["class", "aria-label", "aria-hidden", "id", "width", "height"]
+
+/** Hashes of SVGs already written to disk this run, so repeats are just a lookup. */
+const writtenSvgHashes = new Set<string>()
+
+/**
+ * Every icon SVG is the same for every verse in a combo. Extracts each to a
+ * content-hashed file once per shell, swapping it for an <img>.
+ */
+async function extractSvgAssets($: ReturnType<typeof cheerio.load>): Promise<void> {
+  for (const el of $("svg").toArray()) {
+    const $svg = $(el)
+    const svgMarkup = $.html($svg)
+    const hash = createHash("sha256").update(svgMarkup).digest("hex").slice(0, 16)
+    const fileName = `${hash}.svg`
+
+    if (!writtenSvgHashes.has(hash)) {
+      writtenSvgHashes.add(hash)
+
+      await mkdir(PUBLIC_SVG_DIR, { recursive: true })
+      await mkdir(BUILD_SVG_DIR, { recursive: true })
+
+      const publicPath = path.join(PUBLIC_SVG_DIR, fileName)
+      const buildPath = path.join(BUILD_SVG_DIR, fileName)
+
+      if (!existsSync(publicPath)) await writeFile(publicPath, svgMarkup, "utf8")
+      if (!existsSync(buildPath)) await writeFile(buildPath, svgMarkup, "utf8")
+    }
+
+    const img = $("<img>")
+
+    for (const attr of SVG_TO_IMG_ATTRS) {
+      const value = $svg.attr(attr)
+      if (value != null) img.attr(attr, value)
+    }
+
+    // A global reset sets this on the svg tag. Keep it explicit since an
+    // img tag won't match that rule.
+    img.attr("style", `display:block;vertical-align:middle;${$svg.attr("style") ?? ""}`)
+
+    if (!img.attr("aria-label")) {
+      img.attr("alt", "")
+    }
+
+    img.attr("src", `/${SVG_ASSETS_RELATIVE_DIR}/${fileName}`)
+
+    $svg.replaceWith(img)
+  }
+}
+
+/** Hashes of stylesheets already written to disk this run, so repeats are just a lookup. */
+const writtenCssHashes = new Set<string>()
+
+/**
+ * The style blocks are the same for every verse in a combo and are most of
+ * a page's weight. Extracts each to a content-hashed stylesheet once per
+ * shell, swapping the inline block for a <link>.
+ */
+async function extractStyleAssets($: ReturnType<typeof cheerio.load>): Promise<void> {
+  for (const el of $("style").toArray()) {
+    const $style = $(el)
+    const css = $style.html() ?? ""
+
+    if (!css.trim()) continue
+
+    const hash = createHash("sha256").update(css).digest("hex").slice(0, 16)
+    const fileName = `${hash}.css`
+
+    if (!writtenCssHashes.has(hash)) {
+      writtenCssHashes.add(hash)
+
+      await mkdir(PUBLIC_CSS_DIR, { recursive: true })
+      await mkdir(BUILD_CSS_DIR, { recursive: true })
+
+      const publicPath = path.join(PUBLIC_CSS_DIR, fileName)
+      const buildPath = path.join(BUILD_CSS_DIR, fileName)
+
+      if (!existsSync(publicPath)) await writeFile(publicPath, css, "utf8")
+      if (!existsSync(buildPath)) await writeFile(buildPath, css, "utf8")
+    }
+
+    const link = $("<link>")
+    link.attr("rel", "stylesheet")
+    link.attr("href", `/${CSS_ASSETS_RELATIVE_DIR}/${fileName}`)
+
+    $style.replaceWith(link)
+  }
+}
+
 function attrsOf($el: ReturnType<cheerio.CheerioAPI>): Record<string, string> {
   return { ...($el.attr() ?? {}) }
 }
@@ -434,26 +680,110 @@ function extractWordTemplate(
   }
 }
 
+/** Lifts one captured footnote item's attributes, to build every other verse's list. */
+function extractFootnoteTemplate(
+  $: ReturnType<typeof cheerio.load>,
+): FootnoteTemplate | null {
+  const list = $('[aria-label="paper-dialog-content"]')
+    .find(".exegesis-footnotes")
+    .first()
+  if (!list.length) return null
+
+  const item = list.find(".exegesis-footnote-item").first()
+  if (!item.length) return null
+
+  return {
+    list: attrsOf(list),
+    item: attrsOf(item),
+    marker: attrsOf(item.find(".exegesis-footnote-marker").first()),
+  }
+}
+
+const SHELL_CACHE_DIR = path.resolve("scripts", "ssg-shells")
+
+/** Where a combo's captured shell is cached, so reruns can skip Playwright entirely. */
+function getShellCachePath(exegesisId: string, locale: string): string {
+  return path.join(SHELL_CACHE_DIR, `${exegesisId}.${locale}.html`)
+}
+
 /**
- * Captures one fully-bootstrapped page per locale/exegesis combo. Its
- * dialog content (word list, translation, tafsir) is just a placeholder —
- * generatePage() overwrites it via cheerio for every actual verse — so the
- * shell only needs the outer app chrome plus one word span to clone from.
+ * Swaps in the dialog wrapper from a second capture, keeping the rest of
+ * baseHtml (its background reading list) untouched.
+ */
+function replaceDialogWrapper(baseHtml: string, richHtmlRaw: string): string {
+  const $base = cheerio.load(baseHtml, { decodeEntities: false })
+  const $rich = cheerio.load(richHtmlRaw, { decodeEntities: false })
+
+  const richWrapper = $rich('[aria-label="paper-dialog-wrapper"]')
+  if (!richWrapper.length) return baseHtml
+
+  $base('[aria-label="paper-dialog-wrapper"]').replaceWith($rich.html(richWrapper))
+
+  return $base.html()
+}
+
+/**
+ * Captures a combo's shell, or reuses a cached one from scripts/ssg-shells.
+ * Delete the matching file there to force a fresh capture.
+ *
+ * Two navigations get merged into one shell: the background reading list
+ * always comes from chapter 1 (stable, quick to render, easy to splice a
+ * real chapter's name into later), while the dialog comes from whichever
+ * verse exercises the richest markup (translation, exegesis, footnotes, a
+ * scripture quote) so its CSS and templates are complete.
  */
 async function captureShell(
   page: Page,
   { locale, exegesisId }: ExegesisEntry,
+  chapters: Chapters,
 ): Promise<Shell> {
-  const route = getAppUrl(BASE_URL, locale, 1, 1, exegesisId)
+  const cachePath = getShellCachePath(exegesisId, locale)
 
-  await page.goto(route, { waitUntil: "networkidle" })
-  await page.reload({ waitUntil: "networkidle" })
-  await waitForDialog(page)
+  let mergedHtml: string
 
-  const html = enlargeExegesisShell(await page.content())
-  const wordTemplate = extractWordTemplate(cheerio.load(html))
+  if (existsSync(cachePath)) {
+    mergedHtml = await readFile(cachePath, "utf8")
+  } else {
+    const backgroundRoute = getAppUrl(BASE_URL, locale, 1, 1, exegesisId)
 
-  return { html, wordTemplate }
+    await page.goto(backgroundRoute, { waitUntil: "networkidle" })
+    await page.reload({ waitUntil: "networkidle" })
+    await waitForDialog(page)
+    await waitForChapterHeader(page, 1)
+
+    const backgroundHtml = stripBackgroundVerseRows(await page.content())
+
+    const { chapterId, verseNumber } = await findRichCaptureVerse(
+      exegesisId,
+      locale,
+      chapters,
+    )
+    const richRoute = getAppUrl(BASE_URL, locale, chapterId, verseNumber, exegesisId)
+
+    await page.goto(richRoute, { waitUntil: "networkidle" })
+    await page.reload({ waitUntil: "networkidle" })
+    await waitForDialog(page)
+
+    const richHtmlRaw = await page.content()
+
+    mergedHtml = stripAppBootstrapScripts(
+      enlargeExegesisShell(replaceDialogWrapper(backgroundHtml, richHtmlRaw)),
+    )
+
+    await mkdir(SHELL_CACHE_DIR, { recursive: true })
+    await writeFile(cachePath, mergedHtml, "utf8")
+  }
+
+  const $ = cheerio.load(mergedHtml, { decodeEntities: false })
+
+  await extractStyleAssets($)
+  await extractSvgAssets($)
+
+  const html = $.html()
+  const wordTemplate = extractWordTemplate($)
+  const footnoteTemplate = extractFootnoteTemplate($)
+
+  return { html, wordTemplate, footnoteTemplate }
 }
 
 function buildWordsHtml(
@@ -509,6 +839,37 @@ function buildWordsHtml(
     .join("")
 }
 
+function buildFootnotesHtml(
+  $: ReturnType<typeof cheerio.load>,
+  template: FootnoteTemplate,
+  footnotes: Record<string, string>,
+  exegesisId: string,
+): string {
+  return Object.entries(footnotes)
+    .map(([key, text]) => {
+      const item = $("<li></li>")
+      for (const [name, value] of Object.entries(template.item)) {
+        item.attr(name, value)
+      }
+      item.attr("id", `fn-${exegesisId}-${key}`)
+
+      const marker = $("<span></span>")
+      for (const [name, value] of Object.entries(template.marker)) {
+        marker.attr(name, value)
+      }
+      marker.text(key)
+
+      const text_ = $("<span></span>")
+      text_.attr("class", "exegesis-footnote-text")
+      text_.html(renderFootnoteText(text))
+
+      item.append(marker).append(text_)
+
+      return $.html(item)
+    })
+    .join("")
+}
+
 /** Selectors of static-only elements: clicking any of them sends the visitor into the real app. */
 const REDIRECT_TRIGGER_SELECTORS = [
   '[aria-label="overlay-blocker"]',
@@ -516,18 +877,12 @@ const REDIRECT_TRIGGER_SELECTORS = [
   ".app-header",
   '[aria-label="verse-bookmarker-btn"]',
   '[aria-label="paper-dialog-drag-indicator"]',
+  '[aria-label="split-pane-divider"]',
 ]
 
 /**
- * Static triggers (backdrop, header, bookmark, drag indicator, source label)
- * schedule a redirect to the real app for the verse currently on screen.
- * Prev/next links instead intercept the click, fetch the adjacent static
- * page and splice its dialog content in — a same-origin request identical to
- * what the plain `<a href>` would have navigated to — while independently
- * scheduling their own redirect for the verse being navigated to, without
- * waiting on that fetch. Elements outside the dialog (app header, overlay,
- * drag indicator) are wired once; anything inside it is re-wired after every
- * splice, since that region is replaced wholesale each time.
+ * Static triggers redirect to the real app immediately. Prev/next links
+ * fetch the adjacent static page and splice its content in, with no redirect.
  */
 function buildRedirectScript(data: {
   siteUrl: string
@@ -538,7 +893,6 @@ function buildRedirectScript(data: {
 }): string {
   const script = `(function(){
 var DATA=${JSON.stringify(data)};
-var redirectTimer=null;
 var TRIGGER_SELECTORS=${JSON.stringify(REDIRECT_TRIGGER_SELECTORS)};
 
 function realAppUrl(verse){
@@ -546,15 +900,14 @@ function realAppUrl(verse){
   return DATA.siteUrl+"/#/e/"+DATA.chapterId+"/"+verse+"?"+params.toString();
 }
 
-function scheduleRedirect(verse){
-  if(redirectTimer)clearTimeout(redirectTimer);
-  redirectTimer=setTimeout(function(){window.location.href=realAppUrl(verse)},5000);
+function redirectNow(verse){
+  window.location.href=realAppUrl(verse);
 }
 
 function wireStaticTriggers(root){
   TRIGGER_SELECTORS.forEach(function(sel){
     root.querySelectorAll(sel).forEach(function(el){
-      el.addEventListener("click",function(){scheduleRedirect(DATA.verseNumber)});
+      el.addEventListener("click",function(){redirectNow(DATA.verseNumber)});
     });
   });
 }
@@ -566,8 +919,6 @@ function wireTraversal(root){
       var href=link.getAttribute("href");
       var delta=link.getAttribute("data-testid")==="prev-verse-btn"?-1:1;
       var targetVerse=DATA.verseNumber+delta;
-
-      scheduleRedirect(targetVerse);
 
       fetch(href).then(function(res){return res.text()}).then(function(html){
         var doc=new DOMParser().parseFromString(html,"text/html");
@@ -606,6 +957,8 @@ async function generatePage(
     exegesisId,
     chapterSlug,
     chapterName,
+    chapterMeaning,
+    chapterArabicName,
     exegesisName,
     verseNumber,
     chapterLength,
@@ -615,6 +968,8 @@ async function generatePage(
     exegesisId: string
     chapterSlug: string
     chapterName: string
+    chapterMeaning: string | null
+    chapterArabicName: string | null
     exegesisName: string
     verseNumber: number
     chapterLength: number
@@ -627,6 +982,17 @@ async function generatePage(
 
   const $ = cheerio.load(shell.html, { decodeEntities: false })
 
+  // The app header's title is frozen from whichever chapter the shell was
+  // captured from — always overwrite it with the actual chapter shown here.
+  $('.app-header [aria-label="title-title"]').text(
+    `${chapterId}. ${chapterName} (${chapterMeaning ?? ""})`,
+  )
+
+  // Same for the background reading list's chapter panel, always captured
+  // as chapter 1 — swap in the real chapter's name and meaning.
+  $(".ChapterRow-name").text(chapterArabicName ?? "")
+  $(".ChapterRow-description").text(`${chapterName} · ${chapterMeaning ?? ""}`)
+
   /*
    * The captured page also renders the main (virtualized) verse list behind
    * the dialog, which has its own [data-word-index]/exegesis-* look-alikes.
@@ -634,9 +1000,9 @@ async function generatePage(
    */
   const dialogContent = $('[aria-label="paper-dialog-content"]')
 
-  if (shell.wordTemplate && verseWords.length > 0) {
-    const existingWords = dialogContent.find("[data-word-index]")
+  const existingWords = dialogContent.find("[data-word-index]")
 
+  if (shell.wordTemplate && verseWords.length > 0) {
     // Word rows can be split across several row-wrapper containers (see
     // useAligner), so a single parent isn't guaranteed to hold them all —
     // mark where the first one was, then remove every word wherever it is.
@@ -653,6 +1019,10 @@ async function generatePage(
         verseNumber,
       ),
     )
+  } else {
+    // Never leave the shell's own capture-verse words in place — showing
+    // Quranic text from the wrong verse is worse than showing none.
+    existingWords.remove()
   }
 
   const exegesisAuthorName = Asset.exegesisOf(exegesisId)?.name ?? exegesisId
@@ -669,6 +1039,10 @@ async function generatePage(
     dialogContent
       .find('.exegesis-translation')
       .html(renderExegesisMarkdown(translation))
+  } else {
+    // Never leave the shell's own capture-verse translation in place —
+    // it belongs to a different verse.
+    dialogContent.find('.exegesis-translation').remove()
   }
 
   if (exegesisText) {
@@ -677,6 +1051,18 @@ async function generatePage(
       .html(renderExegesisMarkdown(exegesisText))
   } else {
     dialogContent.find('.exegesis-body').remove()
+  }
+
+  const verseFootnotes = exegesisChapter.footnotes?.[String(verseNumber)]
+
+  if (shell.footnoteTemplate && verseFootnotes && Object.keys(verseFootnotes).length > 0) {
+    const list = dialogContent.find(".exegesis-footnotes")
+    list.find(".exegesis-footnote-item").remove()
+    list.append(buildFootnotesHtml($, shell.footnoteTemplate, verseFootnotes, exegesisId))
+  } else {
+    // Never leave the shell's own capture-verse footnotes in place — they
+    // belong to a different verse.
+    dialogContent.find('.exegesis-footnotes').remove()
   }
 
   $("body").append(
@@ -725,13 +1111,17 @@ async function generatePage(
     .replaceAll(BASE_URL, PRODUCTION_URL)
     .replaceAll(`http://localhost:${PORT}`, PRODUCTION_URL)
 
+  const minifiedHtml = minify(Buffer.from(productionHtml, "utf8"), {
+    keep_comments: true,
+  }).toString("utf8")
+
   const outputPath = getOutputPath(exegesisId, locale, chapterSlug, verseNumber)
 
   await mkdir(path.dirname(outputPath), {
     recursive: true,
   })
 
-  await writeFile(outputPath, productionHtml, "utf8")
+  await writeFile(outputPath, minifiedHtml, "utf8")
 }
 
 async function main() {
@@ -772,7 +1162,7 @@ async function main() {
         shells = new Map()
 
         for (const entry of exegeses) {
-          const shell = await captureShell(shellPage, entry)
+          const shell = await captureShell(shellPage, entry, chapters)
           shells.set(`${entry.locale}:${entry.exegesisId}`, shell)
         }
       } finally {
@@ -816,6 +1206,12 @@ async function main() {
           const transliteration =
             chapter.transliterations[locale] ??
             chapter.transliterations["en-US"]
+
+          const chapterMeaning =
+            chapter.meanings[locale] ?? chapter.meanings["en-US"]
+
+          const chapterArabicName =
+            chapter.namings[locale] ?? chapter.namings["en-US"]
 
           if (!transliteration) {
             console.warn(
@@ -874,6 +1270,8 @@ async function main() {
               exegesisId,
               chapterSlug,
               chapterName: transliteration,
+              chapterMeaning,
+              chapterArabicName,
               exegesisName,
               verseNumber,
               chapterLength: chapter.length,
@@ -898,7 +1296,7 @@ async function main() {
 
     await Promise.all(Array.from({ length: workerCount }, () => worker()))
   } finally {
-    stopServer(server)
+    await stopServer(server)
   }
 
   console.log("SSG generation complete.")
@@ -1062,7 +1460,11 @@ function updateProgress(
   process.stdout.write("\x1b8")
 }
 
-main().catch((error) => {
-  console.error(error)
-  process.exit(1)
-})
+main()
+  .then(() => {
+    process.exit(0)
+  })
+  .catch((error) => {
+    console.error(error)
+    process.exit(1)
+  })

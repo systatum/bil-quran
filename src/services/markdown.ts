@@ -269,6 +269,11 @@ export function renderExegesisMarkdown(text: string): string {
   )
 }
 
+/** Inline-only render for short text (footnotes): no wrapping <p>. */
+export function renderFootnoteText(text: string): string {
+  return String(marked.parseInline(parseInlineMarkers(text)))
+}
+
 function encAttr(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;")
 }

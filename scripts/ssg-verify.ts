@@ -13,6 +13,7 @@ const REDIRECT_TRIGGER_SELECTORS = [
   ".app-header",
   '[aria-label="verse-bookmarker-btn"]',
   '[aria-label="paper-dialog-drag-indicator"]',
+  '[aria-label="split-pane-divider"]',
 ]
 const CONCURRENCY = 32
 const PRODUCTION_URL = "https://bil-quran.com"
@@ -25,6 +26,8 @@ const BUILD_TAFSIR_PATH = path.resolve("build/tafsir")
 interface Chapter {
   length: number
   transliterations: Record<string, string | null>
+  meanings: Record<string, string | null>
+  namings: Record<string, string | null>
 }
 
 type Chapters = Record<string, Chapter>
@@ -44,6 +47,7 @@ interface ImlaeiWord {
 interface ExegesisChapterAsset {
   translations?: Record<string, string>
   exegesis?: Record<string, string | null>
+  footnotes?: Record<string, Record<string, string>>
 }
 
 interface Failure {
@@ -176,21 +180,6 @@ function getOutputPath(
   )
 }
 
-function getAppUrl(
-  locale: string,
-  chapterId: number,
-  verseNumber: number,
-  exegesisId: string,
-) {
-  const params = new URLSearchParams({
-    tafsir: exegesisId,
-    transliteration: "1",
-    locale,
-  })
-
-  return `${PRODUCTION_URL}/#/e/${chapterId}/${verseNumber}?${params.toString()}`
-}
-
 /**
  * Checks one generated page against what ssg-generate.tsx should have
  * produced for it. Returns a failure reason, or null if it looks sane.
@@ -200,6 +189,8 @@ async function verifyPage(input: {
   relativePath: string
   chapterId: number
   chapterName: string
+  chapterMeaning: string | null
+  chapterArabicName: string | null
   chapterSlug: string
   exegesisId: string
   exegesisName: string
@@ -212,6 +203,8 @@ async function verifyPage(input: {
     relativePath,
     chapterId,
     chapterName,
+    chapterMeaning,
+    chapterArabicName,
     chapterSlug,
     exegesisId,
     exegesisName,
@@ -242,6 +235,38 @@ async function verifyPage(input: {
   const wrapperStyle = $('[aria-label="paper-dialog-wrapper"]').attr("style") ?? ""
   if (!wrapperStyle.includes("transform: none")) {
     return { path: relativePath, reason: "dialog wrapper not enlarged" }
+  }
+
+  const navbarTitle = $('.app-header [aria-label="title-title"]').text()
+  const expectedNavbarTitle = `${chapterId}. ${chapterName} (${chapterMeaning ?? ""})`
+  if (navbarTitle !== expectedNavbarTitle) {
+    return {
+      path: relativePath,
+      reason: `navbar title is "${navbarTitle}", expected "${expectedNavbarTitle}"`,
+    }
+  }
+
+  const chapterHeaders = $("[data-chapterid]")
+  if (chapterHeaders.length !== 1 || chapterHeaders.attr("data-chapterid") !== "1") {
+    return { path: relativePath, reason: "background chapter header row missing or duplicated" }
+  }
+
+  const panelName = $(".ChapterRow-name").text()
+  const expectedPanelName = chapterArabicName ?? ""
+  if (panelName !== expectedPanelName) {
+    return {
+      path: relativePath,
+      reason: `chapter panel name is "${panelName}", expected "${expectedPanelName}"`,
+    }
+  }
+
+  const panelDescription = $(".ChapterRow-description").text()
+  const expectedPanelDescription = `${chapterName} · ${chapterMeaning ?? ""}`
+  if (panelDescription !== expectedPanelDescription) {
+    return {
+      path: relativePath,
+      reason: `chapter panel description is "${panelDescription}", expected "${expectedPanelDescription}"`,
+    }
   }
 
   const expectedAuthorName = Asset.exegesisOf(exegesisId)?.name ?? exegesisId
@@ -316,13 +341,15 @@ async function verifyPage(input: {
   }
 
   const translation = exegesisChapter.translations?.[String(verseNumber)]
-  const translationText = dialogContent
-    .find('.exegesis-translation')
-    .text()
-    .trim()
+  const translationEl = dialogContent.find('.exegesis-translation')
+  const translationText = translationEl.text().trim()
 
   if (translation != null && translationText.length === 0) {
     return { path: relativePath, reason: "translation text missing" }
+  }
+
+  if (translation == null && translationEl.length > 0) {
+    return { path: relativePath, reason: "translation present but shouldn't be" }
   }
 
   const exegesisText = exegesisChapter.exegesis?.[String(verseNumber)]
@@ -336,15 +363,54 @@ async function verifyPage(input: {
     return { path: relativePath, reason: "exegesis body present but shouldn't be" }
   }
 
-  const expectedRedirect = getAppUrl(locale, chapterId, verseNumber, exegesisId)
-  if (!html.includes(expectedRedirect)) {
-    return { path: relativePath, reason: "redirect script missing or wrong URL" }
+  // Catches both directions: a missing footnote and one bled in from
+  // whatever verse the shell happened to be captured from.
+  const verseFootnotes = exegesisChapter.footnotes?.[String(verseNumber)]
+  const expectedFootnoteCount = verseFootnotes ? Object.keys(verseFootnotes).length : 0
+  const actualFootnoteCount = dialogContent.find('.exegesis-footnote-item').length
+
+  if (actualFootnoteCount !== expectedFootnoteCount) {
+    return {
+      path: relativePath,
+      reason: `footnote count ${actualFootnoteCount}, expected ${expectedFootnoteCount}`,
+    }
+  }
+
+  // The redirect URL is built at runtime from this DATA object, not
+  // embedded literally, so check the data instead of a URL string.
+  const dataMatch = html.match(/var DATA=(\{[^}]*\})/)
+  if (!dataMatch) {
+    return { path: relativePath, reason: "redirect script missing" }
+  }
+
+  let redirectData: Record<string, unknown>
+  try {
+    redirectData = JSON.parse(dataMatch[1])
+  } catch {
+    return { path: relativePath, reason: "redirect script data unparsable" }
+  }
+
+  if (
+    redirectData.siteUrl !== PRODUCTION_URL ||
+    redirectData.chapterId !== chapterId ||
+    redirectData.verseNumber !== verseNumber ||
+    redirectData.exegesisId !== exegesisId ||
+    redirectData.locale !== locale
+  ) {
+    return { path: relativePath, reason: "redirect script data mismatch" }
   }
 
   for (const selector of REDIRECT_TRIGGER_SELECTORS) {
     if ($(selector).length === 0) {
       return { path: relativePath, reason: `redirect trigger "${selector}" not found` }
     }
+  }
+
+  // The app bundle must never load here: it would hydrate the real SPA,
+  // whose hash router doesn't recognize this page's plain URL path and
+  // silently swaps out the dialog for the plain reading view.
+  if (html.includes("/static/js/")) {
+    return { path: relativePath, reason: "app bundle script present" }
   }
 
   const prevLink = $('[data-testid="prev-verse-btn"]')
@@ -398,6 +464,8 @@ async function main() {
     relativePath: string
     chapterId: number
     chapterName: string
+    chapterMeaning: string | null
+    chapterArabicName: string | null
     chapterSlug: string
     exegesisId: string
     exegesisName: string
@@ -419,6 +487,8 @@ async function main() {
 
       if (!transliteration) continue
 
+      const chapterMeaning = chapter.meanings[locale] ?? chapter.meanings["en-US"]
+      const chapterArabicName = chapter.namings[locale] ?? chapter.namings["en-US"]
       const chapterSlug = slugify(transliteration)
 
       for (let verseNumber = 1; verseNumber <= chapter.length; verseNumber++) {
@@ -429,6 +499,8 @@ async function main() {
           relativePath: path.relative(process.cwd(), outputPath),
           chapterId,
           chapterName: transliteration,
+          chapterMeaning,
+          chapterArabicName,
           chapterSlug,
           exegesisId,
           exegesisName,

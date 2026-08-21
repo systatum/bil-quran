@@ -1,7 +1,6 @@
 import { ExegesisVerseContent } from "@constants/records/ExegesisRecord"
-import { parseInlineMarkers } from "@services/markdown"
+import { renderFootnoteText } from "@services/markdown"
 import { useTheme } from "@systatum/coneto/theme"
-import { marked } from "marked"
 import styled from "styled-components"
 
 export default function Footnotes({
@@ -17,18 +16,22 @@ export default function Footnotes({
   const entries = Object.entries(content.footnotes)
   if (entries.length === 0) return null
   return (
-    <FootnoteList>
+    <FootnoteList className="exegesis-footnotes">
       {entries.map(([key, text]) => (
         <FootnoteItem
           key={key}
           id={`fn-${exegesisId}-${key}`}
+          className="exegesis-footnote-item"
           $theme={theme}
           $highlighted={highlightedFn === key}
         >
-          <FootnoteMarker $theme={theme}>{key}</FootnoteMarker>
+          <FootnoteMarker $theme={theme} className="exegesis-footnote-marker">
+            {key}
+          </FootnoteMarker>
           <span
+            className="exegesis-footnote-text"
             dangerouslySetInnerHTML={{
-              __html: String(marked.parseInline(parseInlineMarkers(text))),
+              __html: renderFootnoteText(text),
             }}
           />
         </FootnoteItem>
