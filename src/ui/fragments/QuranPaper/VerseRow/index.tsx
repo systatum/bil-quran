@@ -18,10 +18,10 @@ import LOGGER from "@services/Logger"
 import { makeSnippet } from "@services/mutator"
 import { haptic } from "@utils/haptic"
 import { useEffect, useMemo, useRef } from "react"
-import styled from "styled-components"
+import styled, { css } from "styled-components"
+import VerseMarker from "../../VerseMarker"
 import { Bismillah } from "./Bismillah"
 import InterlinearText from "./InterlinearText"
-import { VerseMarker } from "./VerseMarker"
 
 export type Verse = {
   id: string
@@ -219,9 +219,19 @@ export default function VerseRow({
       onPointerLeave={() => clearTimeout(verseTimeoutRef.current!)}
       onPointerCancel={() => clearTimeout(verseTimeoutRef.current!)}
     >
-      <div ref={markerColumnRef} onPointerDown={(e) => e.stopPropagation()}>
-        <VerseMarker ref={markerColumnRef} verse={verse} />
-      </div>
+      <VerseMarkerColumn
+        data-vmark
+        ref={markerColumnRef}
+        onPointerDown={(e) => e.stopPropagation()}
+      >
+        <VerseMarker
+          chapterId={verse.chapter.id}
+          verseNumber={verse.number}
+          containerStyle={css`
+            margin-top: 12px;
+          `}
+        />
+      </VerseMarkerColumn>
 
       <InterlinearText
         showMeaning={showMeaning}
@@ -302,6 +312,11 @@ export function useGroupedVerses(
     return Array.from(verseMap.values())
   }, [chapters, words])
 }
+
+const VerseMarkerColumn = styled.div`
+  align-self: start;
+  z-index: 1;
+`
 
 const VerseRowWrapper = styled.div<{
   $theme: ThemeMode

@@ -91,5 +91,23 @@ const EdgeY = styled.div<{ $src: string; $flipX?: boolean }>`
 const Content = styled.div`
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  /* without these, a 1fr grid track can grow to fit overflowing content
+     instead of respecting its share, pushing the border rows/columns */
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 128, 128, 0.6) transparent;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(128, 128, 128, 0.6);
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
 `
