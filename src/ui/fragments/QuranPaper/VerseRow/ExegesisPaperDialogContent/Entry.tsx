@@ -59,7 +59,7 @@ export default function Entry({
 
   return (
     <Wrapper $theme={theme} onClick={handleClick}>
-      <SourceLabel $theme={theme}>
+      <SourceLabel $theme={theme} className="exegesis-source-label">
         Tafsir {source?.name ?? exegesisId}
         {isChapterIntro && " — Introduction"}
       </SourceLabel>
@@ -67,6 +67,7 @@ export default function Entry({
         <VerseText
           $theme={theme}
           $loaded={content != null}
+          className="exegesis-translation"
           dangerouslySetInnerHTML={
             content
               ? { __html: renderExegesisMarkdown(content.translation) }
@@ -78,6 +79,7 @@ export default function Entry({
           <TranslationTextContent
             $theme={theme}
             $loaded={content != null}
+            className="exegesis-translation"
             dangerouslySetInnerHTML={
               content
                 ? { __html: renderExegesisMarkdown(content.translation) }
@@ -90,6 +92,7 @@ export default function Entry({
         <VerseText
           $theme={theme}
           $loaded
+          className="exegesis-body"
           dangerouslySetInnerHTML={{
             __html: renderExegesisMarkdown(content.exegesis),
           }}

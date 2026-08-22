@@ -144,6 +144,7 @@ export default function InterlinearText({
                   key={t}
                   $theme={theme}
                   data-layer={layer}
+                  className="word-meaning"
                   $minHeight={rowLayerHeights[wordRows[i]]?.[layer]}
                 >
                   {word.meanings[t]}

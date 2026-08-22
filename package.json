@@ -15,8 +15,10 @@
     "test": "pnpm run test:unit && pnpm run test:e2e",
     "test:unit": "craco test --watchAll=false --passWithNoTests",
     "test:e2e": "playwright test",
-    "predeploy": "pnpm run prepare-assets && pnpm run build && pnpm run generate-rss && node scripts/pre-deploy.js",
-    "generate-rss": "tsx scripts/generate-rss.ts",
+    "predeploy": "pnpm run prepare-assets && pnpm run build && node scripts/pre-deploy.js && pnpm run ssg:generate && pnpm run ssg:verify && pnpm run generate:rss",
+    "generate:rss": "tsx scripts/generate-rss.ts",
+    "ssg:generate": "tsx scripts/ssg-generate.tsx",
+    "ssg:verify": "tsx scripts/ssg-verify.ts",
     "deploy": "gh-pages -d build",
     "deploy:staging": "",
     "db:generate": "drizzle-kit generate",
@@ -61,16 +63,19 @@
   },
   "devDependencies": {
     "@craco/craco": "^7.1.0",
+    "@minify-html/node": "^0.18.1",
     "@playwright/test": "^1.61.0",
     "@posthog/types": "^1.399.0",
     "@types/pg": "^8.20.0",
     "@types/rss": "^0.0.32",
     "@types/sql.js": "^1.4.11",
+    "cheerio": "^1.2.0",
     "drizzle-kit": "^0.31.10",
     "gh-pages": "^6.3.0",
     "oxfmt": "^0.48.0",
     "playwright": "^1.61.0",
-    "playwright-core": "^1.61.0"
+    "playwright-core": "^1.61.0",
+    "serve": "^14.2.6"
   },
   "browserslist": {
     "production": [

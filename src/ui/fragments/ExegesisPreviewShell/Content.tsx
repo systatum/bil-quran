@@ -1,11 +1,13 @@
-import { Asset } from "@constants/assets"
+import { Asset, ExegesisSource } from "@constants/assets"
 import {
   ExegesisChapterAsset,
   ExegesisVerseContent,
 } from "@constants/records/ExegesisRecord"
 import { Rendering } from "@constants/records/RenderingRecord"
 import { DEFAULT_LOCALE, Locale } from "@constants/settings"
-import useUserSettingsState from "@hooks/states/UserSettingsState"
+import useUserSettingsState, {
+  FontSetting,
+} from "@hooks/states/UserSettingsState"
 import { FingerprintedAsset } from "@services/fingerprinter"
 import { renderExegesisMarkdown } from "@services/markdown"
 import { useEffect, useState } from "react"
@@ -39,6 +41,80 @@ export interface ExegesisPreviewShellProps {
   showTransliterationOverride?: boolean
 }
 
+/** Reads exegesis assets; swap the implementation to run outside the browser. */
+export interface ExegesisAssetReader {
+  getVerseRendering: <T>(rendering: Rendering, chapterId: number) => Promise<T>
+  readJson: <T>(url: string) => Promise<T>
+}
+
+const browserAssetReader: ExegesisAssetReader = {
+  getVerseRendering: FingerprintedAsset.Quran.getVerseRendering,
+  readJson: FingerprintedAsset.readJson,
+}
+
+/** Fetches and shapes the interlinear words for one verse. Empty for a chapter intro. */
+export async function loadInterlinearWords(
+  reader: ExegesisAssetReader,
+  chapterId: number,
+  verseNumber: number,
+  isChapterIntro: boolean,
+): Promise<WordCell[]> {
+  if (isChapterIntro) return []
+
+  const all = await reader.getVerseRendering<ImlaeiWord[]>(
+    Rendering.Imlaei,
+    chapterId,
+  )
+  const verseKey = `${chapterId}:${verseNumber}`
+
+  return all
+    .filter((w) => w.id === verseKey)
+    .map((w, i) => ({
+      chapterId,
+      verse: verseNumber,
+      order: i + 1,
+      partNumber: 0,
+      lexemeId: 0,
+      renderingId: 0,
+      token: w.word,
+      root: { id: 0, root: w.root },
+      readings: { [DEFAULT_LOCALE]: w.trans },
+      meanings: {},
+    }))
+}
+
+/** Fetches and shapes the tafsir content for one verse (or a chapter's intro). */
+export async function loadExegesisContent(
+  reader: ExegesisAssetReader,
+  exegesisId: string | undefined,
+  chapterId: number,
+  verseNumber: number,
+  isChapterIntro: boolean,
+): Promise<ExegesisVerseContent | null> {
+  if (!exegesisId) return null
+
+  const [, locale] = exegesisId.split("/")
+  const url = Asset.exegesisAssetUrlOf(exegesisId, locale as Locale, chapterId)
+  const data = await reader.readJson<ExegesisChapterAsset>(url)
+
+  if (isChapterIntro) {
+    return data.description
+      ? { translation: data.description, exegesis: null, footnotes: {} }
+      : null
+  }
+
+  const verseKey = String(verseNumber)
+  const translation = data.translations?.[verseKey]
+
+  return translation != null
+    ? {
+        translation,
+        exegesis: data.exegesis?.[verseKey] ?? null,
+        footnotes: data.footnotes?.[verseKey] ?? {},
+      }
+    : null
+}
+
 /**
  * The shell's actual content: tafsir text + interlinear Arabic, fed by
  * direct asset fetches instead of the seeded DB. Kept apart from the
@@ -64,37 +140,17 @@ export function ExegesisPreviewContent({
 
   const [words, setWords] = useState<WordCell[] | null>(null)
   useEffect(() => {
-    if (isChapterIntro) {
-      setWords([])
-      return
-    }
-
     let cancelled = false
     setWords(null)
 
-    FingerprintedAsset.Quran.getVerseRendering<ImlaeiWord[]>(
-      Rendering.Imlaei,
+    loadInterlinearWords(
+      browserAssetReader,
       chapterId,
+      verseNumber,
+      isChapterIntro,
     )
-      .then((all) => {
-        if (cancelled) return
-        const verseKey = `${chapterId}:${verseNumber}`
-        setWords(
-          all
-            .filter((w) => w.id === verseKey)
-            .map((w, i) => ({
-              chapterId,
-              verse: verseNumber,
-              order: i + 1,
-              partNumber: 0,
-              lexemeId: 0,
-              renderingId: 0,
-              token: w.word,
-              root: { id: 0, root: w.root },
-              readings: { [DEFAULT_LOCALE]: w.trans },
-              meanings: {},
-            })),
-        )
+      .then((result) => {
+        if (!cancelled) setWords(result)
       })
       .catch(() => {
         if (!cancelled) setWords([])
@@ -110,39 +166,18 @@ export function ExegesisPreviewContent({
   )
   useEffect(() => {
     setContent(undefined)
-    if (!exegesisId) {
-      setContent(null)
-      return
-    }
 
     let cancelled = false
-    const [, locale] = exegesisId.split("/")
-    const url = Asset.exegesisAssetUrlOf(exegesisId, locale as Locale, chapterId)
 
-    FingerprintedAsset.readJson<ExegesisChapterAsset>(url)
-      .then((data) => {
-        if (cancelled) return
-
-        if (isChapterIntro) {
-          setContent(
-            data.description
-              ? { translation: data.description, exegesis: null, footnotes: {} }
-              : null,
-          )
-          return
-        }
-
-        const verseKey = String(verseNumber)
-        const translation = data.translations?.[verseKey]
-        setContent(
-          translation != null
-            ? {
-                translation,
-                exegesis: data.exegesis?.[verseKey] ?? null,
-                footnotes: data.footnotes?.[verseKey] ?? {},
-              }
-            : null,
-        )
+    loadExegesisContent(
+      browserAssetReader,
+      exegesisId,
+      chapterId,
+      verseNumber,
+      isChapterIntro,
+    )
+      .then((result) => {
+        if (!cancelled) setContent(result)
       })
       .catch(() => {
         if (!cancelled) setContent(null)
@@ -156,6 +191,48 @@ export function ExegesisPreviewContent({
   const source = exegesisId ? Asset.exegesisOf(exegesisId) : null
 
   return (
+    <ExegesisPreviewContentView
+      chapterId={chapterId}
+      verseNumber={verseNumber}
+      isChapterIntro={isChapterIntro}
+      theme={theme}
+      exegesisId={exegesisId}
+      source={source}
+      showTransliteration={showTransliteration}
+      arabicFont={userSettings.font.arabic}
+      words={words}
+      content={content}
+    />
+  )
+}
+
+export interface ExegesisPreviewViewProps {
+  chapterId: number
+  verseNumber: number
+  isChapterIntro: boolean
+  theme: string
+  exegesisId: string | undefined
+  source: ExegesisSource | null
+  showTransliteration: boolean
+  arabicFont: FontSetting
+  words: WordCell[] | null
+  content: ExegesisVerseContent | null | undefined
+}
+
+/** Pure render, no hooks or fetching; takes already-resolved data so it renders the same anywhere. */
+export function ExegesisPreviewContentView({
+  chapterId,
+  verseNumber,
+  isChapterIntro,
+  theme,
+  exegesisId,
+  source,
+  showTransliteration,
+  arabicFont,
+  words,
+  content,
+}: ExegesisPreviewViewProps) {
+  return (
     <Outer>
       {!isChapterIntro && (
         <InterlinearCell>
@@ -164,7 +241,7 @@ export function ExegesisPreviewContent({
           ) : words.length > 0 ? (
             <InterlinearText
               id={`exegesis-shell-${chapterId}-${verseNumber}`}
-              arabicFont={userSettings.font.arabic}
+              arabicFont={arabicFont}
               words={words}
               showTransliteration={showTransliteration}
               compact

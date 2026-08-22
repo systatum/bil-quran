@@ -1,6 +1,6 @@
 # Paginations
 
-This folder contains paginations data, in this format:
+This folder contains paginations data, ie how the Quran layout is printed in real mushaf. Data format:
 
 ```json
 [

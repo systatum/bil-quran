@@ -31,7 +31,7 @@ import { WordsSkeleton } from "./ExegesisEntryStyles"
 
 export type NavTarget = { chapterId: number; verse: number }
 
-export default function ExegesisPaperDialogContent() {
+function ExegesisPaperDialogContent() {
   const exegesisContent = usePaperDialogState((s) => s.content)
   assertPaperDialogContent(exegesisContent, "exegesis")
   const { chapterId, verseNumber } = exegesisContent
@@ -457,3 +457,8 @@ const Empty = styled.p<{ $theme: string }>`
   text-align: center;
   color: ${({ $theme }) => ($theme === "dark" ? "#666" : "#999")};
 `
+
+export default Object.assign(ExegesisPaperDialogContent, {
+  TraversalColumn,
+  VerseIndicator,
+})
