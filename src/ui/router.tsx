@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-router"
 import UIIndex from "."
 import ErrorRescuer from "../ErrorRescuer"
+import Mushaf from "./fragments/Mushaf"
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -55,12 +56,19 @@ const aboutScreenRoute = createRoute({
   component: () => <UIIndex openAboutOnMount />,
 })
 
+const mushafPageRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/m/$mushaf/$page",
+  component: Mushaf,
+})
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   verseRoute,
   exegesisRoute,
   aboutRoute,
   aboutScreenRoute,
+  mushafPageRoute,
 ])
 
 export const router = createRouter({
