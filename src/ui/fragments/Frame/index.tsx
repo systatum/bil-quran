@@ -8,7 +8,8 @@ interface FrameProps {
   edgeTopSrc: string
   /** Repeatable strip tiled along the left/right edges. */
   edgeLeftSrc: string
-  /** Border thickness as a share of the frame's own width/height. */
+  /** Border thickness (any CSS length). Fixed px by default, so the
+   *  pattern repeats at its own scale instead of stretching with the page. */
   thicknessX?: string
   thicknessY?: string
   children?: ReactNode
@@ -19,8 +20,8 @@ export default function Frame({
   cornerSrc,
   edgeTopSrc,
   edgeLeftSrc,
-  thicknessX = "15.5%",
-  thicknessY = "11%",
+  thicknessX = "70px",
+  thicknessY = "67px",
   children,
   style,
 }: FrameProps) {
