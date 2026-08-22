@@ -165,23 +165,6 @@ async function loadExegeses(): Promise<ExegesisEntry[]> {
   return result
 }
 
-const exegesisNameCache = new Map<string, Promise<string>>()
-
-/** Reads an exegesis work's display name from its `about.json`, cached per slug. */
-function getExegesisName(slug: string): Promise<string> {
-  let promise = exegesisNameCache.get(slug)
-
-  if (!promise) {
-    promise = readFile(
-      path.join(EXEGESIS_PATH, slug, "about.json"),
-      "utf8",
-    ).then((raw) => (JSON.parse(raw) as { name: string }).name)
-    exegesisNameCache.set(slug, promise)
-  }
-
-  return promise
-}
-
 async function readDirectoryNames(directory: string): Promise<string[]> {
   const { readdir } = await import("node:fs/promises")
 
@@ -959,7 +942,6 @@ async function generatePage(
     chapterName,
     chapterMeaning,
     chapterArabicName,
-    exegesisName,
     verseNumber,
     chapterLength,
   }: {
@@ -970,7 +952,6 @@ async function generatePage(
     chapterName: string
     chapterMeaning: string | null
     chapterArabicName: string | null
-    exegesisName: string
     verseNumber: number
     chapterLength: number
   },
@@ -1080,7 +1061,7 @@ async function generatePage(
 
   html = patchTitle(
     html,
-    `bil-Quran: ${chapterName}:${verseNumber} with Tafsir ${exegesisName}`,
+    `${chapterName}:${verseNumber} Tafsir ${exegesisAuthorName} - bil-Quran`,
   )
 
   if (verseNumber > 1) {
@@ -1223,7 +1204,6 @@ async function main() {
 
           const chapterSlug = slugify(transliteration)
           const progressKey = `${locale}:${exegesisId}`
-          const exegesisName = await getExegesisName(exegesisId)
           const shell = shells.get(progressKey)
 
           if (!shell) {
@@ -1272,7 +1252,6 @@ async function main() {
               chapterName: transliteration,
               chapterMeaning,
               chapterArabicName,
-              exegesisName,
               verseNumber,
               chapterLength: chapter.length,
             })

@@ -149,22 +149,6 @@ function readWbwTranslations(locale: string): Promise<Record<string, string>> {
   return promise
 }
 
-const exegesisNameCache = new Map<string, Promise<string>>()
-
-function getExegesisName(exegesisId: string): Promise<string> {
-  let promise = exegesisNameCache.get(exegesisId)
-
-  if (!promise) {
-    promise = readFile(
-      path.join(EXEGESIS_PATH, exegesisId, "about.json"),
-      "utf8",
-    ).then((raw) => (JSON.parse(raw) as { name: string }).name)
-    exegesisNameCache.set(exegesisId, promise)
-  }
-
-  return promise
-}
-
 function getOutputPath(
   exegesisId: string,
   locale: string,
@@ -193,7 +177,6 @@ async function verifyPage(input: {
   chapterArabicName: string | null
   chapterSlug: string
   exegesisId: string
-  exegesisName: string
   locale: string
   verseNumber: number
   chapterLength: number
@@ -207,7 +190,6 @@ async function verifyPage(input: {
     chapterArabicName,
     chapterSlug,
     exegesisId,
-    exegesisName,
     locale,
     verseNumber,
     chapterLength,
@@ -220,7 +202,9 @@ async function verifyPage(input: {
     return { path: relativePath, reason: "file missing" }
   }
 
-  const expectedTitle = `bil-Quran: ${chapterName}:${verseNumber} with Tafsir ${exegesisName}`
+  const expectedAuthorName = Asset.exegesisOf(exegesisId)?.name ?? exegesisId
+
+  const expectedTitle = `${chapterName}:${verseNumber} Tafsir ${expectedAuthorName} - bil-Quran`
   if (!html.includes(`<title>${escapeHtml(expectedTitle)}</title>`)) {
     return { path: relativePath, reason: "title mismatch or missing" }
   }
@@ -269,7 +253,6 @@ async function verifyPage(input: {
     }
   }
 
-  const expectedAuthorName = Asset.exegesisOf(exegesisId)?.name ?? exegesisId
   const sourceLabelText = dialogContent.find(".exegesis-source-label").text()
   if (sourceLabelText !== `Tafsir ${expectedAuthorName}`) {
     return {
@@ -468,7 +451,6 @@ async function main() {
     chapterArabicName: string | null
     chapterSlug: string
     exegesisId: string
-    exegesisName: string
     locale: string
     verseNumber: number
     chapterLength: number
@@ -477,8 +459,6 @@ async function main() {
   const tasks: Task[] = []
 
   for (const { locale, exegesisId } of exegeses) {
-    const exegesisName = await getExegesisName(exegesisId)
-
     for (const [chapterIdString, chapter] of chapterEntries) {
       const chapterId = Number(chapterIdString)
 
@@ -503,7 +483,6 @@ async function main() {
           chapterArabicName,
           chapterSlug,
           exegesisId,
-          exegesisName,
           locale,
           verseNumber,
           chapterLength: chapter.length,
