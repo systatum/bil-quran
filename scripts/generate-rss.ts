@@ -68,6 +68,56 @@ function extractTitle(html: string): string {
     .replace(/&gt;/g, ">")
 }
 
+/**
+ * Block-level tags marked's renderer can emit (see renderExegesisMarkdown /
+ * parseInlineMarkers's RT blockquote). cheerio's .text() concatenates every
+ * descendant text node with no separator at all — same as the DOM's own
+ * textContent — so flattening e.g. "<p>criterion</p><p>which is</p>" gives
+ * "criterionwhich is" with the paragraph break silently dropped.
+ */
+const BLOCK_TAGS = new Set([
+  "p",
+  "div",
+  "blockquote",
+  "li",
+  "hr",
+  "tr",
+  "ul",
+  "ol",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+])
+
+/** Like cheerio's .text(), but inserts a break at block-tag/<br> boundaries so sibling blocks don't run together. */
+function blockAwareText($: ReturnType<typeof cheerio.load>, node: any): string {
+  if (node.type === "text") return node.data ?? ""
+  if (node.type !== "tag" && node.type !== "script" && node.type !== "style") {
+    return ""
+  }
+
+  if (node.name === "br") return "\n"
+
+  const inner = (node.children ?? [])
+    .map((child: any) => blockAwareText($, child))
+    .join("")
+
+  return BLOCK_TAGS.has(node.name) ? `${inner}\n\n` : inner
+}
+
+function extractBlockText(
+  $: ReturnType<typeof cheerio.load>,
+  selection: ReturnType<ReturnType<typeof cheerio.load>>,
+): string {
+  return selection
+    .toArray()
+    .map((el) => blockAwareText($, el))
+    .join("\n\n")
+}
+
 /** Full Arabic verse text, then transliteration, then translation/exegesis, capped to MAX_DESCRIPTION_WORDS. */
 function extractDescription($: ReturnType<typeof cheerio.load>): string {
   const dialogContent = $('[aria-label="paper-dialog-content"]')
@@ -84,11 +134,10 @@ function extractDescription($: ReturnType<typeof cheerio.load>): string {
     .get()
     .join(" ")
 
-  const tafsir = dialogContent
-    .find(".exegesis-translation, .exegesis-body")
-    .map((_, el) => $(el).text())
-    .get()
-    .join(" ")
+  const tafsir = extractBlockText(
+    $,
+    dialogContent.find(".exegesis-translation, .exegesis-body"),
+  )
 
   const text = [arabic, transliteration, tafsir].filter(Boolean).join(" ")
 
