@@ -43,9 +43,12 @@ function AppRoot() {
     userSettings: { theme, locale, lastScroll },
   } = useUserSettingsState()
 
+  const locHash = window.location.hash
   // Parsed once on mount so the preview shell below can render immediately,
   // ahead of the DB bootstrap effect and without the router being mounted.
-  const [deepLink] = useState(() => parseExegesisDeepLink(window.location.hash))
+  const [deepLink] = useState(() => parseExegesisDeepLink(locHash))
+  // Detect if on Mushaf routes
+  const [isMushafRoute] = useState(() => locHash.startsWith("#/m/"))
   // ?locale= overrides which locale the exegesis/transliteration resolve
   // against for this deep link only; it never touches the persisted setting.
   const deepLinkLocale = deepLink?.localeParam
@@ -128,6 +131,9 @@ function AppRoot() {
     bootstrap()
   }, [])
 
+  const isWaitingOnVerseTranslations =
+    isBootstrapped && !isFullyLoaded && !isMushafRoute
+
   return (
     <Theme mode={theme}>
       {!isBootstrapped &&
@@ -142,9 +148,7 @@ function AppRoot() {
         ) : (
           <LoadingScreen />
         ))}
-      {isBootstrapped && !isFullyLoaded && errors.length === 0 && (
-        <LoadingScreen />
-      )}
+      {isWaitingOnVerseTranslations && errors.length === 0 && <LoadingScreen />}
       {isBootstrapped && errors.length === 0 && (
         <RouterProvider router={router} />
       )}

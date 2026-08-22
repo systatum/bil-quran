@@ -24,9 +24,11 @@ const Wrapper = styled.div`
   background: #1c1c1c;
 `
 
+// source frame image's width/height, in px
 const PAGE_RATIO = 1128 / 1530
 
 const PageBox = styled.div`
+  /* both axes derived together, so PAGE_RATIO holds exactly on any viewport */
   width: min(90dvw, 90dvh * ${PAGE_RATIO});
   height: min(90dvh, 90dvw / ${PAGE_RATIO});
 `
