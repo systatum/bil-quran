@@ -20,6 +20,7 @@ interface PageVerse {
 }
 
 const LINE_HEIGHT = 2
+const MARKER_SIZE = 42 // native width/height of the CircleButton, in px
 
 // viewport width tiers the text and verse marker both scale down at, so a
 // smaller screen fits more of the page without needing to zoom
@@ -79,17 +80,43 @@ export default function PageText({ pageNumber }: PageTextProps) {
             verseNumber={verseNumber}
             containerStyle={css`
               display: inline-flex;
-              vertical-align: middle;
+              /* stops PageWrapper's line-height: 2 from inheriting into
+                 the marker's number and pushing the glyph off-center */
+              line-height: normal;
+              /* the marker's own number is Latin digits, not Arabic - the
+                 Quranic font's Latin glyphs sit at a different baseline
+                 than a normal UI font, which reads as "pushed up" */
+              font-family:
+                -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+                sans-serif;
+
+              /* vertical-align: middle aligns to the surrounding text's
+                 x-height, not the true center of an 85px line - that gap
+                 grows with line-height and is font-metric dependent, so
+                 "top" (a fixed reference) plus a computed margin centers
+                 it exactly instead, regardless of the font in use */
+              vertical-align: top;
+              margin-top: calc((${LINE_HEIGHT}em - ${MARKER_SIZE}px) / 2);
 
               /* zoom, not transform: scale - transform only repaints
                  smaller, it doesn't shrink the marker's own layout box,
-                 so it would still force the line taller than the text */
+                 so it would still force the line taller than the text.
+                 zoom also rescales margin-top itself though, so the
+                 formula divides by scale again to cancel that out */
               @media (max-width: ${PHONE_BREAKPOINT}px) {
                 zoom: ${PHONE_SCALE};
+                margin-top: calc(
+                  ${LINE_HEIGHT}em / (2 * ${PHONE_SCALE}) - ${MARKER_SIZE /
+                    2}px
+                );
               }
               @media (min-width: ${PHONE_BREAKPOINT +
                 1}px) and (max-width: ${TABLET_BREAKPOINT}px) {
                 zoom: ${TABLET_SCALE};
+                margin-top: calc(
+                  ${LINE_HEIGHT}em / (2 * ${TABLET_SCALE}) - ${MARKER_SIZE /
+                    2}px
+                );
               }
             `}
           />{" "}
