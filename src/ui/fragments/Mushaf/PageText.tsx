@@ -70,7 +70,7 @@ export default function PageText({ pageNumber }: PageTextProps) {
   if (!page) return null
 
   return (
-    <PageWrapper $font={font.arabic} $theme={theme}>
+    <PageWrapper className="mushaf-page-text" $font={font.arabic} $theme={theme}>
       {verses.map(({ chapterId, verseNumber, text }) => (
         <Fragment key={`${chapterId}:${verseNumber}`}>
           {Bismillah.isRenderableHere(verseNumber, chapterId) && <Bismillah />}

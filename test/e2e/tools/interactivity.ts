@@ -624,3 +624,19 @@ export async function scrollDown(page: Page, px: number): Promise<boolean> {
     return true
   }, px)
 }
+
+/** Presses down at startX, drags to endX in a few steps, then releases. */
+export async function dragHorizontally(
+  page: Page,
+  startX: number,
+  endX: number,
+  y: number,
+) {
+  await page.mouse.move(startX, y)
+  await page.mouse.down()
+  const steps = 10
+  for (let i = 1; i <= steps; i++) {
+    await page.mouse.move(startX + ((endX - startX) * i) / steps, y)
+  }
+  await page.mouse.up()
+}

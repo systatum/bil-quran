@@ -1,6 +1,6 @@
 import { QuranPage } from "@constants/records/Pagination"
-import useUserSettingsState from "@hooks/states/UserSettingsState"
 import usePaginationState from "@hooks/states/PaginationState"
+import useUserSettingsState from "@hooks/states/UserSettingsState"
 import { messages } from "@i18n/message"
 import Tracker from "@services/Tracker"
 import { Combobox, ComboboxOption } from "@systatum/coneto/combobox"
@@ -14,7 +14,7 @@ import { FlexContainer } from "../Container"
 const SMALL_SCREEN_BREAKPOINT = 430
 const MAX_CHAPTERS_SMALL = 2
 
-interface PageChunk {
+export interface PageChunk {
   chapterIds: number[]
   verseNumbers: number[][]
   showRanges: boolean[]

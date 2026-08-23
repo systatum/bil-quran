@@ -45,6 +45,7 @@
     "@types/node": "^16.18.126",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@use-gesture/react": "^10.3.1",
     "drizzle-orm": "^0.45.2",
     "idb-keyval": "^6.2.4",
     "marked": "^18.0.5",
