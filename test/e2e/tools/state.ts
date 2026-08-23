@@ -83,6 +83,18 @@ export async function getWordFontFamily(page: Page): Promise<string | null> {
   })
 }
 
+/** The Bismillah glyph's own computed font-size */
+export async function getBismillahFontSize(page: Page): Promise<string | null> {
+  return page.evaluate(() => {
+    const el = Array.from(
+      document.querySelectorAll<HTMLElement>(".mushaf-page-text span"),
+    ).find((span) =>
+      getComputedStyle(span).fontFamily.includes("BasmalahVer01"),
+    )
+    return el ? getComputedStyle(el).fontSize : null
+  })
+}
+
 /** Returns perceived luminance (0–255) — reliable proxy for light vs dark theme. */
 export async function getPageLuminance(page: Page): Promise<number> {
   return page.evaluate(() => {

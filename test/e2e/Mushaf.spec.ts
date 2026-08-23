@@ -165,6 +165,25 @@ test.describe("Mushaf", () => {
       })
     })
   })
+
+  test.describe("Bismillah glyph", () => {
+    test("shrinks at phone/tablet breakpoints", async ({ page }) => {
+      // mushaf page 2 opens with chapter 2's Bismillah
+      await page.setViewportSize({ width: 1400, height: 900 })
+      await gotoMushafPage(page, 2)
+
+      // 44px native size, 20% smaller outside the phone/tablet breakpoints
+      await expect.poll(() => getBismillahFontSize(page)).toBe("35.2px")
+
+      // 35% smaller between the phone and tablet breakpoints
+      await page.setViewportSize({ width: 800, height: 900 })
+      await expect.poll(() => getBismillahFontSize(page)).toBe("28.6px")
+
+      // 60% smaller at/under the phone breakpoint
+      await page.setViewportSize({ width: 400, height: 800 })
+      await expect.poll(() => getBismillahFontSize(page)).toBe("17.6px")
+    })
+  })
 })
 
 /** The page's rendered Arabic word sequence, skips the verse marker and the Bismillah glyph */

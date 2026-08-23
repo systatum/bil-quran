@@ -29,6 +29,15 @@ const TABLET_BREAKPOINT = 1024 // up to iPad Pro
 const PHONE_SCALE = 0.48 // 52% reduction
 const TABLET_SCALE = 0.8 // 20% reduction
 
+// the Bismillah glyph is fixed-size and doesn't inherit PageWrapper's own
+// font-size, so it needs its own (steeper) reduction at every tier to avoid
+// dwarfing the shrunk-down verse text around it
+const BISMILLAH_SIZE = 44 // BismillahContainer's native font-size, in px
+const BISMILLAH_MARGIN_TOP = -33 // BismillahContainer's native margin-top, in px
+const BISMILLAH_SCALE = 0.8 // 20% smaller
+const BISMILLAH_TABLET_SCALE = 0.65 // 35% smaller
+const BISMILLAH_PHONE_SCALE = 0.4 // 60% smaller
+
 export default function PageText({ pageNumber }: PageTextProps) {
   const { juzPages, loadPagination } = usePaginationState()
   const { words, loadWords } = useWordsState()
@@ -73,7 +82,26 @@ export default function PageText({ pageNumber }: PageTextProps) {
     <PageWrapper className="mushaf-page-text" $font={font.arabic} $theme={theme}>
       {verses.map(({ chapterId, verseNumber, text }) => (
         <Fragment key={`${chapterId}:${verseNumber}`}>
-          {Bismillah.isRenderableHere(verseNumber, chapterId) && <Bismillah />}
+          {Bismillah.isRenderableHere(verseNumber, chapterId) && (
+            <Bismillah
+              containerStyle={css`
+                font-size: ${BISMILLAH_SIZE * BISMILLAH_SCALE}px;
+                margin-top: ${BISMILLAH_MARGIN_TOP * BISMILLAH_SCALE}px;
+
+                @media (max-width: ${PHONE_BREAKPOINT}px) {
+                  font-size: ${BISMILLAH_SIZE * BISMILLAH_PHONE_SCALE}px;
+                  margin-top: ${BISMILLAH_MARGIN_TOP *
+                  BISMILLAH_PHONE_SCALE}px;
+                }
+                @media (min-width: ${PHONE_BREAKPOINT +
+                  1}px) and (max-width: ${TABLET_BREAKPOINT}px) {
+                  font-size: ${BISMILLAH_SIZE * BISMILLAH_TABLET_SCALE}px;
+                  margin-top: ${BISMILLAH_MARGIN_TOP *
+                  BISMILLAH_TABLET_SCALE}px;
+                }
+              `}
+            />
+          )}
           {text}{" "}
           <VerseMarker
             chapterId={chapterId}
