@@ -113,6 +113,25 @@ export async function getPageLuminance(page: Page): Promise<number> {
   })
 }
 
+export async function getSearchSheetOpacity(
+  page: Page,
+): Promise<string | null> {
+  return page.evaluate(() => {
+    const match = document.evaluate(
+      "//*[text()='By chapter']",
+      document,
+      null,
+      XPathResult.FIRST_ORDERED_NODE_TYPE,
+      null,
+    )
+    let el = match.singleNodeValue as HTMLElement | null
+    while (el && getComputedStyle(el).position !== "fixed") {
+      el = el.parentElement
+    }
+    return el ? getComputedStyle(el).opacity : null
+  })
+}
+
 export async function getTopMostVerse(
   page: Page,
 ): Promise<string | null | undefined> {

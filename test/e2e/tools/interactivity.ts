@@ -656,3 +656,16 @@ export async function dragVertically(
   }
   await page.mouse.up()
 }
+
+/**
+ * Mushaf-page specific interactivity
+ */
+
+/** */
+export async function showNavigatorSearch(page: Page) {
+  const box = await page.locator("[data-mushaf]").boundingBox()
+  const x = box!.x + box!.width / 2
+  const y = box!.y + box!.height / 2
+  await dragVertically(page, x, y, y - 20) // reveal the Navigator pill first
+  await page.locator('[aria-label="navigator-chapter-info"]').click()
+}

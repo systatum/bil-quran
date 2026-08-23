@@ -1,9 +1,13 @@
+import { QuranPage } from "@constants/records/Pagination"
 import { ThemeMode } from "@constants/theme"
 import useChaptersState from "@hooks/states/ChaptersState"
+import usePaginationState from "@hooks/states/PaginationState"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import { RiArrowLeftLine, RiArrowRightLine } from "@remixicon/react"
 import { useNavigate } from "@tanstack/react-router"
-import styled from "styled-components"
+import { SearchSheet } from "@ui/fragments/AppNavbar/SearchSheet"
+import { useState } from "react"
+import styled, { css } from "styled-components"
 
 interface NavigatorProps {
   mushaf: string
@@ -12,6 +16,21 @@ interface NavigatorProps {
   /** Chapter shown in the pill's center; the page's first chapter. */
   chapterId: number | null
   visible: boolean
+}
+
+/** Finds which mushaf page contains a given chapter/verse, 1-indexed. */
+function findMushafPageNumber(
+  pages: QuranPage[],
+  chapterId: number,
+  verse: number,
+): number | null {
+  for (let i = 0; i < pages.length; i++) {
+    const chapterIndex = pages[i].chapterIds.indexOf(chapterId)
+    if (chapterIndex === -1) continue
+    const [start, end] = pages[i].verseNumbers[chapterIndex]
+    if (verse >= start && verse <= end) return i + 1
+  }
+  return null
 }
 
 export default function Navigator({
@@ -30,6 +49,8 @@ export default function Navigator({
     getChapterTransliteratedName,
     getChapterMeaning,
   } = useChaptersState()
+  const { juzPages } = usePaginationState()
+  const [searchOpen, setSearchOpen] = useState(false)
 
   function goToPage(target: number) {
     if (target < 1 || target > totalPages) return
@@ -39,37 +60,69 @@ export default function Navigator({
     })
   }
 
+  function goToPageContaining(pickedChapterId: number, verse: number) {
+    const pageNumber = findMushafPageNumber(
+      juzPages.flat(),
+      pickedChapterId,
+      verse,
+    )
+    if (pageNumber != null) goToPage(pageNumber)
+  }
+
   return (
-    <Pill $theme={theme} $visible={visible}>
-      <NavButton
-        aria-label="previous page"
-        disabled={currentPage <= 1}
-        onClick={() => goToPage(currentPage - 1)}
-      >
-        <RiArrowRightLine size={13} />
-      </NavButton>
+    <>
+      <Pill $theme={theme} $visible={visible}>
+        <NavButton
+          aria-label="previous page"
+          disabled={currentPage <= 1}
+          onClick={() => goToPage(currentPage - 1)}
+        >
+          <RiArrowRightLine size={13} />
+        </NavButton>
 
-      <ChapterInfo>
-        <ChapterArabicName>
-          {chapterId != null ? getChapterArabicName(chapterId) : null}
-        </ChapterArabicName>
-        <ChapterSubInfo>
-          <span>
-            {chapterId != null ? getChapterTransliteratedName(chapterId) : null}
-          </span>
-          <Dot />
-          <span>{chapterId != null ? getChapterMeaning(chapterId) : null}</span>
-        </ChapterSubInfo>
-      </ChapterInfo>
+        <ChapterInfo
+          aria-label="navigator-chapter-info"
+          onClick={() => setSearchOpen((open) => !open)}
+        >
+          <ChapterArabicName>
+            {chapterId != null ? getChapterArabicName(chapterId) : null}
+          </ChapterArabicName>
+          <ChapterSubInfo>
+            <span>
+              {chapterId != null
+                ? getChapterTransliteratedName(chapterId)
+                : null}
+            </span>
+            <Dot />
+            <span>{chapterId != null ? getChapterMeaning(chapterId) : null}</span>
+          </ChapterSubInfo>
+        </ChapterInfo>
 
-      <NavButton
-        aria-label="next page"
-        disabled={currentPage >= totalPages}
-        onClick={() => goToPage(currentPage + 1)}
-      >
-        <RiArrowLeftLine size={13} />
-      </NavButton>
-    </Pill>
+        <NavButton
+          aria-label="next page"
+          disabled={currentPage >= totalPages}
+          onClick={() => goToPage(currentPage + 1)}
+        >
+          <RiArrowLeftLine size={13} />
+        </NavButton>
+      </Pill>
+
+      {searchOpen && (
+        <SearchBackdrop
+          aria-label="navigator-search-backdrop"
+          onClick={() => setSearchOpen(false)}
+        />
+      )}
+      <SearchSheet
+        isOpen={searchOpen}
+        anchor="bottom"
+        onAfterSearch={() => setSearchOpen(false)}
+        onPick={goToPageContaining}
+        containerStyle={css`
+          padding-bottom: 20px;
+        `}
+      />
+    </>
   )
 }
 
@@ -105,6 +158,14 @@ const Pill = styled.div<{ $theme: ThemeMode; $visible: boolean }>`
   color: ${({ $theme }) => ($theme === "dark" ? "#e8ddc7" : "#2b2b2b")};
 `
 
+/** Catches clicks outside the search sheet to dismiss it - sits just below
+ * the sheet's own z-index (9992999) so the sheet's own content still wins. */
+const SearchBackdrop = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 9992998;
+`
+
 const NavButton = styled.button`
   flex-shrink: 0;
   width: 26px;
@@ -136,6 +197,7 @@ const ChapterInfo = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 `
 
 const ChapterArabicName = styled.div`

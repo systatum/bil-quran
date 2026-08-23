@@ -1,9 +1,14 @@
 import { Rendering } from "@constants/records/RenderingRecord"
 import { expect, Page, test } from "@playwright/test"
 import { loadPaginationStyle, loadQuranWords } from "./tools/data"
-import { dragHorizontally, dragVertically } from "./tools/interactivity"
+import {
+  dragHorizontally,
+  dragVertically,
+  showNavigatorSearch,
+} from "./tools/interactivity"
 import {
   getBismillahFontSize,
+  getSearchSheetOpacity,
   gotoMushafPage,
   swipeToNextMushafPage,
 } from "./tools/state"
@@ -239,6 +244,102 @@ test.describe("Mushaf", () => {
       await expect(
         page.locator('[aria-label="settings-backup-button"]'),
       ).toBeVisible({ timeout: 10_000 })
+    })
+  })
+
+  test.describe("search sheet", () => {
+    test("chapter tap opens the sheet", async ({ page }) => {
+      await gotoMushafPage(page, 1)
+      await showNavigatorSearch(page)
+
+      await expect(page.getByText("By chapter")).toBeVisible({
+        timeout: 3000,
+      })
+      await expect(page.getByText("By juz (part)")).toBeVisible({
+        timeout: 3000,
+      })
+    })
+
+    test("outside click dismisses it", async ({ page }) => {
+      await gotoMushafPage(page, 1)
+      await showNavigatorSearch(page)
+
+      await expect.poll(() => getSearchSheetOpacity(page)).toBe("1")
+
+      // the sheet only covers the bottom of the page - the top is "outside"
+      const box = await page.locator("[data-mushaf]").boundingBox()
+      await page.mouse.click(box!.x + box!.width / 2, box!.y + 10)
+
+      await expect.poll(() => getSearchSheetOpacity(page)).toBe("0")
+    })
+
+    test("verse pick jumps to its page", async ({ page }) => {
+      // start away from chapter 1's page, so landing back on page 1 is meaningful
+      await gotoMushafPage(page, 5)
+      await showNavigatorSearch(page)
+
+      const combobox = page
+        .locator('[role="combobox"]')
+        .filter({ visible: true })
+        .first()
+      await combobox.click()
+
+      const drawer = page
+        .locator('[aria-label="combobox-drawer"]')
+        .filter({ visible: true })
+      await expect(drawer).toBeVisible({ timeout: 5000 })
+
+      // chapter 1 (Al-Faatiha, 7 verses) - items appear directly, no paging
+      const chapter1 = drawer
+        .locator('[aria-label="tree-list-group-title"]')
+        .first()
+      await chapter1.click()
+      await page.waitForTimeout(200)
+
+      const verse3 = drawer
+        .locator('[aria-label="tree-list-item"]')
+        .filter({ hasText: "3" })
+        .first()
+      await expect(verse3).toBeVisible({ timeout: 3000 })
+      await verse3.click()
+
+      // 1:3 lives on mushaf page 1 - and critically, this must stay on the
+      // mushaf route rather than jumping to QuranPaper's /c/1/3
+      await expect(page).toHaveURL(/#\/m\/madinah\/1$/)
+      await expect(page.locator("[data-mushaf]")).toHaveAttribute(
+        "data-page",
+        "1",
+      )
+    })
+
+    test("juz pick jumps to its page", async ({ page }) => {
+      await gotoMushafPage(page, 1)
+      await showNavigatorSearch(page)
+
+      const combobox = page
+        .locator('[role="combobox"]')
+        .filter({ visible: true })
+        .nth(1)
+      await combobox.click()
+
+      const drawer = page
+        .locator('[aria-label="combobox-drawer"]')
+        .filter({ visible: true })
+      await expect(drawer).toBeVisible({ timeout: 5000 })
+
+      const juz1 = drawer
+        .locator('[aria-label="tree-list-group-title"]')
+        .first()
+      await juz1.click()
+      await page.waitForTimeout(200)
+
+      const firstPageOption = drawer
+        .locator('[aria-label="tree-list-item"]')
+        .first()
+      await expect(firstPageOption).toBeVisible({ timeout: 3000 })
+      await firstPageOption.click()
+
+      await expect(page).toHaveURL(/#\/m\/madinah\/\d+$/)
     })
   })
 
