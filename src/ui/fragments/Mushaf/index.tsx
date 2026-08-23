@@ -7,6 +7,7 @@ import { useDrag } from "@use-gesture/react"
 import { useEffect, useMemo, useRef, useState } from "react"
 import styled from "styled-components"
 import MushafFrame from "../MushafFrame"
+import Navigator from "./Navigator"
 import PageText from "./PageText"
 
 // how far (px) the drag must travel before it commits to a page turn,
@@ -29,7 +30,10 @@ export default function Mushaf() {
     loadPagination()
   }, [])
 
-  const totalPages = useMemo(() => juzPages.flat().length, [juzPages])
+  const allPages = useMemo(() => juzPages.flat(), [juzPages])
+  const totalPages = allPages.length
+  const currentPageChapterId =
+    pageNumber != null ? allPages[pageNumber - 1]?.chapterIds[0] ?? null : null
 
   const [turn, setTurn] = useState<PageTurn>(null)
   // which half of the page the drag started on, persisted across the whole
@@ -89,6 +93,15 @@ export default function Mushaf() {
             {pageNumber != null && <PageText pageNumber={pageNumber} />}
           </MushafFrame>
         </FrameBox>
+
+        {mushaf != null && pageNumber != null && (
+          <Navigator
+            mushaf={mushaf}
+            currentPage={pageNumber}
+            totalPages={totalPages}
+            chapterId={currentPageChapterId}
+          />
+        )}
 
         {turn && (
           <TurnOverlay>
