@@ -6,7 +6,7 @@ from pathlib import Path
 
 def get_setting() -> Setting:
     return Setting(
-        LLM_TEMP_DIR=Path("/tmp/hg_download"),
+        LLM_TEMP_DIR=Path(Env.get().MOUNT_ROOT) / "hg_download",
         LLM_MODEL_DIR=Path(Env.get().MOUNT_ROOT) / "models",
         LLM_MODELS={
             "qwen2.5-1.5b": ModelSource(

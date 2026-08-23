@@ -8,6 +8,7 @@ import huggingface_hub
 
 
 def download_model_to_path(source: ModelSource, path: Path):
+    print("Downloading", source.filename, "from", source.hf_repo_url)
     os.makedirs(SettingLoader.get().LLM_TEMP_DIR, exist_ok=True)
     huggingface_hub.hf_hub_download(
         repo_id=source.get_repo_id(),
@@ -15,6 +16,7 @@ def download_model_to_path(source: ModelSource, path: Path):
         local_dir=SettingLoader.get().LLM_TEMP_DIR,
     )
     shutil.move(SettingLoader.get().LLM_TEMP_DIR / source.filename, path)
+    print("Done downloading", source.filename)
 
 
 def download_models():

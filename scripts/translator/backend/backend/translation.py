@@ -1,5 +1,5 @@
 from __future__ import annotations
-from backend.llm_model_loader import load_models, load_model
+from backend.llm_model_loader import load_models, load_model, download_models
 from backend.llm_model import LLMModel
 from backend.service import Job, JobResult, Service
 from backend.setting_loader import SettingLoader
@@ -19,6 +19,8 @@ class TranslationService(Service[Translation, str]):
 
     def __init__(self):
         super().__init__()
+        download_models()
+
         queue_max: int = SettingLoader.get().LLM_MAX_LOADED
         # MAX_LOADED 0 is a special case
         queue_max = queue_max if queue_max > 0 else 1
@@ -42,7 +44,9 @@ class TranslationService(Service[Translation, str]):
                 self._models.pop(popped_model_name)
 
             self._model_queue.append(job.model)
+            print("Loading model", job.model)
             self._models[job.model] = load_model(job.model)
+            print("Finished loading model", job.model)
 
         model: LLMModel = self._models[job.model]
 
