@@ -15,16 +15,14 @@ from typing import Optional
 from time import sleep
 from traceback import print_exc
 
-WORKDIR = Path("./proxy/proxy")
+WORKDIR = Path("./proxy")
 TEMPLATE_FILENAME = "TemplateCaddyfile"
 NO_ROUTE_FILENAME = "NoRouteCaddyfile"
 CADDY_FILENAME = "Caddyfile"
 CADDY_PORT = 8049
 
-# MAX_POD_LIFETIME_SECONDS = 60 * 60 * 5  # 5 hours
-# MAX_POD_INACTIVITY_SECONDS = 60 * 30  # 30 minutes
-MAX_POD_LIFETIME_SECONDS = 60 * 20
-MAX_POD_INACTIVITY_SECONDS = 60 * 5
+MAX_POD_LIFETIME_SECONDS = 60 * 60 * 5  # 5 hours
+MAX_POD_INACTIVITY_SECONDS = 60 * 30  # 30 minutes
 
 
 def pod():
