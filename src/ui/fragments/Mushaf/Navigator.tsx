@@ -11,6 +11,7 @@ interface NavigatorProps {
   totalPages: number
   /** Chapter shown in the pill's center; the page's first chapter. */
   chapterId: number | null
+  visible: boolean
 }
 
 export default function Navigator({
@@ -18,21 +19,28 @@ export default function Navigator({
   currentPage,
   totalPages,
   chapterId,
+  visible,
 }: NavigatorProps) {
   const navigate = useNavigate()
   const {
     userSettings: { theme },
   } = useUserSettingsState()
-  const { getChapterArabicName, getChapterTransliteratedName, getChapterMeaning } =
-    useChaptersState()
+  const {
+    getChapterArabicName,
+    getChapterTransliteratedName,
+    getChapterMeaning,
+  } = useChaptersState()
 
   function goToPage(target: number) {
     if (target < 1 || target > totalPages) return
-    navigate({ to: "/m/$mushaf/$page", params: { mushaf, page: String(target) } })
+    navigate({
+      to: "/m/$mushaf/$page",
+      params: { mushaf, page: String(target) },
+    })
   }
 
   return (
-    <Pill $theme={theme}>
+    <Pill $theme={theme} $visible={visible}>
       <NavButton
         aria-label="previous page"
         disabled={currentPage <= 1}
@@ -65,13 +73,13 @@ export default function Navigator({
   )
 }
 
-const Pill = styled.div<{ $theme: ThemeMode }>`
+const Pill = styled.div<{ $theme: ThemeMode; $visible: boolean }>`
   position: absolute;
-  bottom: 10px;
+  bottom: 6em;
   left: 50%;
   transform: translateX(-50%);
-  width: 80%;
-  max-width: 420px;
+  width: 64%;
+  max-width: 336px;
   direction: ltr;
   display: flex;
   align-items: center;
@@ -80,11 +88,17 @@ const Pill = styled.div<{ $theme: ThemeMode }>`
   padding: 2px 8px;
   border-radius: 999px;
 
+  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
+  pointer-events: ${({ $visible }) => ($visible ? "auto" : "none")};
+  transition: opacity 0.25s ease-in-out;
+
   background: ${({ $theme }) =>
     $theme === "dark" ? "rgba(30, 30, 30, 0.55)" : "rgba(255, 255, 255, 0.55)"};
   border: 1px solid
     ${({ $theme }) =>
-      $theme === "dark" ? "rgba(255, 255, 255, 0.15)" : "rgba(255, 255, 255, 0.6)"};
+      $theme === "dark"
+        ? "rgba(255, 255, 255, 0.15)"
+        : "rgba(255, 255, 255, 0.6)"};
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);

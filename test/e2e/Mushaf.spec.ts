@@ -1,7 +1,7 @@
 import { Rendering } from "@constants/records/RenderingRecord"
 import { expect, Page, test } from "@playwright/test"
 import { loadPaginationStyle, loadQuranWords } from "./tools/data"
-import { dragHorizontally } from "./tools/interactivity"
+import { dragHorizontally, dragVertically } from "./tools/interactivity"
 import { gotoMushafPage, swipeToNextMushafPage } from "./tools/state"
 
 /** specifically test the Mushaf component, where Qur'an is rendered page by page */
@@ -118,6 +118,51 @@ test.describe("Mushaf", () => {
         "data-page",
         "1",
       )
+    })
+
+    /** The Navigator pill's computed opacity ("0" hidden, "1" revealed). */
+    async function getNavigatorOpacity(page: Page): Promise<string | null> {
+      return page.evaluate(() => {
+        const button = document.querySelector('[aria-label="previous page"]')
+        const pill = button?.parentElement
+        return pill ? getComputedStyle(pill).opacity : null
+      })
+    }
+
+    test.describe("Navigator reveal/hide", () => {
+      test("hidden until swiped up", async ({ page }) => {
+        await gotoMushafPage(page, 1)
+        await expect.poll(() => getNavigatorOpacity(page)).toBe("0")
+      })
+
+      test("swipe up reveals, swipe down hides", async ({ page }) => {
+        await gotoMushafPage(page, 1)
+
+        const box = await page.locator("[data-mushaf]").boundingBox()
+        expect(box).not.toBeNull()
+        const x = box!.x + box!.width / 2
+        const y = box!.y + box!.height / 2
+
+        // well past the 10px reveal threshold
+        await dragVertically(page, x, y, y - 20)
+        await expect.poll(() => getNavigatorOpacity(page)).toBe("1")
+
+        await dragVertically(page, x, y, y + 20)
+        await expect.poll(() => getNavigatorOpacity(page)).toBe("0")
+      })
+
+      test("horizontal drag doesn't reveal it", async ({ page }) => {
+        await gotoMushafPage(page, 1)
+
+        const box = await page.locator("[data-mushaf]").boundingBox()
+        expect(box).not.toBeNull()
+        const y = box!.y + box!.height / 2
+        const startX = box!.x + box!.width * 0.15
+
+        await dragHorizontally(page, startX, startX + 150, y)
+
+        await expect.poll(() => getNavigatorOpacity(page)).toBe("0")
+      })
     })
   })
 })

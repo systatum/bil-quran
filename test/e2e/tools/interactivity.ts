@@ -640,3 +640,19 @@ export async function dragHorizontally(
   }
   await page.mouse.up()
 }
+
+/** Presses down at (x, startY), drags to (x, endY) in a few steps, then releases. */
+export async function dragVertically(
+  page: Page,
+  x: number,
+  startY: number,
+  endY: number,
+) {
+  await page.mouse.move(x, startY)
+  await page.mouse.down()
+  const steps = 10
+  for (let i = 1; i <= steps; i++) {
+    await page.mouse.move(x, startY + ((endY - startY) * i) / steps)
+  }
+  await page.mouse.up()
+}

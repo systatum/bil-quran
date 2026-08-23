@@ -14,6 +14,10 @@ import PageText from "./PageText"
 // so an ordinary tap/scroll gesture on the page doesn't trigger one
 const TURN_THRESHOLD = 80
 
+// how far (px) a vertical drag must travel to reveal/hide the Navigator -
+// much smaller than TURN_THRESHOLD since it's meant to feel immediate
+const REVEAL_THRESHOLD = 10
+
 type TurnDirection = "next" | "prev"
 type PageTurn = { direction: TurnDirection; targetPage: number } | null
 
@@ -36,17 +40,27 @@ export default function Mushaf() {
     pageNumber != null ? allPages[pageNumber - 1]?.chapterIds[0] ?? null : null
 
   const [turn, setTurn] = useState<PageTurn>(null)
+  const [navigatorVisible, setNavigatorVisible] = useState(false)
   // which half of the page the drag started on, persisted across the whole
   // gesture (state callbacks below run many times per drag)
   const startedOnLeftHalf = useRef(false)
 
   const bind = useDrag(
-    ({ movement: [mx], initial: [ix], first, last, currentTarget }) => {
+    ({ movement: [mx, my], initial: [ix], first, last, currentTarget }) => {
       if (pageNumber == null) return
 
       if (first) {
         const rect = (currentTarget as HTMLElement).getBoundingClientRect()
         startedOnLeftHalf.current = ix < rect.left + rect.width / 2
+      }
+
+      // whichever axis moved further decides what this gesture means -
+      // horizontal turns the page, vertical reveals/hides the Navigator
+      if (Math.abs(mx) < Math.abs(my)) {
+        if (my <= -REVEAL_THRESHOLD) setNavigatorVisible(true)
+        else if (my >= REVEAL_THRESHOLD) setNavigatorVisible(false)
+        if (last) setTurn(null)
+        return
       }
 
       const direction: TurnDirection | null = startedOnLeftHalf.current
@@ -77,7 +91,7 @@ export default function Mushaf() {
 
       setTurn(isValidTurn ? { direction, targetPage } : null)
     },
-    { axis: "x", filterTaps: true },
+    { filterTaps: true },
   )
 
   return (
@@ -100,6 +114,7 @@ export default function Mushaf() {
             currentPage={pageNumber}
             totalPages={totalPages}
             chapterId={currentPageChapterId}
+            visible={navigatorVisible}
           />
         )}
 
