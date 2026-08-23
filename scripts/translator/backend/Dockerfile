@@ -22,7 +22,7 @@ RUN --mount=type=bind,source=.,target=. \
     --mount=type=cache,target=/root/.cache/uv \
     --mount=type=cache,target=/root/.local/share/uv/python \
     uv export --package=backend --only-group=heavy --format pylock.toml --verbose > /packages/pylock.heavy.toml && \
-    uv export --package=backend --package=shared --format pylock.toml --verbose > /packages/pylock.toml
+    uv export --package=backend --package=shared --no-emit-local --format pylock.toml --verbose > /packages/pylock.toml
 ##########################
 # Generator/parser stage #
 ##########################
@@ -54,15 +54,11 @@ RUN --mount=from=generator,source=/packages/pylock.heavy.toml,target=/app/pylock
     && uv pip install -r pylock.heavy.toml --verbose
 
 # Install all deps
-RUN --mount=from=generator,source=/packages/pylock.heavy.toml,target=/app/pylock.toml \
+RUN --mount=from=generator,source=/packages/pylock.toml,target=/app/pylock.toml \
     --mount=type=cache,target=/root/.cache/uv \
     uv pip install -r pylock.toml --verbose
 
 COPY . ./
-
-# Because for some reason the all install above is not enough
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --package backend --package shared
 
 ENTRYPOINT ["uv", "run", "--package", "backend", "fastapi", "run", "--entrypoint", "backend.main:app"]
 #################
