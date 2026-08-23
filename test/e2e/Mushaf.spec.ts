@@ -462,6 +462,36 @@ test.describe("Mushaf", () => {
         )
       })
 
+      test("drag feedback shows a page range", async ({ page }) => {
+        await page.setViewportSize({ width: 1600, height: 1000 })
+        await setReadingStyle(page, "Dual-stitched")
+
+        await page.goto("/")
+        await page
+          .locator("[data-mushaf]")
+          .waitFor({ state: "visible", timeout: 15_000 })
+
+        const box = await page.locator("[data-mushaf]").boundingBox()
+        const y = box!.y + box!.height / 2
+        const startX = box!.x + box!.width * 0.15
+
+        await page.mouse.move(startX, y)
+        await page.mouse.down()
+        for (let i = 1; i <= 10; i++) {
+          await page.mouse.move(startX + (150 * i) / 10, y)
+        }
+
+        await expect(page.locator(".drag-feedback-badge")).toBeVisible({
+          timeout: 10_000,
+        })
+        const text = await page
+          .locator(".drag-feedback-badge")
+          .evaluate((el) => el.querySelector("div")?.textContent)
+        await page.mouse.up()
+
+        expect(text).toBe("3-4")
+      })
+
       test("dual frame borders are correct", async ({ page }) => {
         await page.setViewportSize({ width: 1600, height: 1000 })
         await setReadingStyle(page, "Dual-stitched")

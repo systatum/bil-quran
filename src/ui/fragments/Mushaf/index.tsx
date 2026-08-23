@@ -200,18 +200,26 @@ export default function Mushaf() {
 
         {dragFeedback?.kind === "turn" && (
           <TurnOverlay>
-            {dragFeedback.direction === "next" ? (
-              <RiArrowLeftLine size={48} />
-            ) : (
-              <RiArrowRightLine size={48} />
-            )}
-            <TurnPageNumber>{dragFeedback.targetPage}</TurnPageNumber>
+            <Badge className="drag-feedback-badge">
+              {dragFeedback.direction === "next" ? (
+                <RiArrowLeftLine size={28} />
+              ) : (
+                <RiArrowRightLine size={28} />
+              )}
+              <TurnPageNumber>
+                {isDualActive && dragFeedback.targetPage + 1 <= totalPages
+                  ? `${dragFeedback.targetPage}-${dragFeedback.targetPage + 1}`
+                  : dragFeedback.targetPage}
+              </TurnPageNumber>
+            </Badge>
           </TurnOverlay>
         )}
 
         {dragFeedback?.kind === "settings" && (
           <TurnOverlay className="settings-reveal-overlay">
-            <RiMenuLine size={48} />
+            <Badge className="drag-feedback-badge">
+              <RiMenuLine size={28} />
+            </Badge>
           </TurnOverlay>
         )}
       </PageBox>
@@ -291,15 +299,24 @@ const TurnOverlay = styled.div`
   position: absolute;
   inset: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  color: #4a4a4a;
   pointer-events: none;
 `
 
+// solid-but-translucent so the icon/number stay legible over any page
+// content behind them, regardless of theme
+const Badge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 22px;
+  border-radius: 999px;
+  background: rgba(20, 20, 20, 0.7);
+  color: #fff;
+`
+
 const TurnPageNumber = styled.div`
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 600;
 `
