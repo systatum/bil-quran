@@ -20,5 +20,6 @@ def get_setting() -> Setting:
         },
         LLM_GPU_ENABLED=False,
         LLM_CONTEXT_SIZE=1024,
+        LLM_MAX_LOADED=1,
         APP_TOKEN=Env.get().API_KEY,
     )

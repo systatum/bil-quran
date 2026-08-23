@@ -66,6 +66,7 @@ class BackendEnv(Env):
 @dataclass(kw_only=True, frozen=True)
 class ProxyEnv(Env):
     RUNPOD_MANAGEMENT_KEY: str
+    API_KEY_REMOTE: str
 
     @classmethod
     def get(cls) -> Self:

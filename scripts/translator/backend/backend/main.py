@@ -170,7 +170,6 @@ async def lifespan(_: FastAPI):
     appstate.get().translation_service.start()
     appstate.get().rating_service.start()
     appstate.get().comparison_service.start()
-    print_version()
     yield
     appstate.get().rating_service.stop()
     appstate.get().translation_service.stop()

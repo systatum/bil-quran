@@ -1,5 +1,5 @@
 from __future__ import annotations
-from shared.result import Result
+from shared.util import Result
 from time import sleep
 from queue import Queue
 from dataclasses import dataclass

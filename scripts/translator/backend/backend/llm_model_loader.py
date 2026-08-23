@@ -17,10 +17,8 @@ def download_model_to_path(source: ModelSource, path: Path):
     shutil.move(SettingLoader.get().LLM_TEMP_DIR / source.filename, path)
 
 
-def load_models() -> dict[str, LLMModel]:
+def download_models():
     os.makedirs(SettingLoader.get().LLM_MODEL_DIR, exist_ok=True)
-
-    models = {}
 
     for name, model_source in SettingLoader.get().LLM_MODELS.items():
         name_with_extension = name + ".gguf"
@@ -29,6 +27,19 @@ def load_models() -> dict[str, LLMModel]:
             download_model_to_path(
                 model_source, SettingLoader.get().LLM_MODEL_DIR / name_with_extension
             )
+
+
+def load_model(name: str) -> LLMModel:
+    name_with_extension = name + ".gguf"
+    path = str(SettingLoader.get().LLM_MODEL_DIR / name_with_extension)
+    return LLMModel(path)
+
+
+def load_models() -> dict[str, LLMModel]:
+    models = {}
+
+    for name, _ in SettingLoader.get().LLM_MODELS.items():
+        name_with_extension = name + ".gguf"
 
         models[name] = LLMModel(
             str(SettingLoader.get().LLM_MODEL_DIR / name_with_extension)

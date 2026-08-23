@@ -1,0 +1,3 @@
+backend: uv run --package backend fastapi dev --entrypoint backend.main:app --reload-dir backend/src
+frontend: uv run --package frontend jupyter lab ./frontend
+proxy: watchexec -w proxy uv run --package proxy -m proxy.main
