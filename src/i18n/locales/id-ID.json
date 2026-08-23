@@ -36,6 +36,14 @@
     "0": "Se-level",
     "1": "Terpisah"
   },
+  "readingStyle": {
+    "title": "Gaya baca",
+    "det": "Terpisah",
+    "st-mono": "Menyambung sehalaman",
+    "st-dual": "Menyambung dua halaman",
+    "dualUnavailableTitle": "Tidak dapat menampilkan dua halaman sekaligus",
+    "dualUnavailableMessage": "Layar Anda tidak cukup lebar untuk tampilan dua halaman, jadi hanya satu halaman yang ditampilkan."
+  },
   "showPageIndicator": {
     "title": "Tampilkan indikator halaman",
     "helper": "Tampilkan sejauh mana Al-Qur'an telah di baca per bagian/juz"

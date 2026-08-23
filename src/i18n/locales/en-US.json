@@ -36,6 +36,14 @@
     "0": "Embedded",
     "1": "Detached"
   },
+  "readingStyle": {
+    "title": "Reading style",
+    "det": "Detached",
+    "st-mono": "Mono-stitched",
+    "st-dual": "Dual-stitched",
+    "dualUnavailableTitle": "Dual-stitched unavailable",
+    "dualUnavailableMessage": "Your screen isn't wide enough for a two-page spread, so we're showing a single page instead."
+  },
   "showPageIndicator": {
     "title": "Show page indicator",
     "helper": "Show how far your reading has been relatively to part-by-part (the juz) of the Holy Qur'an"

@@ -11,6 +11,8 @@ import VerseMarker from "../VerseMarker"
 
 interface PageTextProps {
   pageNumber: number
+  /** if true, will use tablet-sized text/glyphs instead of wide-screen sizing on wide-screen devices */
+  forceTabletScale?: boolean
 }
 
 interface PageVerse {
@@ -38,7 +40,10 @@ const BISMILLAH_SCALE = 0.8 // 20% smaller
 const BISMILLAH_TABLET_SCALE = 0.65 // 35% smaller
 const BISMILLAH_PHONE_SCALE = 0.4 // 60% smaller
 
-export default function PageText({ pageNumber }: PageTextProps) {
+export default function PageText({
+  pageNumber,
+  forceTabletScale = false,
+}: PageTextProps) {
   const { juzPages, loadPagination } = usePaginationState()
   const { words, loadWords } = useWordsState()
   const {
@@ -79,7 +84,12 @@ export default function PageText({ pageNumber }: PageTextProps) {
   if (!page) return null
 
   return (
-    <PageWrapper className="mushaf-page-text" $font={font.arabic} $theme={theme}>
+    <PageWrapper
+      className="mushaf-page-text"
+      $font={font.arabic}
+      $theme={theme}
+      $forceTabletScale={forceTabletScale}
+    >
       {verses.map(({ chapterId, verseNumber, text }) => (
         <Fragment key={`${chapterId}:${verseNumber}`}>
           {Bismillah.isRenderableHere(verseNumber, chapterId) && (
@@ -90,8 +100,7 @@ export default function PageText({ pageNumber }: PageTextProps) {
 
                 @media (max-width: ${PHONE_BREAKPOINT}px) {
                   font-size: ${BISMILLAH_SIZE * BISMILLAH_PHONE_SCALE}px;
-                  margin-top: ${BISMILLAH_MARGIN_TOP *
-                  BISMILLAH_PHONE_SCALE}px;
+                  margin-top: ${BISMILLAH_MARGIN_TOP * BISMILLAH_PHONE_SCALE}px;
                 }
                 @media (min-width: ${PHONE_BREAKPOINT +
                   1}px) and (max-width: ${TABLET_BREAKPOINT}px) {
@@ -99,6 +108,13 @@ export default function PageText({ pageNumber }: PageTextProps) {
                   margin-top: ${BISMILLAH_MARGIN_TOP *
                   BISMILLAH_TABLET_SCALE}px;
                 }
+
+                ${forceTabletScale &&
+                css`
+                  font-size: ${BISMILLAH_SIZE * BISMILLAH_TABLET_SCALE}px;
+                  margin-top: ${BISMILLAH_MARGIN_TOP *
+                  BISMILLAH_TABLET_SCALE}px;
+                `}
               `}
             />
           )}
@@ -134,18 +150,26 @@ export default function PageText({ pageNumber }: PageTextProps) {
               @media (max-width: ${PHONE_BREAKPOINT}px) {
                 zoom: ${PHONE_SCALE};
                 margin-top: calc(
-                  ${LINE_HEIGHT}em / (2 * ${PHONE_SCALE}) - ${MARKER_SIZE /
-                    2}px
+                  ${LINE_HEIGHT}em / (2 * ${PHONE_SCALE}) - ${MARKER_SIZE / 2}px
                 );
               }
               @media (min-width: ${PHONE_BREAKPOINT +
                 1}px) and (max-width: ${TABLET_BREAKPOINT}px) {
                 zoom: ${TABLET_SCALE};
                 margin-top: calc(
-                  ${LINE_HEIGHT}em / (2 * ${TABLET_SCALE}) - ${MARKER_SIZE /
-                    2}px
+                  ${LINE_HEIGHT}em / (2 * ${TABLET_SCALE}) -
+                    ${MARKER_SIZE / 2}px
                 );
               }
+
+              ${forceTabletScale &&
+              css`
+                zoom: ${TABLET_SCALE};
+                margin-top: calc(
+                  ${LINE_HEIGHT}em / (2 * ${TABLET_SCALE}) -
+                    ${MARKER_SIZE / 2}px
+                );
+              `}
             `}
           />{" "}
         </Fragment>
@@ -154,7 +178,11 @@ export default function PageText({ pageNumber }: PageTextProps) {
   )
 }
 
-const PageWrapper = styled.div<{ $font: FontSetting; $theme: ThemeMode }>`
+const PageWrapper = styled.div<{
+  $font: FontSetting
+  $theme: ThemeMode
+  $forceTabletScale: boolean
+}>`
   width: 100%;
   /* min-height, not height: overflowing text must still be inside this box
      so its background follows the content, instead of stopping at 100%
@@ -194,4 +222,10 @@ const PageWrapper = styled.div<{ $font: FontSetting; $theme: ThemeMode }>`
     1}px) and (max-width: ${TABLET_BREAKPOINT}px) {
     font-size: ${({ $font }) => $font.size * TABLET_SCALE}px;
   }
+
+  ${({ $forceTabletScale, $font }) =>
+    $forceTabletScale &&
+    css`
+      font-size: ${$font.size * TABLET_SCALE}px;
+    `}
 `

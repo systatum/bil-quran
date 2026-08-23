@@ -17,5 +17,13 @@ export default function useToast() {
         content,
       })
     },
+
+    warningToast: (content: string, title?: string) => {
+      Toast.warning({
+        position: "bottom-center",
+        title,
+        content,
+      })
+    },
   }
 }

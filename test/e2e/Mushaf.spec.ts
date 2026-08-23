@@ -4,13 +4,15 @@ import { loadPaginationStyle, loadQuranWords } from "./tools/data"
 import {
   dragHorizontally,
   dragVertically,
+  gotoMushafPage,
+  setReadingStyle,
   showNavigatorSearch,
+  swipeToNextMushafPage,
 } from "./tools/interactivity"
 import {
   getBismillahFontSize,
+  getFrameBorderOrientations,
   getSearchSheetOpacity,
-  gotoMushafPage,
-  swipeToNextMushafPage,
 } from "./tools/state"
 
 /** specifically test the Mushaf component, where Qur'an is rendered page by page */
@@ -359,6 +361,142 @@ test.describe("Mushaf", () => {
       // 60% smaller at/under the phone breakpoint
       await page.setViewportSize({ width: 400, height: 800 })
       await expect.poll(() => getBismillahFontSize(page)).toBe("17.6px")
+    })
+  })
+
+  test.describe("Reading style", () => {
+    test("mono-stitched redirects on load", async ({ page }) => {
+      await setReadingStyle(page, "Mono-stitched")
+
+      await page.goto("/")
+      await page
+        .locator("[data-mushaf]")
+        .waitFor({ state: "visible", timeout: 15_000 })
+      await expect(page).toHaveURL(/#\/m\/madinah\/1$/)
+    })
+
+    test("mono frame border is correct", async ({ page }) => {
+      await setReadingStyle(page, "Mono-stitched")
+
+      await page.goto("/")
+      await page
+        .locator("[data-mushaf]")
+        .waitFor({ state: "visible", timeout: 15_000 })
+
+      const frames = await getFrameBorderOrientations(page)
+      expect(frames).toHaveLength(1)
+      expect(frames[0].direction).toBe("ltr")
+      expect(frames[0].topLeftX).not.toBeNull()
+      expect(frames[0].topRightX).not.toBeNull()
+      expect(frames[0].topLeftX!).toBeLessThan(frames[0].topRightX!)
+    })
+
+    test.describe("Dual-stitched", () => {
+      test("wide viewport shows two pages", async ({ page }) => {
+        await page.setViewportSize({ width: 1600, height: 1000 })
+        await setReadingStyle(page, "Dual-stitched")
+
+        await page.goto("/")
+        await page
+          .locator("[data-mushaf]")
+          .waitFor({ state: "visible", timeout: 15_000 })
+
+        await expect(page.locator("[data-mushaf]")).toHaveAttribute(
+          "data-dual-stitched",
+          "true",
+        )
+
+        const pageTexts = page.locator(".mushaf-page-text")
+        await expect(pageTexts).toHaveCount(2)
+
+        // 42.5px default font size * 0.8 (PageText's own tablet-tier scale)
+        await expect
+          .poll(() =>
+            pageTexts.first().evaluate((el) => getComputedStyle(el).fontSize),
+          )
+          .toBe("34px")
+      })
+
+      test("narrow viewport falls back", async ({ page }) => {
+        await page.setViewportSize({ width: 800, height: 900 })
+        await setReadingStyle(page, "Dual-stitched")
+
+        await page.goto("/")
+        await page
+          .locator("[data-mushaf]")
+          .waitFor({ state: "visible", timeout: 15_000 })
+
+        await expect(page.locator("[data-mushaf]")).not.toHaveAttribute(
+          "data-dual-stitched",
+          "true",
+        )
+        await expect(page.locator(".mushaf-page-text")).toHaveCount(1)
+
+        await expect(
+          // .first() because React StrictMode's dev-only double-effect
+          page.getByText("Dual-stitched unavailable").first(),
+        ).toBeVisible({ timeout: 5000 })
+      })
+
+      test("gesture navigation steps by 2 pages", async ({ page }) => {
+        await page.setViewportSize({ width: 1600, height: 1000 })
+        await setReadingStyle(page, "Dual-stitched")
+
+        await page.goto("/")
+        await page
+          .locator("[data-mushaf]")
+          .waitFor({ state: "visible", timeout: 15_000 })
+        await expect(page.locator("[data-mushaf]")).toHaveAttribute(
+          "data-page",
+          "1",
+        )
+
+        const box = await page.locator("[data-mushaf]").boundingBox()
+        const y = box!.y + box!.height / 2
+        const startX = box!.x + box!.width * 0.15
+        await dragHorizontally(page, startX, startX + 150, y)
+
+        await expect(page.locator("[data-mushaf]")).toHaveAttribute(
+          "data-page",
+          "3",
+        )
+      })
+
+      test("dual frame borders are correct", async ({ page }) => {
+        await page.setViewportSize({ width: 1600, height: 1000 })
+        await setReadingStyle(page, "Dual-stitched")
+
+        await page.goto("/")
+        await page
+          .locator("[data-mushaf]")
+          .waitFor({ state: "visible", timeout: 15_000 })
+
+        const frames = await getFrameBorderOrientations(page)
+        expect(frames).toHaveLength(2)
+        for (const frame of frames) {
+          expect(frame.direction).toBe("ltr")
+          expect(frame.topLeftX).not.toBeNull()
+          expect(frame.topRightX).not.toBeNull()
+          expect(frame.topLeftX!).toBeLessThan(frame.topRightX!)
+        }
+      })
+
+      test("last page still shows two slots", async ({ page }) => {
+        await page.setViewportSize({ width: 1600, height: 1000 })
+        await setReadingStyle(page, "Dual-stitched")
+
+        await page.goto("/#/m/madinah/604")
+        await page
+          .locator("[data-mushaf]")
+          .waitFor({ state: "visible", timeout: 15_000 })
+        await expect(page.locator("[data-mushaf]")).toHaveAttribute(
+          "data-dual-stitched",
+          "true",
+        )
+
+        await expect(page.locator(".mushaf-half-frame")).toHaveCount(2)
+        await expect(page.locator(".mushaf-page-text")).toHaveCount(1)
+      })
     })
   })
 })

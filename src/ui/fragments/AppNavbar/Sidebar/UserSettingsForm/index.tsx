@@ -2,19 +2,19 @@ import { Asset } from "@constants/assets"
 import { ArabicFonts, getAllPossibleFontSizeOptions } from "@constants/fonts"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
 import { SAJDAH_SCHOOLS } from "@constants/SajdahVerse"
-import { BasmalaPosition, Locale } from "@constants/settings"
+import { BasmalaPosition, Locale, ReadingStyle } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import useExegesisOptions from "@hooks/tools/useExegesisOptions"
 import useFonts from "@hooks/tools/useFonts"
 import useProstrationVersesSchoolOptions from "@hooks/tools/useProstrationVersesSchoolOptions"
 import { isProperThemeValue, messages } from "@i18n/message"
 import { RiArrowRightSLine, RiBookOpenLine } from "@remixicon/react"
+import Tracker from "@services/Tracker"
 import { ComboboxOption } from "@systatum/coneto/combobox"
 import { ScreenProps } from "@systatum/coneto/screen-transition"
 import { FormFieldGroup, StatefulForm } from "@systatum/coneto/stateful-form"
 import { useTheme } from "@systatum/coneto/theme"
 import { Screen } from "@ui/index"
-import Tracker from "@services/Tracker"
 import { useMemo } from "react"
 import { useIntl } from "react-intl"
 import { css } from "styled-components"
@@ -30,6 +30,7 @@ export default function UserSettingsForm({
     setFont,
     setLocale,
     setBasmalaPosition,
+    setReadingStyle,
     setWordByWordTranslations,
     setShowPageIndicator,
     setAlphabeticalChaptersSorting,
@@ -48,6 +49,7 @@ export default function UserSettingsForm({
     arabicFontSize: String(userSettings.font.arabic.size),
     locale: userSettings.locale,
     basmalaPosition: userSettings.basmalaPosition,
+    readingStyle: userSettings.readingStyle,
     wbwTranslations: userSettings.wbwTranslations,
     showPageIndicator: userSettings.showPageIndicator ?? true,
     alphabeticalChaptersSorting:
@@ -63,25 +65,40 @@ export default function UserSettingsForm({
   const sajdahSchoolOptions = useProstrationVersesSchoolOptions()
 
   const FIELDS: FormFieldGroup[] = [
-    {
-      name: "theme",
-      title: formatMessage({ id: messages.theme.title }),
-      type: "combo",
-      combobox: {
-        mobile: true,
-        options: ["light", "dark"]
-          .filter((t) => isProperThemeValue(t))
-          .map(
-            (t) =>
-              ({
-                text: formatMessage({
-                  id: messages.theme[t],
-                }),
-                value: t,
-              }) satisfies ComboboxOption,
-          ),
+    [
+      {
+        name: "theme",
+        title: formatMessage({ id: messages.theme.title }),
+        type: "combo",
+        combobox: {
+          mobile: true,
+          options: ["light", "dark"]
+            .filter((t) => isProperThemeValue(t))
+            .map(
+              (t) =>
+                ({
+                  text: formatMessage({
+                    id: messages.theme[t],
+                  }),
+                  value: t,
+                }) satisfies ComboboxOption,
+            ),
+        },
       },
-    },
+
+      {
+        name: "readingStyle",
+        title: formatMessage({ id: messages.readingStyle.title }),
+        type: "combo",
+        combobox: {
+          mobile: true,
+          options: Object.values(ReadingStyle).map((r) => ({
+            text: formatMessage({ id: messages.readingStyle[r] }),
+            value: r,
+          })),
+        },
+      },
+    ],
 
     [
       {
@@ -311,6 +328,12 @@ export default function UserSettingsForm({
 
           setBasmalaPosition(currentState.basmalaPosition)
           captureSettingChange()
+        } else if (FormState.ReadingStyle in currentState) {
+          const value = currentState.readingStyle
+          if (!Object.values(ReadingStyle).includes(value)) return
+
+          setReadingStyle(currentState.readingStyle)
+          captureSettingChange()
         } else if (FormState.WordByWordTranslations in currentState) {
           const values: WordTranslationOption[] = currentState.wbwTranslations
 
@@ -361,6 +384,7 @@ export const FormState = {
   ArabicFontSize: "arabicFontSize",
   Locale: "locale",
   BasmalaPosition: "basmalaPosition",
+  ReadingStyle: "readingStyle",
   WordByWordTranslations: "wbwTranslations",
   ShowPageIndicator: "showPageIndicator",
   AlphabeticalChaptersSorting: "alphabeticalChaptersSorting",
@@ -375,6 +399,7 @@ type FormState = {
   [FormState.ArabicFontSize]: string
   [FormState.Locale]: string
   [FormState.BasmalaPosition]: BasmalaPosition
+  [FormState.ReadingStyle]: ReadingStyle
   [FormState.WordByWordTranslations]: WordTranslationOption[]
   [FormState.ShowPageIndicator]: boolean
   [FormState.AlphabeticalChaptersSorting]: boolean

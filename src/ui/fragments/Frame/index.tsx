@@ -50,6 +50,9 @@ const Grid = styled.div<{
   position: relative;
   width: 100%;
   height: 100%;
+  /* without pinning it, an rtl ancestor flips which physical side each grid
+     column renders on, swapping the corner/edge art onto the wrong side */
+  direction: ltr;
   display: grid;
   grid-template-columns:
     ${({ $thicknessX }) => $thicknessX} 1fr

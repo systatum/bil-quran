@@ -16,6 +16,8 @@ interface NavigatorProps {
   /** Chapter shown in the pill's center; the page's first chapter. */
   chapterId: number | null
   visible: boolean
+  /** How many pages the prev/next buttons move by - 2 in dual-stitched mode. */
+  pageStep?: number
 }
 
 /** Finds which mushaf page contains a given chapter/verse, 1-indexed. */
@@ -39,6 +41,7 @@ export default function Navigator({
   totalPages,
   chapterId,
   visible,
+  pageStep = 1,
 }: NavigatorProps) {
   const navigate = useNavigate()
   const {
@@ -74,8 +77,8 @@ export default function Navigator({
       <Pill $theme={theme} $visible={visible}>
         <NavButton
           aria-label="previous page"
-          disabled={currentPage <= 1}
-          onClick={() => goToPage(currentPage - 1)}
+          disabled={currentPage - pageStep < 1}
+          onClick={() => goToPage(currentPage - pageStep)}
         >
           <RiArrowRightLine size={13} />
         </NavButton>
@@ -100,8 +103,8 @@ export default function Navigator({
 
         <NavButton
           aria-label="next page"
-          disabled={currentPage >= totalPages}
-          onClick={() => goToPage(currentPage + 1)}
+          disabled={currentPage + pageStep > totalPages}
+          onClick={() => goToPage(currentPage + pageStep)}
         >
           <RiArrowLeftLine size={13} />
         </NavButton>

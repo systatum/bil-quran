@@ -7,7 +7,12 @@ import {
 import { ArabicFontFamily, ArabicFonts } from "@constants/fonts"
 import { HighlightColor } from "@constants/highlight"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
-import { BasmalaPosition, DEFAULT_LOCALE, Locale } from "@constants/settings"
+import {
+  BasmalaPosition,
+  DEFAULT_LOCALE,
+  Locale,
+  ReadingStyle,
+} from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import { ThoughtSchool } from "@constants/ThoughtSchool"
 import { resolveLocale } from "@i18n"
@@ -30,6 +35,7 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
   locale: DEFAULT_LOCALE,
   theme: "light",
   basmalaPosition: BasmalaPosition.Detached,
+  readingStyle: ReadingStyle.Detached,
   wbwTranslations: [WordTranslationOption.AmericanEnglish],
   showPageIndicator: true,
   alphabeticalChaptersSorting: false,
@@ -137,6 +143,10 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
 
   setBasmalaPosition(basmalaPosition) {
     get().partialUpdate({ basmalaPosition })
+  },
+
+  setReadingStyle(readingStyle) {
+    get().partialUpdate({ readingStyle })
   },
 
   setShowPageIndicator(show) {
@@ -322,6 +332,7 @@ export interface UserSettingsState {
   setLocale(locale: string): void
   setFont(font: DeepPartial<UserFontSettings>): void
   setBasmalaPosition(basmalaPosition: BasmalaPosition): void
+  setReadingStyle(readingStyle: ReadingStyle): void
   setShowPageIndicator(show: boolean): void
   setAlphabeticalChaptersSorting(sort: boolean): void
   setShowTransliteration(show: boolean): void
@@ -405,6 +416,7 @@ export interface UserSettings {
   highlightedVerses: Record<string, HighlightColor>
 
   basmalaPosition: BasmalaPosition
+  readingStyle: ReadingStyle
 
   /**
    * Which language is going to be used for showing word-by-word translation

@@ -1,7 +1,6 @@
 import { DATABASE_KEY } from "@db/driver"
-import { expect } from "@playwright/test"
 import type { Locator, Page } from "playwright-core"
-import { dragHorizontally, waitUntilVisible } from "./interactivity"
+import { waitUntilVisible } from "./interactivity"
 
 export async function visitFresh(page: Page) {
   // addInitScript runs before every navigation, making __isArabicWord available
@@ -164,46 +163,34 @@ export async function getTopMostVerse(
   return val
 }
 
-export async function gotoMushafPage(page: Page, pageNumber: number) {
-  await page.goto(`/#/m/madinah/${pageNumber}`)
-  await page
-    .locator("[data-mushaf]")
-    .waitFor({ state: "visible", timeout: 30_000 })
-  await page
-    .locator('[aria-label="verse-bookmarker-btn"]')
-    .first()
-    .waitFor({ state: "visible", timeout: 15_000 })
+export interface FrameBorderOrientation {
+  /** The Frame's own grid `direction` - must stay "ltr" */
+  direction: string | null
+  topLeftX: number | null
+  topRightX: number | null
 }
 
-/**
- * Turns to the next mushaf page the way a real reader would: dragging from
- * the left half rightward, same gesture the app's own page-turn binding
- * listens for. Returns whatever page number the app actually lands on,
- * read straight off the DOM rather than assumed, so a navigation bug shows
- * up as a mismatch instead of being silently trusted away.
- */
-export async function swipeToNextMushafPage(page: Page): Promise<number> {
-  const mushaf = page.locator("[data-mushaf]")
-  const previousPage = await mushaf.getAttribute("data-page")
+/** One entry per rendered mushaf Frame (1 in mono-stitched, 2 in dual-stitched). */
+export async function getFrameBorderOrientations(
+  page: Page,
+): Promise<FrameBorderOrientation[]> {
+  return page.evaluate(() => {
+    const mushaf = document.querySelector("[data-mushaf]")
+    if (!mushaf) return []
 
-  const box = await mushaf.boundingBox()
-  if (!box) throw new Error("[data-mushaf] has no bounding box")
-  const y = box.y + box.height / 2
-  const startX = box.x + box.width * 0.15
-  await dragHorizontally(page, startX, startX + 150, y)
+    const grids = Array.from(mushaf.querySelectorAll<HTMLElement>("*")).filter(
+      (el) => getComputedStyle(el).display === "grid",
+    )
 
-  await expect(mushaf).not.toHaveAttribute("data-page", previousPage ?? "", {
-    timeout: 15_000,
+    // markup order within each Frame is always [top-left, top-right, ...],
+    // regardless of direction - only where they actually render should flip
+    return grids.map((grid) => {
+      const imgs = Array.from(grid.querySelectorAll("img"))
+      return {
+        direction: getComputedStyle(grid).direction,
+        topLeftX: imgs[0]?.getBoundingClientRect().left ?? null,
+        topRightX: imgs[1]?.getBoundingClientRect().left ?? null,
+      }
+    })
   })
-  // the route param updates immediately, but the page's words are fetched
-  // async - wait for the text to actually land before reading it
-  await page.waitForFunction(
-    () =>
-      (document.querySelector(".mushaf-page-text")?.textContent ?? "").trim()
-        .length > 0,
-    { timeout: 15_000 },
-  )
-
-  const newPage = await mushaf.getAttribute("data-page")
-  return newPage ? parseInt(newPage, 10) : NaN
 }

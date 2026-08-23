@@ -29,3 +29,19 @@ export const BasmalaPosition = {
 
 export type BasmalaPosition =
   (typeof BasmalaPosition)[keyof typeof BasmalaPosition]
+
+/**
+ * How the Qur'an is presented on load and paged through.
+ */
+export const ReadingStyle = {
+  /** wbw QuranPaper, the classic verse-by-verse interlinear view. */
+  Detached: "det",
+
+  /** page-by-page Mushaf view, one page at a time. */
+  MonoStitched: "st-mono",
+
+  /** Mushaf view, two pages side by side like an open book. */
+  DualStitched: "st-dual",
+} as const
+
+export type ReadingStyle = (typeof ReadingStyle)[keyof typeof ReadingStyle]

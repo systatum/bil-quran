@@ -1,13 +1,17 @@
+import { ReadingStyle } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import useAppState from "@hooks/states/AppState"
 import usePaginationState from "@hooks/states/PaginationState"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
+import useToast from "@hooks/tools/useToast"
+import { messages } from "@i18n/message"
 import { RiArrowLeftLine, RiArrowRightLine, RiMenuLine } from "@remixicon/react"
 import { ScreenTransition } from "@systatum/coneto/screen-transition"
 import { useNavigate, useParams } from "@tanstack/react-router"
 import { Screen, SCREENS } from "@ui/index"
 import { useDrag } from "@use-gesture/react"
 import { useEffect, useMemo, useRef, useState } from "react"
+import { useIntl } from "react-intl"
 import styled, { css } from "styled-components"
 import MushafFrame from "../MushafFrame"
 import Navigator from "./Navigator"
@@ -25,6 +29,9 @@ const SETTINGS_REVEAL_THRESHOLD = TURN_THRESHOLD + 180
 // much smaller than TURN_THRESHOLD since it's meant to feel immediate
 const REVEAL_THRESHOLD = 10
 
+// "bigger than an iPad" - below this, dual-stitched decays to mono-stitched
+const DUAL_STITCH_BREAKPOINT = 1024
+
 type TurnDirection = "next" | "prev"
 type DragFeedback =
   | { kind: "turn"; direction: TurnDirection; targetPage: number }
@@ -36,10 +43,12 @@ export default function Mushaf() {
   const pageNumber = page ? parseInt(page) : null
   const navigate = useNavigate()
   const {
-    userSettings: { theme },
+    userSettings: { theme, readingStyle },
   } = useUserSettingsState()
   const { juzPages, loadPagination } = usePaginationState()
   const { activeScreens, setActiveScreens } = useAppState()
+  const { warningToast } = useToast()
+  const { formatMessage } = useIntl()
 
   useEffect(() => {
     loadPagination()
@@ -47,10 +56,36 @@ export default function Mushaf() {
 
   const allPages = useMemo(() => juzPages.flat(), [juzPages])
   const totalPages = allPages.length
-  const currentPageChapterId =
+  const rightPageChapterId =
     pageNumber != null
       ? (allPages[pageNumber - 1]?.chapterIds[0] ?? null)
       : null
+
+  // checked live, re-evaluates dual-stitched capability
+  const [isWideEnoughForDual, setIsWideEnoughForDual] = useState(
+    () =>
+      window.matchMedia(`(min-width: ${DUAL_STITCH_BREAKPOINT + 1}px)`).matches,
+  )
+  useEffect(() => {
+    const mq = window.matchMedia(`(min-width: ${DUAL_STITCH_BREAKPOINT + 1}px)`)
+    const handler = (e: MediaQueryListEvent) =>
+      setIsWideEnoughForDual(e.matches)
+    mq.addEventListener("change", handler)
+    return () => mq.removeEventListener("change", handler)
+  }, [])
+
+  const wantsDualStitched = readingStyle === ReadingStyle.DualStitched
+  const isDualActive = wantsDualStitched && isWideEnoughForDual
+  const pageStep = isDualActive ? 2 : 1
+
+  useEffect(() => {
+    if (wantsDualStitched && !isWideEnoughForDual) {
+      warningToast(
+        formatMessage({ id: messages.readingStyle.dualUnavailableMessage }),
+        formatMessage({ id: messages.readingStyle.dualUnavailableTitle }),
+      )
+    }
+  }, [wantsDualStitched, isWideEnoughForDual])
 
   const [dragFeedback, setDragFeedback] = useState<DragFeedback>(null)
   const [navigatorVisible, setNavigatorVisible] = useState(false)
@@ -89,7 +124,8 @@ export default function Mushaf() {
       const isSettingsReveal =
         direction === "prev" && Math.abs(mx) >= SETTINGS_REVEAL_THRESHOLD
 
-      const targetPage = direction === "next" ? pageNumber + 1 : pageNumber - 1
+      const targetPage =
+        direction === "next" ? pageNumber + pageStep : pageNumber - pageStep
       const isValidTurn =
         direction != null &&
         !isSettingsReveal &&
@@ -126,20 +162,39 @@ export default function Mushaf() {
         style={{ touchAction: "pan-y" }}
         data-mushaf={mushaf}
         data-page={pageNumber ?? undefined}
+        data-dual-stitched={isDualActive || undefined}
       >
-        <FrameBox $blurred={dragFeedback != null}>
-          <MushafFrame>
-            {pageNumber != null && <PageText pageNumber={pageNumber} />}
-          </MushafFrame>
-        </FrameBox>
+        {isDualActive && pageNumber != null ? (
+          <DualFrameBox $blurred={dragFeedback != null}>
+            <HalfFrame className="mushaf-half-frame">
+              <MushafFrame>
+                <PageText pageNumber={pageNumber} forceTabletScale />
+              </MushafFrame>
+            </HalfFrame>
+            <HalfFrame className="mushaf-half-frame">
+              <MushafFrame>
+                {pageNumber + 1 <= totalPages && (
+                  <PageText pageNumber={pageNumber + 1} forceTabletScale />
+                )}
+              </MushafFrame>
+            </HalfFrame>
+          </DualFrameBox>
+        ) : (
+          <FrameBox $blurred={dragFeedback != null}>
+            <MushafFrame>
+              {pageNumber != null && <PageText pageNumber={pageNumber} />}
+            </MushafFrame>
+          </FrameBox>
+        )}
 
         {mushaf != null && pageNumber != null && (
           <Navigator
             mushaf={mushaf}
             currentPage={pageNumber}
             totalPages={totalPages}
-            chapterId={currentPageChapterId}
+            chapterId={rightPageChapterId}
             visible={navigatorVisible}
+            pageStep={pageStep}
           />
         )}
 
@@ -213,6 +268,23 @@ const FrameBox = styled.div<{ $blurred: boolean }>`
   height: 100%;
   filter: ${({ $blurred }) => ($blurred ? "blur(4px)" : "none")};
   transition: filter 0.15s ease-out;
+`
+
+/** rtl open-book style, page n lands on the right and n+1 on the left */
+const DualFrameBox = styled.div<{ $blurred: boolean }>`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  direction: rtl;
+  gap: 8px;
+  filter: ${({ $blurred }) => ($blurred ? "blur(4px)" : "none")};
+  transition: filter 0.15s ease-out;
+`
+
+const HalfFrame = styled.div`
+  flex: 1;
+  min-width: 0;
+  height: 100%;
 `
 
 const TurnOverlay = styled.div`
