@@ -1,11 +1,13 @@
 import { ThemeMode } from "@constants/theme"
 import usePaginationState from "@hooks/states/PaginationState"
-import useUserSettingsState, { FontSetting } from "@hooks/states/UserSettingsState"
+import useUserSettingsState, {
+  FontSetting,
+} from "@hooks/states/UserSettingsState"
 import useWordsState from "@hooks/states/WordsState"
 import { Fragment, useEffect, useMemo } from "react"
 import styled, { css } from "styled-components"
-import VerseMarker from "../VerseMarker"
 import { Bismillah } from "../QuranPaper/VerseRow/Bismillah"
+import VerseMarker from "../VerseMarker"
 
 interface PageTextProps {
   pageNumber: number
@@ -18,6 +20,13 @@ interface PageVerse {
 }
 
 const LINE_HEIGHT = 2
+
+// viewport width tiers the text and verse marker both scale down at, so a
+// smaller screen fits more of the page without needing to zoom
+const PHONE_BREAKPOINT = 768 // iPad mini and narrower
+const TABLET_BREAKPOINT = 1024 // up to iPad Pro
+const PHONE_SCALE = 0.48 // 52% reduction
+const TABLET_SCALE = 0.8 // 20% reduction
 
 export default function PageText({ pageNumber }: PageTextProps) {
   const { juzPages, loadPagination } = usePaginationState()
@@ -71,7 +80,17 @@ export default function PageText({ pageNumber }: PageTextProps) {
             containerStyle={css`
               display: inline-flex;
               vertical-align: middle;
-              margin: 0 6px;
+
+              /* zoom, not transform: scale - transform only repaints
+                 smaller, it doesn't shrink the marker's own layout box,
+                 so it would still force the line taller than the text */
+              @media (max-width: ${PHONE_BREAKPOINT}px) {
+                zoom: ${PHONE_SCALE};
+              }
+              @media (min-width: ${PHONE_BREAKPOINT +
+                1}px) and (max-width: ${TABLET_BREAKPOINT}px) {
+                zoom: ${TABLET_SCALE};
+              }
             `}
           />{" "}
         </Fragment>
@@ -92,28 +111,32 @@ const PageWrapper = styled.div<{ $font: FontSetting; $theme: ThemeMode }>`
   text-align: justify;
   line-height: ${LINE_HEIGHT};
   font-size: ${({ $font }) => $font.size}px;
-  font-family:
-    "${({ $font }) => $font.family}", "NotoNaskhArabic", serif;
+  font-family: "${({ $font }) => $font.family}", "NotoNaskhArabic", serif;
   color: ${({ $theme }) => ($theme === "dark" ? "#d8c7a3" : "#1f1f1f")};
   background-color: ${({ $theme }) =>
     $theme === "dark" ? "#181818" : "#f6f1e7"};
 
-  /* one ruled line per rendered text line, independent of verse boundaries,
-     via a repeating tile colored only in its last 1px. background-clip must
-     also be content-box, or the pattern bleeds backward into the padding
-     above and can show as a stray line above the first line of text */
+  /* background-clip must also be content-box, or the pattern
+     bleeds backward into the padding above and shows as a stray top line */
   background-origin: content-box;
   background-clip: content-box;
-  background-image: ${({ $font, $theme }) => {
-    const lineHeight = $font.size * LINE_HEIGHT
+  background-image: ${({ $theme }) => {
     const lineColor =
       $theme === "dark" ? "rgba(216, 199, 163, 0.3)" : "rgba(31, 31, 31, 0.25)"
     return `repeating-linear-gradient(
       to bottom,
       transparent 0,
-      transparent ${lineHeight - 1}px,
-      ${lineColor} ${lineHeight - 1}px,
-      ${lineColor} ${lineHeight}px
+      transparent calc(${LINE_HEIGHT}em - 1px),
+      ${lineColor} calc(${LINE_HEIGHT}em - 1px),
+      ${lineColor} ${LINE_HEIGHT}em
     )`
   }};
+
+  @media (max-width: ${PHONE_BREAKPOINT}px) {
+    font-size: ${({ $font }) => $font.size * PHONE_SCALE}px;
+  }
+  @media (min-width: ${PHONE_BREAKPOINT +
+    1}px) and (max-width: ${TABLET_BREAKPOINT}px) {
+    font-size: ${({ $font }) => $font.size * TABLET_SCALE}px;
+  }
 `
