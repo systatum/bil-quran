@@ -2,7 +2,11 @@ import { Rendering } from "@constants/records/RenderingRecord"
 import { expect, Page, test } from "@playwright/test"
 import { loadPaginationStyle, loadQuranWords } from "./tools/data"
 import { dragHorizontally, dragVertically } from "./tools/interactivity"
-import { gotoMushafPage, swipeToNextMushafPage } from "./tools/state"
+import {
+  getBismillahFontSize,
+  gotoMushafPage,
+  swipeToNextMushafPage,
+} from "./tools/state"
 
 /** specifically test the Mushaf component, where Qur'an is rendered page by page */
 test.describe("Mushaf", () => {
@@ -82,9 +86,7 @@ test.describe("Mushaf", () => {
   })
 
   test.describe("Navigator", () => {
-    test("dragging from the left edge rightward goes to the next page", async ({
-      page,
-    }) => {
+    test("rightward drag goes to the next page", async ({ page }) => {
       await gotoMushafPage(page, 1)
 
       const box = await page.locator("[data-mushaf]").boundingBox()
@@ -101,9 +103,7 @@ test.describe("Mushaf", () => {
       )
     })
 
-    test("dragging from the right edge leftward goes to the previous page", async ({
-      page,
-    }) => {
+    test("leftward drag goes to the previous page", async ({ page }) => {
       await gotoMushafPage(page, 2)
 
       const box = await page.locator("[data-mushaf]").boundingBox()
@@ -163,6 +163,82 @@ test.describe("Mushaf", () => {
 
         await expect.poll(() => getNavigatorOpacity(page)).toBe("0")
       })
+    })
+  })
+
+  test.describe("Settings reveal gesture", () => {
+    test("short drag still turns the page", async ({ page }) => {
+      await gotoMushafPage(page, 3)
+
+      const box = await page.locator("[data-mushaf]").boundingBox()
+      expect(box).not.toBeNull()
+      const y = box!.y + box!.height / 2
+      const startX = box!.x + box!.width * 0.85
+
+      // past the 80px turn threshold but short of the 260px reveal distance
+      await dragHorizontally(page, startX, startX - 100, y)
+
+      await expect(page.locator("[data-mushaf]")).toHaveAttribute(
+        "data-page",
+        "2",
+      )
+      await expect(
+        page.locator('[aria-label="settings-backup-button"]'),
+      ).toHaveCount(0)
+    })
+
+    test("long drag opens Settings, not a page turn", async ({ page }) => {
+      await gotoMushafPage(page, 3)
+
+      const box = await page.locator("[data-mushaf]").boundingBox()
+      expect(box).not.toBeNull()
+      const y = box!.y + box!.height / 2
+      const startX = box!.x + box!.width * 0.85
+
+      // well past the 260px reveal distance
+      await dragHorizontally(page, startX, startX - 300, y)
+
+      // still on the same mushaf page underneath - Settings opens as an
+      // overlay here, it doesn't navigate away to the main app shell
+      await expect(page.locator("[data-mushaf]")).toHaveAttribute(
+        "data-page",
+        "3",
+      )
+      await expect(
+        page.locator('[aria-label="settings-backup-button"]'),
+      ).toBeVisible({ timeout: 10_000 })
+    })
+
+    test("shows menu icon only past reveal distance", async ({ page }) => {
+      await gotoMushafPage(page, 3)
+
+      const box = await page.locator("[data-mushaf]").boundingBox()
+      expect(box).not.toBeNull()
+      const y = box!.y + box!.height / 2
+      const startX = box!.x + box!.width * 0.85
+
+      await page.mouse.move(startX, y)
+      await page.mouse.down()
+
+      // past the 80px turn threshold, short of the 260px reveal distance:
+      // should still look like an ordinary page turn, no menu icon yet
+      await page.mouse.move(startX - 100, y)
+      await expect(page.locator(".settings-reveal-overlay")).toHaveCount(0)
+
+      // keep dragging past the reveal distance
+      await page.mouse.move(startX - 300, y)
+      await expect(page.locator(".settings-reveal-overlay")).toBeVisible()
+
+      // releasing here should not turn the page - it opens Settings instead,
+      // right on top of the same mushaf page
+      await page.mouse.up()
+      await expect(page.locator("[data-mushaf]")).toHaveAttribute(
+        "data-page",
+        "3",
+      )
+      await expect(
+        page.locator('[aria-label="settings-backup-button"]'),
+      ).toBeVisible({ timeout: 10_000 })
     })
   })
 
