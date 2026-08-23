@@ -31,7 +31,7 @@ class RunpodAPIClient:
     @dataclass(kw_only=True)
     class Setting:
         base_url: str = "https://api.runpod.io/v2"
-        api_key: str | None = None
+        management_key: str | None = None
 
     setting: Setting
     session: requests.Session
@@ -46,9 +46,9 @@ class RunpodAPIClient:
         self.session.headers = typing.cast(
             Any, {"Content-Type": "application/json", "accept": "application/json"}
         )
-        if self.setting.api_key is not None:
+        if self.setting.management_key is not None:
             self.session.headers = self.session.headers | typing.cast(
-                Any, {"Authorization": f"Bearer {self.setting.api_key}"}
+                Any, {"Authorization": f"Bearer {self.setting.management_key}"}
             )
 
     def list_pods(self) -> list[Pod]:

@@ -4,33 +4,36 @@ from proxy.runpod_client import (
     RunpodAPIErrorType,
 )
 from proxy.runpod_struct import Pod
-from shared.apiclient import APIClient as BackendAPIClient
+from shared.apiclient import APIClient as BackendAPIClient, APIError, APIErrorType
 from shared.util import printerr
+from shared.env import ProxyEnv
 from pathlib import Path
 from datetime import datetime, timezone
-from subprocess import Popen, run
+from subprocess import Popen
 from signal import SIGTERM
 from typing import Optional
 from time import sleep
 from traceback import print_exc
 
-WORKDIR = Path("./proxy")
+WORKDIR = Path("./proxy/proxy")
 TEMPLATE_FILENAME = "TemplateCaddyfile"
 NO_ROUTE_FILENAME = "NoRouteCaddyfile"
 CADDY_FILENAME = "Caddyfile"
 CADDY_PORT = 8049
 
-MAX_POD_LIFETIME_SECONDS = 60 * 60 * 5  # 5 hours
-MAX_POD_INACTIVITY_SECONDS = 60 * 30  # 30 minutes
+# MAX_POD_LIFETIME_SECONDS = 60 * 60 * 5  # 5 hours
+# MAX_POD_INACTIVITY_SECONDS = 60 * 30  # 30 minutes
+MAX_POD_LIFETIME_SECONDS = 60 * 20
+MAX_POD_INACTIVITY_SECONDS = 60 * 5
 
 
 def pod():
-    with open(".runpod-management-key") as file:
-        api_key: str = file.read().strip()
-    with open(".runpod-fastapi-token") as file:
-        api_token: str = file.read().strip()
+    management_key: str = ProxyEnv.get().RUNPOD_MANAGEMENT_KEY
+    api_token: str = ProxyEnv.get().API_KEY_REMOTE
 
-    client: RunpodAPIClient = RunpodAPIClient(RunpodAPIClient.Setting(api_key=api_key))
+    client: RunpodAPIClient = RunpodAPIClient(
+        RunpodAPIClient.Setting(management_key=management_key)
+    )
     fastapi_client: BackendAPIClient = BackendAPIClient(
         BackendAPIClient.Setting(
             base_url=f"http://127.0.0.1:{CADDY_PORT}", token=api_token
@@ -96,9 +99,9 @@ def pod():
             else:
                 print("No pods running, disabling proxy behaviour")
                 write_no_route(CADDY_PORT)
-            run(["caddy", "reload", "-c", str(WORKDIR / CADDY_FILENAME)])
 
         if active_pod is None:
+            print("No pods running")
             continue
 
         assert isinstance(active_pod.started_at, datetime)
@@ -106,6 +109,7 @@ def pod():
 
         now: datetime = datetime.now(timezone.utc)
         pod_lifetime: int = int((now - pod_start_timestamp).total_seconds())
+
         if pod_lifetime > MAX_POD_LIFETIME_SECONDS:
             print(
                 "Shutting down pod because it has lived for {:_} seconds, {:_} seconds past max lifetime of {:_}".format(
@@ -124,6 +128,14 @@ def pod():
                 print_exc()
                 continue
             continue
+        else:
+            print(
+                "Pod has lived for {:_} seconds, {:_} seconds until max lifetime of {:_}".format(
+                    pod_lifetime,
+                    MAX_POD_LIFETIME_SECONDS - pod_lifetime,
+                    MAX_POD_LIFETIME_SECONDS,
+                )
+            )
 
         try:
             last_activity_timestamp = fastapi_client.health().last_activity_timestamp
@@ -148,7 +160,24 @@ def pod():
                     print_exc()
                     continue
                 continue
-        except Exception:
+            else:
+                print(
+                    "Pod has been inactive for {:_} seconds, {:_} seconds until max inactivity of {:_}".format(
+                        pod_inactivity,
+                        MAX_POD_INACTIVITY_SECONDS - pod_inactivity,
+                        MAX_POD_INACTIVITY_SECONDS,
+                    )
+                )
+        except APIError as e:
+            if e.error_type == APIErrorType.NOT_SERVER_RESPONSE_ERROR:
+                printerr(
+                    "Not our server that responded: {}".format(
+                        e.error_message[:200] + "..."
+                        if len(e.error_message) > 200
+                        else ""
+                    )
+                )
+                continue
             import traceback
 
             traceback.print_exc()
@@ -156,7 +185,7 @@ def pod():
 
 def main():
     write_no_route(CADDY_PORT)
-    proc = Popen(["caddy", "run", "-c", str(WORKDIR / CADDY_FILENAME)])
+    proc = Popen(["caddy", "run", "-wc", str(WORKDIR / CADDY_FILENAME)])
 
     pod()
 

@@ -14,7 +14,7 @@ T = TypeVar("T")
 class APIErrorType(Enum):
     UNKNOWN_ERROR = 1
     HTTP_REQUEST_ERROR = 2
-    FASTAPI_ERROR = 3
+    NOT_SERVER_RESPONSE_ERROR = 3
     APPLICATION_ERROR = 4
     MALFORMED_RESPONSE_ERROR = 5
 
@@ -153,7 +153,7 @@ class APIClient:
         self,
         path: str,
         adapter: TypeAdapter[T],
-        json_data: dict | None = None,
+        data: str | None = None,
         force_post: bool = False,
     ) -> T:
         """
@@ -210,7 +210,7 @@ class APIClient:
             raise APIError(
                 http_code=response.status_code,
                 error_message=error_message,
-                error_type=APIErrorType.FASTAPI_ERROR,
+                error_type=APIErrorType.NOT_SERVER_RESPONSE_ERROR,
             )
 
         try:

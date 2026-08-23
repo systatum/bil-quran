@@ -14,4 +14,7 @@ class Setting:
     LLM_GPU_ENABLED: bool
     LLM_CONTEXT_SIZE: int
 
+    # Max loaded at a time. 0 means it will get unloaded as soon as there is no job left
+    LLM_MAX_LOADED: int
+
     APP_TOKEN: str
