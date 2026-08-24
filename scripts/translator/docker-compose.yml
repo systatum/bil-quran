@@ -1,0 +1,21 @@
+services:
+  translator:
+    image: seestarz/bil-quran_translator
+    container_name: bil-quran_translator
+    build: .
+    volumes:
+      - ${COMPOSE_VOLUME:-./mount}:/workspace:rw
+    ports:
+      - "8000:8000"
+    gpus: all
+    environment:
+      # setting_loader.py will use this
+      - ALT_SETTING_SYS_PATH=/workspace
+      - ALT_SETTING_PYTHON_PATH=mount.setting
+
+      # setting.py may use this
+      - MOUNT_ROOT=/workspace
+      - APP_TOKEN=default_token
+
+      # where hf will store artifacts, make sure it's on the volume and consistent
+      - HF_HOME=/workspace/hf_cache
