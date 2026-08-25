@@ -31,7 +31,7 @@ const MARKER_SIZE = 42 // native width/height of the CircleButton, in px
 
 // viewport width tiers the text and verse marker both scale down at, so a
 // smaller screen fits more of the page without needing to zoom
-const PHONE_BREAKPOINT = 768 // iPad mini and narrower
+const PHONE_BREAKPOINT = 568
 const TABLET_BREAKPOINT = 1024 // up to iPad Pro
 const PHONE_SCALE = 0.48 // 52% reduction
 const TABLET_SCALE = 0.8 // 20% reduction
