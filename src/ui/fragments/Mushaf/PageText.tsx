@@ -1,11 +1,16 @@
 import { ThemeMode } from "@constants/theme"
 import usePaginationState from "@hooks/states/PaginationState"
+import usePaperDialogState from "@hooks/states/PaperDialogState"
 import useUserSettingsState, {
   FontSetting,
 } from "@hooks/states/UserSettingsState"
 import useWordsState from "@hooks/states/WordsState"
-import { Fragment, useEffect, useMemo } from "react"
+import useWordOccurrencesFinder from "@hooks/tools/useWordOccurrencesFinder"
+import { useTranslatedWords } from "@hooks/tools/useWordTranslations"
+import { haptic } from "@utils/haptic"
+import { Fragment, useEffect, useMemo, useRef } from "react"
 import styled, { css } from "styled-components"
+import { WordCell } from "../QuranPaper/VerseRow"
 import { Bismillah } from "../QuranPaper/VerseRow/Bismillah"
 import VerseMarker from "../VerseMarker"
 
@@ -18,7 +23,7 @@ interface PageTextProps {
 interface PageVerse {
   chapterId: number
   verseNumber: number
-  text: string
+  words: WordCell[]
 }
 
 const LINE_HEIGHT = 2
@@ -47,8 +52,14 @@ export default function PageText({
   const { juzPages, loadPagination } = usePaginationState()
   const { words, loadWords } = useWordsState()
   const {
-    userSettings: { font, theme },
+    userSettings: { font, theme, wbwTranslations },
   } = useUserSettingsState()
+  const { openLexeme } = usePaperDialogState()
+  const findWordsOccurrences = useWordOccurrencesFinder()
+  const translatedWords = useTranslatedWords(words, wbwTranslations)
+
+  // to clear each press on a word for lexeme root detail
+  const wordTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     loadPagination()
@@ -70,16 +81,15 @@ export default function PageText({
       const [start, end] = page.verseNumbers[i]
       const result: PageVerse[] = []
       for (let verseNumber = start; verseNumber <= end; verseNumber++) {
-        const text = words
+        const verseWords = translatedWords
           .filter((w) => w.chapterId === chapterId && w.verse === verseNumber)
           .sort((a, b) => a.order - b.order)
-          .map((w) => w.token)
-          .join(" ")
-        if (text) result.push({ chapterId, verseNumber, text })
+        if (verseWords.length > 0)
+          result.push({ chapterId, verseNumber, words: verseWords })
       }
       return result
     })
-  }, [page, words])
+  }, [page, translatedWords])
 
   if (!page) return null
 
@@ -90,7 +100,7 @@ export default function PageText({
       $theme={theme}
       $forceTabletScale={forceTabletScale}
     >
-      {verses.map(({ chapterId, verseNumber, text }) => (
+      {verses.map(({ chapterId, verseNumber, words: verseWords }) => (
         <Fragment key={`${chapterId}:${verseNumber}`}>
           {Bismillah.isRenderableHere(verseNumber, chapterId) && (
             <Bismillah
@@ -118,7 +128,24 @@ export default function PageText({
               `}
             />
           )}
-          {text}{" "}
+          {verseWords.map((word) => (
+            <WordSpan
+              key={`${word.chapterId}-${word.verse}-${word.order}`}
+              // no stopPropagation here to support drag gesture for page turn, etc
+              onPointerDown={() => {
+                wordTimeoutRef.current = setTimeout(() => {
+                  haptic()
+                  openLexeme(word)
+                  findWordsOccurrences(word)
+                }, 500)
+              }}
+              onPointerUp={() => clearTimeout(wordTimeoutRef.current!)}
+              onPointerLeave={() => clearTimeout(wordTimeoutRef.current!)}
+              onPointerCancel={() => clearTimeout(wordTimeoutRef.current!)}
+            >
+              {word.token}{" "}
+            </WordSpan>
+          ))}
           <VerseMarker
             chapterId={chapterId}
             verseNumber={verseNumber}
@@ -177,6 +204,11 @@ export default function PageText({
     </PageWrapper>
   )
 }
+
+const WordSpan = styled.span.attrs({ className: "mushaf-word" })`
+  cursor: pointer;
+  user-select: none;
+`
 
 const PageWrapper = styled.div<{
   $font: FontSetting

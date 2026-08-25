@@ -50,6 +50,20 @@ export default function Mushaf() {
   const { warningToast } = useToast()
   const { formatMessage } = useIntl()
 
+  const currentScreen = activeScreens.at(-1)
+  const fullLayoutScreens: Screen[] = [
+    Screen.Export,
+    Screen.Import,
+    Screen.About,
+    Screen.ExegesisDetail,
+    Screen.ProstrationVersesDetail,
+    Screen.Sidebar,
+    Screen.PrivacyPolicy,
+    Screen.Contributors,
+  ]
+  const shouldUseFullLayout =
+    currentScreen !== undefined && fullLayoutScreens.includes(currentScreen)
+
   useEffect(() => {
     loadPagination()
   }, [])
@@ -235,16 +249,22 @@ export default function Mushaf() {
           `,
           containerStyle: css`
             border: none;
-            min-width: 400px;
-            max-width: 400px;
+            ${shouldUseFullLayout &&
+            css`
+              min-width: 400px;
+              max-width: 400px;
 
-            @media (max-width: 430px) {
-              min-width: 90vw;
-              max-width: 90vw;
-            }
+              @media (max-width: 430px) {
+                min-width: 90vw;
+                max-width: 90vw;
+              }
+            `}
           `,
           contentStyle: css`
-            background-color: ${theme === "dark" ? "#202b24" : "#e1dfda"};
+            ${shouldUseFullLayout &&
+            css`
+              background-color: ${theme === "dark" ? "#202b24" : "#e1dfda"};
+            `}
             padding: 0px;
           `,
         }}

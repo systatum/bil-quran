@@ -5,6 +5,7 @@ import {
   dragHorizontally,
   dragVertically,
   gotoMushafPage,
+  longPress,
   setReadingStyle,
   showNavigatorSearch,
   swipeToNextMushafPage,
@@ -364,6 +365,19 @@ test.describe("Mushaf", () => {
     })
   })
 
+  test.describe("Word long-press", () => {
+    test("show lexeme dialog on long tap on a word", async ({ page }) => {
+      await gotoMushafPage(page, 1)
+
+      const firstWord = page.locator(".mushaf-word").first()
+      await longPress(page, firstWord)
+
+      await expect(
+        page.locator('[aria-label="paper-dialog-content"]'),
+      ).toBeVisible({ timeout: 5000 })
+    })
+  })
+
   test.describe("Reading style", () => {
     test("mono-stitched redirects on load", async ({ page }) => {
       await setReadingStyle(page, "Mono-stitched")
@@ -536,9 +550,8 @@ async function getRenderedWords(page: Page): Promise<string[]> {
   return page.evaluate(() => {
     const container = document.querySelector(".mushaf-page-text")
     if (!container) return []
-    const text = Array.from(container.childNodes)
-      .filter((node) => node.nodeType === Node.TEXT_NODE)
-      .map((node) => node.textContent ?? "")
+    const text = Array.from(container.querySelectorAll(".mushaf-word"))
+      .map((el) => el.textContent ?? "")
       .join(" ")
     return text.split(/\s+/).filter(Boolean)
   })
