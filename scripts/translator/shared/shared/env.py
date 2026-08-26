@@ -67,6 +67,10 @@ class BackendEnv(Env):
 class ProxyEnv(Env):
     RUNPOD_MANAGEMENT_KEY: str
     API_KEY_REMOTE: str
+    WORKDIR: str
+    CADDY_PORT: int
+    MAX_POD_LIFETIME_SECONDS: int
+    MAX_POD_INACTIVITY_SECONDS: int
 
     @classmethod
     def get(cls) -> Self:
