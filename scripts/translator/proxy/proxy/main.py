@@ -15,16 +15,14 @@ from typing import Optional
 from time import sleep
 from traceback import print_exc
 
-WORKDIR = Path("./proxy/proxy")
+WORKDIR = Path(ProxyEnv.get().WORKDIR)
 TEMPLATE_FILENAME = "TemplateCaddyfile"
 NO_ROUTE_FILENAME = "NoRouteCaddyfile"
 CADDY_FILENAME = "Caddyfile"
-CADDY_PORT = 8049
+CADDY_PORT = ProxyEnv.get().CADDY_PORT
 
-# MAX_POD_LIFETIME_SECONDS = 60 * 60 * 5  # 5 hours
-# MAX_POD_INACTIVITY_SECONDS = 60 * 30  # 30 minutes
-MAX_POD_LIFETIME_SECONDS = 60 * 20
-MAX_POD_INACTIVITY_SECONDS = 60 * 5
+MAX_POD_LIFETIME_SECONDS = ProxyEnv.get().MAX_POD_LIFETIME_SECONDS
+MAX_POD_INACTIVITY_SECONDS = ProxyEnv.get().MAX_POD_INACTIVITY_SECONDS
 
 
 def pod():
