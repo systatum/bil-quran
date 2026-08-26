@@ -42,7 +42,7 @@ class ExperimentRunner:
         UUID is tied to the lifecycle of the result generation
 
         Raises:
-            ValueError if explicit_uuid and force_new is set
+            ValueError if both explicit_uuid and force_new is set
         """
         if explicit_uuid is not None and force_new:
             raise ValueError("Can not set explicit_uuid and force_new at the same time")
@@ -358,8 +358,7 @@ class ExperimentRunner:
                 translation=None,
                 metadata=ExperimentMetadata(
                     created_at=datetime.now(timezone.utc),
-                    success=False,
-                    error=error_message,
+                    error=ExperimentError(message=error_message, failed_at="translate"),
                     elapsed_seconds=end_time - start_time,
                 ),
             )
@@ -371,7 +370,6 @@ class ExperimentRunner:
             translation=translation,
             metadata=ExperimentMetadata(
                 created_at=datetime.now(timezone.utc),
-                success=True,
                 error=None,
                 elapsed_seconds=end_time - start_time,
             ),
@@ -383,6 +381,11 @@ class ExperimentRunner:
         metadata: ExperimentMetadata,
         allow_fail: bool = False,
     ) -> ExperimentCompleteRecord:
+        if not metadata.success:
+            return ExperimentCompleteRecord(
+                input_=translated.input_, result=None, metadata=metadata
+            )
+
         start_time = perf_counter()
         try:
             rating = self._client.rate(
@@ -404,8 +407,7 @@ class ExperimentRunner:
                 result=None,
                 metadata=ExperimentMetadata(
                     created_at=datetime.now(timezone.utc),
-                    success=False,
-                    error=error_message,
+                    error=ExperimentError(message=error_message, failed_at="rate"),
                     elapsed_seconds=metadata.elapsed_seconds + (end_time - start_time),
                 ),
             )
@@ -422,7 +424,6 @@ class ExperimentRunner:
             result=result,
             metadata=ExperimentMetadata(
                 created_at=datetime.now(timezone.utc),
-                success=True,
                 error=None,
                 elapsed_seconds=metadata.elapsed_seconds + (end_time - start_time),
             ),

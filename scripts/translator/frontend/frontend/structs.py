@@ -16,7 +16,7 @@ def uuid_field():
 
 @dataclass(kw_only=True)
 class Versioned:
-    version: Literal["2"] = "2"
+    version: Literal["3"] = "3"
 
 
 @dataclass(kw_only=True)
@@ -56,12 +56,27 @@ class ExperimentResult:
     rating: api.internal.Rating
 
 
+ExperimentErrorFailedAt: TypeAlias = Literal[
+    "translate",
+    "rate",
+]
+
+
+@dataclass(kw_only=True)
+class ExperimentError:
+    message: str
+    failed_at: ExperimentErrorFailedAt
+
+
 @dataclass(kw_only=True)
 class ExperimentMetadata:
     created_at: datetime = date_field()
-    success: bool
-    error: str | None
+    error: ExperimentError | None
     elapsed_seconds: float
+
+    @property
+    def success(self) -> bool:
+        return self.error is None
 
 
 @dataclass(kw_only=True)
@@ -130,6 +145,8 @@ __all__ = [
     "ExperimentText",
     "ExperimentInput",
     "ExperimentResult",
+    "ExperimentErrorFailedAt",
+    "ExperimentError",
     "ExperimentMetadata",
     "ExperimentTranslatedRecord",
     "ExperimentCompleteRecord",
