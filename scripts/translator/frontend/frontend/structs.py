@@ -72,8 +72,9 @@ class ExperimentError:
 @dataclass(kw_only=True)
 class ExperimentMetadata:
     created_at: datetime = date_field()
-    error: ExperimentError | None
-    elapsed_seconds: float
+    error: ExperimentError | None = None
+    recoverable_errors: list[ExperimentError] = dataclasses.field(default_factory=list)
+    elapsed_seconds: float = 0.0
 
     @property
     def success(self) -> bool:

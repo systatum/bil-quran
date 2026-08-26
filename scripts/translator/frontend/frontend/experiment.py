@@ -173,7 +173,9 @@ class ExperimentRunner:
                         text=text, language=language, setting=setting
                     )
 
-                    translated = self._translate(input=input, allow_fail=True)
+                    translated = self._translate(
+                        input=input, metadata=ExperimentMetadata(), allow_fail=True
+                    )
                     with open(
                         self._translated_record_filepath(batch_dir), "ab"
                     ) as file:
@@ -333,6 +335,7 @@ class ExperimentRunner:
     def _translate(
         self,
         input: ExperimentInput,
+        metadata: ExperimentMetadata,
         allow_fail: bool = False,
     ) -> ExperimentTranslatedRecord:
         start_time = perf_counter()
@@ -357,9 +360,10 @@ class ExperimentRunner:
                 input_=input,
                 translation=None,
                 metadata=ExperimentMetadata(
-                    created_at=datetime.now(timezone.utc),
+                    created_at=metadata.created_at,
                     error=ExperimentError(message=error_message, failed_at="translate"),
-                    elapsed_seconds=end_time - start_time,
+                    recoverable_errors=metadata.recoverable_errors,
+                    elapsed_seconds=metadata.elapsed_seconds + (end_time - start_time),
                 ),
             )
 
@@ -369,9 +373,10 @@ class ExperimentRunner:
             input_=input,
             translation=translation,
             metadata=ExperimentMetadata(
-                created_at=datetime.now(timezone.utc),
+                created_at=metadata.created_at,
                 error=None,
-                elapsed_seconds=end_time - start_time,
+                recoverable_errors=metadata.recoverable_errors,
+                elapsed_seconds=metadata.elapsed_seconds + (end_time - start_time),
             ),
         )
 
@@ -408,6 +413,7 @@ class ExperimentRunner:
                 metadata=ExperimentMetadata(
                     created_at=datetime.now(timezone.utc),
                     error=ExperimentError(message=error_message, failed_at="rate"),
+                    recoverable_errors=metadata.recoverable_errors,
                     elapsed_seconds=metadata.elapsed_seconds + (end_time - start_time),
                 ),
             )
@@ -425,6 +431,7 @@ class ExperimentRunner:
             metadata=ExperimentMetadata(
                 created_at=datetime.now(timezone.utc),
                 error=None,
+                recoverable_errors=metadata.recoverable_errors,
                 elapsed_seconds=metadata.elapsed_seconds + (end_time - start_time),
             ),
         )
