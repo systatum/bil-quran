@@ -56,6 +56,10 @@
     "title": "Show transliteration",
     "helper": "Show a Latin-script transliteration under each Arabic word"
   },
+  "forceFit": {
+    "title": "Force fit",
+    "helper": "Shrink the font until all text fits in the frame without scrolling"
+  },
   "fontCategory": {
     "shaddaStacked": "Shadda-stacked",
     "shaddaSeparable": "Allow diacritics separation",

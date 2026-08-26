@@ -49,6 +49,7 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
       size: 42.5,
     },
   },
+  forceFit: false,
   bookmarks: {
     categories: {},
     list: {},
@@ -159,6 +160,10 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
 
   setShowTransliteration(show) {
     get().partialUpdate({ showTransliteration: !!show })
+  },
+
+  setForceFit(forceFit) {
+    get().partialUpdate({ forceFit: !!forceFit })
   },
 
   setExegesis(ids) {
@@ -336,6 +341,7 @@ export interface UserSettingsState {
   setShowPageIndicator(show: boolean): void
   setAlphabeticalChaptersSorting(sort: boolean): void
   setShowTransliteration(show: boolean): void
+  setForceFit(forceFit: boolean): void
   setExegesis(ids: string[]): void
   setProstrationVersesSchools(schools: ThoughtSchool[]): void
   setHasSeenExegesisDialog(seen: boolean): void
@@ -388,6 +394,9 @@ export interface UserSettings {
    * both in the main QuranPaper view and the exegesis dialog's interlinear pane
    */
   showTransliteration: boolean
+
+  /** Whether to shrink the font till the whole page fits the Mushaf frame */
+  forceFit: boolean
 
   /**
    * IDs of the exegeses the user has activated (e.g. ["aliquli/en-US"]).

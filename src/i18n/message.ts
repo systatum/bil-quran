@@ -58,6 +58,10 @@ export const messages = {
     title: "showTransliteration.title",
     helper: "showTransliteration.helper",
   },
+  forceFit: {
+    title: "forceFit.title",
+    helper: "forceFit.helper",
+  },
   fontCategory: {
     shaddaStacked: "fontCategory.shaddaStacked",
     shaddaSeparable: "fontCategory.shaddaSeparable",

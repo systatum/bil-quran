@@ -37,6 +37,7 @@ export default function UserSettingsForm({
     setShowPageIndicator,
     setAlphabeticalChaptersSorting,
     setShowTransliteration,
+    setForceFit,
     setExegesis,
     setProstrationVersesSchools,
     userSettings,
@@ -57,6 +58,7 @@ export default function UserSettingsForm({
     alphabeticalChaptersSorting:
       userSettings.alphabeticalChaptersSorting ?? false,
     showTransliteration: userSettings.showTransliteration ?? false,
+    forceFit: userSettings.forceFit ?? false,
     exegesis: userSettings.exegesis,
     prostvSchools: userSettings.prostrationVersesSchools.map(String),
   }
@@ -120,6 +122,15 @@ export default function UserSettingsForm({
         type: "combo",
         placeholder: "Size of the font",
         combobox: { mobile: true, options: arabicFontSizeOptions },
+      },
+
+      {
+        name: "forceFit",
+        title: formatMessage({ id: messages.forceFit.title }),
+        helper: formatMessage({ id: messages.forceFit.helper }),
+        hidden: userSettings.readingStyle === ReadingStyle.Detached,
+        type: "toggle",
+        toggle: { mobile: true },
       },
     ],
 
@@ -371,6 +382,10 @@ export default function UserSettingsForm({
           const value = currentState.showTransliteration
           setShowTransliteration(value)
           captureSettingChange()
+        } else if (FormState.ForceFit in currentState) {
+          const value = currentState.forceFit
+          setForceFit(value)
+          captureSettingChange()
         } else if (FormState.Exegesis in currentState) {
           const values: string[] = currentState.exegesis
           if (!Array.isArray(values)) return
@@ -405,6 +420,7 @@ export const FormState = {
   ShowPageIndicator: "showPageIndicator",
   AlphabeticalChaptersSorting: "alphabeticalChaptersSorting",
   ShowTransliteration: "showTransliteration",
+  ForceFit: "forceFit",
   Exegesis: "exegesis",
   ProstrationVersesSchools: "prostvSchools",
 } as const
@@ -420,6 +436,7 @@ type FormState = {
   [FormState.ShowPageIndicator]: boolean
   [FormState.AlphabeticalChaptersSorting]: boolean
   [FormState.ShowTransliteration]: boolean
+  [FormState.ForceFit]: boolean
   [FormState.Exegesis]: string[]
   [FormState.ProstrationVersesSchools]: string[]
 }

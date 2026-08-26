@@ -56,6 +56,10 @@
     "title": "Tampilkan transliterasi",
     "helper": "Tampilkan cara baca setiap kata dalam al-Quran"
   },
+  "forceFit": {
+    "title": "Paksa muat halaman",
+    "helper": "Kecilkan font sampai seluruh halaman muat dalam bingkai"
+  },
   "fontCategory": {
     "shaddaStacked": "Tashdid-harakat setumpuk",
     "shaddaSeparable": "Tashdid-harakat fleksibel",

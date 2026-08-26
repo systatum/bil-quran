@@ -9,7 +9,7 @@ import useWordsState from "@hooks/states/WordsState"
 import useWordOccurrencesFinder from "@hooks/tools/useWordOccurrencesFinder"
 import { useTranslatedWords } from "@hooks/tools/useWordTranslations"
 import { haptic } from "@utils/haptic"
-import { useEffect, useMemo, useRef } from "react"
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react"
 import styled, { css } from "styled-components"
 import { WordCell } from "../QuranPaper/VerseRow"
 import { Bismillah } from "../QuranPaper/VerseRow/Bismillah"
@@ -53,7 +53,7 @@ export default function PageText({
   const { juzPages, loadPagination } = usePaginationState()
   const { words, loadWords } = useWordsState()
   const {
-    userSettings: { font, theme, wbwTranslations, highlightedVerses },
+    userSettings: { font, theme, wbwTranslations, highlightedVerses, forceFit },
   } = useUserSettingsState()
   const { openLexeme } = usePaperDialogState()
   const findWordsOccurrences = useWordOccurrencesFinder()
@@ -64,6 +64,8 @@ export default function PageText({
   // where the press started, so a page-turn drag starting on a word cancels
   // the lexeme dialog instead of opening it
   const wordStartPosRef = useRef<{ x: number; y: number } | null>(null)
+
+  const wrapperRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     loadPagination()
@@ -95,10 +97,37 @@ export default function PageText({
     })
   }, [page, translatedWords])
 
+  useLayoutEffect(() => {
+    const wrapper = wrapperRef.current
+    const container = wrapper?.parentElement
+    if (!forceFit || !wrapper || !container) {
+      if (wrapper) wrapper.style.fontSize = ""
+      return
+    }
+
+    const fit = () => {
+      let size = font.arabic.size
+      wrapper.style.fontSize = `${size}px`
+      while (
+        wrapper.scrollHeight > container.clientHeight &&
+        size > MIN_FIT_FONT_SIZE
+      ) {
+        size *= FIT_SHRINK_FACTOR
+        wrapper.style.fontSize = `${size}px`
+      }
+    }
+
+    fit()
+    const observer = new ResizeObserver(fit)
+    observer.observe(container)
+    return () => observer.disconnect()
+  }, [forceFit, font.arabic.size, font.arabic.family, verses, forceTabletScale])
+
   if (!page) return null
 
   return (
     <PageWrapper
+      ref={wrapperRef}
       className="mushaf-page-text"
       $font={font.arabic}
       $theme={theme}
@@ -244,6 +273,11 @@ const MOVE_CANCEL_THRESHOLD = 10
 const HighlightSpan = styled.span<{ $color?: string }>`
   background-color: ${({ $color }) => $color ?? "transparent"};
 `
+
+// force fit shrinks font-size by this factor per step, down to this floor,
+// until the page's content fits its frame with no scrollbar
+const FIT_SHRINK_FACTOR = 0.97
+const MIN_FIT_FONT_SIZE = 10
 
 const PageWrapper = styled.div<{
   $font: FontSetting

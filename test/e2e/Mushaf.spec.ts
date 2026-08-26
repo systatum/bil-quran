@@ -3,10 +3,12 @@ import { expect, Page, test } from "@playwright/test"
 import { loadPaginationStyle, loadQuranWords } from "./tools/data"
 import {
   clickOn,
+  closeSidebar,
   dragHorizontally,
   dragVertically,
   gotoMushafPage,
   longPress,
+  openSidebar,
   setReadingStyle,
   showNavigatorSearch,
   swipeToNextMushafPage,
@@ -655,6 +657,114 @@ test.describe("Mushaf", () => {
         await expect(page.locator(".mushaf-half-frame")).toHaveCount(2)
         await expect(page.locator(".mushaf-page-text")).toHaveCount(1)
       })
+    })
+  })
+
+  test.describe("Force fit", () => {
+    test("hidden on Detached, shown once switched to Mushaf mode", async ({
+      page,
+    }) => {
+      await page.goto("/")
+      const forceFitLabel = page
+        .locator('[aria-label="stateful-form-label-wrapper"]')
+        .filter({ hasText: "Force fit" })
+
+      await openSidebar(page)
+      await expect(forceFitLabel).toHaveCount(0)
+      await closeSidebar(page)
+
+      await setReadingStyle(page, "Mono-stitched")
+      const box = await page.locator("[data-mushaf]").boundingBox()
+      const y = box!.y + box!.height / 2
+      const startX = box!.x + box!.width * 0.85
+      await dragHorizontally(page, startX, startX - 300, y)
+      await expect(forceFitLabel).toBeVisible({ timeout: 10_000 })
+    })
+
+    test("shrinks the font until the page has no overflow", async ({
+      page,
+    }) => {
+      await setReadingStyle(page, "Mono-stitched")
+      // small viewport forces overflow at the default font size regardless
+      // of which page's content is on screen
+      await page.setViewportSize({ width: 500, height: 380 })
+      await gotoMushafPage(page, 2)
+
+      const wrapper = page.locator(".mushaf-page-text").first()
+      const beforeFont = await wrapper.evaluate(
+        (el) => getComputedStyle(el).fontSize,
+      )
+      const overflowsBefore = await wrapper.evaluate(
+        (el) => el.scrollHeight > (el.parentElement?.clientHeight ?? Infinity),
+      )
+      expect(overflowsBefore).toBe(true)
+
+      const box = await page.locator("[data-mushaf]").boundingBox()
+      const y = box!.y + box!.height / 2
+      const startX = box!.x + box!.width * 0.85
+      await dragHorizontally(page, startX, startX - 300, y)
+
+      const toggleLabel = page
+        .locator('[aria-label="stateful-form-label-wrapper"]')
+        .filter({ hasText: "Force fit" })
+        .first()
+      await expect(toggleLabel).toBeVisible({ timeout: 10_000 })
+      await toggleLabel.click()
+      await closeSidebar(page)
+
+      await expect
+        .poll(
+          () =>
+            wrapper.evaluate(
+              (el) =>
+                el.scrollHeight <=
+                (el.parentElement?.clientHeight ?? Infinity),
+            ),
+          { timeout: 5000 },
+        )
+        .toBe(true)
+
+      const afterFont = await wrapper.evaluate(
+        (el) => getComputedStyle(el).fontSize,
+      )
+      expect(parseFloat(afterFont)).toBeLessThan(parseFloat(beforeFont))
+    })
+
+    test("Dual-stitched fits each frame independently", async ({ page }) => {
+      await setReadingStyle(page, "Dual-stitched")
+      await page.setViewportSize({ width: 1100, height: 420 })
+      await gotoMushafPage(page, 2)
+      await expect(page.locator("[data-dual-stitched]")).toHaveCount(1)
+
+      const frames = page.locator(".mushaf-page-text")
+      await expect(frames).toHaveCount(2)
+
+      const box = await page.locator("[data-mushaf]").boundingBox()
+      const y = box!.y + box!.height / 2
+      const startX = box!.x + box!.width * 0.85
+      await dragHorizontally(page, startX, startX - 300, y)
+
+      const toggleLabel = page
+        .locator('[aria-label="stateful-form-label-wrapper"]')
+        .filter({ hasText: "Force fit" })
+        .first()
+      await expect(toggleLabel).toBeVisible({ timeout: 10_000 })
+      await toggleLabel.click()
+      await closeSidebar(page)
+
+      for (const frame of await frames.all()) {
+        await expect
+          .poll(
+            () =>
+              frame.evaluate(
+                (el) =>
+                  el.scrollHeight <=
+                  (el.parentElement?.clientHeight ?? Infinity),
+              ),
+            { timeout: 5000 },
+          )
+          .toBe(true)
+      }
     })
   })
 })
