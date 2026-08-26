@@ -2,6 +2,7 @@ import { Rendering } from "@constants/records/RenderingRecord"
 import { expect, Page, test } from "@playwright/test"
 import { loadPaginationStyle, loadQuranWords } from "./tools/data"
 import {
+  clickOn,
   dragHorizontally,
   dragVertically,
   gotoMushafPage,
@@ -375,6 +376,119 @@ test.describe("Mushaf", () => {
       await expect(
         page.locator('[aria-label="paper-dialog-content"]'),
       ).toBeVisible({ timeout: 5000 })
+    })
+
+    test("moving finger before threshold cancels the lexeme dialog", async ({
+      page,
+    }) => {
+      await gotoMushafPage(page, 1)
+
+      const firstWord = page.locator(".mushaf-word").first()
+      const box = await firstWord.boundingBox()
+      if (!box) throw new Error("no bounding box")
+      const x = box.x + box.width / 2
+      const y = box.y + box.height / 2
+
+      await firstWord.dispatchEvent("pointerdown", {
+        clientX: x,
+        clientY: y,
+        bubbles: true,
+        cancelable: true,
+      })
+      await page.waitForTimeout(100)
+      await firstWord.dispatchEvent("pointermove", {
+        clientX: x + 40,
+        clientY: y,
+        bubbles: true,
+        cancelable: true,
+      })
+      await page.waitForTimeout(600)
+      await firstWord.dispatchEvent("pointerup", {
+        clientX: x + 40,
+        clientY: y,
+        bubbles: true,
+        cancelable: true,
+      })
+
+      await expect(
+        page.locator('[aria-label="paper-dialog-content"]'),
+      ).not.toBeVisible({ timeout: 1000 })
+    })
+  })
+
+  test.describe("Verse marker context menu", () => {
+    test("exegesis option opens the dialog", async ({ page }) => {
+      await gotoMushafPage(page, 1)
+      await page.locator('[aria-label="verse-bookmarker-btn"]').first().click()
+      await clickOn("Exegesis", page, { ariaLabel: "tip-menu-item" })
+
+      await expect(
+        page.locator('[aria-label="paper-dialog-content"]'),
+      ).toBeVisible({ timeout: 5000 })
+    })
+
+    test("bookmark option persists a bookmark", async ({ page }) => {
+      await gotoMushafPage(page, 1)
+      await page.locator('[aria-label="verse-bookmarker-btn"]').first().click()
+      await clickOn("Bookmark", page, { ariaLabel: "tip-menu-item" })
+
+      const bookmarks = await page.evaluate(() => {
+        const raw = localStorage.getItem("userSettings")
+        return raw ? (JSON.parse(raw)?.bookmarks?.list ?? null) : null
+      })
+      expect(Object.keys(bookmarks ?? {}).length).toBeGreaterThan(0)
+    })
+
+    test("note option persists the note", async ({ page }) => {
+      await gotoMushafPage(page, 1)
+      await page.locator('[aria-label="verse-bookmarker-btn"]').first().click()
+      await clickOn("Note", page, { ariaLabel: "tip-menu-item" })
+
+      await expect(page.getByText("Note this verse")).toBeVisible({
+        timeout: 5000,
+      })
+      await page.locator("textarea").fill("test note")
+      await clickOn("Add", page, { role: "button" })
+
+      const bookmarks = await page.evaluate(() => {
+        const raw = localStorage.getItem("userSettings")
+        return raw ? (JSON.parse(raw)?.bookmarks?.list ?? null) : null
+      })
+      const note = Object.values(bookmarks ?? {})[0] as { note?: string }
+      expect(note?.note).toBe("test note")
+    })
+
+    test("highlight option persists color and colors the verse", async ({
+      page,
+    }) => {
+      await gotoMushafPage(page, 1)
+      await page.locator('[aria-label="verse-bookmarker-btn"]').first().click()
+      await clickOn("Highlight", page, { ariaLabel: "tip-menu-item" })
+
+      await expect(page.getByText("Highlight this verse")).toBeVisible({
+        timeout: 5000,
+      })
+      await clickOn("Highlight", page, { role: "button" })
+
+      const highlighted = await page.evaluate(() => {
+        const raw = localStorage.getItem("userSettings")
+        return raw ? (JSON.parse(raw)?.highlightedVerses ?? null) : null
+      })
+      expect(Object.values(highlighted ?? {})[0]).toBe(1)
+
+      const bg = await page
+        .locator(".mushaf-word")
+        .first()
+        .evaluate((el) => {
+          let node: HTMLElement | null = el as HTMLElement
+          while (node) {
+            const bg = window.getComputedStyle(node).backgroundColor
+            if (bg !== "rgba(0, 0, 0, 0)") return bg
+            node = node.parentElement
+          }
+          return null
+        })
+      expect(bg).toBe("rgb(200, 230, 201)")
     })
   })
 

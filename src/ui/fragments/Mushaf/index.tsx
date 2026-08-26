@@ -14,6 +14,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { useIntl } from "react-intl"
 import styled, { css } from "styled-components"
 import MushafFrame from "../MushafFrame"
+import ModalDialog from "../QuranPaper/ModalDialog"
 import Navigator from "./Navigator"
 import PageText from "./PageText"
 
@@ -269,6 +270,7 @@ export default function Mushaf() {
           `,
         }}
       />
+      <ModalDialog />
     </Wrapper>
   )
 }

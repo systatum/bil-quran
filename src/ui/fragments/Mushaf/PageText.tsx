@@ -1,3 +1,4 @@
+import { HighlightColor } from "@constants/highlight"
 import { ThemeMode } from "@constants/theme"
 import usePaginationState from "@hooks/states/PaginationState"
 import usePaperDialogState from "@hooks/states/PaperDialogState"
@@ -8,7 +9,7 @@ import useWordsState from "@hooks/states/WordsState"
 import useWordOccurrencesFinder from "@hooks/tools/useWordOccurrencesFinder"
 import { useTranslatedWords } from "@hooks/tools/useWordTranslations"
 import { haptic } from "@utils/haptic"
-import { Fragment, useEffect, useMemo, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import styled, { css } from "styled-components"
 import { WordCell } from "../QuranPaper/VerseRow"
 import { Bismillah } from "../QuranPaper/VerseRow/Bismillah"
@@ -52,7 +53,7 @@ export default function PageText({
   const { juzPages, loadPagination } = usePaginationState()
   const { words, loadWords } = useWordsState()
   const {
-    userSettings: { font, theme, wbwTranslations },
+    userSettings: { font, theme, wbwTranslations, highlightedVerses },
   } = useUserSettingsState()
   const { openLexeme } = usePaperDialogState()
   const findWordsOccurrences = useWordOccurrencesFinder()
@@ -60,6 +61,9 @@ export default function PageText({
 
   // to clear each press on a word for lexeme root detail
   const wordTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  // where the press started, so a page-turn drag starting on a word cancels
+  // the lexeme dialog instead of opening it
+  const wordStartPosRef = useRef<{ x: number; y: number } | null>(null)
 
   useEffect(() => {
     loadPagination()
@@ -100,8 +104,17 @@ export default function PageText({
       $theme={theme}
       $forceTabletScale={forceTabletScale}
     >
-      {verses.map(({ chapterId, verseNumber, words: verseWords }) => (
-        <Fragment key={`${chapterId}:${verseNumber}`}>
+      {verses.map(({ chapterId, verseNumber, words: verseWords }) => {
+        const highlightColor = highlightedVerses[`${chapterId}:${verseNumber}`]
+        const highlightHex = highlightColor
+          ? HighlightColor.on(theme)[highlightColor]
+          : undefined
+
+        return (
+        <HighlightSpan
+          key={`${chapterId}:${verseNumber}`}
+          $color={highlightHex}
+        >
           {Bismillah.isRenderableHere(verseNumber, chapterId) && (
             <Bismillah
               containerStyle={css`
@@ -132,12 +145,25 @@ export default function PageText({
             <WordSpan
               key={`${word.chapterId}-${word.verse}-${word.order}`}
               // no stopPropagation here to support drag gesture for page turn, etc
-              onPointerDown={() => {
+              onPointerDown={(e) => {
+                wordStartPosRef.current = { x: e.clientX, y: e.clientY }
                 wordTimeoutRef.current = setTimeout(() => {
                   haptic()
                   openLexeme(word)
                   findWordsOccurrences(word)
                 }, 500)
+              }}
+              onPointerMove={(e) => {
+                const start = wordStartPosRef.current
+                if (!start) return
+                const moved = Math.hypot(
+                  e.clientX - start.x,
+                  e.clientY - start.y,
+                )
+                // finger is dragging (eg. to turn the page), not holding
+                // still - don't also open the lexeme dialog
+                if (moved > MOVE_CANCEL_THRESHOLD)
+                  clearTimeout(wordTimeoutRef.current!)
               }}
               onPointerUp={() => clearTimeout(wordTimeoutRef.current!)}
               onPointerLeave={() => clearTimeout(wordTimeoutRef.current!)}
@@ -199,8 +225,9 @@ export default function PageText({
               `}
             `}
           />{" "}
-        </Fragment>
-      ))}
+        </HighlightSpan>
+        )
+      })}
     </PageWrapper>
   )
 }
@@ -208,6 +235,14 @@ export default function PageText({
 const WordSpan = styled.span.attrs({ className: "mushaf-word" })`
   cursor: pointer;
   user-select: none;
+`
+
+// how far (px) the finger must move during a word's long-press for it to be
+// treated as a page-turn drag instead, cancelling the lexeme dialog
+const MOVE_CANCEL_THRESHOLD = 10
+
+const HighlightSpan = styled.span<{ $color?: string }>`
+  background-color: ${({ $color }) => $color ?? "transparent"};
 `
 
 const PageWrapper = styled.div<{
