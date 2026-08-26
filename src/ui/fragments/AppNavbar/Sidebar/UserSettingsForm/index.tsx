@@ -14,6 +14,7 @@ import { ComboboxOption } from "@systatum/coneto/combobox"
 import { ScreenProps } from "@systatum/coneto/screen-transition"
 import { FormFieldGroup, StatefulForm } from "@systatum/coneto/stateful-form"
 import { useTheme } from "@systatum/coneto/theme"
+import { useNavigate } from "@tanstack/react-router"
 import { Screen } from "@ui/index"
 import { useMemo } from "react"
 import { useIntl } from "react-intl"
@@ -25,6 +26,7 @@ export default function UserSettingsForm({
 }: Partial<ScreenProps<Screen>>) {
   const { formatMessage } = useIntl()
   const { mode } = useTheme()
+  const navigate = useNavigate()
   const {
     setTheme,
     setFont,
@@ -332,8 +334,22 @@ export default function UserSettingsForm({
           const value = currentState.readingStyle
           if (!Object.values(ReadingStyle).includes(value)) return
 
-          setReadingStyle(currentState.readingStyle)
+          const wasDetached =
+            userSettings.readingStyle === ReadingStyle.Detached
+          const isDetached = value === ReadingStyle.Detached
+
+          setReadingStyle(value)
           captureSettingChange()
+
+          // navigate away when switching rendering mode for immediate effect
+          if (wasDetached !== isDetached) {
+            if (isDetached) navigate({ to: "/" })
+            else
+              navigate({
+                to: "/m/$mushaf/$page",
+                params: { mushaf: "madinah", page: "1" },
+              })
+          }
         } else if (FormState.WordByWordTranslations in currentState) {
           const values: WordTranslationOption[] = currentState.wbwTranslations
 
