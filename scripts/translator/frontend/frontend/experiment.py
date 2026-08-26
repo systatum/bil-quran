@@ -298,7 +298,7 @@ class ExperimentRunner:
 
     @staticmethod
     def _translated_record_filepath(batch_dir: Path) -> Path:
-        return batch_dir / "unrated_records.jsonl"
+        return batch_dir / "translated_records.jsonl"
 
     @staticmethod
     def _complete_record_filepath(batch_dir: Path) -> Path:
