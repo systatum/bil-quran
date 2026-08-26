@@ -16,7 +16,7 @@ def uuid_field():
 
 @dataclass(kw_only=True)
 class Versioned:
-    version: Literal["3"] = "3"
+    version: Literal["4"] = "4"
 
 
 @dataclass(kw_only=True)
@@ -39,6 +39,7 @@ class ExperimentLanguage:
 
 @dataclass(kw_only=True)
 class ExperimentText:
+    title: str
     text: str
     text_index: int
 
@@ -135,7 +136,7 @@ class ExperimentRunCommand:
     models: list[str]
     prompt_settings: dict[str, api.internal.PromptSetting]
     language_pairs: list[tuple[str, str]]  # Source to target language
-    texts: list[str]
+    texts: list[tuple[str, str]]  # Title to content
 
 
 __all__ = [

@@ -323,7 +323,7 @@ class ExperimentRunner:
                 for (source_language, target_language) in command.language_pairs
             ],
             texts=[
-                ExperimentText(text=text, text_index=i)
+                ExperimentText(title=text[0], text=text[1], text_index=i)
                 for i, text in enumerate(command.texts)
             ],
             batches={batch.batch_id: batch for batch in batches},
