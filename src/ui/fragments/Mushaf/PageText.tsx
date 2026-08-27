@@ -206,6 +206,7 @@ export default function PageText({
             verseNumber={verseNumber}
             containerStyle={css`
               display: inline-flex;
+              position: relative;
               /* stops PageWrapper's line-height: 2 from inheriting into
                  the marker's number and pushing the glyph off-center */
               line-height: normal;
@@ -224,33 +225,60 @@ export default function PageText({
               vertical-align: top;
               margin-top: calc((${LINE_HEIGHT}em - ${MARKER_SIZE}px) / 2);
 
-              /* zoom, not transform: scale - transform only repaints
-                 smaller, it doesn't shrink the marker's own layout box,
-                 so it would still force the line taller than the text.
-                 zoom also rescales margin-top itself though, so the
-                 formula divides by scale again to cancel that out */
+              /* shrink the real box (width/height), not zoom - this is the
+                 floating-ui reference element for the bookmark/highlight
+                 menu, and floating-ui doesn't support the non-standard zoom
+                 property for position math (breaks worst on WebKit), so the
+                 button child is absolutely positioned and transform-scaled
+                 from its own top-left corner to visually fill the shrunk box
+                 instead, leaving the reference element itself unzoomed */
               @media (max-width: ${PHONE_BREAKPOINT}px) {
-                zoom: ${PHONE_SCALE};
+                width: ${MARKER_SIZE * PHONE_SCALE}px;
+                height: ${MARKER_SIZE * PHONE_SCALE}px;
                 margin-top: calc(
-                  ${LINE_HEIGHT}em / (2 * ${PHONE_SCALE}) - ${MARKER_SIZE / 2}px
+                  (${LINE_HEIGHT}em - ${MARKER_SIZE * PHONE_SCALE}px) / 2
                 );
+
+                & > button {
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  transform: scale(${PHONE_SCALE});
+                  transform-origin: top left;
+                }
               }
               @media (min-width: ${PHONE_BREAKPOINT +
                 1}px) and (max-width: ${TABLET_BREAKPOINT}px) {
-                zoom: ${TABLET_SCALE};
+                width: ${MARKER_SIZE * TABLET_SCALE}px;
+                height: ${MARKER_SIZE * TABLET_SCALE}px;
                 margin-top: calc(
-                  ${LINE_HEIGHT}em / (2 * ${TABLET_SCALE}) -
-                    ${MARKER_SIZE / 2}px
+                  (${LINE_HEIGHT}em - ${MARKER_SIZE * TABLET_SCALE}px) / 2
                 );
+
+                & > button {
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  transform: scale(${TABLET_SCALE});
+                  transform-origin: top left;
+                }
               }
 
               ${forceTabletScale &&
               css`
-                zoom: ${TABLET_SCALE};
+                width: ${MARKER_SIZE * TABLET_SCALE}px;
+                height: ${MARKER_SIZE * TABLET_SCALE}px;
                 margin-top: calc(
-                  ${LINE_HEIGHT}em / (2 * ${TABLET_SCALE}) -
-                    ${MARKER_SIZE / 2}px
+                  (${LINE_HEIGHT}em - ${MARKER_SIZE * TABLET_SCALE}px) / 2
                 );
+
+                & > button {
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  transform: scale(${TABLET_SCALE});
+                  transform-origin: top left;
+                }
               `}
             `}
           />{" "}
