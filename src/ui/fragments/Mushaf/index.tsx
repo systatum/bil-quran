@@ -33,6 +33,30 @@ const REVEAL_THRESHOLD = 10
 // "bigger than an iPad" - below this, dual-stitched decays to mono-stitched
 const DUAL_STITCH_BREAKPOINT = 1024
 
+// iOS Safari/Chrome (WebKit) can leave 100dvh/100svh taller than what's
+// actually visible when the toolbar collapses/expands, and doesn't support
+// overscroll-behavior on older versions to contain the bounce - reading the
+// real visible height from visualViewport (updated live) sidesteps both
+function useViewportHeight() {
+  const [height, setHeight] = useState(
+    () => window.visualViewport?.height ?? window.innerHeight,
+  )
+  useEffect(() => {
+    const update = () =>
+      setHeight(window.visualViewport?.height ?? window.innerHeight)
+    update()
+    window.visualViewport?.addEventListener("resize", update)
+    window.addEventListener("resize", update)
+    window.addEventListener("orientationchange", update)
+    return () => {
+      window.visualViewport?.removeEventListener("resize", update)
+      window.removeEventListener("resize", update)
+      window.removeEventListener("orientationchange", update)
+    }
+  }, [])
+  return height
+}
+
 type TurnDirection = "next" | "prev"
 type DragFeedback =
   | { kind: "turn"; direction: TurnDirection; targetPage: number }
@@ -67,6 +91,27 @@ export default function Mushaf() {
 
   useEffect(() => {
     loadPagination()
+  }, [])
+
+  const viewportHeight = useViewportHeight()
+
+  // iOS WebKit still lets the document itself bounce/scroll on this route
+  // even when nothing overflows it - pinning html/body while mounted here
+  // is the standard cross-version fix, reverted on unmount for other routes
+  useEffect(() => {
+    const { body, documentElement: html } = document
+    const prevBody = body.style.cssText
+    const prevHtml = html.style.cssText
+    body.style.position = "fixed"
+    body.style.overflow = "hidden"
+    body.style.width = "100%"
+    body.style.height = "100%"
+    html.style.overflow = "hidden"
+    html.style.height = "100%"
+    return () => {
+      body.style.cssText = prevBody
+      html.style.cssText = prevHtml
+    }
   }, [])
 
   const allPages = useMemo(() => juzPages.flat(), [juzPages])
@@ -171,7 +216,7 @@ export default function Mushaf() {
   )
 
   return (
-    <Wrapper $theme={theme}>
+    <Wrapper $theme={theme} style={{ height: `${viewportHeight}px` }}>
       <PageBox
         {...bind()}
         style={{ touchAction: "pan-y" }}
@@ -277,8 +322,9 @@ export default function Mushaf() {
 
 const Wrapper = styled.div<{ $theme: ThemeMode }>`
   width: 100%;
-  height: 100dvh;
+  height: 100svh;
   overflow: hidden;
+  overscroll-behavior-y: none;
   display: flex;
   justify-content: center;
   align-items: center;
