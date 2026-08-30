@@ -100,30 +100,112 @@ export default function PageText({
   useLayoutEffect(() => {
     const wrapper = wrapperRef.current
     const container = wrapper?.parentElement
-    if (!forceFit || !wrapper || !container) {
-      if (wrapper) wrapper.style.fontSize = ""
-      return
+    if (!wrapper || !container) return
+
+    // Set font-size and marker line-pitch safety together as plain DOM
+    // mutations, not React state; a marker resized only on next render
+    // would still be at its old size during this measurement.
+    const applyFontSize = (size: number | "") => {
+      wrapper.style.fontSize = size === "" ? "" : `${size}px`
+      const fontPx = parseFloat(getComputedStyle(wrapper).fontSize)
+      const safety = Math.min(1, (LINE_HEIGHT * fontPx) / MARKER_SIZE)
+      wrapper.style.setProperty("--marker-safety", String(safety))
     }
 
-    const fit = () => {
-      let size = font.arabic.size
-      wrapper.style.fontSize = `${size}px`
-      while (
-        wrapper.scrollHeight > container.clientHeight &&
-        size > MIN_FIT_FONT_SIZE
-      ) {
-        size *= FIT_SHRINK_FACTOR
-        wrapper.style.fontSize = `${size}px`
+    // Start from a clean slate before measuring; a leftover size from a
+    // previous page or wider viewport would corrupt it.
+    const recalculate = () => {
+      applyFontSize("")
+
+      if (!forceFit) return
+
+      // min-height: 100% hides whether content barely overflows; neutralizing it reveals true content height.
+      wrapper.style.minHeight = "0"
+
+      // Hold the container's scrollbar hidden during the search so width stays constant;
+      // or a tentative scrollbar shaves pixels and inflates line counts for larger candidates.
+      const previousOverflow = container.style.overflowY
+      container.style.overflowY = "hidden"
+
+      // round to whole pixels, and a verse marker tip onto its own trailing line; a generous
+      // margin keeps "fits" decisions clear of both rounding & marker overflow.
+      const fits = () =>
+        wrapper.scrollHeight <= container.clientHeight - FIT_SAFETY_MARGIN
+
+      // the existing (breakpoint-aware) CSS default already fits - no
+      // need to override it with a forced size
+      if (fits()) {
+        wrapper.style.minHeight = ""
+        container.style.overflowY = previousOverflow
+        return
       }
+
+      const fitsAt = (size: number) => {
+        applyFontSize(size)
+        return fits()
+      }
+
+      // Binary search for the largest size that fits; a percentage step would overshoot,
+      // leaving empty lines whenever a small size change drops a whole line of text.
+      let lo = MIN_FIT_FONT_SIZE
+      let hi = font.arabic.size
+      if (fitsAt(lo)) {
+        for (let i = 0; i < FIT_SEARCH_ITERATIONS; i++) {
+          const mid = (lo + hi) / 2
+          if (fitsAt(mid)) lo = mid
+          else hi = mid
+        }
+        fitsAt(lo)
+      } // else doesn't fit even at the floor - best effort, leave it there
+
+      wrapper.style.minHeight = ""
+      container.style.overflowY = previousOverflow
     }
 
-    fit()
-    const observer = new ResizeObserver(fit)
-    observer.observe(container)
-    return () => observer.disconnect()
+    recalculate()
+
+    // Re-check after the Arabic webfont loads; first measurements against fallback
+    // font metrics can misestimate fit.
+    let cancelled = false
+    document.fonts?.ready?.then(() => {
+      if (!cancelled) recalculate()
+    })
+
+    const observer = new ResizeObserver(recalculate)
+    observer.observe(forceFit ? container : wrapper)
+
+    return () => {
+      cancelled = true
+      observer.disconnect()
+    }
   }, [forceFit, font.arabic.size, font.arabic.family, verses, forceTabletScale])
 
   if (!page) return null
+
+  // Combines tier scale with --marker-safety into a real box shrink, not
+  // zoom - this is the floating-ui reference element for the
+  // bookmark/highlight menu, and floating-ui doesn't support the
+  // non-standard zoom property for position math (breaks worst on
+  // WebKit). The button child is transform-scaled from its own top-left
+  // corner to visually fill the shrunk box, leaving the reference
+  // element itself unzoomed.
+  const markerZoomStyle = (tierScale: number) => css`
+    width: calc(var(--marker-safety, 1) * ${tierScale * MARKER_SIZE}px);
+    height: calc(var(--marker-safety, 1) * ${tierScale * MARKER_SIZE}px);
+    margin-top: calc(
+      (${LINE_HEIGHT}em -
+          var(--marker-safety, 1) * ${tierScale * MARKER_SIZE}px) /
+        2
+    );
+
+    & > button {
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform: scale(calc(var(--marker-safety, 1) * ${tierScale}));
+      transform-origin: top left;
+    }
+  `
 
   return (
     <PageWrapper
@@ -140,149 +222,107 @@ export default function PageText({
           : undefined
 
         return (
-        <HighlightSpan
-          key={`${chapterId}:${verseNumber}`}
-          $color={highlightHex}
-        >
-          {Bismillah.isRenderableHere(verseNumber, chapterId) && (
-            <Bismillah
-              containerStyle={css`
-                font-size: ${BISMILLAH_SIZE * BISMILLAH_SCALE}px;
-                margin-top: ${BISMILLAH_MARGIN_TOP * BISMILLAH_SCALE}px;
+          <HighlightSpan
+            key={`${chapterId}:${verseNumber}`}
+            $color={highlightHex}
+          >
+            {Bismillah.isRenderableHere(verseNumber, chapterId) && (
+              <Bismillah
+                containerStyle={css`
+                  font-size: ${BISMILLAH_SIZE * BISMILLAH_SCALE}px;
+                  margin-top: ${BISMILLAH_MARGIN_TOP * BISMILLAH_SCALE}px;
 
-                @media (max-width: ${PHONE_BREAKPOINT}px) {
-                  font-size: ${BISMILLAH_SIZE * BISMILLAH_PHONE_SCALE}px;
-                  margin-top: ${BISMILLAH_MARGIN_TOP * BISMILLAH_PHONE_SCALE}px;
-                }
-                @media (min-width: ${PHONE_BREAKPOINT +
-                  1}px) and (max-width: ${TABLET_BREAKPOINT}px) {
-                  font-size: ${BISMILLAH_SIZE * BISMILLAH_TABLET_SCALE}px;
-                  margin-top: ${BISMILLAH_MARGIN_TOP *
-                  BISMILLAH_TABLET_SCALE}px;
-                }
+                  @media (max-width: ${PHONE_BREAKPOINT}px) {
+                    font-size: ${BISMILLAH_SIZE * BISMILLAH_PHONE_SCALE}px;
+                    margin-top: ${BISMILLAH_MARGIN_TOP *
+                    BISMILLAH_PHONE_SCALE}px;
+                  }
+                  @media (min-width: ${PHONE_BREAKPOINT +
+                    1}px) and (max-width: ${TABLET_BREAKPOINT}px) {
+                    font-size: ${BISMILLAH_SIZE * BISMILLAH_TABLET_SCALE}px;
+                    margin-top: ${BISMILLAH_MARGIN_TOP *
+                    BISMILLAH_TABLET_SCALE}px;
+                  }
 
-                ${forceTabletScale &&
-                css`
-                  font-size: ${BISMILLAH_SIZE * BISMILLAH_TABLET_SCALE}px;
-                  margin-top: ${BISMILLAH_MARGIN_TOP *
-                  BISMILLAH_TABLET_SCALE}px;
+                  ${forceTabletScale &&
+                  css`
+                    font-size: ${BISMILLAH_SIZE * BISMILLAH_TABLET_SCALE}px;
+                    margin-top: ${BISMILLAH_MARGIN_TOP *
+                    BISMILLAH_TABLET_SCALE}px;
+                  `}
                 `}
-              `}
-            />
-          )}
-          {verseWords.map((word) => (
-            <WordSpan
-              key={`${word.chapterId}-${word.verse}-${word.order}`}
-              // no stopPropagation here to support drag gesture for page turn, etc
-              onPointerDown={(e) => {
-                wordStartPosRef.current = { x: e.clientX, y: e.clientY }
-                wordTimeoutRef.current = setTimeout(() => {
-                  haptic()
-                  openLexeme(word)
-                  findWordsOccurrences(word)
-                }, 500)
-              }}
-              onPointerMove={(e) => {
-                const start = wordStartPosRef.current
-                if (!start) return
-                const moved = Math.hypot(
-                  e.clientX - start.x,
-                  e.clientY - start.y,
-                )
-                // finger is dragging (eg. to turn the page), not holding
-                // still - don't also open the lexeme dialog
-                if (moved > MOVE_CANCEL_THRESHOLD)
-                  clearTimeout(wordTimeoutRef.current!)
-              }}
-              onPointerUp={() => clearTimeout(wordTimeoutRef.current!)}
-              onPointerLeave={() => clearTimeout(wordTimeoutRef.current!)}
-              onPointerCancel={() => clearTimeout(wordTimeoutRef.current!)}
-            >
-              {word.token}{" "}
-            </WordSpan>
-          ))}
-          <VerseMarker
-            chapterId={chapterId}
-            verseNumber={verseNumber}
-            containerStyle={css`
-              display: inline-flex;
-              position: relative;
-              /* stops PageWrapper's line-height: 2 from inheriting into
+              />
+            )}
+            {verseWords.map((word, index) => (
+              <WordSpan
+                key={`${word.chapterId}-${word.verse}-${word.order}`}
+                // no stopPropagation here to support drag gesture for page turn, etc
+                onPointerDown={(e) => {
+                  wordStartPosRef.current = { x: e.clientX, y: e.clientY }
+                  wordTimeoutRef.current = setTimeout(() => {
+                    haptic()
+                    openLexeme(word)
+                    findWordsOccurrences(word)
+                  }, 500)
+                }}
+                onPointerMove={(e) => {
+                  const start = wordStartPosRef.current
+                  if (!start) return
+                  const moved = Math.hypot(
+                    e.clientX - start.x,
+                    e.clientY - start.y,
+                  )
+                  // finger is dragging (eg. to turn the page), not holding
+                  // still - don't also open the lexeme dialog
+                  if (moved > MOVE_CANCEL_THRESHOLD)
+                    clearTimeout(wordTimeoutRef.current!)
+                }}
+                onPointerUp={() => clearTimeout(wordTimeoutRef.current!)}
+                onPointerLeave={() => clearTimeout(wordTimeoutRef.current!)}
+                onPointerCancel={() => clearTimeout(wordTimeoutRef.current!)}
+              >
+                {/* a non-breaking space before the marker glues it to the
+                    last word, so it can't strand alone on its own line */}
+                {word.token}
+                {index === verseWords.length - 1 ? " " : " "}
+              </WordSpan>
+            ))}
+            <VerseMarker
+              chapterId={chapterId}
+              verseNumber={verseNumber}
+              containerStyle={css`
+                display: inline-flex;
+                position: relative;
+                /* stops PageWrapper's line-height: 2 from inheriting into
                  the marker's number and pushing the glyph off-center */
-              line-height: normal;
-              /* the marker's own number is Latin digits, not Arabic - the
+                line-height: normal;
+                /* the marker's own number is Latin digits, not Arabic - the
                  Quranic font's Latin glyphs sit at a different baseline
                  than a normal UI font, which reads as "pushed up" */
-              font-family:
-                -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
-                sans-serif;
+                font-family:
+                  -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+                  sans-serif;
 
-              /* vertical-align: middle aligns to the surrounding text's
+                /* vertical-align: middle aligns to the surrounding text's
                  x-height, not the true center of an 85px line - that gap
                  grows with line-height and is font-metric dependent, so
                  "top" (a fixed reference) plus a computed margin centers
                  it exactly instead, regardless of the font in use */
-              vertical-align: top;
-              margin-top: calc((${LINE_HEIGHT}em - ${MARKER_SIZE}px) / 2);
+                vertical-align: top;
+                ${markerZoomStyle(1)}
 
-              /* shrink the real box (width/height), not zoom - this is the
-                 floating-ui reference element for the bookmark/highlight
-                 menu, and floating-ui doesn't support the non-standard zoom
-                 property for position math (breaks worst on WebKit), so the
-                 button child is absolutely positioned and transform-scaled
-                 from its own top-left corner to visually fill the shrunk box
-                 instead, leaving the reference element itself unzoomed */
-              @media (max-width: ${PHONE_BREAKPOINT}px) {
-                width: ${MARKER_SIZE * PHONE_SCALE}px;
-                height: ${MARKER_SIZE * PHONE_SCALE}px;
-                margin-top: calc(
-                  (${LINE_HEIGHT}em - ${MARKER_SIZE * PHONE_SCALE}px) / 2
-                );
-
-                & > button {
-                  position: absolute;
-                  top: 0;
-                  left: 0;
-                  transform: scale(${PHONE_SCALE});
-                  transform-origin: top left;
+                @media (max-width: ${PHONE_BREAKPOINT}px) {
+                  ${markerZoomStyle(PHONE_SCALE)}
                 }
-              }
-              @media (min-width: ${PHONE_BREAKPOINT +
-                1}px) and (max-width: ${TABLET_BREAKPOINT}px) {
-                width: ${MARKER_SIZE * TABLET_SCALE}px;
-                height: ${MARKER_SIZE * TABLET_SCALE}px;
-                margin-top: calc(
-                  (${LINE_HEIGHT}em - ${MARKER_SIZE * TABLET_SCALE}px) / 2
-                );
-
-                & > button {
-                  position: absolute;
-                  top: 0;
-                  left: 0;
-                  transform: scale(${TABLET_SCALE});
-                  transform-origin: top left;
+                @media (min-width: ${PHONE_BREAKPOINT +
+                  1}px) and (max-width: ${TABLET_BREAKPOINT}px) {
+                  ${markerZoomStyle(TABLET_SCALE)}
                 }
-              }
 
-              ${forceTabletScale &&
-              css`
-                width: ${MARKER_SIZE * TABLET_SCALE}px;
-                height: ${MARKER_SIZE * TABLET_SCALE}px;
-                margin-top: calc(
-                  (${LINE_HEIGHT}em - ${MARKER_SIZE * TABLET_SCALE}px) / 2
-                );
-
-                & > button {
-                  position: absolute;
-                  top: 0;
-                  left: 0;
-                  transform: scale(${TABLET_SCALE});
-                  transform-origin: top left;
-                }
+                ${forceTabletScale && markerZoomStyle(TABLET_SCALE)}
               `}
-            `}
-          />{" "}
-        </HighlightSpan>
+            />{" "}
+          </HighlightSpan>
         )
       })}
     </PageWrapper>
@@ -302,10 +342,14 @@ const HighlightSpan = styled.span<{ $color?: string }>`
   background-color: ${({ $color }) => $color ?? "transparent"};
 `
 
-// force fit shrinks font-size by this factor per step, down to this floor,
-// until the page's content fits its frame with no scrollbar
-const FIT_SHRINK_FACTOR = 0.97
-const MIN_FIT_FONT_SIZE = 10
+// force fit binary-searches within this range for the largest font size
+// that fits the page's content with no scrollbar
+const MIN_FIT_FONT_SIZE = 6
+const FIT_SEARCH_ITERATIONS = 12 // ~0.01px precision over a 40px range
+// scrollHeight/clientHeight round to whole pixels, and a verse marker
+// tipping onto its own trailing line adds more height than a sub-pixel
+// fraction would - this margin keeps every fit comfortably clear of both
+const FIT_SAFETY_MARGIN = 8
 
 const PageWrapper = styled.div<{
   $font: FontSetting
