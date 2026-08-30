@@ -9,7 +9,7 @@ import useWordsState from "@hooks/states/WordsState"
 import useWordOccurrencesFinder from "@hooks/tools/useWordOccurrencesFinder"
 import { useTranslatedWords } from "@hooks/tools/useWordTranslations"
 import { haptic } from "@utils/haptic"
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react"
 import styled, { css } from "styled-components"
 import { WordCell } from "../QuranPaper/VerseRow"
 import { Bismillah } from "../QuranPaper/VerseRow/Bismillah"
@@ -66,9 +66,6 @@ export default function PageText({
   const wordStartPosRef = useRef<{ x: number; y: number } | null>(null)
 
   const wrapperRef = useRef<HTMLDivElement>(null)
-  // 1 = native marker size; shrinks below 1 when the 2em line pitch can't fit
-  // the marker at its zoom tier, preventing line-box overflow.
-  const [markerSafetyRatio, setMarkerSafetyRatio] = useState(1)
 
   useEffect(() => {
     loadPagination()
@@ -105,52 +102,95 @@ export default function PageText({
     const container = wrapper?.parentElement
     if (!wrapper || !container) return
 
-    // Read back the actual rendered font-size to compute line-pitch safety.
-    const updateMarkerSafety = () => {
+    // Set font-size and marker line-pitch safety together as plain DOM
+    // mutations, not React state; a marker resized only on next render
+    // would still be at its old size during this measurement.
+    const applyFontSize = (size: number | "") => {
+      wrapper.style.fontSize = size === "" ? "" : `${size}px`
       const fontPx = parseFloat(getComputedStyle(wrapper).fontSize)
-      setMarkerSafetyRatio(Math.min(1, (LINE_HEIGHT * fontPx) / MARKER_SIZE))
+      const safety = Math.min(1, (LINE_HEIGHT * fontPx) / MARKER_SIZE)
+      wrapper.style.setProperty("--marker-safety", String(safety))
     }
 
-    if (!forceFit) {
-      wrapper.style.fontSize = ""
-      updateMarkerSafety()
-      const observer = new ResizeObserver(updateMarkerSafety)
-      observer.observe(wrapper)
-      return () => observer.disconnect()
-    }
+    // Start from a clean slate before measuring; a leftover size from a
+    // previous page or wider viewport would corrupt it.
+    const recalculate = () => {
+      applyFontSize("")
 
-    const fit = () => {
-      let size = font.arabic.size
-      wrapper.style.fontSize = `${size}px`
-      while (
-        wrapper.scrollHeight > container.clientHeight &&
-        size > MIN_FIT_FONT_SIZE
-      ) {
-        size *= FIT_SHRINK_FACTOR
-        wrapper.style.fontSize = `${size}px`
+      if (!forceFit) return
+
+      // min-height: 100% hides whether content barely overflows; neutralizing it reveals true content height.
+      wrapper.style.minHeight = "0"
+
+      // Hold the container's scrollbar hidden during the search so width stays constant;
+      // or a tentative scrollbar shaves pixels and inflates line counts for larger candidates.
+      const previousOverflow = container.style.overflowY
+      container.style.overflowY = "hidden"
+
+      // round to whole pixels, and a verse marker tip onto its own trailing line; a generous
+      // margin keeps "fits" decisions clear of both rounding & marker overflow.
+      const fits = () =>
+        wrapper.scrollHeight <= container.clientHeight - FIT_SAFETY_MARGIN
+
+      // the existing (breakpoint-aware) CSS default already fits - no
+      // need to override it with a forced size
+      if (fits()) {
+        wrapper.style.minHeight = ""
+        container.style.overflowY = previousOverflow
+        return
       }
-      updateMarkerSafety()
+
+      const fitsAt = (size: number) => {
+        applyFontSize(size)
+        return fits()
+      }
+
+      // Binary search for the largest size that fits; a percentage step would overshoot,
+      // leaving empty lines whenever a small size change drops a whole line of text.
+      let lo = MIN_FIT_FONT_SIZE
+      let hi = font.arabic.size
+      if (fitsAt(lo)) {
+        for (let i = 0; i < FIT_SEARCH_ITERATIONS; i++) {
+          const mid = (lo + hi) / 2
+          if (fitsAt(mid)) lo = mid
+          else hi = mid
+        }
+        fitsAt(lo)
+      } // else doesn't fit even at the floor - best effort, leave it there
+
+      wrapper.style.minHeight = ""
+      container.style.overflowY = previousOverflow
     }
 
-    fit()
-    const observer = new ResizeObserver(fit)
-    observer.observe(container)
-    return () => observer.disconnect()
+    recalculate()
+
+    // Re-check after the Arabic webfont loads; first measurements against fallback
+    // font metrics can misestimate fit.
+    let cancelled = false
+    document.fonts?.ready?.then(() => {
+      if (!cancelled) recalculate()
+    })
+
+    const observer = new ResizeObserver(recalculate)
+    observer.observe(forceFit ? container : wrapper)
+
+    return () => {
+      cancelled = true
+      observer.disconnect()
+    }
   }, [forceFit, font.arabic.size, font.arabic.family, verses, forceTabletScale])
 
   if (!page) return null
 
-  // Combines zoom tier scale and markerSafetyRatio into one zoom;
-  // margin-top re-derived so the marker stays centered regardless shrinkage
-  const markerZoomStyle = (tierScale: number) => {
-    const scale = tierScale * markerSafetyRatio
-    return css`
-      zoom: ${scale};
-      margin-top: calc(
-        ${LINE_HEIGHT}em / (2 * ${scale}) - ${MARKER_SIZE / 2}px
-      );
-    `
-  }
+  // Combines zoom tier scale with --marker-safety into one zoom;
+  // margin-top re-derived so the marker stays centered.
+  const markerZoomStyle = (tierScale: number) => css`
+    zoom: calc(var(--marker-safety, 1) * ${tierScale});
+    margin-top: calc(
+      ${LINE_HEIGHT}em / (2 * var(--marker-safety, 1) * ${tierScale}) -
+        ${MARKER_SIZE / 2}px
+    );
+  `
 
   return (
     <PageWrapper
@@ -198,7 +238,7 @@ export default function PageText({
                 `}
               />
             )}
-            {verseWords.map((word) => (
+            {verseWords.map((word, index) => (
               <WordSpan
                 key={`${word.chapterId}-${word.verse}-${word.order}`}
                 // no stopPropagation here to support drag gesture for page turn, etc
@@ -226,7 +266,10 @@ export default function PageText({
                 onPointerLeave={() => clearTimeout(wordTimeoutRef.current!)}
                 onPointerCancel={() => clearTimeout(wordTimeoutRef.current!)}
               >
-                {word.token}{" "}
+                {/* a non-breaking space before the marker glues it to the
+                    last word, so it can't strand alone on its own line */}
+                {word.token}
+                {index === verseWords.length - 1 ? " " : " "}
               </WordSpan>
             ))}
             <VerseMarker
@@ -288,10 +331,14 @@ const HighlightSpan = styled.span<{ $color?: string }>`
   background-color: ${({ $color }) => $color ?? "transparent"};
 `
 
-// force fit shrinks font-size by this factor per step, down to this floor,
-// until the page's content fits its frame with no scrollbar
-const FIT_SHRINK_FACTOR = 0.97
-const MIN_FIT_FONT_SIZE = 10
+// force fit binary-searches within this range for the largest font size
+// that fits the page's content with no scrollbar
+const MIN_FIT_FONT_SIZE = 6
+const FIT_SEARCH_ITERATIONS = 12 // ~0.01px precision over a 40px range
+// scrollHeight/clientHeight round to whole pixels, and a verse marker
+// tipping onto its own trailing line adds more height than a sub-pixel
+// fraction would - this margin keeps every fit comfortably clear of both
+const FIT_SAFETY_MARGIN = 8
 
 const PageWrapper = styled.div<{
   $font: FontSetting

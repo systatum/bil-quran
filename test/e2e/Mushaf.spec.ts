@@ -1,5 +1,5 @@
 import { Rendering } from "@constants/records/RenderingRecord"
-import { expect, Page, test } from "@playwright/test"
+import { expect, Locator, Page, test } from "@playwright/test"
 import { loadPaginationStyle, loadQuranWords } from "./tools/data"
 import {
   clickOn,
@@ -728,6 +728,196 @@ test.describe("Mushaf", () => {
         (el) => getComputedStyle(el).fontSize,
       )
       expect(parseFloat(afterFont)).toBeLessThan(parseFloat(beforeFont))
+
+      // the chosen size should land close to the boundary, not leave whole
+      // empty lines of slack at the bottom of the frame
+      const gap = await getContentGap(wrapper)
+      const lineHeight = parseFloat(afterFont) * 2
+      expect(gap).toBeGreaterThanOrEqual(0)
+      expect(gap).toBeLessThan(lineHeight)
+    })
+
+    test("recalculates when navigating to a previously-visited page", async ({
+      page,
+    }) => {
+      await setReadingStyle(page, "Mono-stitched")
+      await page.setViewportSize({ width: 500, height: 380 })
+      await gotoMushafPage(page, 3)
+
+      const box = await page.locator("[data-mushaf]").boundingBox()
+      const y = box!.y + box!.height / 2
+      const startX = box!.x + box!.width * 0.85
+      await dragHorizontally(page, startX, startX - 300, y)
+      const toggleLabel = page
+        .locator('[aria-label="stateful-form-label-wrapper"]')
+        .filter({ hasText: "Force fit" })
+        .first()
+      await expect(toggleLabel).toBeVisible({ timeout: 10_000 })
+      await toggleLabel.click()
+      await closeSidebar(page)
+
+      const wrapper = page.locator(".mushaf-page-text").first()
+      const readFont = () =>
+        wrapper.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))
+      const readFits = () =>
+        wrapper.evaluate(
+          (el) => el.scrollHeight <= (el.parentElement?.clientHeight ?? 0),
+        )
+
+      await expect.poll(readFits, { timeout: 5000 }).toBe(true)
+      const page3FontFirstVisit = await readFont()
+
+      // forward: left half, drag right
+      const leftStartX = box!.x + box!.width * 0.15
+      await dragHorizontally(page, leftStartX, leftStartX + 150, y)
+      await expect(page.locator("[data-mushaf]")).toHaveAttribute(
+        "data-page",
+        "4",
+      )
+      await expect.poll(readFits, { timeout: 5000 }).toBe(true)
+
+      // backward: right half, drag left (under the 260px settings-reveal
+      // distance, so it's a plain page turn)
+      await dragHorizontally(page, startX, startX - 150, y)
+      await expect(page.locator("[data-mushaf]")).toHaveAttribute(
+        "data-page",
+        "3",
+      )
+      await expect.poll(readFits, { timeout: 5000 }).toBe(true)
+      const page3FontSecondVisit = await readFont()
+
+      expect(page3FontSecondVisit).toBeCloseTo(page3FontFirstVisit, 1)
+    })
+
+    test("doesn't override the font if default fits", async ({ page }) => {
+      await setReadingStyle(page, "Mono-stitched")
+      // Generous viewport so the default font-size has clear headroom;
+      // this test doesn't exercise borderline fits.
+      await page.setViewportSize({ width: 800, height: 1400 })
+      await gotoMushafPage(page, 1)
+
+      const wrapper = page.locator(".mushaf-page-text").first()
+      const gapAtDefault = await getContentGap(wrapper)
+      // this test only makes sense when the default already fits with
+      // margin to spare - otherwise it isn't exercising the "skip" path
+      expect(gapAtDefault).toBeGreaterThan(1)
+
+      const defaultFont = await wrapper.evaluate(
+        (el) => getComputedStyle(el).fontSize,
+      )
+
+      const box = await page.locator("[data-mushaf]").boundingBox()
+      const y = box!.y + box!.height / 2
+      const startX = box!.x + box!.width * 0.85
+      await dragHorizontally(page, startX, startX - 300, y)
+      const toggleLabel = page
+        .locator('[aria-label="stateful-form-label-wrapper"]')
+        .filter({ hasText: "Force fit" })
+        .first()
+      await expect(toggleLabel).toBeVisible({ timeout: 10_000 })
+      await toggleLabel.click()
+      await closeSidebar(page)
+
+      // force fit shouldn't shrink anything - the default already fit
+      await expect
+        .poll(() => wrapper.evaluate((el) => getComputedStyle(el).fontSize), {
+          timeout: 2000,
+        })
+        .toBe(defaultFont)
+    })
+
+    test("rechecks after needed fonts loaded", async ({ page }) => {
+      await setReadingStyle(page, "Mono-stitched")
+
+      // Force-fit on, then cold-navigate to page 1: the Arabic webfont may still be loading
+      // when the first fit calculation runs, so this exercises the re-check-on-font-load path.
+      await gotoMushafPage(page, 1)
+      const box = await page.locator("[data-mushaf]").boundingBox()
+      const y = box!.y + box!.height / 2
+      const startX = box!.x + box!.width * 0.85
+      await dragHorizontally(page, startX, startX - 300, y)
+      const toggleLabel = page
+        .locator('[aria-label="stateful-form-label-wrapper"]')
+        .filter({ hasText: "Force fit" })
+        .first()
+      await expect(toggleLabel).toBeVisible({ timeout: 10_000 })
+      await toggleLabel.click()
+      await closeSidebar(page)
+
+      await page.goto("/#/m/madinah/1")
+      await page
+        .locator("[data-mushaf]")
+        .waitFor({ state: "visible", timeout: 15_000 })
+      await page.evaluate(() => document.fonts.ready)
+
+      const wrapper = page.locator(".mushaf-page-text").first()
+      await expect
+        .poll(
+          () =>
+            wrapper.evaluate(
+              (el) => el.scrollHeight <= (el.parentElement?.clientHeight ?? 0),
+            ),
+          { timeout: 5000 },
+        )
+        .toBe(true)
+    })
+
+    // Regression case: scrollHeight === clientHeight (both whole pixels) can still overflow
+    // by a hidden sub-pixel fraction and show a scrollbar.
+    test("settles with a safety margin", async ({ page }) => {
+      await setReadingStyle(page, "Mono-stitched")
+      await gotoMushafPage(page, 5)
+
+      const box = await page.locator("[data-mushaf]").boundingBox()
+      const y = box!.y + box!.height / 2
+      const startX = box!.x + box!.width * 0.85
+      await dragHorizontally(page, startX, startX - 300, y)
+      const toggleLabel = page
+        .locator('[aria-label="stateful-form-label-wrapper"]')
+        .filter({ hasText: "Force fit" })
+        .first()
+      await expect(toggleLabel).toBeVisible({ timeout: 10_000 })
+      await toggleLabel.click()
+      await closeSidebar(page)
+
+      const wrapper = page.locator(".mushaf-page-text").first()
+      await expect
+        .poll(() => getContentGap(wrapper), { timeout: 5000 })
+        .toBeGreaterThanOrEqual(1)
+    })
+
+    // regression case: these two pages were reported to still show a
+    // scrollbar at this exact viewport despite force fit being on
+    test("pages 13 and 15 at 402x874 have no scrollbar", async ({ page }) => {
+      await setReadingStyle(page, "Mono-stitched")
+      await page.setViewportSize({ width: 402, height: 874 })
+
+      for (const pageNumber of [13, 15]) {
+        await gotoMushafPage(page, pageNumber)
+        const box = await page.locator("[data-mushaf]").boundingBox()
+        const y = box!.y + box!.height / 2
+        const startX = box!.x + box!.width * 0.85
+        await dragHorizontally(page, startX, startX - 300, y)
+        const toggleLabel = page
+          .locator('[aria-label="stateful-form-label-wrapper"]')
+          .filter({ hasText: "Force fit" })
+          .first()
+        await expect(toggleLabel).toBeVisible({ timeout: 10_000 })
+        // only toggle on for the first page - it persists after
+        if (pageNumber === 13) await toggleLabel.click()
+        await closeSidebar(page)
+
+        const wrapper = page.locator(".mushaf-page-text").first()
+        await expect
+          .poll(() => getContentGap(wrapper), { timeout: 5000 })
+          .toBeGreaterThanOrEqual(1)
+
+        const hasVerticalScrollbar = await wrapper.evaluate((el) => {
+          const container = el.parentElement!
+          return container.scrollHeight > container.clientHeight
+        })
+        expect(hasVerticalScrollbar).toBe(false)
+      }
     })
 
     test("Dual-stitched fits each frame independently", async ({ page }) => {
@@ -839,6 +1029,20 @@ test.describe("Mushaf", () => {
     })
   })
 })
+
+/**
+ * Vertical gap between page content height and its frame. `min-height: 100%` stretches
+ * content to fill the frame and hides the gap; neutralizing it reveals the real difference.
+ */
+async function getContentGap(locator: Locator): Promise<number> {
+  return locator.evaluate((el) => {
+    const previous = el.style.minHeight
+    el.style.minHeight = "0"
+    const gap = (el.parentElement?.clientHeight ?? 0) - el.scrollHeight
+    el.style.minHeight = previous
+    return gap
+  })
+}
 
 /** The page's rendered Arabic word sequence, skips the verse marker and the Bismillah glyph */
 async function getRenderedWords(page: Page): Promise<string[]> {
