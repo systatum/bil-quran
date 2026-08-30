@@ -9,7 +9,7 @@ import useWordsState from "@hooks/states/WordsState"
 import useWordOccurrencesFinder from "@hooks/tools/useWordOccurrencesFinder"
 import { useTranslatedWords } from "@hooks/tools/useWordTranslations"
 import { haptic } from "@utils/haptic"
-import { useEffect, useLayoutEffect, useMemo, useRef } from "react"
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import styled, { css } from "styled-components"
 import { WordCell } from "../QuranPaper/VerseRow"
 import { Bismillah } from "../QuranPaper/VerseRow/Bismillah"
@@ -66,6 +66,9 @@ export default function PageText({
   const wordStartPosRef = useRef<{ x: number; y: number } | null>(null)
 
   const wrapperRef = useRef<HTMLDivElement>(null)
+  // 1 = native marker size; shrinks below 1 when the 2em line pitch can't fit
+  // the marker at its zoom tier, preventing line-box overflow.
+  const [markerSafetyRatio, setMarkerSafetyRatio] = useState(1)
 
   useEffect(() => {
     loadPagination()
@@ -100,9 +103,20 @@ export default function PageText({
   useLayoutEffect(() => {
     const wrapper = wrapperRef.current
     const container = wrapper?.parentElement
-    if (!forceFit || !wrapper || !container) {
-      if (wrapper) wrapper.style.fontSize = ""
-      return
+    if (!wrapper || !container) return
+
+    // Read back the actual rendered font-size to compute line-pitch safety.
+    const updateMarkerSafety = () => {
+      const fontPx = parseFloat(getComputedStyle(wrapper).fontSize)
+      setMarkerSafetyRatio(Math.min(1, (LINE_HEIGHT * fontPx) / MARKER_SIZE))
+    }
+
+    if (!forceFit) {
+      wrapper.style.fontSize = ""
+      updateMarkerSafety()
+      const observer = new ResizeObserver(updateMarkerSafety)
+      observer.observe(wrapper)
+      return () => observer.disconnect()
     }
 
     const fit = () => {
@@ -115,6 +129,7 @@ export default function PageText({
         size *= FIT_SHRINK_FACTOR
         wrapper.style.fontSize = `${size}px`
       }
+      updateMarkerSafety()
     }
 
     fit()
@@ -124,6 +139,18 @@ export default function PageText({
   }, [forceFit, font.arabic.size, font.arabic.family, verses, forceTabletScale])
 
   if (!page) return null
+
+  // Combines zoom tier scale and markerSafetyRatio into one zoom;
+  // margin-top re-derived so the marker stays centered regardless shrinkage
+  const markerZoomStyle = (tierScale: number) => {
+    const scale = tierScale * markerSafetyRatio
+    return css`
+      zoom: ${scale};
+      margin-top: calc(
+        ${LINE_HEIGHT}em / (2 * ${scale}) - ${MARKER_SIZE / 2}px
+      );
+    `
+  }
 
   return (
     <PageWrapper
@@ -140,121 +167,108 @@ export default function PageText({
           : undefined
 
         return (
-        <HighlightSpan
-          key={`${chapterId}:${verseNumber}`}
-          $color={highlightHex}
-        >
-          {Bismillah.isRenderableHere(verseNumber, chapterId) && (
-            <Bismillah
-              containerStyle={css`
-                font-size: ${BISMILLAH_SIZE * BISMILLAH_SCALE}px;
-                margin-top: ${BISMILLAH_MARGIN_TOP * BISMILLAH_SCALE}px;
+          <HighlightSpan
+            key={`${chapterId}:${verseNumber}`}
+            $color={highlightHex}
+          >
+            {Bismillah.isRenderableHere(verseNumber, chapterId) && (
+              <Bismillah
+                containerStyle={css`
+                  font-size: ${BISMILLAH_SIZE * BISMILLAH_SCALE}px;
+                  margin-top: ${BISMILLAH_MARGIN_TOP * BISMILLAH_SCALE}px;
 
-                @media (max-width: ${PHONE_BREAKPOINT}px) {
-                  font-size: ${BISMILLAH_SIZE * BISMILLAH_PHONE_SCALE}px;
-                  margin-top: ${BISMILLAH_MARGIN_TOP * BISMILLAH_PHONE_SCALE}px;
-                }
-                @media (min-width: ${PHONE_BREAKPOINT +
-                  1}px) and (max-width: ${TABLET_BREAKPOINT}px) {
-                  font-size: ${BISMILLAH_SIZE * BISMILLAH_TABLET_SCALE}px;
-                  margin-top: ${BISMILLAH_MARGIN_TOP *
-                  BISMILLAH_TABLET_SCALE}px;
-                }
+                  @media (max-width: ${PHONE_BREAKPOINT}px) {
+                    font-size: ${BISMILLAH_SIZE * BISMILLAH_PHONE_SCALE}px;
+                    margin-top: ${BISMILLAH_MARGIN_TOP *
+                    BISMILLAH_PHONE_SCALE}px;
+                  }
+                  @media (min-width: ${PHONE_BREAKPOINT +
+                    1}px) and (max-width: ${TABLET_BREAKPOINT}px) {
+                    font-size: ${BISMILLAH_SIZE * BISMILLAH_TABLET_SCALE}px;
+                    margin-top: ${BISMILLAH_MARGIN_TOP *
+                    BISMILLAH_TABLET_SCALE}px;
+                  }
 
-                ${forceTabletScale &&
-                css`
-                  font-size: ${BISMILLAH_SIZE * BISMILLAH_TABLET_SCALE}px;
-                  margin-top: ${BISMILLAH_MARGIN_TOP *
-                  BISMILLAH_TABLET_SCALE}px;
+                  ${forceTabletScale &&
+                  css`
+                    font-size: ${BISMILLAH_SIZE * BISMILLAH_TABLET_SCALE}px;
+                    margin-top: ${BISMILLAH_MARGIN_TOP *
+                    BISMILLAH_TABLET_SCALE}px;
+                  `}
                 `}
-              `}
-            />
-          )}
-          {verseWords.map((word) => (
-            <WordSpan
-              key={`${word.chapterId}-${word.verse}-${word.order}`}
-              // no stopPropagation here to support drag gesture for page turn, etc
-              onPointerDown={(e) => {
-                wordStartPosRef.current = { x: e.clientX, y: e.clientY }
-                wordTimeoutRef.current = setTimeout(() => {
-                  haptic()
-                  openLexeme(word)
-                  findWordsOccurrences(word)
-                }, 500)
-              }}
-              onPointerMove={(e) => {
-                const start = wordStartPosRef.current
-                if (!start) return
-                const moved = Math.hypot(
-                  e.clientX - start.x,
-                  e.clientY - start.y,
-                )
-                // finger is dragging (eg. to turn the page), not holding
-                // still - don't also open the lexeme dialog
-                if (moved > MOVE_CANCEL_THRESHOLD)
-                  clearTimeout(wordTimeoutRef.current!)
-              }}
-              onPointerUp={() => clearTimeout(wordTimeoutRef.current!)}
-              onPointerLeave={() => clearTimeout(wordTimeoutRef.current!)}
-              onPointerCancel={() => clearTimeout(wordTimeoutRef.current!)}
-            >
-              {word.token}{" "}
-            </WordSpan>
-          ))}
-          <VerseMarker
-            chapterId={chapterId}
-            verseNumber={verseNumber}
-            containerStyle={css`
-              display: inline-flex;
-              /* stops PageWrapper's line-height: 2 from inheriting into
+              />
+            )}
+            {verseWords.map((word) => (
+              <WordSpan
+                key={`${word.chapterId}-${word.verse}-${word.order}`}
+                // no stopPropagation here to support drag gesture for page turn, etc
+                onPointerDown={(e) => {
+                  wordStartPosRef.current = { x: e.clientX, y: e.clientY }
+                  wordTimeoutRef.current = setTimeout(() => {
+                    haptic()
+                    openLexeme(word)
+                    findWordsOccurrences(word)
+                  }, 500)
+                }}
+                onPointerMove={(e) => {
+                  const start = wordStartPosRef.current
+                  if (!start) return
+                  const moved = Math.hypot(
+                    e.clientX - start.x,
+                    e.clientY - start.y,
+                  )
+                  // finger is dragging (eg. to turn the page), not holding
+                  // still - don't also open the lexeme dialog
+                  if (moved > MOVE_CANCEL_THRESHOLD)
+                    clearTimeout(wordTimeoutRef.current!)
+                }}
+                onPointerUp={() => clearTimeout(wordTimeoutRef.current!)}
+                onPointerLeave={() => clearTimeout(wordTimeoutRef.current!)}
+                onPointerCancel={() => clearTimeout(wordTimeoutRef.current!)}
+              >
+                {word.token}{" "}
+              </WordSpan>
+            ))}
+            <VerseMarker
+              chapterId={chapterId}
+              verseNumber={verseNumber}
+              containerStyle={css`
+                display: inline-flex;
+                /* stops PageWrapper's line-height: 2 from inheriting into
                  the marker's number and pushing the glyph off-center */
-              line-height: normal;
-              /* the marker's own number is Latin digits, not Arabic - the
+                line-height: normal;
+                /* the marker's own number is Latin digits, not Arabic - the
                  Quranic font's Latin glyphs sit at a different baseline
                  than a normal UI font, which reads as "pushed up" */
-              font-family:
-                -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
-                sans-serif;
+                font-family:
+                  -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+                  sans-serif;
 
-              /* vertical-align: middle aligns to the surrounding text's
+                /* vertical-align: middle aligns to the surrounding text's
                  x-height, not the true center of an 85px line - that gap
                  grows with line-height and is font-metric dependent, so
                  "top" (a fixed reference) plus a computed margin centers
                  it exactly instead, regardless of the font in use */
-              vertical-align: top;
-              margin-top: calc((${LINE_HEIGHT}em - ${MARKER_SIZE}px) / 2);
+                vertical-align: top;
+                ${markerZoomStyle(1)}
 
-              /* zoom, not transform: scale - transform only repaints
+                /* zoom, not transform: scale - transform only repaints
                  smaller, it doesn't shrink the marker's own layout box,
                  so it would still force the line taller than the text.
                  zoom also rescales margin-top itself though, so the
                  formula divides by scale again to cancel that out */
               @media (max-width: ${PHONE_BREAKPOINT}px) {
-                zoom: ${PHONE_SCALE};
-                margin-top: calc(
-                  ${LINE_HEIGHT}em / (2 * ${PHONE_SCALE}) - ${MARKER_SIZE / 2}px
-                );
-              }
-              @media (min-width: ${PHONE_BREAKPOINT +
-                1}px) and (max-width: ${TABLET_BREAKPOINT}px) {
-                zoom: ${TABLET_SCALE};
-                margin-top: calc(
-                  ${LINE_HEIGHT}em / (2 * ${TABLET_SCALE}) -
-                    ${MARKER_SIZE / 2}px
-                );
-              }
+                  ${markerZoomStyle(PHONE_SCALE)}
+                }
+                @media (min-width: ${PHONE_BREAKPOINT +
+                  1}px) and (max-width: ${TABLET_BREAKPOINT}px) {
+                  ${markerZoomStyle(TABLET_SCALE)}
+                }
 
-              ${forceTabletScale &&
-              css`
-                zoom: ${TABLET_SCALE};
-                margin-top: calc(
-                  ${LINE_HEIGHT}em / (2 * ${TABLET_SCALE}) -
-                    ${MARKER_SIZE / 2}px
-                );
+                ${forceTabletScale && markerZoomStyle(TABLET_SCALE)}
               `}
-            `}
-          />{" "}
-        </HighlightSpan>
+            />{" "}
+          </HighlightSpan>
         )
       })}
     </PageWrapper>

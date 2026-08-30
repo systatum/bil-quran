@@ -9,6 +9,7 @@ import {
   gotoMushafPage,
   longPress,
   openSidebar,
+  selectComboBox,
   setReadingStyle,
   showNavigatorSearch,
   swipeToNextMushafPage,
@@ -717,8 +718,7 @@ test.describe("Mushaf", () => {
           () =>
             wrapper.evaluate(
               (el) =>
-                el.scrollHeight <=
-                (el.parentElement?.clientHeight ?? Infinity),
+                el.scrollHeight <= (el.parentElement?.clientHeight ?? Infinity),
             ),
           { timeout: 5000 },
         )
@@ -765,6 +765,77 @@ test.describe("Mushaf", () => {
           )
           .toBe(true)
       }
+    })
+  })
+
+  test.describe("Verse marker line-pitch safety", () => {
+    test("manually tiny font size still keeps the marker within its line", async ({
+      page,
+    }) => {
+      await setReadingStyle(page, "Mono-stitched")
+      await gotoMushafPage(page, 2)
+
+      const box = await page.locator("[data-mushaf]").boundingBox()
+      const y = box!.y + box!.height / 2
+      const startX = box!.x + box!.width * 0.85
+      await dragHorizontally(page, startX, startX - 300, y)
+      await expect(
+        page.locator('[aria-label="settings-backup-button"]'),
+      ).toBeVisible({ timeout: 10_000 })
+
+      await selectComboBox("15", page, { formLabel: "Size" })
+      await closeSidebar(page)
+
+      const marker = page.locator('[aria-label="verse-bookmarker-btn"]').first()
+      await expect(marker).toBeVisible()
+
+      // line pitch at 15px font = 2 * 15 = 30px; the marker must fit inside
+      // it, or it overflows into the next line and desyncs the ruled lines
+      await expect
+        .poll(async () => (await marker.boundingBox())!.height, {
+          timeout: 5000,
+        })
+        .toBeLessThanOrEqual(31)
+    })
+
+    test("force-fit shrinking past the marker's native size still keeps it within its line", async ({
+      page,
+    }) => {
+      await setReadingStyle(page, "Mono-stitched")
+      await page.setViewportSize({ width: 500, height: 250 })
+      await gotoMushafPage(page, 2)
+
+      const box = await page.locator("[data-mushaf]").boundingBox()
+      const y = box!.y + box!.height / 2
+      const startX = box!.x + box!.width * 0.85
+      await dragHorizontally(page, startX, startX - 300, y)
+
+      const toggleLabel = page
+        .locator('[aria-label="stateful-form-label-wrapper"]')
+        .filter({ hasText: "Force fit" })
+        .first()
+      await expect(toggleLabel).toBeVisible({ timeout: 10_000 })
+      await toggleLabel.click()
+      await closeSidebar(page)
+
+      // At this viewport, force-fit may bottom out at its 10px floor without fully clearing
+      // overflow; the marker must still respect whatever line pitch that floor produces.
+      const wrapper = page.locator(".mushaf-page-text").first()
+      await expect
+        .poll(
+          () =>
+            wrapper.evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
+          { timeout: 5000 },
+        )
+        .toBeLessThan(42.5)
+
+      const fontPx = await wrapper.evaluate((el) =>
+        parseFloat(getComputedStyle(el).fontSize),
+      )
+      const marker = page.locator('[aria-label="verse-bookmarker-btn"]').first()
+      const markerBox = await marker.boundingBox()
+
+      expect(markerBox!.height).toBeLessThanOrEqual(2 * fontPx + 1)
     })
   })
 })
