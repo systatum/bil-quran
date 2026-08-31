@@ -328,8 +328,7 @@ const Wrapper = styled.div<{ $theme: ThemeMode }>`
   display: flex;
   justify-content: center;
   align-items: center;
-  background: ${({ $theme }) =>
-    $theme === "dark" ? "rgb(31, 31, 31)" : "white"};
+  background: ${({ $theme }) => ($theme === "dark" ? "#181818" : "#f6f1e7")};
 `
 
 const PageBox = styled.div`
