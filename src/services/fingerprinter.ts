@@ -18,6 +18,9 @@ const fingerprintsPath = `${quranBasePath}fingerprints.json`
 let remoteFingerprintsPromise: Promise<NotarizedAsset | null> | null = null
 const readFingerprints: NotarizedAsset = {}
 
+/** Dedupes concurrent/repeat `readJson` calls for the same URL within a page load. */
+const assetJsonCache = new Map<AssetPath, Promise<unknown>>()
+
 export class FingerprintedAsset {
   static Quran = {
     getChaptersMetadata: async <T>(): Promise<T> => {
@@ -60,13 +63,24 @@ export class FingerprintedAsset {
   static async readJson<T>(assetPath: string): Promise<T> {
     await recordRead(assetPath)
 
-    const response = await fetch(assetPath, { cache: "no-cache" })
-    if (!response.ok) {
-      LOGGER.error(`Unable to load asset: ${assetPath}`)
-      throw new Error(`Unable to load asset: ${assetPath}`)
-    }
+    const cached = assetJsonCache.get(assetPath)
+    if (cached) return cached as Promise<T>
 
-    return response.json()
+    const promise = (async () => {
+      const response = await fetch(assetPath, { cache: "no-cache" })
+      if (!response.ok) {
+        LOGGER.error(`Unable to load asset: ${assetPath}`)
+        throw new Error(`Unable to load asset: ${assetPath}`)
+      }
+
+      return response.json()
+    })()
+
+    assetJsonCache.set(assetPath, promise)
+    // Evict on failure so a later retry can still fetch.
+    promise.catch(() => assetJsonCache.delete(assetPath))
+
+    return promise as Promise<T>
   }
 }
 

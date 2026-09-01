@@ -1,6 +1,8 @@
-import { Locale } from "@constants/settings"
 import { Dict } from "styled-components/dist/types"
 import { isPlainObject } from "./checker"
+
+// Re-exported for backward compat: pickLocalized itself now lives in ./picker.
+export { pickLocalized } from "./picker"
 
 export type DeepPartial<T> = {
   [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K]
@@ -68,25 +70,6 @@ export function makeSnippet<T>(
 }
 
 /**
- * From a partial locale-keyed record, extract the present entries and map each
- * value through `pick`. Only locales that exist in the source are included.
- *
- * @example
- * pickLocalized({ "en-US": "Hello", "id-ID": "Halo" }, (v) => v.toUpperCase())
- * // → { "en-US": "HELLO", "id-ID": "HALO" }
- */
-export function pickLocalized<V, R>(
-  record: Partial<Record<Locale, V>>,
-  pick: (value: V) => R,
-): Partial<Record<Locale, R>> {
-  return Object.fromEntries(
-    (Object.values(Locale) as Locale[])
-      .filter((l) => record[l] != null)
-      .map((l) => [l, pick(record[l]!)]),
-  ) as Partial<Record<Locale, R>>
-}
-
-/**
  * Immutably set a value at a nested key path, spreading existing values at
  * each level. Missing intermediate objects are initialised as empty records.
  *
@@ -118,4 +101,23 @@ export function mergeKeys<T extends Record<string | number, unknown>>(
  */
 export async function pause(ms: number) {
   return new Promise((f) => setTimeout(f, ms))
+}
+
+/**
+ * Runs `queryChunk` over `items` in `chunkSize`-sized pieces, yielding
+ * between each. A single query with thousands of `IN (...)` params is one
+ * atomic sql.js call that can't be interrupted, so chunking has to happen
+ * around the query itself rather than around its result.
+ */
+export async function queryInChunks<TItem, TResult>(
+  items: TItem[],
+  chunkSize: number,
+  queryChunk: (chunk: TItem[]) => Promise<TResult[]>,
+): Promise<TResult[]> {
+  const results: TResult[] = []
+  for (let i = 0; i < items.length; i += chunkSize) {
+    results.push(...(await queryChunk(items.slice(i, i + chunkSize))))
+    await pause(0)
+  }
+  return results
 }

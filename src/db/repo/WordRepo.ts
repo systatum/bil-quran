@@ -6,9 +6,20 @@ import {
 } from "@constants/records/WordRecord"
 import { withDb } from "@db/driver"
 import { unpackIPC } from "@services/Converter"
+import { pause, queryInChunks } from "@services/mutator"
 import { and, eq, inArray } from "drizzle-orm"
 import { conditional, Repository } from "./Repository"
 import { lexemes, roots, words as schema } from "./tables"
+
+// sql.js runs SQLite synchronously on the main thread with no worker, so a
+// long loop or a query with thousands of `IN (...)` params blocks input and
+// paint for its full duration.
+//
+// Yielding is row-based here (one `words` row per verse, ~12 lexemeIds each)
+// rather than word-based, so the threshold is lower than seedVerses()'s
+// per-word YIELD_EVERY to land on a similar number of words between yields.
+const ROW_YIELD_EVERY = 200
+const QUERY_CHUNK_SIZE = 1000
 
 class WordRepo extends Repository<typeof schema, WordRecord> {
   constructor() {
@@ -164,21 +175,27 @@ class WordRepo extends Repository<typeof schema, WordRecord> {
         )
         if (allIds.length === 0) return newIPCResponse({ data: [] })
 
-        const lexemeList = await db
-          .select({
-            id: lexemes.id,
-            token: lexemes.token,
-            readings: lexemes.readings,
-            root: { id: roots.id, root: roots.root },
-          })
-          .from(lexemes)
-          .innerJoin(roots, eq(lexemes.rootId, roots.id))
-          .where(inArray(lexemes.id, allIds))
+        const lexemeList = await queryInChunks(
+          allIds,
+          QUERY_CHUNK_SIZE,
+          async (chunk) =>
+            db
+              .select({
+                id: lexemes.id,
+                token: lexemes.token,
+                readings: lexemes.readings,
+                root: { id: roots.id, root: roots.root },
+              })
+              .from(lexemes)
+              .innerJoin(roots, eq(lexemes.rootId, roots.id))
+              .where(inArray(lexemes.id, chunk)),
+        )
 
         const lexemeMap = new Map(lexemeList.map((l) => [l.id, l]))
 
         const result: WordWithLexemeRecord[] = []
-        for (const row of wordRows) {
+        for (let i = 0; i < wordRows.length; i++) {
+          const row = wordRows[i]
           row.lexemeIds.forEach((id, idx) => {
             const lex = lexemeMap.get(id)
             if (!lex) return
@@ -194,6 +211,8 @@ class WordRepo extends Repository<typeof schema, WordRecord> {
               readings: lex.readings,
             })
           })
+
+          if (i % ROW_YIELD_EVERY === 0) await pause(0)
         }
 
         return newIPCResponse({ data: result })

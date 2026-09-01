@@ -19,6 +19,22 @@ export interface ExegesisSource {
   availableLocales: Locale[]
 }
 
+/** Slug identifying a specific exegesis work, matching its directory name under `exegesis/`. */
+export enum ExegesisWork {
+  AliQuli = "aliquli",
+  MirAli = "mirali",
+  IbnKathir = "ibnkathir",
+}
+
+export namespace ExegesisWork {
+  export function isValid(value: string): value is ExegesisWork {
+    return Object.values(ExegesisWork).includes(value as ExegesisWork)
+  }
+}
+
+/** Fallback exegesis work when a URL names one that isn't valid (see `Asset.resolveExegesisId`). */
+export const DEFAULT_FEED_EXEGESIS_WORK: ExegesisWork = ExegesisWork.MirAli
+
 export interface Asset {
   /**
    * Metadata for each of the Quranic chapters
@@ -36,6 +52,8 @@ export interface Asset {
   exegesisAssetUrlOf: (id: string, locale: Locale, chapterId: number) => string
   /** Find default exegesis id for first-time. */
   defaultExegesisId: (locale: Locale) => string | null
+  /** Resolve a full exegesisId ("slug/locale") for the given work, falling back to en-US if unavailable in `locale`. Null if the work isn't a known source. */
+  resolveExegesisId: (work: ExegesisWork, locale: Locale) => string | null
 }
 
 export const basePath = `${typeof window !== "undefined" ? window.location.origin : ""}${process.env.PUBLIC_URL}`
@@ -64,12 +82,17 @@ export const Asset: Asset = {
   exegesisSources: [
     {
       name: "Ali Quli Qara'i",
-      path: `${exegesisBasePath}/aliquli`,
+      path: `${exegesisBasePath}/${ExegesisWork.AliQuli}`,
       availableLocales: [Locale.IntEnglish],
     },
     {
       name: "Mir Ahmad Ali",
-      path: `${exegesisBasePath}/mirali`,
+      path: `${exegesisBasePath}/${ExegesisWork.MirAli}`,
+      availableLocales: [Locale.IntEnglish],
+    },
+    {
+      name: "Ibn Kathir",
+      path: `${exegesisBasePath}/${ExegesisWork.IbnKathir}`,
       availableLocales: [Locale.IntEnglish],
     },
   ],
@@ -86,13 +109,15 @@ export const Asset: Asset = {
     if (!source) throw new Error(`Unknown exegesis source: ${id.split("/")[0]}`)
     return `${source.path}/${locale}/${chapterId}.json`
   },
-  defaultExegesisId(locale) {
-    const source = Asset.exegesisOf("aliquli")
+  resolveExegesisId(work, locale) {
+    const source = Asset.exegesisOf(work)
     if (!source) return null
-    const slug = source.path.split("/").pop()!
     const resolvedLocale = source.availableLocales.includes(locale)
       ? locale
       : Locale.IntEnglish
-    return `${slug}/${resolvedLocale}`
+    return `${work}/${resolvedLocale}`
+  },
+  defaultExegesisId(locale) {
+    return Asset.resolveExegesisId(ExegesisWork.AliQuli, locale)
   },
 }

@@ -26,8 +26,9 @@
       "@i18n/*": ["./src/i18n/*"],
       "@services": ["./src/services/index.ts"],
       "@services/*": ["./src/services/*"],
+      "@utils/*": ["./src/utils/*"],
       "@ui/*": ["./src/ui/*"]
     }
   },
-  "include": ["src", "scripts"]
+  "include": ["src", "scripts", "global.ts"]
 }

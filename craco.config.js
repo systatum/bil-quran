@@ -27,6 +27,7 @@ module.exports = {
       "@i18n": path.resolve(__dirname, "src/i18n"),
       "@services": path.resolve(__dirname, "src/services"),
       "@ui": path.resolve(__dirname, "src/ui"),
+      "@utils": path.resolve(__dirname, "src/utils"),
     },
   },
 

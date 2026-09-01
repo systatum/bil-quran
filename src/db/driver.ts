@@ -36,12 +36,32 @@ export async function getClient(): Promise<Database> {
   return client
 }
 
+// IndexedDB doesn't guarantee commit order, so concurrent persistDb() calls
+// could let a stale snapshot overwrite a fresher one. Coalesce instead of
+// queuing each call separately: at most one write in flight, plus the
+// latest pending snapshot, so a burst of callers doesn't pile up a long
+// serial backlog — it just writes the newest state once the current write finishes.
+let writing: Promise<void> | null = null
+let pendingSnapshot: Uint8Array | null = null
+
 export async function persistDb(): Promise<void> {
   if (!client) return
 
-  LOGGER.debug("Persisting database changes")
-  await set(DATABASE_KEY, client.export())
-  LOGGER.debug("Database changes persisted to: " + DATABASE_KEY)
+  pendingSnapshot = client.export()
+  if (writing) return writing
+
+  writing = (async () => {
+    while (pendingSnapshot) {
+      const snapshot = pendingSnapshot
+      pendingSnapshot = null
+      LOGGER.debug("Persisting database changes")
+      await set(DATABASE_KEY, snapshot)
+      LOGGER.debug("Database changes persisted to: " + DATABASE_KEY)
+    }
+    writing = null
+  })()
+
+  return writing
 }
 
 export type DbConn = ReturnType<typeof drizzle>

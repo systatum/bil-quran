@@ -34,13 +34,33 @@ const verseRoute = createRoute({
 const exegesisRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/e/$chapter/$verse",
+  // Keep types as parsed; retyping here makes the router re-quote the URL. Coerce at the call site.
+  validateSearch: (search: Record<string, unknown>) => ({
+    tafsir: search.tafsir,
+    transliteration: search.transliteration,
+    locale: search.locale,
+  }),
   component: () => <UIIndex openExegesisOnMount />,
+})
+
+const aboutRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/about",
+  component: () => <UIIndex openAboutOnMount />,
+})
+
+const aboutScreenRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/about/$screen",
+  component: () => <UIIndex openAboutOnMount />,
 })
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
   verseRoute,
   exegesisRoute,
+  aboutRoute,
+  aboutScreenRoute,
 ])
 
 export const router = createRouter({

@@ -1,6 +1,11 @@
 import { expect, test } from "@playwright/test"
-import { clickOn, openSidebar, selectComboBox } from "./tools/interactivity"
-import { visitFresh } from "./tools/state"
+import {
+  clickOn,
+  fillIn,
+  openSidebar,
+  selectComboBox,
+} from "./tools/interactivity"
+import { getPageLuminance, untilUsable, visitFresh } from "./tools/state"
 
 test.describe("BackupDialog", () => {
   test.beforeEach(async ({ page }) => await visitFresh(page))
@@ -21,8 +26,8 @@ test.describe("BackupDialog", () => {
     )
     expect(clipboardText).toBe(encoded)
 
-    // Copy must not close the dialog — user may still want to Download too
-    await expect(page.getByText("Backup your data")).toBeVisible({
+    // Copy must not close the screen, user may still want to Download too
+    await expect(page.getByText("Export your data")).toBeVisible({
       timeout: 5000,
     })
   })
@@ -44,8 +49,8 @@ test.describe("BackupDialog", () => {
       `bilQuran-${yy}${mm}${dd}-state.systatum`,
     )
 
-    // unlike Copy, Download still closes the dialog
-    await expect(page.getByText("Backup your data")).not.toBeVisible({
+    // Download stays on the Export screen, same as Copy
+    await expect(page.getByText("Export your data")).toBeVisible({
       timeout: 5000,
     })
   })
@@ -66,5 +71,36 @@ test.describe("BackupDialog", () => {
 
     const raw = await page.evaluate(() => localStorage.getItem("userSettings"))
     expect(decoded).toBe(raw)
+  })
+
+  test("can restore", async ({ page }) => {
+    await openSidebar(page)
+    await selectComboBox("Dark", page, { formLabel: "Theme" })
+    await page.waitForTimeout(300)
+    expect(await getPageLuminance(page)).toBeLessThan(128)
+
+    await clickOn("Backup", page, { role: "button" })
+    const encoded = await page.locator("#export-textarea").inputValue()
+    expect(encoded.length).toBeGreaterThan(0)
+
+    // back to Settings, then switch to light, so importing is what brings
+    // dark back rather than dark simply never having left
+    await page.locator("#export-back-button").click()
+    await page.waitForTimeout(400)
+
+    await selectComboBox("Light", page, { formLabel: "Theme" })
+    await page.waitForTimeout(300)
+    expect(await getPageLuminance(page)).toBeGreaterThan(128)
+
+    await clickOn("Backup", page, { role: "button" })
+    await page.locator("#open-import-button").click()
+
+    await fillIn(encoded, page, { id: "import-textarea" })
+    await clickOn("Import", page, { role: "button" })
+
+    await page.waitForLoadState("load")
+    await untilUsable(page)
+    await page.waitForTimeout(300)
+    expect(await getPageLuminance(page)).toBeLessThan(128)
   })
 })

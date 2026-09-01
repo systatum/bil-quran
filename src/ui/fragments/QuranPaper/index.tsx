@@ -8,9 +8,9 @@ import useChaptersState from "../../hooks/states/ChaptersState"
 import useUserSettingsState from "../../hooks/states/UserSettingsState"
 import ChapterRow from "./ChapterRow"
 import ModalDialog from "./ModalDialog"
-import PaperDialog from "./PaperDialog"
-import VerseRow, { Verse } from "./VerseRow"
+import VerseRow, { useGroupedVerses, Verse } from "./VerseRow"
 import { Bismillah } from "./VerseRow/Bismillah"
+import useAppState from "@hooks/states/AppState"
 
 // This module contains the content browser of the Quran.
 // It includes various components to build the verse, and
@@ -37,7 +37,6 @@ function isVerseRow(row: RenderRow): row is RenderableVerseRow {
 }
 
 interface QuranBrowserProps {
-  onScroll: (verseRow: Verse) => void
   theme: ThemeMode
 
   // if given, will scroll to this location
@@ -50,21 +49,26 @@ interface QuranBrowserProps {
  * It defines the coordinate system for all offset calculations.
  */
 export default function QuranPaper({
-  onScroll,
   theme = "dark",
   chapterId: requestedChapterId,
   verseNumber: requestedVerseNumber,
 }: QuranBrowserProps) {
+  const { setIsSearchOpen } = useAppState()
   const parentRef = useRef<HTMLDivElement>(null)
 
   const { chapters } = useChaptersState()
-  const { setScrollPosition, userSettings } = useUserSettingsState()
+  const wbwTranslations = useUserSettingsState(
+    (s) => s.userSettings.wbwTranslations,
+  )
+  const showTransliteration = useUserSettingsState(
+    (s) => s.userSettings.showTransliteration,
+  )
+  const setScrollPosition = useUserSettingsState((s) => s.setScrollPosition)
 
   const rawWords = useWords()
-  const words = useTranslatedWords(rawWords, userSettings.wbwTranslations)
+  const words = useTranslatedWords(rawWords, wbwTranslations)
 
   // some flags about the rendering
-  const [showTransliteration, setShowTransliteration] = useState(false)
   const [showMeaning, setShowMeaning] = useState(true)
 
   /**
@@ -77,10 +81,7 @@ export default function QuranPaper({
    * Group words into verses.
    * This is semantic grouping only (not layout logic).
    */
-  const verses = useMemo<Verse[]>(
-    () => VerseRow.groupVerse(chapters, words),
-    [words],
-  )
+  const verses = useGroupedVerses(chapters, words)
 
   const renderRows = useMemo<RenderRow[]>(() => {
     // the chapters data must be ready first
@@ -124,6 +125,12 @@ export default function QuranPaper({
   const hasRestoredScrollRef = useRef(false)
   // prevent recording while programmatically restoring.
   const isRestoringScrollRef = useRef(false)
+
+  // Read via ref, not as an effect dep — renderRows churns during
+  // background seeding and would tear down the listener mid-debounce.
+  const renderRowsRef = useRef(renderRows)
+  renderRowsRef.current = renderRows
+
   useEffect(() => {
     const el = parentRef.current
     if (!el) return
@@ -138,8 +145,9 @@ export default function QuranPaper({
       timeout = window.setTimeout(() => {
         if (!el) return
 
+        const currentRenderRows = renderRowsRef.current
         const visibleItems = virtualizer.getVirtualItems().filter((item) => {
-          const row = renderRows[item.index]
+          const row = currentRenderRows[item.index]
           if (!row) return false
           if (!isVerseRow(row)) return false
 
@@ -156,18 +164,17 @@ export default function QuranPaper({
         // "current" verse, instead of the previous earlier verse that may even partially
         // visible -- which, if there's no chapter row, will be a perfect-esque candidate
         const selected = visibleItems[0]
-        let row = renderRows[selected.index]
+        let row = currentRenderRows[selected.index]
         if (selected.index > 1) {
-          if (renderRows[selected.index - 1].type === "chapter") {
+          if (currentRenderRows[selected.index - 1].type === "chapter") {
             // tried to backtrack, but got a chapter row; so skip
           } else {
-            row = renderRows[selected.index + 1]
+            row = currentRenderRows[selected.index + 1]
           }
         }
 
         if (!row || row.type !== "verse") return
         const verse = row.verse
-        if (onScroll) onScroll(row.verse)
 
         setScrollPosition(verse.chapter.id, verse.number)
       }, 120)
@@ -179,7 +186,7 @@ export default function QuranPaper({
       clearTimeout(timeout)
       el.removeEventListener("scroll", recordScrolling)
     }
-  }, [renderRows])
+  }, [virtualizer.scrollElement])
 
   async function waitForMeasurements() {
     return new Promise<void>((resolve) => {
@@ -205,7 +212,11 @@ export default function QuranPaper({
     })
   }
 
-  async function scrollToVerse(chapterId: number, verse: number) {
+  /** @returns whether the target verse was found and actually scrolled to. */
+  async function scrollToVerse(
+    chapterId: number,
+    verse: number,
+  ): Promise<boolean> {
     const targetIndex = renderRows.findIndex((row) => {
       return (
         row.type === "verse" &&
@@ -215,7 +226,7 @@ export default function QuranPaper({
     })
 
     // cannot find the target index? done deal
-    if (targetIndex < 0) return
+    if (targetIndex < 0) return false
     // mark that we are currently "restoring" scroll
     isRestoringScrollRef.current = true
 
@@ -225,7 +236,7 @@ export default function QuranPaper({
     await document.fonts.ready
 
     // essentially: wait until multiple pass of painting, before scrolling
-    return new Promise<void>((resolve) => {
+    return new Promise<boolean>((resolve) => {
       requestAnimationFrame(() => {
         // on this paint, document might be resized due to font having been
         // downloaded
@@ -252,7 +263,7 @@ export default function QuranPaper({
             // reenable persistence after much more stable
             window.setTimeout(() => {
               isRestoringScrollRef.current = false
-              resolve()
+              resolve(true)
             }, 300)
           })
         })
@@ -272,7 +283,7 @@ export default function QuranPaper({
     }
 
     async function restoreScroll() {
-      const { lastScroll } = userSettings
+      const { lastScroll } = useUserSettingsState.getState().userSettings
       if (lastScroll.chapterId > 0) {
         await waitForMeasurements()
         await scrollToVerse(lastScroll.chapterId, lastScroll.verse)
@@ -283,19 +294,46 @@ export default function QuranPaper({
     restoreScroll()
   }, [renderRows, requestedChapterId, requestedVerseNumber])
 
+  // Always the latest scrollToVerse, so a delayed call below re-reads
+  // current renderRows instead of a stale snapshot.
+  const scrollToVerseRef = useRef(scrollToVerse)
+  scrollToVerseRef.current = scrollToVerse
+
+  // Caps re-scrolling for a deep-linked verse: one attempt, one delayed
+  // recorrect, then done — instead of re-running on every renderRows
+  // change (background seeding), which starved scroll-position recording.
+  const scrolledToRequestRef = useRef<string | null>(null)
+  const scrollRequestInFlightRef = useRef<string | null>(null)
   useEffect(() => {
-    // must have rows on the page
     if (renderRows.length === 0) return
-    // must both be provided
     if (!requestedChapterId || !requestedVerseNumber) return
-    scrollToVerse(requestedChapterId, requestedVerseNumber)
+
+    const requestKey = `${requestedChapterId}:${requestedVerseNumber}`
+    if (scrolledToRequestRef.current === requestKey) return
+    if (scrollRequestInFlightRef.current === requestKey) return
+
+    scrollRequestInFlightRef.current = requestKey
+    ;(async () => {
+      const scrolled = await scrollToVerseRef.current(
+        requestedChapterId,
+        requestedVerseNumber,
+      )
+      if (scrolled) {
+        await new Promise((resolve) => window.setTimeout(resolve, 500))
+        await scrollToVerseRef.current(requestedChapterId, requestedVerseNumber)
+        scrolledToRequestRef.current = requestKey
+      }
+      if (scrollRequestInFlightRef.current === requestKey)
+        scrollRequestInFlightRef.current = null
+    })()
   }, [requestedChapterId, requestedVerseNumber, renderRows])
 
   // Always points at the latest restore-to-last-position logic so the
   // resize effect (empty deps, no re-registration) can call it.
   const scrollRestoreRef = useRef<(() => Promise<void>) | null>(null)
   scrollRestoreRef.current = async () => {
-    const { chapterId, verse } = userSettings.lastScroll
+    const { chapterId, verse } =
+      useUserSettingsState.getState().userSettings.lastScroll
     if (chapterId > 0) {
       await waitForMeasurements()
       await scrollToVerse(chapterId, verse)
@@ -331,6 +369,10 @@ export default function QuranPaper({
   return (
     <div
       ref={parentRef}
+      onClick={() => {
+        // Close the search sheet when a verse is selected from the search results.
+        setIsSearchOpen(false)
+      }}
       style={{
         height: "calc(100vh - 64px)",
         overflow: "auto",
@@ -345,7 +387,6 @@ export default function QuranPaper({
         }}
       >
         <ModalDialog />
-        <PaperDialog />
 
         {items.map((item) => {
           const row = renderRows[item.index]

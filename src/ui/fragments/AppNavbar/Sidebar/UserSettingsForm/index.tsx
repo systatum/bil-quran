@@ -1,19 +1,28 @@
 import { Asset } from "@constants/assets"
 import { ArabicFonts, getAllPossibleFontSizeOptions } from "@constants/fonts"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
+import { SAJDAH_SCHOOLS } from "@constants/SajdahVerse"
 import { BasmalaPosition, Locale } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import useExegesisOptions from "@hooks/tools/useExegesisOptions"
 import useFonts from "@hooks/tools/useFonts"
+import useProstrationVersesSchoolOptions from "@hooks/tools/useProstrationVersesSchoolOptions"
 import { isProperThemeValue, messages } from "@i18n/message"
+import { RiArrowRightSLine, RiBookOpenLine } from "@remixicon/react"
 import { ComboboxOption } from "@systatum/coneto/combobox"
+import { ScreenProps } from "@systatum/coneto/screen-transition"
 import { FormFieldGroup, StatefulForm } from "@systatum/coneto/stateful-form"
 import { useTheme } from "@systatum/coneto/theme"
+import { Screen } from "@ui/index"
+import Tracker from "@services/Tracker"
 import { useMemo } from "react"
 import { useIntl } from "react-intl"
 import { css } from "styled-components"
 import useUserSettingsState from "../../../../hooks/states/UserSettingsState"
-export default function UserSettingsForm() {
+
+export default function UserSettingsForm({
+  goToScreen,
+}: Partial<ScreenProps<Screen>>) {
   const { formatMessage } = useIntl()
   const { mode } = useTheme()
   const {
@@ -24,7 +33,9 @@ export default function UserSettingsForm() {
     setWordByWordTranslations,
     setShowPageIndicator,
     setAlphabeticalChaptersSorting,
+    setShowTransliteration,
     setExegesis,
+    setProstrationVersesSchools,
     userSettings,
   } = useUserSettingsState()
 
@@ -41,12 +52,15 @@ export default function UserSettingsForm() {
     showPageIndicator: userSettings.showPageIndicator ?? true,
     alphabeticalChaptersSorting:
       userSettings.alphabeticalChaptersSorting ?? false,
+    showTransliteration: userSettings.showTransliteration ?? false,
     exegesis: userSettings.exegesis,
+    prostvSchools: userSettings.prostrationVersesSchools.map(String),
   }
 
   const { arabicFontOptions } = useFonts()
   const arabicFontSizeOptions = useMemo(getAllPossibleFontSizeOptions, [])
   const exegesisOptions = useExegesisOptions()
+  const sajdahSchoolOptions = useProstrationVersesSchoolOptions()
 
   const FIELDS: FormFieldGroup[] = [
     {
@@ -130,24 +144,47 @@ export default function UserSettingsForm() {
       },
     ],
 
-    {
-      name: "basmalaPosition",
-      title: formatMessage({ id: messages.basmalaPosition.title }),
-      type: "combo",
-      combobox: {
-        mobile: true,
-        options: Object.values(BasmalaPosition).map((p) => ({
-          text: formatMessage({ id: messages.basmalaPosition[p] }),
-          value: p,
-        })),
+    [
+      {
+        name: "basmalaPosition",
+        title: formatMessage({ id: messages.basmalaPosition.title }),
+        type: "combo",
+        combobox: {
+          mobile: true,
+          options: Object.values(BasmalaPosition).map((p) => ({
+            text: formatMessage({ id: messages.basmalaPosition[p] }),
+            value: p,
+          })),
+        },
       },
-    },
+
+      {
+        name: "prostvSchools",
+        title: formatMessage({ id: messages.sajdah.title }),
+        type: "combo",
+        combobox: {
+          mobile: true,
+          multiple: true,
+          options: sajdahSchoolOptions,
+        },
+      },
+    ],
 
     [
       {
         name: "showPageIndicator",
         title: formatMessage({ id: messages.showPageIndicator.title }),
         helper: formatMessage({ id: messages.showPageIndicator.helper }),
+        type: "toggle",
+        toggle: {
+          mobile: true,
+        },
+      },
+
+      {
+        name: "showTransliteration",
+        title: formatMessage({ id: messages.showTransliteration.title }),
+        helper: formatMessage({ id: messages.showTransliteration.helper }),
         type: "toggle",
         toggle: {
           mobile: true,
@@ -168,6 +205,50 @@ export default function UserSettingsForm() {
         },
       },
     ],
+    {
+      type: "button",
+      name: "backup",
+      button: {
+        icon: {
+          image: RiBookOpenLine,
+          size: 18,
+        },
+        "aria-label": "settings-backup-button",
+        styles: {
+          self: css`
+            background: ${mode === "dark" ? "#1a211d" : "#ededed"} !important;
+            flex-direction: row-reverse;
+            justify-content: space-between;
+          `,
+        },
+      },
+      title: formatMessage({ id: messages.backup.title }),
+      onClick: () => {
+        goToScreen?.(Screen.Export)
+      },
+    },
+    {
+      type: "button",
+      name: "about",
+      button: {
+        icon: {
+          image: RiArrowRightSLine,
+          size: 18,
+        },
+        "aria-label": "settings-about-button",
+        styles: {
+          self: css`
+            background: ${mode === "dark" ? "#1a211d" : "#ededed"} !important;
+            flex-direction: row-reverse;
+            justify-content: space-between;
+          `,
+        },
+      },
+      title: formatMessage({ id: messages.about.title }),
+      onClick: () => {
+        goToScreen?.(Screen.About)
+      },
+    },
   ]
 
   return (
@@ -181,6 +262,7 @@ export default function UserSettingsForm() {
         `,
         mobileFieldGroupStyle: css`
           background: ${mode === "dark" ? "#1a211d" : "#ededed"} !important;
+          min-height: fit-content;
         `,
         mobileFieldGroupRowDividerStyle: css`
           background: ${mode === "dark" ? "#1e3c2b" : "#dfdfdf"} !important;
@@ -192,33 +274,43 @@ export default function UserSettingsForm() {
         if (currentState[key] === "") return
         console.log(`State ${key} value:`, currentState[key])
 
+        const captureSettingChange = () =>
+          Tracker.track(Tracker.Event.SettingsReaderChanged, {
+            settingKey: key,
+          })
+
         // note: do not forget to return early if value is invalid,
         // so that we are not updating the form's state.
         if (FormState.Theme in currentState) {
           const value: ThemeMode = currentState.theme
-          if (value === "dark" || value === "light")
+          if (value === "dark" || value === "light") {
             setTheme(currentState.theme)
-          else return
+            captureSettingChange()
+          } else return
         } else if (FormState.ArabicFontFamily in currentState) {
           const value: string = currentState.arabicFontFamily
           if (!Object.keys(ArabicFonts).includes(value)) return
 
           setFont({ arabic: { family: currentState.arabicFontFamily } })
+          captureSettingChange()
         } else if (FormState.ArabicFontSize in currentState) {
           const value = currentState.arabicFontSize
           if (Number.isNaN(value)) return
 
           setFont({ arabic: { size: Number(currentState.arabicFontSize) } })
+          captureSettingChange()
         } else if (FormState.Locale in currentState) {
           const value = currentState.locale
           if (!Object.values(Locale).includes(value)) return
 
           setLocale(currentState.locale)
+          captureSettingChange()
         } else if (FormState.BasmalaPosition in currentState) {
           const value = currentState.basmalaPosition
           if (!Object.values(BasmalaPosition).includes(value)) return
 
           setBasmalaPosition(currentState.basmalaPosition)
+          captureSettingChange()
         } else if (FormState.WordByWordTranslations in currentState) {
           const values: WordTranslationOption[] = currentState.wbwTranslations
 
@@ -227,12 +319,19 @@ export default function UserSettingsForm() {
             return
 
           setWordByWordTranslations(currentState.wbwTranslations)
+          captureSettingChange()
         } else if (FormState.ShowPageIndicator in currentState) {
           const value = currentState.showPageIndicator
           setShowPageIndicator(value)
+          captureSettingChange()
         } else if (FormState.AlphabeticalChaptersSorting in currentState) {
           const value = currentState.alphabeticalChaptersSorting
           setAlphabeticalChaptersSorting(value)
+          captureSettingChange()
+        } else if (FormState.ShowTransliteration in currentState) {
+          const value = currentState.showTransliteration
+          setShowTransliteration(value)
+          captureSettingChange()
         } else if (FormState.Exegesis in currentState) {
           const values: string[] = currentState.exegesis
           if (!Array.isArray(values)) return
@@ -241,6 +340,15 @@ export default function UserSettingsForm() {
           )
           if (!values.every((v) => validIds.includes(v))) return
           setExegesis(values)
+          captureSettingChange()
+        } else if (FormState.ProstrationVersesSchools in currentState) {
+          const values: string[] =
+            currentState[FormState.ProstrationVersesSchools]
+          if (!Array.isArray(values)) return
+          const validSchools = SAJDAH_SCHOOLS.map(String)
+          if (!values.every((v) => validSchools.includes(v))) return
+          setProstrationVersesSchools(values.map(Number))
+          captureSettingChange()
         }
       }}
     />
@@ -256,7 +364,9 @@ export const FormState = {
   WordByWordTranslations: "wbwTranslations",
   ShowPageIndicator: "showPageIndicator",
   AlphabeticalChaptersSorting: "alphabeticalChaptersSorting",
+  ShowTransliteration: "showTransliteration",
   Exegesis: "exegesis",
+  ProstrationVersesSchools: "prostvSchools",
 } as const
 
 type FormState = {
@@ -268,5 +378,7 @@ type FormState = {
   [FormState.WordByWordTranslations]: WordTranslationOption[]
   [FormState.ShowPageIndicator]: boolean
   [FormState.AlphabeticalChaptersSorting]: boolean
+  [FormState.ShowTransliteration]: boolean
   [FormState.Exegesis]: string[]
+  [FormState.ProstrationVersesSchools]: string[]
 }

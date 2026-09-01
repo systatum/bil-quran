@@ -478,8 +478,11 @@ export async function openSidebar(page: Page) {
 }
 
 export async function closeSidebar(page: Page) {
+  // The back/close button is the only title-action with caption="Left" —
+  // stable regardless of which sidebar content type (Settings, Bookmarks,
+  // Export, Import, ...) is currently showing.
   await page
-    .locator('[aria-label="title-action"]:not(aside *)')
+    .locator('[aria-label="title-action"][caption="Left"]')
     .last()
     .dispatchEvent("click")
   await page.waitForTimeout(300) // sidebar CSS transition is 220ms
@@ -510,13 +513,7 @@ export async function toggleWbwTranslation(label: string, page: Page) {
 
   await page.keyboard.press("Escape") // close drawer
   await page.waitForTimeout(150)
-  // dispatchEvent fires directly on the DOM node, bypassing the aside overlay
-  // that intercepts physical mouse clicks at the same screen coordinates.
-  await page
-    .locator('[aria-label="title-action"]:not(aside *)')
-    .last()
-    .dispatchEvent("click")
-  await page.waitForTimeout(300)
+  await closeSidebar(page)
 }
 
 /**
@@ -554,13 +551,7 @@ export async function toggleExegesis(label: string, page: Page) {
 
   await page.keyboard.press("Escape") // close drawer
   await page.waitForTimeout(150)
-  // dispatchEvent fires directly on the DOM node, bypassing the aside overlay
-  // that intercepts physical mouse clicks at the same screen coordinates.
-  await page
-    .locator('[aria-label="title-action"]:not(aside *)')
-    .last()
-    .dispatchEvent("click")
-  await page.waitForTimeout(300)
+  await closeSidebar(page)
 }
 
 /** Long-press a verse row (by "chapterId:verseNumber") to open the exegesis dialog. */

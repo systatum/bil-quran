@@ -1,4 +1,10 @@
+import {
+  Asset,
+  DEFAULT_FEED_EXEGESIS_WORK,
+  ExegesisWork,
+} from "@constants/assets"
 import { IPCResponse } from "@constants/IPC"
+import { Locale } from "@constants/settings"
 
 // ===== ERROR ======================================
 
@@ -44,6 +50,13 @@ export function encodeBase64Unicode(str: string): string {
   return btoa(binary)
 }
 
+/** Inverse of {@link encodeBase64Unicode}. Throws if `str` isn't valid base64. */
+export function decodeBase64Unicode(str: string): string {
+  const binary = atob(str)
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0))
+  return new TextDecoder().decode(bytes)
+}
+
 // ===== OBJECT =====================================
 
 export function flattenObject(
@@ -64,6 +77,61 @@ export function flattenObject(
     },
     {} as Record<string, string>,
   )
+}
+
+// ===== URL ========================================
+
+const EXEGESIS_HASH_RE = /^#\/e\/(\d+)\/(\d+)(?:\?(.*))?$/
+
+export interface ExegesisDeepLink {
+  chapterId: number
+  verseNumber: number
+  tafsirParam?: string
+  showTransliteration: boolean
+  localeParam?: string
+}
+
+/** Parses an `#/e/:chapter/:verse` hash without needing the router mounted. */
+export function parseExegesisDeepLink(hash: string): ExegesisDeepLink | null {
+  const match = EXEGESIS_HASH_RE.exec(hash)
+  if (!match) return null
+
+  const [, chapter, verse, query] = match
+  const params = new URLSearchParams(query ?? "")
+  const showTransliterationRawVal = params.get("transliteration") ?? undefined
+
+  return {
+    chapterId: Number(chapter),
+    verseNumber: Number(verse),
+    tafsirParam: params.get("tafsir") ?? undefined,
+    showTransliteration: showTransliterationRawVal === "1",
+    localeParam: params.get("locale") ?? undefined,
+  }
+}
+
+export interface ExegesisSelectionOverride {
+  exegesisId?: string
+  showTransliteration?: boolean
+}
+
+/** Mirrors `UIIndex`'s `openExegesisOnMount` override resolution. */
+export function resolveExegesisSelection(
+  tafsirParam: unknown,
+  transliterationParam: boolean,
+  locale: Locale,
+): ExegesisSelectionOverride {
+  const tafsir = tafsirParam != null ? String(tafsirParam) : undefined
+  const exegesisId = tafsir
+    ? Asset.resolveExegesisId(
+        ExegesisWork.isValid(tafsir) ? tafsir : DEFAULT_FEED_EXEGESIS_WORK,
+        locale,
+      )
+    : undefined
+
+  return {
+    exegesisId: exegesisId ?? undefined,
+    showTransliteration: transliterationParam,
+  }
 }
 
 const ROOT_LETTER_LATIN: Record<string, string> = {

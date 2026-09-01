@@ -5,10 +5,15 @@ import {
   WordTranslationRecord,
 } from "@constants/records/WordTranslationRecord"
 import { unpackIPC } from "@services/Converter"
+import { pause } from "@services/mutator"
 import { and, eq } from "drizzle-orm"
 import { withDb } from "../driver"
 import { conditional, Repository } from "./Repository"
 import { wordTranslations as schema } from "./tables"
+
+// The English corpus alone covers ~77k words, so building the nested lookup
+// below without yielding blocks the main thread for seconds.
+const YIELD_EVERY = 2000
 
 class WbwTranslationRepo extends Repository<
   typeof schema,
@@ -54,11 +59,13 @@ class WbwTranslationRepo extends Repository<
     let translations: TranslationCorpus = {}
     const records = unpackIPC(await this.findAllBy({ locale }))
 
-    for (const record of records) {
-      const { chapter, ayat, word } = record
+    for (let i = 0; i < records.length; i++) {
+      const { chapter, ayat, word } = records[i]
       if (translations[chapter] == null) translations[chapter] = {}
       if (translations[chapter][ayat] == null) translations[chapter][ayat] = {}
-      translations[chapter][ayat][word] = record.meaningSunni
+      translations[chapter][ayat][word] = records[i].meaningSunni
+
+      if (i % YIELD_EVERY === 0) await pause(0)
     }
 
     return newIPCResponse({ succeed: true, data: translations })

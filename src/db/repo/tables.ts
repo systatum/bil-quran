@@ -52,6 +52,10 @@ export const exegesis = table("exegesis", {
   locNames: text({ mode: "json" }).$type<Record<Locale, string>>().notNull(),
   // a short description
   description: text({ mode: "json" }).$type<Record<Locale, string>>().notNull(),
+  // a long description
+  longDescription: text({ mode: "json" })
+    .$type<Record<Locale, string>>()
+    .notNull(),
   authors: text({ mode: "json" }).$type<Array<ExegesisAuthor>>().notNull(),
   // chapter IDs whose verse content has been fully fetched and stored locally
   downloadedChapters: text({ mode: "json" })
@@ -82,7 +86,7 @@ export const exegesisContent = table(
 
 export const roots = table("roots", {
   id: integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
-  root: text({ length: 18 }).notNull(),
+  root: text({ length: 18 }).notNull().unique(),
 })
 
 export const lexemes = table("lexemes", {
@@ -90,7 +94,7 @@ export const lexemes = table("lexemes", {
   rootId: integer()
     .notNull()
     .references(() => roots.id, { onDelete: "cascade" }),
-  token: text({ length: 25 }).notNull(),
+  token: text({ length: 25 }).notNull().unique(),
   readings: text({ mode: "json" })
     .$type<Partial<Record<Locale, string>>>()
     .notNull()

@@ -321,6 +321,53 @@ test.describe("UserSettingsState", () => {
     })
   })
 
+  test.describe("showTransliteration", () => {
+    test("hidden by default, shown once enabled via the settings toggle, and persists after reload", async ({
+      page,
+    }) => {
+      const transliteration = page
+        .locator('[data-testid="word-transliteration"]')
+        .first()
+
+      await expect(transliteration).toHaveCount(0)
+
+      await openSidebar(page)
+      const toggleLabel = page
+        .locator('[aria-label="stateful-form-label-wrapper"]')
+        .filter({ hasText: "Show transliteration" })
+        .first()
+      await expect(toggleLabel).toBeVisible({ timeout: 5000 })
+      await toggleLabel.click()
+      await closeSidebar(page)
+      await page.waitForTimeout(300)
+
+      await expect(transliteration).toBeVisible({ timeout: 5000 })
+
+      await page.reload()
+      await untilUsable(page)
+      await expect(transliteration).toBeVisible({ timeout: 15_000 })
+    })
+
+    test("also shows in the exegesis dialog's interlinear pane once enabled", async ({
+      page,
+    }) => {
+      await openSidebar(page)
+      const toggleLabel = page
+        .locator('[aria-label="stateful-form-label-wrapper"]')
+        .filter({ hasText: "Show transliteration" })
+        .first()
+      await expect(toggleLabel).toBeVisible({ timeout: 5000 })
+      await toggleLabel.click()
+      await closeSidebar(page)
+
+      const dialog = await openExegesisDialog(page, "1:1")
+      await expect(dialog).toBeVisible()
+      await expect(
+        dialog.locator('[data-testid="word-transliteration"]').first(),
+      ).toBeVisible({ timeout: 5000 })
+    })
+  })
+
   test.describe("version", () => {
     test("stamps persisted settings with the current schema version", async ({
       page,
@@ -395,7 +442,15 @@ test.describe("UserSettingsState", () => {
       })
 
       await toggleWbwTranslation("Indonesian", page)
-      await page.waitForTimeout(500)
+
+      // corpora["id-ID"] is only set after ensureHasTranslation (insert +
+      // persistDb) fully resolves — a direct completion signal, instead of
+      // guessing how long ~77k rows take to insert and flush.
+      await page.waitForFunction(
+        () => !!(window as any).__translationsState?.getState().corpora["id-ID"],
+        undefined,
+        { timeout: 10_000 },
+      )
       expect(requests.length).toBe(1)
 
       await page.reload()

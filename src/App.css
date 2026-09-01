@@ -1,10 +1,17 @@
 @font-face {
   font-family: "BasmalahVer01";
   src:
-    url(https://assets.bil-quran.com/fonts/basmalahver01/BasmalahVer01.woff2)
+    url("./../public/fonts/basmalahver01/BasmalahVer01.woff2")
       format("woff2"),
-    url(https://assets.bil-quran.com/fonts/basmalahver01/BasmalahVer01.woff)
-      format("woff");
+    url("./../public/fonts/basmalahver01/BasmalahVer01.woff") format("woff");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "MontHeavy";
+  src: url("./../public/fonts/mont-heavy/Mont-Heavy.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
   font-display: swap;
 }
 
@@ -14,10 +21,8 @@
   font-display: block;
 
   src:
-    url("https://assets.bil-quran.com/fonts/surahnamev4/SurahNameV4.woff2")
-      format("woff2"),
-    url("https://assets.bil-quran.com/fonts/surahnamev4/SurahNameV4.ttf")
-      format("truetype");
+    url("./../public/fonts/surahnamev4/SurahNameV4.woff2") format("woff2"),
+    url("./../public/fonts/surahnamev4/SurahNameV4.ttf") format("truetype");
 }
 
 .App {

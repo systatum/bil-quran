@@ -3,6 +3,7 @@ import { ModalDialogConfig } from "@constants/modalDialog"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import useToast from "@hooks/tools/useToast"
 import { messages } from "@i18n/message"
+import Tracker from "@services/Tracker"
 import { Combobox, ComboboxOption } from "@systatum/coneto/combobox"
 import { useTheme } from "@systatum/coneto/theme"
 import { useEffect, useMemo, useState } from "react"
@@ -31,7 +32,6 @@ export function useHighlightVerseDialog(verseKey: string): ModalDialogConfig {
   // this hook stays mounted, so reset on verse change or it'd leak selection
   useEffect(() => {
     setSelectedColor(existingColor ?? HighlightColor.Primary)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [verseKey])
 
   const colorOptions: ComboboxOption[] = useMemo(() => {
@@ -91,13 +91,21 @@ export function useHighlightVerseDialog(verseKey: string): ModalDialogConfig {
         />
       ),
       onAction(buttonId) {
-        if (buttonId === "remove") removeHighlight(verseKey)
+        if (buttonId === "remove") {
+          removeHighlight(verseKey)
+          Tracker.track(Tracker.Event.VerseHighlightRemoved)
+        }
         if (buttonId === "apply") {
-          if (!highlightVerse(verseKey, selectedColor))
+          if (!highlightVerse(verseKey, selectedColor)) {
             errorToast(
               formatMessage({ id: messages.errors.highlightingFailed }),
               formatMessage({ id: messages.highlight }),
             )
+            return
+          }
+          Tracker.track(Tracker.Event.VerseHighlightApplied, {
+            color: selectedColor,
+          })
         }
       },
     }),

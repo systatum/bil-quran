@@ -5,6 +5,7 @@ import {
   WordWithLexemeRecord,
 } from "@constants/records/WordRecord"
 import { TranslatedWord } from "@constants/records/WordTranslationRecord"
+import { getSajdahRuling } from "@constants/SajdahVerse"
 import { BasmalaPosition } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import { repo } from "@db/repo"
@@ -15,9 +16,8 @@ import { useWordTranslations } from "@hooks/tools/useWordTranslations"
 import { unpackIPC } from "@services/Converter"
 import LOGGER from "@services/Logger"
 import { makeSnippet } from "@services/mutator"
-import { haptic } from "ios-haptics"
-import { useEffect, useRef } from "react"
-import { useIntl } from "react-intl"
+import { haptic } from "@utils/haptic"
+import { useEffect, useMemo, useRef } from "react"
 import styled from "styled-components"
 import { Bismillah } from "./Bismillah"
 import InterlinearText from "./InterlinearText"
@@ -78,8 +78,6 @@ export default function VerseRow({
 
   const markerColumnRef = useRef<HTMLDivElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
-
-  const { formatMessage } = useIntl()
 
   useEffect(() => {
     const scrollEl = virtualizer.scrollElement as HTMLElement
@@ -193,6 +191,12 @@ export default function VerseRow({
     ? HighlightColor.on(theme)[highlightColor]
     : undefined
 
+  const sajdahRuling = getSajdahRuling(
+    verse.chapter.id,
+    verse.number,
+    userSettings.prostrationVersesSchools,
+  )
+
   return (
     <VerseRowWrapper
       data-index={index}
@@ -221,9 +225,11 @@ export default function VerseRow({
 
       <InterlinearText
         showMeaning={showMeaning}
+        showTransliteration={showTransliteration}
         id={`${verse.chapter.id}-${verse.id}`}
         arabicFont={userSettings.font.arabic}
         words={verse.words}
+        sajdahRuling={sajdahRuling}
         shownTranslations={wbwTranslations}
         withBasmala={
           basmalaPosition === BasmalaPosition.Embedded &&
@@ -245,37 +251,56 @@ export default function VerseRow({
 }
 
 /**
- * Group words into verse
+ * Groups words into verses.
  *
- * @param chapters map of chapter metadata by their numbering
- * @param words array of words
- * @returns words grouped into verse
+ * `words` only ever grows by appending whole chapters during background
+ * seeding (never reorders or removes), so a merge keeps every previous
+ * element's identity. This groups just the new tail into the same verse map
+ * carried over from last time, instead of re-walking every word loaded so
+ * far on every single background-seeded chapter.
  */
-VerseRow.groupVerse = (
+export function useGroupedVerses(
   chapters: Record<number, ChapterRecord>,
   words: WordCell[],
-) => {
-  const grouped: Record<string, Verse> = {}
+): Verse[] {
+  const prevRef = useRef<{
+    words: WordCell[]
+    chapters: Record<number, ChapterRecord>
+    verseMap: Map<string, Verse>
+  } | null>(null)
 
-  for (const word of words) {
-    const key = `${word.chapterId}:${word.verse}`
-    let verse = grouped[key]
+  return useMemo(() => {
+    const prev = prevRef.current
+    const isAppend =
+      prev != null &&
+      prev.chapters === chapters &&
+      words.length >= prev.words.length &&
+      words[0] === prev.words[0]
 
-    if (!verse) {
-      verse = {
-        id: key,
-        chapter: chapters[word.chapterId],
-        number: word.verse,
-        words: [],
+    const verseMap = isAppend ? prev!.verseMap : new Map<string, Verse>()
+    const newWords = isAppend ? words.slice(prev!.words.length) : words
+
+    for (const word of newWords) {
+      const key = `${word.chapterId}:${word.verse}`
+      let verse = verseMap.get(key)
+
+      if (!verse) {
+        verse = {
+          id: key,
+          chapter: chapters[word.chapterId],
+          number: word.verse,
+          words: [],
+        }
+
+        verseMap.set(key, verse)
       }
 
-      grouped[key] = verse
+      verse.words.push(word)
     }
 
-    verse.words.push(word)
-  }
-
-  return Array.from(Object.values(grouped))
+    prevRef.current = { words, chapters, verseMap }
+    return Array.from(verseMap.values())
+  }, [chapters, words])
 }
 
 const VerseRowWrapper = styled.div<{

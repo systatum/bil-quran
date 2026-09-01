@@ -1,20 +1,11 @@
-import { mkdir, writeFile, readFile, access } from "fs/promises"
-import { join } from "path"
-import { createHash } from "crypto"
+import * as cheerio from "cheerio"
+import { mkdir, readdir, readFile, writeFile } from "fs/promises"
+import path from "path"
 
 const SITE_URL = process.env.SITE_URL ?? "https://bil-quran.com"
-const QURAN_PATH = join(process.cwd(), "public/quran")
+const BUILD_TAFSIR_DIR = path.join(process.cwd(), "build/tafsir")
 const OUTPUT_DIR = "build/rss"
-const EXEGESIS_PATH = join(QURAN_PATH, "exegesis/aliquli")
-
-async function readJson<T>(filePath: string): Promise<T> {
-  const raw = await readFile(filePath, "utf8")
-  return JSON.parse(raw) as T
-}
-
-function md5(input: string): string {
-  return createHash("md5").update(input, "utf8").digest("hex")
-}
+const MAX_DESCRIPTION_WORDS = 140
 
 function escapeXml(input = ""): string {
   return input
@@ -25,314 +16,221 @@ function escapeXml(input = ""): string {
     .replace(/'/g, "&apos;")
 }
 
-interface ChapterMeta {
-  length: number
-  meanings: Record<string, string | null>
-  namings: Record<string, string | null>
-  transliterations: Record<string, string | null>
+interface TafsirFile {
+  path: string
+  exegesisId: string
+  locale: string
+  chapterSlug: string
+  verseNumber: number
 }
 
-interface Word {
-  id: string
-  word: string
-  trans: string
-  root: string
+/** Recursively finds every generated verse page under build/tafsir, alphabetically at each level. */
+async function findTafsirFiles(dir: string): Promise<string[]> {
+  const entries = (await readdir(dir, { withFileTypes: true })).sort((a, b) =>
+    a.name.localeCompare(b.name),
+  )
+  const files: string[] = []
+
+  for (const entry of entries) {
+    const full = path.join(dir, entry.name)
+
+    if (entry.isDirectory()) {
+      files.push(...(await findTafsirFiles(full)))
+    } else if (entry.name.endsWith(".html")) {
+      files.push(full)
+    }
+  }
+
+  return files
 }
 
-interface ExistingItem {
-  pubDate: Date
-  digest: string
-}
+function parseTafsirFile(file: string): TafsirFile {
+  const [exegesisId, locale, chapterSlug, verseFile] = path
+    .relative(BUILD_TAFSIR_DIR, file)
+    .split(path.sep)
 
-interface ExegesisChapter {
-  chapterId: number
-  description: string
-  footnotes: Record<string, Record<string, string>>
-  translations: Record<string, string>
-}
-
-async function loadExegesis(
-  localeCode: string,
-  chapterId: number,
-): Promise<ExegesisChapter | null> {
-  try {
-    return await readJson<ExegesisChapter>(
-      join(EXEGESIS_PATH, localeCode, `${chapterId}.json`),
-    )
-  } catch {
-    // no exegesis for this locale/chapter — fail quietly
-    return null
+  return {
+    path: file,
+    exegesisId,
+    locale,
+    chapterSlug,
+    verseNumber: Number(verseFile.replace(/\.html$/, "")),
   }
 }
 
-// Converts **bold**, _italic_, and the <{["F",n]}> / <{["Q","c:v"]}> markers into HTML.
-function renderMarkers(
-  text: string,
-  opts: { verseFootnotes?: Record<string, string> } = {},
-): string {
-  let out = text
-    .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")
-    .replace(/_(.+?)_/g, "<i>$1</i>")
-    .replace(/\n/g, "<br/>")
+function extractTitle(html: string): string {
+  const match = html.match(/<title>([^<]*)<\/title>/)
+  if (!match) return ""
 
-  out = out.replace(
-    /<\{\[\s*"([A-Z])"\s*,\s*(?:"([^"]+)"|(\d+))\s*\]\}>/g,
-    (
-      _match,
-      tag: string,
-      strArg: string | undefined,
-      numArg: string | undefined,
-    ) => {
-      if (tag === "F" && numArg && opts.verseFootnotes) {
-        return `<sup>[${numArg}]</sup>`
-      }
-      if (tag === "Q" && strArg) {
-        return ` (Q ${strArg})`
-      }
-      return "" // unknown marker, drop it rather than leak raw syntax into RSS
-    },
+  return match[1]
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+}
+
+/**
+ * Block-level tags marked's renderer can emit (see renderExegesisMarkdown /
+ * parseInlineMarkers's RT blockquote). cheerio's .text() concatenates every
+ * descendant text node with no separator at all — same as the DOM's own
+ * textContent — so flattening e.g. "<p>criterion</p><p>which is</p>" gives
+ * "criterionwhich is" with the paragraph break silently dropped.
+ */
+const BLOCK_TAGS = new Set([
+  "p",
+  "div",
+  "blockquote",
+  "li",
+  "hr",
+  "tr",
+  "ul",
+  "ol",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+])
+
+/** Like cheerio's .text(), but inserts a break at block-tag/<br> boundaries so sibling blocks don't run together. */
+function blockAwareText($: ReturnType<typeof cheerio.load>, node: any): string {
+  if (node.type === "text") return node.data ?? ""
+  if (node.type !== "tag" && node.type !== "script" && node.type !== "style") {
+    return ""
+  }
+
+  if (node.name === "br") return "\n"
+
+  const inner = (node.children ?? [])
+    .map((child: any) => blockAwareText($, child))
+    .join("")
+
+  return BLOCK_TAGS.has(node.name) ? `${inner}\n\n` : inner
+}
+
+function extractBlockText(
+  $: ReturnType<typeof cheerio.load>,
+  selection: ReturnType<ReturnType<typeof cheerio.load>>,
+): string {
+  return selection
+    .toArray()
+    .map((el) => blockAwareText($, el))
+    .join("\n\n")
+}
+
+/** Full Arabic verse text, then transliteration, then translation/exegesis, capped to MAX_DESCRIPTION_WORDS. */
+function extractDescription($: ReturnType<typeof cheerio.load>): string {
+  const dialogContent = $('[aria-label="paper-dialog-content"]')
+
+  const arabic = dialogContent
+    .find("[data-word-index] .arabic-lex")
+    .map((_, el) => $(el).text())
+    .get()
+    .join(" ")
+
+  const transliteration = dialogContent
+    .find('[data-word-index] [data-testid="word-transliteration"]')
+    .map((_, el) => $(el).text())
+    .get()
+    .join(" ")
+
+  const tafsir = extractBlockText(
+    $,
+    dialogContent.find(".exegesis-translation, .exegesis-body"),
   )
 
-  return out
-}
+  const text = [arabic, transliteration, tafsir].filter(Boolean).join(" ")
 
-function renderFootnotes(verseFootnotes?: Record<string, string>): string {
-  if (!verseFootnotes) return ""
-  const entries = Object.entries(verseFootnotes)
-  if (!entries.length) return ""
-  return `<ul>${entries
-    .map(([n, note]) => `<li><sup>[${n}]</sup> ${renderMarkers(note)}</li>`)
-    .join("")}</ul>`
-}
+  const words = text.trim().split(/\s+/).filter(Boolean)
+  const truncated = words.length > MAX_DESCRIPTION_WORDS
 
-async function loadExistingFeed(
-  outputPath: string,
-): Promise<Map<string, ExistingItem>> {
-  const existing = new Map<string, ExistingItem>()
-  try {
-    await access(outputPath)
-  } catch {
-    return existing
-  }
-
-  const xml = await readFile(outputPath, "utf8")
-  const itemPattern = /<item>([\s\S]*?)<\/item>/g
-  let match: RegExpExecArray | null
-
-  while ((match = itemPattern.exec(xml)) !== null) {
-    const block = match[1]
-    const linkMatch = block.match(/<link>(.*?)<\/link>/)
-    const pubDateMatch = block.match(/<pubDate>(.*?)<\/pubDate>/)
-    const digestMatch = block.match(
-      /<bil-quran:item-digest>(.*?)<\/bil-quran:item-digest>/,
-    )
-    if (!linkMatch) continue
-
-    existing.set(linkMatch[1].trim(), {
-      pubDate: pubDateMatch ? new Date(pubDateMatch[1].trim()) : new Date(0),
-      digest: digestMatch ? digestMatch[1].trim() : "",
-    })
-  }
-
-  return existing
-}
-
-function groupVerses(
-  words: Word[],
-  translations: Record<string, string>,
-): Map<
-  string,
-  {
-    arabic: string
-    transliteration: string
-    translation: string
-  }
-> {
-  const verses = new Map<
-    string,
-    {
-      arabic: string
-      transliteration: string
-      translation: string
-      wordIndex: number
-    }
-  >()
-
-  for (const w of words) {
-    const verseId = w.id
-    if (!verses.has(verseId)) {
-      verses.set(verseId, {
-        arabic: "",
-        transliteration: "",
-        translation: "",
-        wordIndex: 1,
-      })
-    }
-    const v = verses.get(verseId)!
-    const [chapter, verse] = verseId.split(":")
-    const translationKey = `${chapter}:${verse}:${v.wordIndex}`
-    v.arabic += (v.arabic ? " " : "") + w.word
-    v.transliteration += (v.transliteration ? " " : "") + w.trans
-    v.translation +=
-      (v.translation ? " " : "") + (translations[translationKey] ?? "")
-    v.wordIndex++
-  }
-
-  return verses
+  return (
+    words.slice(0, MAX_DESCRIPTION_WORDS).join(" ") + (truncated ? "…" : "")
+  )
 }
 
 function buildItem(opts: {
   title: string
   url: string
   description: string
-  pubDate: Date
-  digest: string
 }): string {
-  return `
-    <item>
-      <title><![CDATA[${opts.title}]]></title>
-      <link>${escapeXml(opts.url)}</link>
-      <guid isPermaLink="true">${escapeXml(opts.url)}</guid>
-      <description><![CDATA[${opts.description}]]></description>
-      <pubDate>${opts.pubDate.toUTCString()}</pubDate>
-      <bil-quran:item-digest>${opts.digest}</bil-quran:item-digest>
-    </item>`
+  return `<item><title><![CDATA[${opts.title}]]></title><link>${escapeXml(opts.url)}</link><description><![CDATA[${opts.description}]]></description></item>`
 }
 
 function buildFeed(opts: { localeCode: string; items: string[] }): string {
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0"
-  xmlns:atom="http://www.w3.org/2005/Atom"
-  xmlns:bil-quran="https://bil-quran.com/rss/extensions">
-  <channel>
-    <title><![CDATA[Bil-Quran: Word-by-Word Qur'an]]></title>
-    <link>${SITE_URL}</link>
-    <description><![CDATA[${
-      descriptions[opts.localeCode as LocaleCode]
-    }]]></description>
-    <language>${opts.localeCode}</language>
-    <atom:link href="${SITE_URL}/rss/${
-      opts.localeCode
-    }.xml" rel="self" type="application/rss+xml"/>
-    ${opts.items.join("\n")}
-  </channel>
-</rss>`
+  return `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title><![CDATA[Bil-Quran: Word-by-Word Qur'an]]></title><link>${SITE_URL}</link><description><![CDATA[${
+    descriptions[opts.localeCode] ?? descriptions["en-US"]
+  }]]></description><language>${opts.localeCode}</language><atom:link href="${SITE_URL}/rss/${opts.localeCode}.xml" rel="self" type="application/rss+xml"/>${opts.items.join("")}</channel></rss>`
 }
 
-const Locales = ["en-US", "id-ID"] as const
-type LocaleCode = (typeof Locales)[number]
+const descriptions: Record<string, string> = {
+  "en-US":
+    "A Qur'an app with interlinear word-by-word and verse-by-verse translations, helping readers understand the meaning of the Qur'an beyond recitation alone.",
+}
+
+interface FeedItem {
+  chapterSlug: string
+  verseNumber: number
+  exegesisId: string
+  xml: string
+}
 
 async function generateRSS() {
   await mkdir(OUTPUT_DIR, { recursive: true })
 
-  const chaptersMetadata = await readJson<Record<string, ChapterMeta>>(
-    join(QURAN_PATH, "chapters.json"),
-  )
+  const files = await findTafsirFiles(BUILD_TAFSIR_DIR)
+  console.log(`Found ${files.length} generated tafsir page(s).`)
 
-  for (const localeCode of Locales) {
-    const outputPath = join(OUTPUT_DIR, `${localeCode}.xml`)
-    const existingItems = await loadExistingFeed(outputPath)
+  const itemsByLocale = new Map<string, FeedItem[]>()
 
-    const translations = await readJson<Record<string, string>>(
-      join(QURAN_PATH, `wbw_translations/${localeCode}.json`),
+  for (const file of files) {
+    const { exegesisId, locale, chapterSlug, verseNumber } =
+      parseTafsirFile(file)
+    const url = `${SITE_URL}/tafsir/${path
+      .relative(BUILD_TAFSIR_DIR, file)
+      .split(path.sep)
+      .join("/")}`
+
+    const html = await readFile(file, "utf8")
+    const $ = cheerio.load(html)
+
+    const title = extractTitle(html)
+    const description = extractDescription($)
+
+    if (!itemsByLocale.has(locale)) itemsByLocale.set(locale, [])
+    itemsByLocale.get(locale)!.push({
+      chapterSlug,
+      verseNumber,
+      exegesisId,
+      xml: buildItem({ title, url, description }),
+    })
+  }
+
+  for (const [locale, items] of itemsByLocale) {
+    items.sort(
+      (a, b) =>
+        a.chapterSlug.localeCompare(b.chapterSlug) ||
+        a.verseNumber - b.verseNumber ||
+        a.exegesisId.localeCompare(b.exegesisId),
     )
 
-    const items: string[] = []
+    const homepageItem = buildItem({
+      title: "bil-Quran: Word-by-Word Quran",
+      url: `${SITE_URL}/?locale=${locale}`,
+      description: descriptions[locale] ?? descriptions["en-US"],
+    })
 
-    const addItem = (title: string, url: string, description: string) => {
-      const digest = md5(description)
-      const existing = existingItems.get(url)
-      let pubDate: Date
-
-      if (!existing) {
-        pubDate = new Date()
-        console.log(`🆕 New: ${url}`)
-      } else if (existing.digest !== digest) {
-        pubDate = new Date()
-        console.log(`✏️  Updated: ${url}`)
-      } else {
-        pubDate = existing.pubDate
-      }
-
-      items.push(buildItem({ title, url, description, pubDate, digest }))
-    }
-    // Homepage
-    addItem(
-      "Bil-Quran: Word-by-Word Qur'an",
-      `${SITE_URL}/?locale=${localeCode}`,
-      descriptions[localeCode],
+    const outputPath = path.join(OUTPUT_DIR, `${locale}.xml`)
+    await writeFile(
+      outputPath,
+      buildFeed({
+        localeCode: locale,
+        items: [homepageItem, ...items.map((item) => item.xml)],
+      }),
+      "utf8",
     )
-
-    for (const [chapterIdString, chapter] of Object.entries(chaptersMetadata)) {
-      const chapterId = Number(chapterIdString)
-      const chapterName =
-        chapter.transliterations[localeCode] ??
-        chapter.transliterations["en-US"] ??
-        ""
-      const chapterArabic = chapter.namings[localeCode] ?? ""
-
-      const words = await readJson<Word[]>(
-        join(QURAN_PATH, "verses/imlaei", `${chapterId}.json`),
-      )
-
-      const verses = groupVerses(words, translations)
-      const verseEntries = Array.from(verses.entries())
-      const exegesis = await loadExegesis(localeCode, chapterId)
-
-      // Per-chapter item
-      addItem(
-        `${chapterId}. ${chapterArabic} (${chapterName})`,
-        `${SITE_URL}/#/c/${chapterId}/1?locale=${localeCode}`,
-        [
-          exegesis ? `<p>${renderMarkers(exegesis.description)}</p>` : "",
-          verseEntries
-            .slice(0, 3)
-            .map(
-              ([verseId, v]) => `
-<p>
-  <b>${verseId}</b><br/>
-  ${v.arabic}<br/>
-  <i>${v.transliteration}</i><br/>
-  ${v.translation}
-</p>`,
-            )
-            .join("\n"),
-        ]
-          .filter(Boolean)
-          .join("\n"),
-      )
-
-      // Per-verse items
-      for (const [verseId, v] of verseEntries) {
-        const verseNumber = Number(verseId.split(":")[1])
-        const verseFootnotes = exegesis?.footnotes[String(verseNumber)]
-
-        addItem(
-          `${chapterName}:${verseNumber}`,
-          `${SITE_URL}/#/c/${chapterId}/${verseNumber}?locale=${localeCode}`,
-          [
-            `${chapterName}:${verseNumber} - ${v.arabic}`,
-            v.transliteration,
-            v.translation,
-            verseFootnotes ? renderFootnotes(verseFootnotes) : "",
-          ]
-            .filter(Boolean)
-            .join("\n\n"),
-        )
-      }
-    }
-
-    await writeFile(outputPath, buildFeed({ localeCode, items }), "utf8")
     console.log(`✅ Generated ${outputPath}`)
   }
-}
-
-const descriptions: Record<LocaleCode, string> = {
-  "en-US":
-    "A Qur'an app with interlinear word-by-word and verse-by-verse translations, helping readers understand the meaning of the Qur'an beyond recitation alone.",
-
-  "id-ID":
-    "Aplikasi Al-Qur'an dengan terjemahan interlinear kata per kata dan ayat per ayat yang membantu pembaca memahami makna Al-Qur'an, bukan hanya membacanya.",
 }
 
 generateRSS().catch((err) => {
