@@ -16,7 +16,7 @@ def uuid_field():
 
 @dataclass(kw_only=True)
 class Versioned:
-    version: Literal["4"] = "4"
+    version: Literal["5"] = "5"
 
 
 @dataclass(kw_only=True)
@@ -38,9 +38,17 @@ class ExperimentLanguage:
 
 
 @dataclass(kw_only=True)
-class ExperimentText:
-    title: str
+class ExperimentTextContent(Versioned):
+    author: str
+    text_type: Literal["footnote", "translation", "exegesis"]
+    surah: int
+    ayah: int
     text: str
+
+
+@dataclass(kw_only=True)
+class ExperimentText:
+    content: ExperimentTextContent
     text_index: int
 
 
@@ -137,7 +145,7 @@ class ExperimentRunCommand:
     models: list[str]
     prompt_settings: dict[str, api.internal.PromptSetting]
     language_pairs: list[tuple[str, str]]  # Source to target language
-    texts: list[tuple[str, str]]  # Title to content
+    texts: list[ExperimentTextContent]
 
 
 __all__ = [

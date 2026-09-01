@@ -325,7 +325,7 @@ class ExperimentRunner:
                 for (source_language, target_language) in command.language_pairs
             ],
             texts=[
-                ExperimentText(title=text[0], text=text[1], text_index=i)
+                ExperimentText(content=text, text_index=i)
                 for i, text in enumerate(command.texts)
             ],
             batches={batch.batch_id: batch for batch in batches},
@@ -341,7 +341,7 @@ class ExperimentRunner:
         start_time = perf_counter()
         try:
             translation = self._client.translate(
-                text=input.text.text,
+                text=input.text.content.text,
                 source_language=input.language.source_language,
                 target_language=input.language.target_language,
                 model=input.setting.model,
@@ -394,7 +394,7 @@ class ExperimentRunner:
         start_time = perf_counter()
         try:
             rating = self._client.rate(
-                translated.input_.text.text,
+                translated.input_.text.content.text,
                 typing.cast(api.internal.Translation, translated.translation),
             )
         except Exception as e:
