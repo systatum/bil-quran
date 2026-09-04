@@ -122,12 +122,11 @@ class ExperimentRunner:
     ) -> list[ExperimentBatch]:
         variant_count_per_model = len(run.language_pairs) * len(run.prompt_settings)
         text_count_per_model_per_batch = math.ceil(batch_size / variant_count_per_model)
-        text_count_per_model = variant_count_per_model * len(run.dataset.texts)
 
         batches = []
         for model in run.models:
             for batch_start_index in range(
-                0, text_count_per_model, text_count_per_model_per_batch
+                0, len(run.dataset.texts), text_count_per_model_per_batch
             ):
                 batch_end_index = min(
                     batch_start_index + text_count_per_model_per_batch - 1,
