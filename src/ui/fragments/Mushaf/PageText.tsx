@@ -102,11 +102,17 @@ export default function PageText({
     const container = wrapper?.parentElement
     if (!wrapper || !container) return
 
-    // Set font-size and marker line-pitch safety together as plain DOM
-    // mutations, not React state; a marker resized only on next render
-    // would still be at its old size during this measurement.
+    // Set font-size and marker line-pitch together as plain DOM mutations, not React state;
+    // a marker resized only on next render would still be at its old size during this
+    // measurement.
+    //
+    // Floored to a whole pixel: the binary search lands on fractional sizes (eg. 17.348px),
+    // and older WebKit's text-shaping path (used for Arabic line boxes) snaps those to device pixels
+    // differently than the geometry math behind the ruled-line background, drifting the two apart.
+    // Chrome doesn't show this since both paths stay float-precise there. A whole pixel rounds identically
+    // on every engine.
     const applyFontSize = (size: number | "") => {
-      wrapper.style.fontSize = size === "" ? "" : `${size}px`
+      wrapper.style.fontSize = size === "" ? "" : `${Math.floor(size)}px`
       const fontPx = parseFloat(getComputedStyle(wrapper).fontSize)
       const safety = Math.min(1, (LINE_HEIGHT * fontPx) / MARKER_SIZE)
       wrapper.style.setProperty("--marker-safety", String(safety))
@@ -193,8 +199,10 @@ export default function PageText({
     width: calc(var(--marker-safety, 1) * ${tierScale * MARKER_SIZE}px);
     height: calc(var(--marker-safety, 1) * ${tierScale * MARKER_SIZE}px);
     margin-top: calc(
-      (${LINE_HEIGHT}em -
-          var(--marker-safety, 1) * ${tierScale * MARKER_SIZE}px) /
+      (
+          ${LINE_HEIGHT}em - var(--marker-safety, 1) *
+            ${tierScale * MARKER_SIZE}px
+        ) /
         2
     );
 
