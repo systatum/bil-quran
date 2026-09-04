@@ -122,7 +122,7 @@ class ExperimentRunner:
     ) -> list[ExperimentBatch]:
         variant_count_per_model = len(run.language_pairs) * len(run.prompt_settings)
         text_count_per_model_per_batch = math.ceil(batch_size / variant_count_per_model)
-        text_count_per_model = variant_count_per_model * len(run.texts)
+        text_count_per_model = variant_count_per_model * len(run.dataset.texts)
 
         batches = []
         for model in run.models:
@@ -131,7 +131,7 @@ class ExperimentRunner:
             ):
                 batch_end_index = min(
                     batch_start_index + text_count_per_model_per_batch - 1,
-                    len(run.texts) - 1,
+                    len(run.dataset.texts) - 1,
                 )
                 batches.append(
                     ExperimentBatch(
@@ -326,7 +326,7 @@ class ExperimentRunner:
             ],
             texts=[
                 ExperimentText(content=text, text_index=i)
-                for i, text in enumerate(command.texts)
+                for i, text in enumerate(command.dataset.texts)
             ],
             batches={batch.batch_id: batch for batch in batches},
             progress="not started",

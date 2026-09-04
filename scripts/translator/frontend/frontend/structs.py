@@ -16,7 +16,24 @@ def uuid_field():
 
 @dataclass(kw_only=True)
 class Versioned:
-    version: Literal["5"] = "5"
+    version: Literal["6"] = "6"
+
+
+@dataclass(kw_only=True)
+class TextContent:
+    author: str
+    text_type: Literal["footnote", "translation", "exegesis"]
+    surah: int
+    ayah: int
+    text: str
+
+
+@dataclass(kw_only=True)
+class TextDataset(Versioned):
+    note: str = ""
+
+    created_at: datetime = date_field()
+    texts: list[TextContent]
 
 
 @dataclass(kw_only=True)
@@ -38,17 +55,8 @@ class ExperimentLanguage:
 
 
 @dataclass(kw_only=True)
-class ExperimentTextContent(Versioned):
-    author: str
-    text_type: Literal["footnote", "translation", "exegesis"]
-    surah: int
-    ayah: int
-    text: str
-
-
-@dataclass(kw_only=True)
 class ExperimentText:
-    content: ExperimentTextContent
+    content: TextContent
     text_index: int
 
 
@@ -145,10 +153,12 @@ class ExperimentRunCommand:
     models: list[str]
     prompt_settings: dict[str, api.internal.PromptSetting]
     language_pairs: list[tuple[str, str]]  # Source to target language
-    texts: list[ExperimentTextContent]
+    dataset: TextDataset
 
 
 __all__ = [
+    "TextContent",
+    "TextDataset",
     "ExperimentPrompt",
     "ExperimentSetting",
     "ExperimentLanguage",
