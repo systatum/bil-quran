@@ -38,6 +38,14 @@ export const messages = {
     "0": "basmalaPosition.0",
     "1": "basmalaPosition.1",
   },
+  readingStyle: {
+    title: "readingStyle.title",
+    det: "readingStyle.det",
+    "st-mono": "readingStyle.st-mono",
+    "st-dual": "readingStyle.st-dual",
+    dualUnavailableTitle: "readingStyle.dualUnavailableTitle",
+    dualUnavailableMessage: "readingStyle.dualUnavailableMessage",
+  },
   showPageIndicator: {
     title: "showPageIndicator.title",
     helper: "showPageIndicator.helper",
@@ -49,6 +57,10 @@ export const messages = {
   showTransliteration: {
     title: "showTransliteration.title",
     helper: "showTransliteration.helper",
+  },
+  forceFit: {
+    title: "forceFit.title",
+    helper: "forceFit.helper",
   },
   fontCategory: {
     shaddaStacked: "fontCategory.shaddaStacked",

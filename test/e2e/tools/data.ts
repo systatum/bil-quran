@@ -1,4 +1,5 @@
 import { ChapterRecord } from "@constants/records/ChapterRecord"
+import { PaginationStyle, QuranPage } from "@constants/records/Pagination"
 import { Rendering } from "@constants/records/RenderingRecord"
 import { DEFAULT_LOCALE, Locale } from "@constants/settings"
 import fs from "fs"
@@ -28,6 +29,18 @@ export function loadQuranWords(rendering: Rendering): Record<string, string[]> {
     }
   }
   return map
+}
+
+/** Load a mushaf's page-by-page verse layout straight off disk. */
+export function loadPaginationStyle(
+  style: PaginationStyle = PaginationStyle.Madinah,
+): QuranPage[] {
+  const filePath = path.join(
+    __dirname,
+    "../../../public/quran/paginations",
+    `${style}.json`,
+  )
+  return JSON.parse(fs.readFileSync(filePath, "utf-8"))
 }
 
 export function getTransliteration(chapterId: string, locale: Locale): string {

@@ -52,7 +52,7 @@ export const Screen = {
 
 export type Screen = (typeof Screen)[keyof typeof Screen]
 
-const SCREENS: Record<Screen, ScreenEntry> = {
+export const SCREENS: Record<Screen, ScreenEntry> = {
   [Screen.Exegesis]: {
     component: ExegesisPaperDialogContent,
     sheet: true,

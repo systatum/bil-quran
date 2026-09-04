@@ -82,6 +82,18 @@ export async function getWordFontFamily(page: Page): Promise<string | null> {
   })
 }
 
+/** The Bismillah glyph's own computed font-size */
+export async function getBismillahFontSize(page: Page): Promise<string | null> {
+  return page.evaluate(() => {
+    const el = Array.from(
+      document.querySelectorAll<HTMLElement>(".mushaf-page-text span"),
+    ).find((span) =>
+      getComputedStyle(span).fontFamily.includes("BasmalahVer01"),
+    )
+    return el ? getComputedStyle(el).fontSize : null
+  })
+}
+
 /** Returns perceived luminance (0–255) — reliable proxy for light vs dark theme. */
 export async function getPageLuminance(page: Page): Promise<number> {
   return page.evaluate(() => {
@@ -97,6 +109,25 @@ export async function getPageLuminance(page: Page): Promise<number> {
     const bg = walk(document.body) ?? "rgb(128, 128, 128)"
     const [r, g, b] = (bg.match(/\d+/g) ?? ["128", "128", "128"]).map(Number)
     return (r * 299 + g * 587 + b * 114) / 1000
+  })
+}
+
+export async function getSearchSheetOpacity(
+  page: Page,
+): Promise<string | null> {
+  return page.evaluate(() => {
+    const match = document.evaluate(
+      "//*[text()='By chapter']",
+      document,
+      null,
+      XPathResult.FIRST_ORDERED_NODE_TYPE,
+      null,
+    )
+    let el = match.singleNodeValue as HTMLElement | null
+    while (el && getComputedStyle(el).position !== "fixed") {
+      el = el.parentElement
+    }
+    return el ? getComputedStyle(el).opacity : null
   })
 }
 
@@ -130,4 +161,36 @@ export async function getTopMostVerse(
     return visible[0]?.verse ?? null
   })
   return val
+}
+
+export interface FrameBorderOrientation {
+  /** The Frame's own grid `direction` - must stay "ltr" */
+  direction: string | null
+  topLeftX: number | null
+  topRightX: number | null
+}
+
+/** One entry per rendered mushaf Frame (1 in mono-stitched, 2 in dual-stitched). */
+export async function getFrameBorderOrientations(
+  page: Page,
+): Promise<FrameBorderOrientation[]> {
+  return page.evaluate(() => {
+    const mushaf = document.querySelector("[data-mushaf]")
+    if (!mushaf) return []
+
+    const grids = Array.from(mushaf.querySelectorAll<HTMLElement>("*")).filter(
+      (el) => getComputedStyle(el).display === "grid",
+    )
+
+    // markup order within each Frame is always [top-left, top-right, ...],
+    // regardless of direction - only where they actually render should flip
+    return grids.map((grid) => {
+      const imgs = Array.from(grid.querySelectorAll("img"))
+      return {
+        direction: getComputedStyle(grid).direction,
+        topLeftX: imgs[0]?.getBoundingClientRect().left ?? null,
+        topRightX: imgs[1]?.getBoundingClientRect().left ?? null,
+      }
+    })
+  })
 }

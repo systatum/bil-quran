@@ -3,18 +3,17 @@ import LOGGER from "@services/Logger"
 import Tracker from "@services/Tracker"
 import { chapterNameSortKey } from "@services/chapters"
 import { Combobox, ComboboxOption } from "@systatum/coneto/combobox"
-import { useNavigate } from "@tanstack/react-router"
 import { useMemo } from "react"
 import styled from "styled-components"
 import useChaptersState from "../../../hooks/states/ChaptersState"
 import { FlexContainer } from "../Container"
 
 interface VerseLookupProps {
-  onChange?: () => void
+  /** Called with the picked chapter/verse; the caller decides where that leads. */
+  onChange?: (chapterId: number, verse: number) => void
 }
 
 export default function VerseLookup({ onChange }: VerseLookupProps) {
-  const navigate = useNavigate()
   const {
     userSettings: { locale, alphabeticalChaptersSorting },
   } = useUserSettingsState()
@@ -144,11 +143,7 @@ export default function VerseLookup({ onChange }: VerseLookupProps) {
             chapter: Number(chapterId),
             verse: Number(verseId),
           })
-          navigate({
-            to: "/c/$chapter/$verse",
-            params: { chapter: chapterId, verse: verseId },
-          })
-          if (onChange) onChange()
+          onChange?.(Number(chapterId), Number(verseId))
         }}
         options={chaptersList}
       />

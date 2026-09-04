@@ -7,7 +7,12 @@ import {
 import { ArabicFontFamily, ArabicFonts } from "@constants/fonts"
 import { HighlightColor } from "@constants/highlight"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
-import { BasmalaPosition, DEFAULT_LOCALE, Locale } from "@constants/settings"
+import {
+  BasmalaPosition,
+  DEFAULT_LOCALE,
+  Locale,
+  ReadingStyle,
+} from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import { ThoughtSchool } from "@constants/ThoughtSchool"
 import { resolveLocale } from "@i18n"
@@ -30,6 +35,7 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
   locale: DEFAULT_LOCALE,
   theme: "light",
   basmalaPosition: BasmalaPosition.Detached,
+  readingStyle: ReadingStyle.Detached,
   wbwTranslations: [WordTranslationOption.AmericanEnglish],
   showPageIndicator: true,
   alphabeticalChaptersSorting: false,
@@ -43,6 +49,7 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
       size: 42.5,
     },
   },
+  forceFit: false,
   bookmarks: {
     categories: {},
     list: {},
@@ -139,6 +146,10 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
     get().partialUpdate({ basmalaPosition })
   },
 
+  setReadingStyle(readingStyle) {
+    get().partialUpdate({ readingStyle })
+  },
+
   setShowPageIndicator(show) {
     get().partialUpdate({ showPageIndicator: !!show })
   },
@@ -149,6 +160,10 @@ const useUserSettingsState = create<UserSettingsState>((set, get) => ({
 
   setShowTransliteration(show) {
     get().partialUpdate({ showTransliteration: !!show })
+  },
+
+  setForceFit(forceFit) {
+    get().partialUpdate({ forceFit: !!forceFit })
   },
 
   setExegesis(ids) {
@@ -322,9 +337,11 @@ export interface UserSettingsState {
   setLocale(locale: string): void
   setFont(font: DeepPartial<UserFontSettings>): void
   setBasmalaPosition(basmalaPosition: BasmalaPosition): void
+  setReadingStyle(readingStyle: ReadingStyle): void
   setShowPageIndicator(show: boolean): void
   setAlphabeticalChaptersSorting(sort: boolean): void
   setShowTransliteration(show: boolean): void
+  setForceFit(forceFit: boolean): void
   setExegesis(ids: string[]): void
   setProstrationVersesSchools(schools: ThoughtSchool[]): void
   setHasSeenExegesisDialog(seen: boolean): void
@@ -378,6 +395,9 @@ export interface UserSettings {
    */
   showTransliteration: boolean
 
+  /** Whether to shrink the font till the whole page fits the Mushaf frame */
+  forceFit: boolean
+
   /**
    * IDs of the exegeses the user has activated (e.g. ["aliquli/en-US"]).
    * Multiple exegeses can be active at the same time.
@@ -405,6 +425,7 @@ export interface UserSettings {
   highlightedVerses: Record<string, HighlightColor>
 
   basmalaPosition: BasmalaPosition
+  readingStyle: ReadingStyle
 
   /**
    * Which language is going to be used for showing word-by-word translation

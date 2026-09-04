@@ -13,12 +13,14 @@ import {
 } from "./tools/data"
 import {
   closeSidebar,
+  dragHorizontally,
   findVisibleTarget,
   openExegesisDialog,
   openSearchSheet,
   openSidebar,
   scrollDown,
   selectComboBox,
+  setReadingStyle,
   toggleWbwTranslation,
   waitUntilVisible,
 } from "./tools/interactivity"
@@ -365,6 +367,43 @@ test.describe("UserSettingsState", () => {
       await expect(
         dialog.locator('[data-testid="word-transliteration"]').first(),
       ).toBeVisible({ timeout: 5000 })
+    })
+  })
+
+  test.describe("readingStyle", () => {
+    test("switching to Mono-Stitched navigates to the Mushaf route automatically", async ({
+      page,
+    }) => {
+      await setReadingStyle(page, "Mono-Stitched")
+      await expect(page).toHaveURL(/#\/m\/madinah\/1/)
+    })
+
+    test("switching to Dual-Stitched navigates to the Mushaf route automatically", async ({
+      page,
+    }) => {
+      await setReadingStyle(page, "Dual-Stitched")
+      await expect(page).toHaveURL(/#\/m\/madinah\/1/)
+    })
+
+    test("switching back to Detached navigates to the QuranPaper route automatically", async ({
+      page,
+    }) => {
+      await setReadingStyle(page, "Mono-Stitched")
+      await expect(page).toHaveURL(/#\/m\/madinah\/1/)
+
+      // reveal Settings the Mushaf way: a long right-to-left drag
+      const box = await page.locator("[data-mushaf]").boundingBox()
+      const y = box!.y + box!.height / 2
+      const startX = box!.x + box!.width * 0.85
+      await dragHorizontally(page, startX, startX - 300, y)
+      await expect(
+        page.locator('[aria-label="settings-backup-button"]'),
+      ).toBeVisible({ timeout: 10_000 })
+
+      await selectComboBox("Detached", page, { formLabel: "Reading style" })
+      await closeSidebar(page)
+
+      await expect(page).not.toHaveURL(/#\/m\//)
     })
   })
 

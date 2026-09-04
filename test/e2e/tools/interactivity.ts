@@ -1,6 +1,7 @@
 import { expect } from "@playwright/test"
 
 import { type Locator, type Page } from "playwright-core"
+import { visitFresh } from "./state"
 
 // ==== I/O ========================================================
 
@@ -493,6 +494,17 @@ export async function openSearchSheet(page: Page) {
   await page.waitForTimeout(300)
 }
 
+export async function setReadingStyle(page: Page, label: string) {
+  await visitFresh(page)
+  await openSidebar(page)
+  await selectComboBox(label, page, { formLabel: "Reading style" })
+  // Sidebar visibility is a global store, not route-scoped, and a hash-only
+  // navigation doesn't reset it - leaving it open would keep it showing (and
+  // swallowing pointer events) over whatever page comes next.
+  await closeSidebar(page)
+  await page.waitForTimeout(300)
+}
+
 /** Opens the sidebar and toggles a word-by-word translation option. */
 export async function toggleWbwTranslation(label: string, page: Page) {
   await openSidebar(page)
@@ -623,4 +635,86 @@ export async function scrollDown(page: Page, px: number): Promise<boolean> {
 
     return true
   }, px)
+}
+
+/** Presses down at startX, drags to endX in a few steps, then releases. */
+export async function dragHorizontally(
+  page: Page,
+  startX: number,
+  endX: number,
+  y: number,
+) {
+  await page.mouse.move(startX, y)
+  await page.mouse.down()
+  const steps = 10
+  for (let i = 1; i <= steps; i++) {
+    await page.mouse.move(startX + ((endX - startX) * i) / steps, y)
+  }
+  await page.mouse.up()
+}
+
+/** Presses down at (x, startY), drags to (x, endY) in a few steps, then releases. */
+export async function dragVertically(
+  page: Page,
+  x: number,
+  startY: number,
+  endY: number,
+) {
+  await page.mouse.move(x, startY)
+  await page.mouse.down()
+  const steps = 10
+  for (let i = 1; i <= steps; i++) {
+    await page.mouse.move(x, startY + ((endY - startY) * i) / steps)
+  }
+  await page.mouse.up()
+}
+
+/**
+ * Mushaf-page specific interactivity
+ */
+
+/** */
+export async function showNavigatorSearch(page: Page) {
+  const box = await page.locator("[data-mushaf]").boundingBox()
+  const x = box!.x + box!.width / 2
+  const y = box!.y + box!.height / 2
+  await dragVertically(page, x, y, y - 20) // reveal the Navigator pill first
+  await page.locator('[aria-label="navigator-chapter-info"]').click()
+}
+
+export async function gotoMushafPage(page: Page, pageNumber: number) {
+  await page.goto(`/#/m/madinah/${pageNumber}`)
+  await page
+    .locator("[data-mushaf]")
+    .waitFor({ state: "visible", timeout: 30_000 })
+  await page
+    .locator('[aria-label="verse-bookmarker-btn"]')
+    .first()
+    .waitFor({ state: "visible", timeout: 15_000 })
+}
+
+/** turns to the next mushaf page the way a real reader would: dragging from the left half rightward */
+export async function swipeToNextMushafPage(page: Page): Promise<number> {
+  const mushaf = page.locator("[data-mushaf]")
+  const previousPage = await mushaf.getAttribute("data-page")
+
+  const box = await mushaf.boundingBox()
+  if (!box) throw new Error("[data-mushaf] has no bounding box")
+  const y = box.y + box.height / 2
+  const startX = box.x + box.width * 0.15
+  await dragHorizontally(page, startX, startX + 150, y)
+
+  await expect(mushaf).not.toHaveAttribute("data-page", previousPage ?? "", {
+    timeout: 15_000,
+  })
+  // wait for the text to actually land before reading it
+  await page.waitForFunction(
+    () =>
+      (document.querySelector(".mushaf-page-text")?.textContent ?? "").trim()
+        .length > 0,
+    { timeout: 15_000 },
+  )
+
+  const newPage = await mushaf.getAttribute("data-page")
+  return newPage ? parseInt(newPage, 10) : NaN
 }

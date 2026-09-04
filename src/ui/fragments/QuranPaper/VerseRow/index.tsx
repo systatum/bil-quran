@@ -1,27 +1,20 @@
 import { HighlightColor } from "@constants/highlight"
 import { ChapterRecord } from "@constants/records/ChapterRecord"
-import {
-  WordOccurrence,
-  WordWithLexemeRecord,
-} from "@constants/records/WordRecord"
+import { WordWithLexemeRecord } from "@constants/records/WordRecord"
 import { TranslatedWord } from "@constants/records/WordTranslationRecord"
 import { getSajdahRuling } from "@constants/SajdahVerse"
 import { BasmalaPosition } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
-import { repo } from "@db/repo"
 import usePaperDialogState from "@hooks/states/PaperDialogState"
 import useUserSettingsState from "@hooks/states/UserSettingsState"
 import useVirtualRowMeasurer from "@hooks/tools/useVirtualRowMeasurer"
-import { useWordTranslations } from "@hooks/tools/useWordTranslations"
-import { unpackIPC } from "@services/Converter"
-import LOGGER from "@services/Logger"
-import { makeSnippet } from "@services/mutator"
+import useWordOccurrencesFinder from "@hooks/tools/useWordOccurrencesFinder"
 import { haptic } from "@utils/haptic"
 import { useEffect, useMemo, useRef } from "react"
-import styled from "styled-components"
+import styled, { css } from "styled-components"
+import VerseMarker from "../../VerseMarker"
 import { Bismillah } from "./Bismillah"
 import InterlinearText from "./InterlinearText"
-import { VerseMarker } from "./VerseMarker"
 
 export type Verse = {
   id: string
@@ -61,14 +54,12 @@ export default function VerseRow({
   showMeaning?: boolean
   theme: ThemeMode
 }) {
-  const { openLexeme, updateLexemeOccurrences, openExegesis } =
-    usePaperDialogState()
+  const { openLexeme, openExegesis } = usePaperDialogState()
+  const findWordsOccurrences = useWordOccurrencesFinder()
 
   const {
     userSettings: { wbwTranslations },
   } = useUserSettingsState()
-
-  const corpora = useWordTranslations(wbwTranslations)
 
   const { userSettings, bookmarkVerse } = useUserSettingsState()
   const { basmalaPosition } = userSettings
@@ -141,51 +132,6 @@ export default function VerseRow({
     virtualizer,
   })
 
-  const findWordsOccurrences = (word: WordCell) => {
-    repo.words
-      .findOccurrences(word.lexemeId)
-      .then((ipcResp) => {
-        const rawVerses = unpackIPC(ipcResp)
-        const verses = rawVerses.map((v) => {
-          const targetIndex = v.words.findIndex(
-            (w) => w.order === v.targetOrder,
-          )
-
-          // use a deterministic "random" based on the verse so same
-          // occurrence to always display identically instead of
-          // changing on every render
-          const deterministicCounter = () =>
-            ((v.chapterId * 31 + v.verse * 17 + v.targetOrder) % 5) + 1
-
-          const shownWords: WordCell[] = makeSnippet(
-            v.words,
-            targetIndex,
-            deterministicCounter,
-          ).map((word) => ({
-            ...word,
-            meanings: Object.fromEntries(
-              wbwTranslations.map((locale) => [
-                locale,
-                corpora[locale]?.[word.chapterId]?.[word.verse]?.[word.order],
-              ]),
-            ),
-          }))
-
-          return {
-            ...v,
-            words: shownWords,
-          }
-        })
-        const obj: Record<string, WordOccurrence> = {}
-        verses.forEach((v) => {
-          const key = `${v.chapterId}:${v.verse}`
-          obj[key] = v
-        })
-        updateLexemeOccurrences(obj)
-      })
-      .catch((e) => LOGGER.error("Failed getting occurrences data", e))
-  }
-
   const highlightColor = userSettings.highlightedVerses[verse.id]
   const highlightHex = highlightColor
     ? HighlightColor.on(theme)[highlightColor]
@@ -219,9 +165,19 @@ export default function VerseRow({
       onPointerLeave={() => clearTimeout(verseTimeoutRef.current!)}
       onPointerCancel={() => clearTimeout(verseTimeoutRef.current!)}
     >
-      <div ref={markerColumnRef} onPointerDown={(e) => e.stopPropagation()}>
-        <VerseMarker ref={markerColumnRef} verse={verse} />
-      </div>
+      <VerseMarkerColumn
+        data-vmark
+        ref={markerColumnRef}
+        onPointerDown={(e) => e.stopPropagation()}
+      >
+        <VerseMarker
+          chapterId={verse.chapter.id}
+          verseNumber={verse.number}
+          containerStyle={css`
+            margin-top: 12px;
+          `}
+        />
+      </VerseMarkerColumn>
 
       <InterlinearText
         showMeaning={showMeaning}
@@ -302,6 +258,11 @@ export function useGroupedVerses(
     return Array.from(verseMap.values())
   }, [chapters, words])
 }
+
+const VerseMarkerColumn = styled.div`
+  align-self: start;
+  z-index: 1;
+`
 
 const VerseRowWrapper = styled.div<{
   $theme: ThemeMode

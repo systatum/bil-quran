@@ -1,9 +1,6 @@
 import { PaperDialog } from "@systatum/coneto/paper-dialog"
 import { css } from "styled-components"
-import {
-  ExegesisPreviewContent,
-  ExegesisPreviewShellProps,
-} from "./Content"
+import { ExegesisPreviewContent, ExegesisPreviewShellProps } from "./Content"
 
 /**
  * Read-only preview of the exegesis dialog, fed by direct asset fetches

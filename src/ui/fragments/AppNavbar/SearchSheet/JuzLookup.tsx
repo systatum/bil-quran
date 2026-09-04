@@ -1,10 +1,9 @@
 import { QuranPage } from "@constants/records/Pagination"
-import useUserSettingsState from "@hooks/states/UserSettingsState"
 import usePaginationState from "@hooks/states/PaginationState"
+import useUserSettingsState from "@hooks/states/UserSettingsState"
 import { messages } from "@i18n/message"
 import Tracker from "@services/Tracker"
 import { Combobox, ComboboxOption } from "@systatum/coneto/combobox"
-import { useNavigate } from "@tanstack/react-router"
 import { Fragment, useEffect, useMemo, useState } from "react"
 import { useIntl } from "react-intl"
 import styled from "styled-components"
@@ -14,18 +13,18 @@ import { FlexContainer } from "../Container"
 const SMALL_SCREEN_BREAKPOINT = 430
 const MAX_CHAPTERS_SMALL = 2
 
-interface PageChunk {
+export interface PageChunk {
   chapterIds: number[]
   verseNumbers: number[][]
   showRanges: boolean[]
 }
 
 interface JuzLookupProps {
-  onChange?: () => void
+  /** Called with the picked page's starting chapter/verse; the caller decides where that leads. */
+  onChange?: (chapterId: number, verse: number) => void
 }
 
 export default function JuzLookup({ onChange }: JuzLookupProps) {
-  const navigate = useNavigate()
   const {
     userSettings: { locale },
   } = useUserSettingsState()
@@ -153,11 +152,7 @@ export default function JuzLookup({ onChange }: JuzLookupProps) {
             chapter: Number(chapter),
             verse: Number(verse),
           })
-          navigate({
-            to: "/c/$chapter/$verse",
-            params: { chapter, verse },
-          })
-          onChange?.()
+          onChange?.(Number(chapter), Number(verse))
         }}
         options={options}
       />

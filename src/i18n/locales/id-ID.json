@@ -36,6 +36,14 @@
     "0": "Se-level",
     "1": "Terpisah"
   },
+  "readingStyle": {
+    "title": "Gaya baca",
+    "det": "Terpisah",
+    "st-mono": "Menyambung sehalaman",
+    "st-dual": "Menyambung dua halaman",
+    "dualUnavailableTitle": "Tidak dapat menampilkan dua halaman sekaligus",
+    "dualUnavailableMessage": "Layar Anda tidak cukup lebar untuk tampilan dua halaman, jadi hanya satu halaman yang ditampilkan."
+  },
   "showPageIndicator": {
     "title": "Tampilkan indikator halaman",
     "helper": "Tampilkan sejauh mana Al-Qur'an telah di baca per bagian/juz"
@@ -47,6 +55,10 @@
   "showTransliteration": {
     "title": "Tampilkan transliterasi",
     "helper": "Tampilkan cara baca setiap kata dalam al-Quran"
+  },
+  "forceFit": {
+    "title": "Paksa muat halaman",
+    "helper": "Kecilkan font sampai seluruh halaman muat dalam bingkai"
   },
   "fontCategory": {
     "shaddaStacked": "Tashdid-harakat setumpuk",

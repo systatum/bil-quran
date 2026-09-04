@@ -1,12 +1,16 @@
+import { ReadingStyle } from "@constants/settings"
 import {
   createHashHistory,
   createRootRoute,
   createRoute,
   createRouter,
   Outlet,
+  redirect,
 } from "@tanstack/react-router"
 import UIIndex from "."
 import ErrorRescuer from "../ErrorRescuer"
+import Mushaf from "./fragments/Mushaf"
+import useUserSettingsState from "./hooks/states/UserSettingsState"
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -22,6 +26,16 @@ const rootRoute = createRootRoute({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
+  // immediately switch to mushaf-mode if that's what the user set reading mode
+  beforeLoad: () => {
+    const { readingStyle } = useUserSettingsState.getState().userSettings
+    if (readingStyle === ReadingStyle.Detached) return
+
+    throw redirect({
+      to: "/m/$mushaf/$page",
+      params: { mushaf: "madinah", page: "1" },
+    })
+  },
   component: UIIndex,
 })
 
@@ -55,12 +69,19 @@ const aboutScreenRoute = createRoute({
   component: () => <UIIndex openAboutOnMount />,
 })
 
+const mushafPageRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/m/$mushaf/$page",
+  component: Mushaf,
+})
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   verseRoute,
   exegesisRoute,
   aboutRoute,
   aboutScreenRoute,
+  mushafPageRoute,
 ])
 
 export const router = createRouter({

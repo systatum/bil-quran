@@ -2,19 +2,20 @@ import { Asset } from "@constants/assets"
 import { ArabicFonts, getAllPossibleFontSizeOptions } from "@constants/fonts"
 import { WordTranslationOption } from "@constants/records/WordTranslationRecord"
 import { SAJDAH_SCHOOLS } from "@constants/SajdahVerse"
-import { BasmalaPosition, Locale } from "@constants/settings"
+import { BasmalaPosition, Locale, ReadingStyle } from "@constants/settings"
 import { ThemeMode } from "@constants/theme"
 import useExegesisOptions from "@hooks/tools/useExegesisOptions"
 import useFonts from "@hooks/tools/useFonts"
 import useProstrationVersesSchoolOptions from "@hooks/tools/useProstrationVersesSchoolOptions"
 import { isProperThemeValue, messages } from "@i18n/message"
 import { RiArrowRightSLine, RiBookOpenLine } from "@remixicon/react"
+import Tracker from "@services/Tracker"
 import { ComboboxOption } from "@systatum/coneto/combobox"
 import { ScreenProps } from "@systatum/coneto/screen-transition"
 import { FormFieldGroup, StatefulForm } from "@systatum/coneto/stateful-form"
 import { useTheme } from "@systatum/coneto/theme"
+import { useNavigate } from "@tanstack/react-router"
 import { Screen } from "@ui/index"
-import Tracker from "@services/Tracker"
 import { useMemo } from "react"
 import { useIntl } from "react-intl"
 import { css } from "styled-components"
@@ -25,15 +26,18 @@ export default function UserSettingsForm({
 }: Partial<ScreenProps<Screen>>) {
   const { formatMessage } = useIntl()
   const { mode } = useTheme()
+  const navigate = useNavigate()
   const {
     setTheme,
     setFont,
     setLocale,
     setBasmalaPosition,
+    setReadingStyle,
     setWordByWordTranslations,
     setShowPageIndicator,
     setAlphabeticalChaptersSorting,
     setShowTransliteration,
+    setForceFit,
     setExegesis,
     setProstrationVersesSchools,
     userSettings,
@@ -48,11 +52,13 @@ export default function UserSettingsForm({
     arabicFontSize: String(userSettings.font.arabic.size),
     locale: userSettings.locale,
     basmalaPosition: userSettings.basmalaPosition,
+    readingStyle: userSettings.readingStyle,
     wbwTranslations: userSettings.wbwTranslations,
     showPageIndicator: userSettings.showPageIndicator ?? true,
     alphabeticalChaptersSorting:
       userSettings.alphabeticalChaptersSorting ?? false,
     showTransliteration: userSettings.showTransliteration ?? false,
+    forceFit: userSettings.forceFit ?? false,
     exegesis: userSettings.exegesis,
     prostvSchools: userSettings.prostrationVersesSchools.map(String),
   }
@@ -63,25 +69,40 @@ export default function UserSettingsForm({
   const sajdahSchoolOptions = useProstrationVersesSchoolOptions()
 
   const FIELDS: FormFieldGroup[] = [
-    {
-      name: "theme",
-      title: formatMessage({ id: messages.theme.title }),
-      type: "combo",
-      combobox: {
-        mobile: true,
-        options: ["light", "dark"]
-          .filter((t) => isProperThemeValue(t))
-          .map(
-            (t) =>
-              ({
-                text: formatMessage({
-                  id: messages.theme[t],
-                }),
-                value: t,
-              }) satisfies ComboboxOption,
-          ),
+    [
+      {
+        name: "theme",
+        title: formatMessage({ id: messages.theme.title }),
+        type: "combo",
+        combobox: {
+          mobile: true,
+          options: ["light", "dark"]
+            .filter((t) => isProperThemeValue(t))
+            .map(
+              (t) =>
+                ({
+                  text: formatMessage({
+                    id: messages.theme[t],
+                  }),
+                  value: t,
+                }) satisfies ComboboxOption,
+            ),
+        },
       },
-    },
+
+      {
+        name: "readingStyle",
+        title: formatMessage({ id: messages.readingStyle.title }),
+        type: "combo",
+        combobox: {
+          mobile: true,
+          options: Object.values(ReadingStyle).map((r) => ({
+            text: formatMessage({ id: messages.readingStyle[r] }),
+            value: r,
+          })),
+        },
+      },
+    ],
 
     [
       {
@@ -101,6 +122,15 @@ export default function UserSettingsForm({
         type: "combo",
         placeholder: "Size of the font",
         combobox: { mobile: true, options: arabicFontSizeOptions },
+      },
+
+      {
+        name: "forceFit",
+        title: formatMessage({ id: messages.forceFit.title }),
+        helper: formatMessage({ id: messages.forceFit.helper }),
+        hidden: userSettings.readingStyle === ReadingStyle.Detached,
+        type: "toggle",
+        toggle: { mobile: true },
       },
     ],
 
@@ -311,6 +341,26 @@ export default function UserSettingsForm({
 
           setBasmalaPosition(currentState.basmalaPosition)
           captureSettingChange()
+        } else if (FormState.ReadingStyle in currentState) {
+          const value = currentState.readingStyle
+          if (!Object.values(ReadingStyle).includes(value)) return
+
+          const wasDetached =
+            userSettings.readingStyle === ReadingStyle.Detached
+          const isDetached = value === ReadingStyle.Detached
+
+          setReadingStyle(value)
+          captureSettingChange()
+
+          // navigate away when switching rendering mode for immediate effect
+          if (wasDetached !== isDetached) {
+            if (isDetached) navigate({ to: "/" })
+            else
+              navigate({
+                to: "/m/$mushaf/$page",
+                params: { mushaf: "madinah", page: "1" },
+              })
+          }
         } else if (FormState.WordByWordTranslations in currentState) {
           const values: WordTranslationOption[] = currentState.wbwTranslations
 
@@ -331,6 +381,10 @@ export default function UserSettingsForm({
         } else if (FormState.ShowTransliteration in currentState) {
           const value = currentState.showTransliteration
           setShowTransliteration(value)
+          captureSettingChange()
+        } else if (FormState.ForceFit in currentState) {
+          const value = currentState.forceFit
+          setForceFit(value)
           captureSettingChange()
         } else if (FormState.Exegesis in currentState) {
           const values: string[] = currentState.exegesis
@@ -361,10 +415,12 @@ export const FormState = {
   ArabicFontSize: "arabicFontSize",
   Locale: "locale",
   BasmalaPosition: "basmalaPosition",
+  ReadingStyle: "readingStyle",
   WordByWordTranslations: "wbwTranslations",
   ShowPageIndicator: "showPageIndicator",
   AlphabeticalChaptersSorting: "alphabeticalChaptersSorting",
   ShowTransliteration: "showTransliteration",
+  ForceFit: "forceFit",
   Exegesis: "exegesis",
   ProstrationVersesSchools: "prostvSchools",
 } as const
@@ -375,10 +431,12 @@ type FormState = {
   [FormState.ArabicFontSize]: string
   [FormState.Locale]: string
   [FormState.BasmalaPosition]: BasmalaPosition
+  [FormState.ReadingStyle]: ReadingStyle
   [FormState.WordByWordTranslations]: WordTranslationOption[]
   [FormState.ShowPageIndicator]: boolean
   [FormState.AlphabeticalChaptersSorting]: boolean
   [FormState.ShowTransliteration]: boolean
+  [FormState.ForceFit]: boolean
   [FormState.Exegesis]: string[]
   [FormState.ProstrationVersesSchools]: string[]
 }
