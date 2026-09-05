@@ -68,6 +68,9 @@ export default function PageText({
   const wordStartPosRef = useRef<{ x: number; y: number } | null>(null)
 
   const wrapperRef = useRef<HTMLDivElement>(null)
+  // hidden during force-fit's search below, so its box can't inflate
+  // wrapper.scrollHeight while stale line positions are still in the DOM
+  const ruledLinesRef = useRef<HTMLDivElement>(null)
   // bottom offset (px, relative to wrapper's own top) of each real rendered
   // text line, used to draw the ruled lines directly under the actual text
   const [lineBottoms, setLineBottoms] = useState<number[]>([])
@@ -109,15 +112,11 @@ export default function PageText({
 
     // Set font-size and marker line-pitch together as plain DOM mutations, not React state;
     // a marker resized only on next render would still be at its old size during this
-    // measurement.
-    //
-    // Floored to a whole pixel: the binary search lands on fractional sizes (eg. 17.348px),
-    // and older WebKit's text-shaping path (used for Arabic line boxes) snaps those to device pixels
-    // differently than the geometry math behind the ruled-line background, drifting the two apart.
-    // Chrome doesn't show this since both paths stay float-precise there. A whole pixel rounds identically
-    // on every engine.
+    // measurement. Kept fractional (not rounded) - the ruled lines below are measured
+    // from the actual rendered words, so there's nothing left for a fractional size to
+    // drift out of sync with, and rounding would throw away real fitting precision.
     const applyFontSize = (size: number | "") => {
-      wrapper.style.fontSize = size === "" ? "" : `${Math.floor(size)}px`
+      wrapper.style.fontSize = size === "" ? "" : `${size}px`
       const fontPx = parseFloat(getComputedStyle(wrapper).fontSize)
       const safety = Math.min(1, (LINE_HEIGHT * fontPx) / MARKER_SIZE)
       wrapper.style.setProperty("--marker-safety", String(safety))
@@ -160,6 +159,13 @@ export default function PageText({
     // Start from a clean slate before measuring; a leftover size from a
     // previous page or wider viewport would corrupt it.
     const recalculate = () => {
+      // React hasn't re-rendered with this page's lines yet, so stale ones
+      // from the last page/size are still in the DOM - hide them so they
+      // can't inflate scrollHeight and make force-fit shrink further than
+      // it needs to.
+      const ruledLines = ruledLinesRef.current
+      if (ruledLines) ruledLines.style.display = "none"
+
       applyFontSize("")
 
       if (forceFit) {
@@ -176,32 +182,51 @@ export default function PageText({
         const fits = () =>
           wrapper.scrollHeight <= container.clientHeight - FIT_SAFETY_MARGIN
 
-        // the existing (breakpoint-aware) CSS default already fits - no
-        // need to override it with a forced size
-        if (!fits()) {
-          const fitsAt = (size: number) => {
-            applyFontSize(size)
-            return fits()
-          }
+        const fitsAt = (size: number) => {
+          applyFontSize(size)
+          return fits()
+        }
 
-          // Binary search for the largest size that fits; a percentage step would overshoot,
-          // leaving empty lines whenever a small size change drops a whole line of text.
-          let lo = MIN_FIT_FONT_SIZE
-          let hi = font.arabic.size
-          if (fitsAt(lo)) {
-            for (let i = 0; i < FIT_SEARCH_ITERATIONS; i++) {
-              const mid = (lo + hi) / 2
-              if (fitsAt(mid)) lo = mid
-              else hi = mid
-            }
-            fitsAt(lo)
-          } // else doesn't fit even at the floor - best effort, leave it there
+        // Binary search for the largest size that fits; a percentage step would overshoot,
+        // leaving empty lines whenever a small size change drops a whole line of text.
+        const binarySearch = (lo: number, hi: number) => {
+          for (let i = 0; i < FIT_SEARCH_ITERATIONS; i++) {
+            const mid = (lo + hi) / 2
+            if (fitsAt(mid)) lo = mid
+            else hi = mid
+          }
+          fitsAt(lo)
+        }
+
+        // The size actually rendered by the CSS default just applied above: phone/tablet breakpoints and
+        // forceTabletScale already shrink this below font.arabic.size, so it (not the raw setting) is the real
+        // desired reference point for both directions below.
+        const baseSize = parseFloat(getComputedStyle(wrapper).fontSize)
+
+        if (!fits()) {
+          // shrink: search down from the base size to the floor
+          const lo = MIN_FIT_FONT_SIZE
+          const hi = baseSize
+          if (fitsAt(lo)) binarySearch(lo, hi)
+          // else doesn't fit even at the floor - best effort, leave it there
+        } else {
+          // Grow: the base size already fits with room to spare, so double the candidate until it overflows,
+          // capped where even a single line overflows the container, then binary search the largest fit size
+          const ceiling = container.clientHeight / LINE_HEIGHT
+          let lo = baseSize
+          let hi = Math.min(lo * FIT_GROWTH_FACTOR, ceiling)
+          while (hi < ceiling && fitsAt(hi)) {
+            lo = hi
+            hi = Math.min(hi * FIT_GROWTH_FACTOR, ceiling)
+          }
+          binarySearch(lo, hi)
         }
 
         wrapper.style.minHeight = ""
         container.style.overflowY = previousOverflow
       }
 
+      if (ruledLines) ruledLines.style.display = ""
       measureLines()
     }
 
@@ -260,7 +285,7 @@ export default function PageText({
       $theme={theme}
       $forceTabletScale={forceTabletScale}
     >
-      <RuledLines aria-hidden>
+      <RuledLines ref={ruledLinesRef} aria-hidden>
         {lineBottoms.map((bottom, index) => (
           <RuledLine key={index} $theme={theme} style={{ top: bottom - 1 }} />
         ))}
@@ -400,6 +425,9 @@ const FIT_SEARCH_ITERATIONS = 12 // ~0.01px precision over a 40px range
 // tipping onto its own trailing line adds more height than a sub-pixel
 // fraction would - this margin keeps every fit comfortably clear of both
 const FIT_SAFETY_MARGIN = 8
+// when the base size already fits with room to spare, force-fit grows it by
+// this factor per step to find a candidate that overflows
+const FIT_GROWTH_FACTOR = 1.5
 
 const PageWrapper = styled.div<{
   $font: FontSetting
