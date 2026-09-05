@@ -9,7 +9,7 @@ import useWordsState from "@hooks/states/WordsState"
 import useWordOccurrencesFinder from "@hooks/tools/useWordOccurrencesFinder"
 import { useTranslatedWords } from "@hooks/tools/useWordTranslations"
 import { haptic } from "@utils/haptic"
-import { useEffect, useLayoutEffect, useMemo, useRef } from "react"
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import styled, { css } from "styled-components"
 import { WordCell } from "../QuranPaper/VerseRow"
 import { Bismillah } from "../QuranPaper/VerseRow/Bismillah"
@@ -29,6 +29,8 @@ interface PageVerse {
 
 const LINE_HEIGHT = 2
 const MARKER_SIZE = 42 // native width/height of the CircleButton, in px
+const PAGE_PADDING = 16 // PageWrapper's own padding; ruled lines sit inside it
+const LINE_GROUP_TOLERANCE = 4 // px; groups one real line's rects without merging adjacent lines
 
 // viewport width tiers the text and verse marker both scale down at, so a
 // smaller screen fits more of the page without needing to zoom
@@ -66,6 +68,9 @@ export default function PageText({
   const wordStartPosRef = useRef<{ x: number; y: number } | null>(null)
 
   const wrapperRef = useRef<HTMLDivElement>(null)
+  // bottom offset (px, relative to wrapper's own top) of each real rendered
+  // text line, used to draw the ruled lines directly under the actual text
+  const [lineBottoms, setLineBottoms] = useState<number[]>([])
 
   useEffect(() => {
     loadPagination()
@@ -118,54 +123,86 @@ export default function PageText({
       wrapper.style.setProperty("--marker-safety", String(safety))
     }
 
+    // Draws each ruled line from the real rendered word boxes, not em math, as font's tall diacritic
+    // ascenders/descenders can need more leading than line-height assumes, and that gap compounds down the
+    // page if lines are placed by a separate guessed calculation. Only words are measured, since
+    // VerseMarker/Bismillah sit at a different box offset than their line's text and would otherwise read
+    // as an extra separate line.
+    const measureLines = () => {
+      const wrapperTop = wrapper.getBoundingClientRect().top
+      const rects: DOMRect[] = []
+      wrapper.querySelectorAll<HTMLElement>(".mushaf-word").forEach((el) => {
+        for (const rect of el.getClientRects()) {
+          if (rect.width > 0 && rect.height > 0) rects.push(rect)
+        }
+      })
+      rects.sort((a, b) => a.top - b.top)
+
+      // several inline elements on the same line each contribute their own
+      // rect; group by top proximity into one bottom per real line
+      const bottoms: number[] = []
+      let groupTop: number | null = null
+      let groupBottom = 0
+      for (const rect of rects) {
+        if (groupTop === null || rect.top - groupTop > LINE_GROUP_TOLERANCE) {
+          if (groupTop !== null) bottoms.push(groupBottom - wrapperTop)
+          groupTop = rect.top
+          groupBottom = rect.bottom
+        } else {
+          groupBottom = Math.max(groupBottom, rect.bottom)
+        }
+      }
+      if (groupTop !== null) bottoms.push(groupBottom - wrapperTop)
+
+      setLineBottoms(bottoms)
+    }
+
     // Start from a clean slate before measuring; a leftover size from a
     // previous page or wider viewport would corrupt it.
     const recalculate = () => {
       applyFontSize("")
 
-      if (!forceFit) return
+      if (forceFit) {
+        // min-height: 100% hides whether content barely overflows; neutralizing it reveals true content height.
+        wrapper.style.minHeight = "0"
 
-      // min-height: 100% hides whether content barely overflows; neutralizing it reveals true content height.
-      wrapper.style.minHeight = "0"
+        // Hold the container's scrollbar hidden during the search so width stays constant;
+        // or a tentative scrollbar shaves pixels and inflates line counts for larger candidates.
+        const previousOverflow = container.style.overflowY
+        container.style.overflowY = "hidden"
 
-      // Hold the container's scrollbar hidden during the search so width stays constant;
-      // or a tentative scrollbar shaves pixels and inflates line counts for larger candidates.
-      const previousOverflow = container.style.overflowY
-      container.style.overflowY = "hidden"
+        // round to whole pixels, and a verse marker tip onto its own trailing line; a generous
+        // margin keeps "fits" decisions clear of both rounding & marker overflow.
+        const fits = () =>
+          wrapper.scrollHeight <= container.clientHeight - FIT_SAFETY_MARGIN
 
-      // round to whole pixels, and a verse marker tip onto its own trailing line; a generous
-      // margin keeps "fits" decisions clear of both rounding & marker overflow.
-      const fits = () =>
-        wrapper.scrollHeight <= container.clientHeight - FIT_SAFETY_MARGIN
+        // the existing (breakpoint-aware) CSS default already fits - no
+        // need to override it with a forced size
+        if (!fits()) {
+          const fitsAt = (size: number) => {
+            applyFontSize(size)
+            return fits()
+          }
 
-      // the existing (breakpoint-aware) CSS default already fits - no
-      // need to override it with a forced size
-      if (fits()) {
+          // Binary search for the largest size that fits; a percentage step would overshoot,
+          // leaving empty lines whenever a small size change drops a whole line of text.
+          let lo = MIN_FIT_FONT_SIZE
+          let hi = font.arabic.size
+          if (fitsAt(lo)) {
+            for (let i = 0; i < FIT_SEARCH_ITERATIONS; i++) {
+              const mid = (lo + hi) / 2
+              if (fitsAt(mid)) lo = mid
+              else hi = mid
+            }
+            fitsAt(lo)
+          } // else doesn't fit even at the floor - best effort, leave it there
+        }
+
         wrapper.style.minHeight = ""
         container.style.overflowY = previousOverflow
-        return
       }
 
-      const fitsAt = (size: number) => {
-        applyFontSize(size)
-        return fits()
-      }
-
-      // Binary search for the largest size that fits; a percentage step would overshoot,
-      // leaving empty lines whenever a small size change drops a whole line of text.
-      let lo = MIN_FIT_FONT_SIZE
-      let hi = font.arabic.size
-      if (fitsAt(lo)) {
-        for (let i = 0; i < FIT_SEARCH_ITERATIONS; i++) {
-          const mid = (lo + hi) / 2
-          if (fitsAt(mid)) lo = mid
-          else hi = mid
-        }
-        fitsAt(lo)
-      } // else doesn't fit even at the floor - best effort, leave it there
-
-      wrapper.style.minHeight = ""
-      container.style.overflowY = previousOverflow
+      measureLines()
     }
 
     recalculate()
@@ -223,6 +260,11 @@ export default function PageText({
       $theme={theme}
       $forceTabletScale={forceTabletScale}
     >
+      <RuledLines aria-hidden>
+        {lineBottoms.map((bottom, index) => (
+          <RuledLine key={index} $theme={theme} style={{ top: bottom - 1 }} />
+        ))}
+      </RuledLines>
       {verses.map(({ chapterId, verseNumber, words: verseWords }) => {
         const highlightColor = highlightedVerses[`${chapterId}:${verseNumber}`]
         const highlightHex = highlightColor
@@ -364,12 +406,17 @@ const PageWrapper = styled.div<{
   $theme: ThemeMode
   $forceTabletScale: boolean
 }>`
+  position: relative;
+  /* establishes a stacking context so RuledLine's negative z-index stays
+     scoped here (behind the text, in front of this background), instead of
+     escaping to an ancestor and painting behind this background entirely */
+  z-index: 0;
   width: 100%;
   /* min-height, not height: overflowing text must still be inside this box
      so its background follows the content, instead of stopping at 100%
      and showing the wrapper behind it underneath the overflow */
   min-height: 100%;
-  padding: 16px;
+  padding: ${PAGE_PADDING}px;
   box-sizing: border-box;
   direction: rtl;
   text-align: justify;
@@ -379,22 +426,6 @@ const PageWrapper = styled.div<{
   color: ${({ $theme }) => ($theme === "dark" ? "#d8c7a3" : "#1f1f1f")};
   background-color: ${({ $theme }) =>
     $theme === "dark" ? "#181818" : "#f6f1e7"};
-
-  /* background-clip must also be content-box, or the pattern
-     bleeds backward into the padding above and shows as a stray top line */
-  background-origin: content-box;
-  background-clip: content-box;
-  background-image: ${({ $theme }) => {
-    const lineColor =
-      $theme === "dark" ? "rgba(216, 199, 163, 0.3)" : "rgba(31, 31, 31, 0.25)"
-    return `repeating-linear-gradient(
-      to bottom,
-      transparent 0,
-      transparent calc(${LINE_HEIGHT}em - 1px),
-      ${lineColor} calc(${LINE_HEIGHT}em - 1px),
-      ${lineColor} ${LINE_HEIGHT}em
-    )`
-  }};
 
   @media (max-width: ${PHONE_BREAKPOINT}px) {
     font-size: ${({ $font }) => $font.size * PHONE_SCALE}px;
@@ -409,4 +440,25 @@ const PageWrapper = styled.div<{
     css`
       font-size: ${$font.size * TABLET_SCALE}px;
     `}
+`
+
+// negative z-index keeps these behind PageWrapper's in-flow text/highlights,
+// which paint above a positioned sibling with no z-index of its own
+const RuledLines = styled.div`
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: ${PAGE_PADDING}px;
+  right: ${PAGE_PADDING}px;
+  z-index: -1;
+  pointer-events: none;
+`
+
+const RuledLine = styled.div<{ $theme: ThemeMode }>`
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: ${({ $theme }) =>
+    $theme === "dark" ? "rgba(216, 199, 163, 0.3)" : "rgba(31, 31, 31, 0.25)"};
 `
