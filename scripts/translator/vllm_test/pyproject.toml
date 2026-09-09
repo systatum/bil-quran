@@ -1,0 +1,24 @@
+[project]
+name = "my_vllm_testing"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [{ name = "SeeStarz", email = "mfahrim7@gmail.com" }]
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "vllm>=0.28",
+]
+
+[project.scripts]
+my_vllm_testing = "my_vllm_testing.main:main"
+
+[build-system]
+requires = ["uv_build>=0.12.6,<0.13.0"]
+build-backend = "uv_build"
+
+[[tool.uv.index]]
+name = "pytorch-cu132"
+url = "https://download.pytorch.org/whl/cu132"
+
+[tool.uv.build-backend]
+module-root = "."
