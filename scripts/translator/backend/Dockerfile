@@ -44,7 +44,7 @@ COPY --from=uv-base /uv /bin/uv
 
 WORKDIR /app
 
-RUN uv tool install --python 3.11 vllm@0.28.0 --verbose
+RUN uv tool install --python 3.11 vllm@0.28.0 --verbose && uv tool run vllm download-kernels
 
 # We need this because otherwise uv will pick an unsupported python version
 COPY .python-version ./

@@ -202,6 +202,7 @@ version = "0.1.0"
 source = { editable = "backend" }
 dependencies = [
     { name = "fastapi", extra = ["standard"] },
+    { name = "httpx" },
     { name = "shared" },
     { name = "torch" },
     { name = "unbabel-comet" },
@@ -216,6 +217,7 @@ heavy = [
 [package.metadata]
 requires-dist = [
     { name = "fastapi", extras = ["standard"], specifier = ">=0.141.1" },
+    { name = "httpx", specifier = ">=0.28.1" },
     { name = "shared", editable = "shared" },
     { name = "torch", specifier = "==2.12.1+cu132", index = "https://download.pytorch.org/whl/cu132" },
     { name = "unbabel-comet", specifier = ">=2.2.7" },

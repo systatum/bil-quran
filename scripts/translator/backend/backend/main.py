@@ -25,7 +25,7 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from time import sleep
 from datetime import datetime, timezone
-from typing import TypeVar, Annotated
+from typing import TypeVar, Annotated, Optional
 import uuid
 import threading
 import typing
@@ -43,7 +43,6 @@ class JobBoard:
     def __init__(self):
         self._jobs = {}
         self._results = {}
-        self._last_activity_timestamp = datetime.now(timezone.utc)
         self._lock = threading.Lock()
 
     def queue(self, job: Job):
@@ -58,7 +57,6 @@ class JobBoard:
 
         with self._lock:
             self._jobs[job.job_id] = job
-            self._last_activity_timestamp = datetime.now(timezone.utc)
 
     def collect(self):
         with self._lock:
@@ -80,7 +78,6 @@ class JobBoard:
                     for result in appstate.get().comparison_service.retrieve_results()
                 }
             )
-            self._last_activity_timestamp = datetime.now(timezone.utc)
 
     def get_result(self, job_id: uuid.UUID) -> JobResult | None:
         self.collect()
@@ -92,10 +89,6 @@ class JobBoard:
             sleep(0.5)
         return result
 
-    def get_last_activity_timestamp(self) -> datetime:
-        with self._lock:
-            return self._last_activity_timestamp
-
 
 @dataclass(kw_only=True)
 class GlobalData:
@@ -103,6 +96,7 @@ class GlobalData:
     rating_service: RatingService
     comparison_service: ComparisonService
     job_board: JobBoard
+    finished_loading_timestamp: datetime
 
 
 @dataclass(kw_only=True)
@@ -155,25 +149,29 @@ appstate: Appstate = Appstate()
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     print_version()
-    SettingLoader.get()  # Initialize setting here so we can see what's going on
-    print(end="", flush=True)
-    print(end="", flush=True, file=sys.stderr)
+
+    translation_service: TranslationService = TranslationService()
+    translation_service.start()
+    rating_serivce: RatingService = RatingService()
+    rating_serivce.start()
+    comparison_service: ComparisonService = ComparisonService()
+    comparison_service.start()
+    job_board: JobBoard = JobBoard()
+    finished_loading_timestamp = datetime.now(timezone.utc)
 
     appstate.load(
         GlobalData(
-            translation_service=TranslationService(),
-            rating_service=RatingService(),
-            comparison_service=ComparisonService(),
-            job_board=JobBoard(),
+            translation_service=translation_service,
+            rating_service=rating_serivce,
+            comparison_service=comparison_service,
+            job_board=job_board,
+            finished_loading_timestamp=finished_loading_timestamp,
         )
     )
-    appstate.get().translation_service.start()
-    appstate.get().rating_service.start()
-    appstate.get().comparison_service.start()
     yield
-    appstate.get().rating_service.stop()
-    appstate.get().translation_service.stop()
-    appstate.get().comparison_service.stop()
+    translation_service.stop()
+    rating_serivce.stop()
+    comparison_service.stop()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -210,27 +208,26 @@ def check_token(
 
 @app.get("/health")
 def get_health(_: Annotated[None, Depends(check_token)]) -> HealthAPIResponse:
-    app = appstate.get()
-    job_board_timestamp: datetime = app.job_board.get_last_activity_timestamp()
-    busy: bool = any(
-        service.is_busy()
-        for service in (
-            app.translation_service,
-            app.rating_service,
-            app.comparison_service,
-        )
-    )
-    last_activity_timestamp: datetime = (
-        datetime.now(timezone.utc) if busy else job_board_timestamp
-    )
+    healthy: bool = True
+    last_activity_timestamp: datetime = appstate.get().finished_loading_timestamp
+    for service in (
+        appstate.get().translation_service,
+        appstate.get().rating_service,
+        appstate.get().comparison_service,
+    ):
+        if not service.is_healthy():
+            healthy = False
+        service_last_busy_timestamp: Optional[datetime] = service.last_busy_timestamp()
+        if service_last_busy_timestamp is not None:
+            last_activity_timestamp = service_last_busy_timestamp
     return HealthAPIResponse.ok(
-        HealthResult(healthy=True, last_activity_timestamp=last_activity_timestamp)
+        HealthResult(healthy=healthy, last_activity_timestamp=last_activity_timestamp)
     )
 
 
 @app.get("/models")
 def get_models(_: Annotated[None, Depends(check_token)]) -> ModelsAPIResponse:
-    return ModelsAPIResponse.ok(list(SettingLoader.get().LLM_MODELS.keys()))
+    return ModelsAPIResponse.ok(list(SettingLoader.get().VLLM_MODELS.keys()))
 
 
 @app.post("/translate")

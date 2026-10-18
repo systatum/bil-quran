@@ -56,7 +56,6 @@ class BackendEnv(Env):
     API_KEY: str
     SETTING_SYS_PATH: str
     SETTING_PYTHON_PATH: str
-    MOUNT_ROOT: str
 
     @classmethod
     def get(cls) -> Self:

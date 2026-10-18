@@ -26,7 +26,8 @@ class ComparisonService(Service[Comparison, str]):
         self._model = load_model()
 
     def _run_job(self, job: Job[Comparison, str]) -> JobResult[Comparison, str]:
-        assert isinstance(job, CompareJob)
+        if not isinstance(job, CompareJob):
+            return JobResult.err(job, "Job is not of instance CompareJob")
 
         if any(
             any(keyword in text for keyword in DISALLOWED_KEYWORDS)

@@ -10,6 +10,7 @@ dependencies = [
     "fastapi[standard]>=0.141.1",
     "torch==2.12.1+cu132",
     "unbabel-comet>=2.2.7",
+    "httpx>=0.28.1",
 ]
 
 [tool.uv.sources]
