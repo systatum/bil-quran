@@ -1,15 +1,20 @@
-from __future__ import annotations
+from backend.llm_model_source import ModelSource
 from dataclasses import dataclass
+from pathlib import Path
 
 
-@dataclass(kw_only=True, frozen=True)
+@dataclass(frozen=True)
 class Setting:
+    LLM_TEMP_DIR: Path
+    LLM_MODEL_DIR: Path
+
+    # Dict key will be the internal model name, and will be stored as {name}.gguf
+    LLM_MODELS: dict[str, ModelSource]
+
+    LLM_GPU_ENABLED: bool
+    LLM_CONTEXT_SIZE: int
+
+    # Max loaded at a time. 0 means it will get unloaded as soon as there is no job left
+    LLM_MAX_LOADED: int
+
     APP_TOKEN: str
-    VLLM_PORT: int
-    VLLM_MODELS: dict[str, ModelSetting]  # Key is alias
-
-
-@dataclass(kw_only=True, frozen=True)
-class ModelSetting:
-    hugging_face_id: str
-    vllm_serve_arguments: dict[str, str]  # Should not include port argument

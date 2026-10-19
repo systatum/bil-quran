@@ -3,9 +3,8 @@ from shared.util import Result
 from time import sleep
 from queue import Queue
 from dataclasses import dataclass
-from typing import Generic, TypeVar, Optional
+from typing import Generic, TypeVar
 from abc import abstractmethod, ABC
-from datetime import datetime, timezone
 import queue
 import threading
 
@@ -50,7 +49,6 @@ class Service(Generic[V, E], ABC):
         thread: threading.Thread
         is_shutdown_requested: bool
         busy: bool
-        last_completed_job_timestamp: Optional[datetime]
         lock: threading.Lock
 
     _shared_resource: Shared
@@ -62,7 +60,6 @@ class Service(Generic[V, E], ABC):
             thread=threading.Thread(target=self._loop),
             is_shutdown_requested=False,
             busy=False,
-            last_completed_job_timestamp=None,
             lock=threading.Lock(),
         )
 
@@ -82,17 +79,6 @@ class Service(Generic[V, E], ABC):
     def is_busy(self) -> bool:
         with self._shared_resource.lock:
             return self._shared_resource.busy
-
-    def last_busy_timestamp(self) -> Optional[datetime]:
-        if self.is_busy():
-            return datetime.now(timezone.utc)
-        else:
-            with self._shared_resource.lock:
-                return self._shared_resource.last_completed_job_timestamp
-
-    def is_healthy(self) -> bool:
-        with self._shared_resource.lock:
-            return self._shared_resource.thread.is_alive()
 
     def queue_job(self, job: Job[V, E]):
         self._job_queue.put(job)
@@ -122,10 +108,6 @@ class Service(Generic[V, E], ABC):
                         self._shared_resource.busy = False
                         return
             self._result_queue.put(self._run_job(job))
-            with self._shared_resource.lock:
-                self._shared_resource.last_completed_job_timestamp = datetime.now(
-                    timezone.utc
-                )
 
     @abstractmethod
     def _run_job(self, job: Job[V, E]) -> JobResult[V, E]:

@@ -19,8 +19,7 @@ class RatingService(Service[Rating, str]):
         self._model = load_model()
 
     def _run_job(self, job: Job[Rating, str]) -> JobResult[Rating, str]:
-        if not isinstance(job, RateJob):
-            return JobResult.err(job, "Job is not of instance RateJob")
+        assert isinstance(job, RateJob)
 
         try:
             result = rate(self._model, job.source, job.translation)

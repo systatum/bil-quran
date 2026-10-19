@@ -37,17 +37,12 @@ FROM ${BASE_IMAGE}
 ENV UV_LOCKED=1 \
     UV_LINK_MODE=copy \
     UV_INDEX_STRATEGY=unsafe-first-match \
-    UV_HTTP_TIMEOUT=3000 \
-    PATH="/root/.local/bin:${PATH}"
+    UV_HTTP_TIMEOUT=3000
 
 # Install uv
 COPY --from=uv-base /uv /bin/uv
 
 WORKDIR /app
-
-# Don't download kernels (vllm download-kernels;) as it doesn't work on non-GPU builders
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv tool install --python 3.11 vllm@0.28.0 --verbose
 
 # We need this because otherwise uv will pick an unsupported python version
 COPY .python-version ./
